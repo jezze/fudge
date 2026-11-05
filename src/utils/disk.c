@@ -38,9 +38,7 @@ static unsigned int readblock(unsigned int block, unsigned int offset)
     request.target = 0;
 
     channel_send(1, block, MESSAGE_TYPE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request);
-    channel_wait(1, block, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
-
-    return response.count == request.count;
+    return channel_wait(1, block, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response) && response.count == request.count;
 
 }
 
@@ -150,13 +148,10 @@ static void onmain(struct message *message)
 
     unsigned int block = channel_lookup(option_getstring("block-service"));
 
-    if (block)
+    if (block && channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0) && channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
     {
 
         struct mbr mbr;
-
-        channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0);
-        channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
 
         channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "{\n");
         channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  blocks: %u\n", &blockinfo.blockcount);

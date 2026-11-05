@@ -810,10 +810,15 @@ void socket_resolvelocal(unsigned int ichannel, unsigned int target, struct sock
     struct message_ethernetinfo ethernetinfo;
 
     channel_send(ichannel, target, MESSAGE_TYPE_INFO, 0, 0);
-    channel_wait(ichannel, target, MESSAGE_TYPE_ETHERNETINFO, sizeof (struct message_ethernetinfo), &ethernetinfo);
-    buffer_copy(socket->haddress, ethernetinfo.address, ETHERNET_ADDRSIZE);
 
-    socket->resolved = 1;
+    if (channel_wait(ichannel, target, MESSAGE_TYPE_ETHERNETINFO, sizeof (struct message_ethernetinfo), &ethernetinfo))
+    {
+
+        buffer_copy(socket->haddress, ethernetinfo.address, ETHERNET_ADDRSIZE);
+
+        socket->resolved = 1;
+
+    }
 
 }
 
