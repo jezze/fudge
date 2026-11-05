@@ -1,7 +1,6 @@
 void buffer_clear(void *out, unsigned int count);
 void buffer_copy(void *out, void *in, unsigned int count);
 unsigned int buffer_eachbyte(void *in, unsigned int count, unsigned char value, unsigned int offset);
-unsigned int buffer_firstbyte(void *in, unsigned int count, unsigned char value);
 unsigned int buffer_lastbyte(void *in, unsigned int count, unsigned char value);
 unsigned int buffer_countbyte(char *in, unsigned int count, unsigned char value);
 unsigned int buffer_findbyte(void *in, unsigned int count, unsigned char value);

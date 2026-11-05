@@ -173,7 +173,7 @@ static void showfile(unsigned int wm, struct record *record)
     unsigned int i;
 
     if (!start)
-        start = buffer_firstbyte(path, length, ':');
+        start = buffer_eachbyte(path, length, ':', 0);
 
     sendcontent(wm);
     channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"2\" spacing \"1\"\n");
