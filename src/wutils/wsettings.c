@@ -26,6 +26,7 @@
 #define NUM_TIMEZONES                   8
 #define NUM_RESOLUTIONS                 11
 #define NUM_TRANSPARENCIES              2
+#define NUM_DISPLAYS                    4
 #define MOUSE_FASTEST                   16
 
 struct entry
@@ -154,6 +155,15 @@ struct binding
 
 };
 
+struct display
+{
+
+    unsigned int width;
+    unsigned int height;
+    unsigned int bpp;
+
+};
+
 struct color
 {
 
@@ -169,9 +179,8 @@ static struct
     char background[256];
     char language[32];
     char timezone[32];
-    unsigned int width;
-    unsigned int height;
-    unsigned int bpp;
+    struct display displays[NUM_DISPLAYS];
+    unsigned int ndisplays;
     char transparency[8];
     char keyboard[256];
     char speed[16];
@@ -369,6 +378,24 @@ static unsigned int getnumber(char *data, unsigned int count, unsigned int index
 
 }
 
+static void loaddisplay(char *line, unsigned int length)
+{
+
+    if (config.ndisplays < NUM_DISPLAYS)
+    {
+
+        struct display *display = &config.displays[config.ndisplays];
+
+        display->width = getnumber(line, length, 0);
+        display->height = getnumber(line, length, 1);
+        display->bpp = getnumber(line, length, 2);
+
+        config.ndisplays++;
+
+    }
+
+}
+
 static void loadbinding(char *line, unsigned int length)
 {
 
@@ -454,11 +481,7 @@ static void loadconfig(void)
     getword(data, count, 0, config.language, 32);
     getword(data, count, 1, config.timezone, 32);
 
-    count = query(data, 256, option_getstring("config"), ".screen.resolution", "{width} {height} {bpp}");
-    config.width = getnumber(data, count, 0);
-    config.height = getnumber(data, count, 1);
-    config.bpp = getnumber(data, count, 2);
-    count = query(data, 256, option_getstring("config"), ".screen.transparency", 0);
+    count = query(data, 256, option_getstring("config"), ".general.transparency", 0);
 
     getword(data, count, 0, config.transparency, 8);
 
@@ -483,6 +506,9 @@ static void loadconfig(void)
 
     config.nbindings = 0;
     config.ncolors = 0;
+    config.ndisplays = 0;
+
+    loadlines(option_getstring("config"), ".displays", "{width} {height} {bpp}", loaddisplay);
 
     loadlines(config.bindingspath, ".bindings", "{key} {mod} {action} {command}", loadbinding);
     loadlines(config.themepath, ".colors", "{name} {value}", loadcolor);
@@ -493,10 +519,16 @@ static unsigned int writeconfig(char *data, unsigned int size)
 {
 
     unsigned int count = 0;
+    unsigned int i;
 
-    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n  }\n", config.layout, config.themepath, config.background);
+    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n    transparency: %s\n  }\n", config.layout, config.themepath, config.background, config.transparency);
     count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
-    count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n    transparency: %s\n  }\n", &config.width, &config.height, &config.bpp, config.transparency);
+    count += cstring_write_fmt(data, size, count, "  displays:\n  [\n");
+
+    for (i = 0; i < config.ndisplays; i++)
+        count += cstring_write_fmt(data, size, count, "    { width: %u height: %u bpp: %u }\n", &config.displays[i].width, &config.displays[i].height, &config.displays[i].bpp);
+
+    count += cstring_write_fmt(data, size, count, "  ]\n");
     count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    map: \"%s\"\n  }\n", config.keyboard);
     count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n  }\n", config.speed);
     count += cstring_write_fmt(data, size, count, "  bindings: \"%s\"\n}\n", config.bindingspath);
@@ -569,8 +601,11 @@ static unsigned int writelines(char *data, unsigned int size)
     unsigned int count = 0;
     unsigned int i;
 
-    count += cstring_write_fmt(data, size, count, "layout %s\nbackground %s\nkeyboard %s\nresolution %u %u %u\nmouse %s\n", config.layout, config.background, config.keyboard, &config.width, &config.height, &config.bpp, config.speed);
-    count += cstring_write_fmt(data, size, count, "transparency %s\n", config.transparency);
+    count += cstring_write_fmt(data, size, count, "layout %s\nbackground %s\nkeyboard %s\nmouse %s\n", config.layout, config.background, config.keyboard, config.speed);
+    count += cstring_write_fmt(data, size, count, "transparency %s\ndisplays\n", config.transparency);
+
+    for (i = 0; i < config.ndisplays; i++)
+        count += cstring_write_fmt(data, size, count, "display %u %u %u\n", &config.displays[i].width, &config.displays[i].height, &config.displays[i].bpp);
 
     for (i = 0; i < config.ncolors; i++)
         count += cstring_write_fmt(data, size, count, "color %s %s\n", config.colors[i].name, config.colors[i].value);
@@ -644,16 +679,16 @@ static unsigned int savefile(char *path, char *data, unsigned int count)
 
 }
 
-static void setresolution(char *value)
+static void setresolution(struct display *display, char *value)
 {
 
     unsigned int width = cstring_read_value(value, buffer_findbyte(value, cstring_length(value), 'x'), 10);
     char *height = value + buffer_findbyte(value, cstring_length(value), 'x') + 1;
     char *bits = height + buffer_findbyte(height, cstring_length(height), 'x') + 1;
 
-    config.width = width;
-    config.height = cstring_read_value(height, buffer_findbyte(height, cstring_length(height), 'x'), 10);
-    config.bpp = cstring_read_value(bits, cstring_length(bits), 10) / 8;
+    display->width = width;
+    display->height = cstring_read_value(height, buffer_findbyte(height, cstring_length(height), 'x'), 10);
+    display->bpp = cstring_read_value(bits, cstring_length(bits), 10) / 8;
 
 }
 
@@ -668,9 +703,9 @@ static void setchoice(char *id, char *value)
         copystring(config.timezone, 32, value, cstring_length(value));
     else if (cstring_match(id, "keyboard-layout"))
         copystring(config.keyboard, 256, value, cstring_length(value));
-    else if (cstring_match(id, "screen-resolution"))
-        setresolution(value);
-    else if (cstring_match(id, "screen-transparency"))
+    else if (cstring_length(id) > 19 && buffer_match(id, "display-resolution-", 19) && cstring_read_value(id + 19, cstring_length(id + 19), 10) < config.ndisplays)
+        setresolution(&config.displays[cstring_read_value(id + 19, cstring_length(id + 19), 10)], value);
+    else if (cstring_match(id, "general-transparency"))
         copystring(config.transparency, 8, value, cstring_length(value));
 
 }
@@ -730,19 +765,31 @@ static void rendergeneral(void)
     choice("general-layout", "Layout", config.layout, layouts, NUM_LAYOUTS);
     pathfield("general-theme", "Theme", config.themepath);
     pathfield("general-background", "Background", config.background);
+    choice("general-transparency", "Transparency", config.transparency, transparencies, NUM_TRANSPARENCIES);
 
 }
 
-static void renderscreen(void)
+static void renderdisplays(void)
 {
 
-    char resolution[64];
-    unsigned int bits = config.bpp * 8;
+    unsigned int i;
 
-    cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &config.width, &config.height, &bits);
-    beginarea("Screen");
-    choice("screen-resolution", "Resolution", resolution, resolutions, NUM_RESOLUTIONS);
-    choice("screen-transparency", "Transparency", config.transparency, transparencies, NUM_TRANSPARENCIES);
+    beginarea("Displays");
+
+    for (i = 0; i < config.ndisplays; i++)
+    {
+
+        char id[32];
+        char label[32];
+        char resolution[64];
+        unsigned int bits = config.displays[i].bpp * 8;
+
+        cstring_write_fmt(id, 32, 0, "display-resolution-%u\\0", &i);
+        cstring_write_fmt(label, 32, 0, "Display %u\\0", &i);
+        cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &config.displays[i].width, &config.displays[i].height, &bits);
+        choice(id, label, resolution, resolutions, NUM_RESOLUTIONS);
+
+    }
 
 }
 
@@ -872,8 +919,8 @@ static void renderarea(char *name)
 
     if (cstring_match(name, "localization"))
         renderlocalization();
-    else if (cstring_match(name, "screen"))
-        renderscreen();
+    else if (cstring_match(name, "displays"))
+        renderdisplays();
     else if (cstring_match(name, "keyboard"))
         renderkeyboard();
     else if (cstring_match(name, "mouse"))

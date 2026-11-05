@@ -29,6 +29,7 @@
 #define CLOCK_TIMER         1
 #define ROOT                1
 #define ROOTRECORDS         2
+#define DISPLAYS            4
 
 struct listing
 {
@@ -63,7 +64,8 @@ struct state
     struct keys keys;
     unsigned int layout;
     unsigned int windows;
-    struct message_videoconf videoconf;
+    struct message_videoconf displays[DISPLAYS];
+    unsigned int ndisplays;
     struct widget *draggedthumb;
     unsigned int video;
     unsigned int clock;
@@ -98,9 +100,31 @@ static void setupvideo(unsigned int video)
 
     buffer_clear(black, 768);
     channel_send(0, video, MESSAGE_TYPE_VIDEOCMAP, 768, &black);
-    channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.videoconf);
+    channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.displays[0]);
     channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0);
     channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+
+}
+
+static void setupdisplays(void)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < state.ndisplays; i++)
+    {
+
+        char name[16];
+        unsigned int video;
+
+        cstring_write_fmt(name, 16, 0, "video:%u\\0", &i);
+
+        video = channel_lookup(name);
+
+        if (video)
+            channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.displays[i]);
+
+    }
 
 }
 
@@ -281,12 +305,27 @@ static void configline(char *line, unsigned int length)
 
     }
 
-    else if (count == 10 && buffer_match(word, "resolution", 10))
+    else if (count == 8 && buffer_match(word, "displays", 8))
     {
 
-        state.videoconf.width = getnumber(rest, length, 0, 10, state.videoconf.width);
-        state.videoconf.height = getnumber(rest, length, 1, 10, state.videoconf.height);
-        state.videoconf.bpp = getnumber(rest, length, 2, 10, state.videoconf.bpp);
+        state.ndisplays = 0;
+
+    }
+
+    else if (count == 7 && buffer_match(word, "display", 7))
+    {
+
+        if (state.ndisplays < DISPLAYS)
+        {
+
+            struct message_videoconf *videoconf = &state.displays[state.ndisplays];
+
+            videoconf->width = getnumber(rest, length, 0, 10, videoconf->width);
+            videoconf->height = getnumber(rest, length, 1, 10, videoconf->height);
+            videoconf->bpp = getnumber(rest, length, 2, 10, videoconf->bpp);
+            state.ndisplays++;
+
+        }
 
     }
 
@@ -379,8 +418,9 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"layout {layout}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"background {background}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {map}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"resolution {width} {height} {bpp}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen -format \"transparency {transparency}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
+    configlines("displays", 8);
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .displays -format \"display {width} {height} {bpp}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));
     loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
@@ -2527,7 +2567,9 @@ static void onkeyrelease(struct message *message)
 static void applyconfig(struct message_videoconf *videoconf)
 {
 
-    if (videoconf->width != state.videoconf.width || videoconf->height != state.videoconf.height || videoconf->bpp != state.videoconf.bpp)
+    setupdisplays();
+
+    if (videoconf->width != state.displays[0].width || videoconf->height != state.displays[0].height || videoconf->bpp != state.displays[0].bpp)
     {
 
         setupvideo(state.video);
@@ -2714,6 +2756,7 @@ static void onmain(struct message *message)
     channel_send(0, keyboard, MESSAGE_TYPE_LINK, 0, 0);
     channel_send(0, mouse, MESSAGE_TYPE_LINK, 0, 0);
     setupvideo(video);
+    setupdisplays();
 
     state.clock = channel_lookup(option_getstring("clock-service"));
     state.timer = channel_lookup(option_getstring("timer-service"));
@@ -3076,7 +3119,7 @@ static void onwmrenderdata(struct message *message)
 static void onwmconfig(struct message *message)
 {
 
-    struct message_videoconf videoconf = state.videoconf;
+    struct message_videoconf videoconf = state.displays[0];
 
     configlines(message->data, message->length);
 
@@ -3208,9 +3251,10 @@ void init(void)
 {
 
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
-    state.videoconf.width = 1920;
-    state.videoconf.height = 1080;
-    state.videoconf.bpp = 4;
+    state.displays[0].width = 1920;
+    state.displays[0].height = 1080;
+    state.displays[0].bpp = 4;
+    state.ndisplays = 1;
     state.mousespeed = MOUSE_NORMAL;
     pool_setup();
     setupwidgets();

@@ -4,22 +4,18 @@
     layout: default
     theme: "initrd:data/config/wm-theme-default.mq"
     background: "initrd:data/fudge.pcx"
+    transparency: on
   }
   localization:
   {
     language: en_US
     timezone: UTC
   }
-  screen:
-  {
-    resolution:
-    {
-      width: 1920
-      height: 1080
-      bpp: 4
-    }
-    transparency: on
-  }
+  displays:
+  [
+    { width: 1920 height: 1080 bpp: 4 }
+    { width: 1920 height: 1080 bpp: 4 }
+  ]
   keyboard:
   {
     map: "initrd:data/keys/en_US.mq"
