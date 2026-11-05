@@ -10,6 +10,10 @@
 #define I915_AUX_SIZE                   20
 #define I915_AUX_RETRIES                32
 #define I915_EDIDSIZE                   128
+#define I915_EDIDBUFFER                 256
+#define I915_EDIDDESCRIPTORS            4
+#define I915_EDIDDESCRIPTOR             18
+#define I915_EDIDCTA                    0x02
 #define I915_EDIDCHUNK                  16
 #define I915_EDIDADDRESS                0x50
 #define I915_EDIDTIMING                 54
@@ -42,19 +46,15 @@
 #define I915_DDCCOMBOPINS               3
 #define I915_DDCTCPIN                   5
 
-#define I915_HDMI_CLOCK                 148500
-#define I915_HDMI_DIVIDER               12
-#define I915_HDMI_PDIV                  2
-#define I915_HDMI_QDIV                  3
-#define I915_HDMI_KDIV                  2
-#define I915_HDMI_HACTIVE               1920
-#define I915_HDMI_HSYNCSTART            2008
-#define I915_HDMI_HSYNCEND              2052
-#define I915_HDMI_HTOTAL                2200
-#define I915_HDMI_VACTIVE               1080
-#define I915_HDMI_VSYNCSTART            1084
-#define I915_HDMI_VSYNCEND              1089
-#define I915_HDMI_VTOTAL                1125
+#define I915_HDMI_MAXCLOCK              340000
+#define I915_HDMI_MINWIDTH              640
+#define I915_HDMI_MINHEIGHT             480
+#define I915_HDMI_MAXWIDTH              4096
+#define I915_HDMI_MAXHEIGHT             4096
+#define I915_DCOMIN                     7998000
+#define I915_DCOMAX                     10000000
+#define I915_DCOMID                     9000000
+#define I915_DIVIDERS                   37
 #define I915_HDMI_SWING                 0x6
 #define I915_HDMI_NSCALAR               0x7F
 #define I915_HDMI_CURSOR                0x35
@@ -172,6 +172,7 @@
 #define I915_GMBUS1_INDEX               (0x02u << 25)
 #define I915_GMBUS1_WAIT                (0x01u << 25)
 #define I915_GMBUS1_COUNTSHIFT          16
+#define I915_GMBUS1_INDEXSHIFT          8
 #define I915_GMBUS1_ADDRESSSHIFT        1
 #define I915_GMBUS1_READ                0x01u
 #define I915_GMBUS2_WAITPHASE           (0x01u << 14)
@@ -195,8 +196,8 @@
 #define I915_DPLL_FRACTIONSHIFT         10
 #define I915_DPLL_QDIVSHIFT             10
 #define I915_DPLL_QDIVMODE              (0x01u << 9)
-#define I915_DPLL_KDIV2                 (0x02u << 6)
-#define I915_DPLL_PDIV2                 (0x01u << 2)
+#define I915_DPLL_KDIVSHIFT             6
+#define I915_DPLL_PDIVSHIFT             2
 #define I915_DSSM_REFCLK                (0x07u << 29)
 #define I915_DSSM_REFCLK24              (0x00u << 29)
 #define I915_DPCLKA_DDIA                0x03u
@@ -231,6 +232,10 @@
 #define I915_DDI_FUNC_DVI               (0x01u << 24)
 #define I915_DDI_FUNC_VSYNCHIGH         (0x01u << 17)
 #define I915_DDI_FUNC_HSYNCHIGH         (0x01u << 16)
+#define I915_DTD_INTERLACED             0x80u
+#define I915_DTD_DIGITALSEPARATE        0x18u
+#define I915_DTD_VSYNCHIGH              0x04u
+#define I915_DTD_HSYNCHIGH              0x02u
 #define I915_DDI_BUF_ENABLE             (0x01u << 31)
 #define I915_DDI_BUF_IDLE               (0x01u << 7)
 #define I915_PIPEMISC_BPC               (0x07u << 5)

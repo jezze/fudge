@@ -7,6 +7,23 @@
 #include <modules/pci/pci.h>
 #include "i915.h"
 
+struct mode
+{
+
+    unsigned int clock;
+    unsigned int hactive;
+    unsigned int hsyncstart;
+    unsigned int hsyncend;
+    unsigned int htotal;
+    unsigned int vactive;
+    unsigned int vsyncstart;
+    unsigned int vsyncend;
+    unsigned int vtotal;
+    unsigned int sync;
+    unsigned int divider;
+
+};
+
 struct hdmi
 {
 
@@ -15,6 +32,7 @@ struct hdmi
     unsigned int ddc;
     unsigned int typec;
     unsigned int connected;
+    struct mode mode;
 
 };
 
@@ -48,7 +66,9 @@ static unsigned short devices[I915_DEVICES] = {0x9A40, 0x9A49, 0x9A59, 0x9A60, 0
 static unsigned long mmio;
 static struct pipe pipea = {0, 0, 0, 0, 0};
 static struct pipe pipeb = {I915_PIPESTRIDE, I915_SCALERSTRIDE, 0, 0, 0};
-static unsigned char edid[I915_EDIDSIZE];
+static unsigned char edid[I915_EDIDBUFFER];
+static unsigned char dividers[I915_DIVIDERS] = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 30, 32, 36, 40, 42, 44, 48, 52, 54, 56, 60, 64, 66, 68, 70, 72, 76, 78, 80, 84, 88, 90, 92, 96, 98};
+static struct mode cea1080 = {148500, 1920, 2008, 2052, 2200, 1080, 1084, 1089, 1125, I915_DDI_FUNC_VSYNCHIGH | I915_DDI_FUNC_HSYNCHIGH, 12};
 static struct hdmi hdmi;
 static unsigned long opregion;
 static unsigned int opregionsize;
@@ -333,15 +353,16 @@ static void gmbusreset(void)
 
 }
 
-static unsigned int readgmbusedid(unsigned int pin)
+static unsigned int readgmbusedid(unsigned int pin, unsigned int block)
 {
 
+    unsigned int start = block * I915_EDIDSIZE;
     unsigned int offset;
     unsigned int i;
 
     writereg(I915_GMBUS0, pin | I915_GMBUS0_RATE100KHZ);
     writereg(I915_GMBUS5, 0);
-    writereg(I915_GMBUS1, I915_GMBUS1_READY | I915_GMBUS1_WAIT | I915_GMBUS1_INDEX | (I915_EDIDSIZE << I915_GMBUS1_COUNTSHIFT) | (I915_EDIDADDRESS << I915_GMBUS1_ADDRESSSHIFT) | I915_GMBUS1_READ);
+    writereg(I915_GMBUS1, I915_GMBUS1_READY | I915_GMBUS1_WAIT | I915_GMBUS1_INDEX | (I915_EDIDSIZE << I915_GMBUS1_COUNTSHIFT) | (start << I915_GMBUS1_INDEXSHIFT) | (I915_EDIDADDRESS << I915_GMBUS1_ADDRESSSHIFT) | I915_GMBUS1_READ);
 
     for (offset = 0; offset < I915_EDIDSIZE; offset += 4)
     {
@@ -360,7 +381,7 @@ static unsigned int readgmbusedid(unsigned int pin)
         value = readreg(I915_GMBUS3);
 
         for (i = 0; i < 4; i++)
-            edid[offset + i] = value >> (i * 8);
+            edid[start + offset + i] = value >> (i * 8);
 
     }
 
@@ -385,7 +406,104 @@ static unsigned int readgmbusedid(unsigned int pin)
 
     writereg(I915_GMBUS0, 0);
 
-    return edid[0] == 0x00 && edid[1] == 0xFF && edid[7] == 0x00;
+    return (block) ? edid[start] == I915_EDIDCTA : edid[0] == 0x00 && edid[1] == 0xFF && edid[7] == 0x00;
+
+}
+
+static unsigned int finddivider(unsigned int clock)
+{
+
+    unsigned int best = 0;
+    unsigned int distance = I915_DCOMAX;
+    unsigned int i;
+
+    for (i = 0; i < I915_DIVIDERS; i++)
+    {
+
+        unsigned int dco = clock * 5 * dividers[i];
+        unsigned int d = (dco > I915_DCOMID) ? dco - I915_DCOMID : I915_DCOMID - dco;
+
+        if (dco >= I915_DCOMIN && dco <= I915_DCOMAX && d < distance)
+        {
+
+            best = dividers[i];
+            distance = d;
+
+        }
+
+    }
+
+    return best;
+
+}
+
+static struct mode readtiming(unsigned int offset)
+{
+
+    struct mode mode;
+    unsigned int flags = edid[offset + 17];
+
+    mode.clock = (edid[offset] | (edid[offset + 1] << 8)) * 10;
+    mode.hactive = edid[offset + 2] | ((edid[offset + 4] & 0xF0) << 4);
+    mode.hsyncstart = mode.hactive + (edid[offset + 8] | ((edid[offset + 11] & 0xC0) << 2));
+    mode.hsyncend = mode.hsyncstart + (edid[offset + 9] | ((edid[offset + 11] & 0x30) << 4));
+    mode.htotal = mode.hactive + (edid[offset + 3] | ((edid[offset + 4] & 0x0F) << 8));
+    mode.vactive = edid[offset + 5] | ((edid[offset + 7] & 0xF0) << 4);
+    mode.vsyncstart = mode.vactive + ((edid[offset + 10] >> 4) | ((edid[offset + 11] & 0x0C) << 2));
+    mode.vsyncend = mode.vsyncstart + ((edid[offset + 10] & 0x0F) | ((edid[offset + 11] & 0x03) << 4));
+    mode.vtotal = mode.vactive + (edid[offset + 6] | ((edid[offset + 7] & 0x0F) << 8));
+    mode.sync = 0;
+    mode.divider = finddivider(mode.clock);
+
+    if ((flags & I915_DTD_DIGITALSEPARATE) == I915_DTD_DIGITALSEPARATE)
+        mode.sync = ((flags & I915_DTD_VSYNCHIGH) ? I915_DDI_FUNC_VSYNCHIGH : 0) | ((flags & I915_DTD_HSYNCHIGH) ? I915_DDI_FUNC_HSYNCHIGH : 0);
+
+    if (flags & I915_DTD_INTERLACED)
+        mode.clock = 0;
+
+    return mode;
+
+}
+
+static unsigned int isusable(struct mode *mode)
+{
+
+    return mode->clock && mode->clock <= I915_HDMI_MAXCLOCK && mode->divider && mode->hactive >= I915_HDMI_MINWIDTH && mode->vactive >= I915_HDMI_MINHEIGHT && mode->hactive <= I915_HDMI_MAXWIDTH && mode->vactive <= I915_HDMI_MAXHEIGHT && mode->hsyncend < mode->htotal && mode->vsyncend < mode->vtotal;
+
+}
+
+static void considertiming(unsigned int offset)
+{
+
+    struct mode mode = readtiming(offset);
+    unsigned int area = mode.hactive * mode.vactive;
+    unsigned int best = hdmi.mode.hactive * hdmi.mode.vactive;
+
+    if (isusable(&mode) && (area > best || (area == best && mode.clock > hdmi.mode.clock)))
+        buffer_copy(&hdmi.mode, &mode, sizeof (struct mode));
+
+}
+
+static void choosemode(unsigned int blocks)
+{
+
+    unsigned int offset;
+
+    buffer_clear(&hdmi.mode, sizeof (struct mode));
+
+    for (offset = 54; offset < 54 + I915_EDIDDESCRIPTORS * I915_EDIDDESCRIPTOR; offset += I915_EDIDDESCRIPTOR)
+        considertiming(offset);
+
+    if (blocks > 1 && edid[I915_EDIDSIZE + 2] >= 4)
+    {
+
+        for (offset = I915_EDIDSIZE + edid[I915_EDIDSIZE + 2]; offset + I915_EDIDDESCRIPTOR < I915_EDIDBUFFER && (edid[offset] || edid[offset + 1]); offset += I915_EDIDDESCRIPTOR)
+            considertiming(offset);
+
+    }
+
+    if (!hdmi.mode.clock)
+        buffer_copy(&hdmi.mode, &cea1080, sizeof (struct mode));
 
 }
 
@@ -531,7 +649,12 @@ static unsigned int enablepll(void)
     unsigned int pll = (!(clocks & I915_DPCLKA_DDIAOFF) && !((clocks >> I915_DPCLKA_DDIASHIFT) & I915_DPCLKA_DDIA)) ? 1 : 0;
     unsigned int enable = I915_DPLL_ENABLE + pll * 4;
     unsigned int reference = ((readreg(I915_DSSM) & I915_DSSM_REFCLK) == I915_DSSM_REFCLK24) ? 24000 : 19200;
-    unsigned int dco = I915_HDMI_CLOCK * 5 * I915_HDMI_DIVIDER;
+    unsigned int divider = hdmi.mode.divider;
+    unsigned int dco = hdmi.mode.clock * 5 * divider;
+    unsigned int p = (divider == 2 || !(divider % 4)) ? 2 : (!(divider % 6)) ? 3 : (!(divider % 5)) ? 5 : 7;
+    unsigned int k = (divider == 2) ? 1 : 2;
+    unsigned int q = divider / (p * k);
+    unsigned int pcode = (p == 2) ? 1 : (p == 3) ? 2 : (p == 5) ? 4 : 8;
 
     if (readreg(enable) & I915_DPLL_ON)
         return fail("DPLL busy");
@@ -542,7 +665,7 @@ static unsigned int enablepll(void)
         return fail("DPLL power");
 
     writereg(I915_DPLL_CFGCR0 + pll * I915_DPLL_STRIDE, ((((dco % reference) << 15) / reference) << I915_DPLL_FRACTIONSHIFT) | (dco / reference));
-    writereg(I915_DPLL_CFGCR1 + pll * I915_DPLL_STRIDE, (I915_HDMI_QDIV << I915_DPLL_QDIVSHIFT) | I915_DPLL_QDIVMODE | I915_DPLL_KDIV2 | I915_DPLL_PDIV2);
+    writereg(I915_DPLL_CFGCR1 + pll * I915_DPLL_STRIDE, (q << I915_DPLL_QDIVSHIFT) | ((q > 1) ? I915_DPLL_QDIVMODE : 0) | (k << I915_DPLL_KDIVSHIFT) | (pcode << I915_DPLL_PDIVSHIFT));
     readreg(I915_DPLL_CFGCR1 + pll * I915_DPLL_STRIDE);
     modifyreg(enable, 0, I915_DPLL_ON);
 
@@ -580,30 +703,28 @@ static void setswing(void)
 
 }
 
-static void settimings(void)
+static void settimings(struct mode *mode)
 {
 
-    writereg(I915_TRANS_HTOTAL_B, ((I915_HDMI_HTOTAL - 1) << 16) | (I915_HDMI_HACTIVE - 1));
-    writereg(I915_TRANS_HBLANK_B, ((I915_HDMI_HTOTAL - 1) << 16) | (I915_HDMI_HACTIVE - 1));
-    writereg(I915_TRANS_HSYNC_B, ((I915_HDMI_HSYNCEND - 1) << 16) | (I915_HDMI_HSYNCSTART - 1));
-    writereg(I915_TRANS_VTOTAL_B, ((I915_HDMI_VTOTAL - 1) << 16) | (I915_HDMI_VACTIVE - 1));
-    writereg(I915_TRANS_VBLANK_B, ((I915_HDMI_VTOTAL - 1) << 16) | (I915_HDMI_VACTIVE - 1));
-    writereg(I915_TRANS_VSYNC_B, ((I915_HDMI_VSYNCEND - 1) << 16) | (I915_HDMI_VSYNCSTART - 1));
+    writereg(I915_TRANS_HTOTAL_B, ((mode->htotal - 1) << 16) | (mode->hactive - 1));
+    writereg(I915_TRANS_HBLANK_B, ((mode->htotal - 1) << 16) | (mode->hactive - 1));
+    writereg(I915_TRANS_HSYNC_B, ((mode->hsyncend - 1) << 16) | (mode->hsyncstart - 1));
+    writereg(I915_TRANS_VTOTAL_B, ((mode->vtotal - 1) << 16) | (mode->vactive - 1));
+    writereg(I915_TRANS_VBLANK_B, ((mode->vtotal - 1) << 16) | (mode->vactive - 1));
+    writereg(I915_TRANS_VSYNC_B, ((mode->vsyncend - 1) << 16) | (mode->vsyncstart - 1));
     writereg(I915_TRANS_VSYNCSHIFT_B, 0);
-    writereg(I915_PIPESRC_B, ((I915_HDMI_HACTIVE - 1) << 16) | (I915_HDMI_VACTIVE - 1));
+    writereg(I915_PIPESRC_B, ((mode->hactive - 1) << 16) | (mode->vactive - 1));
 
 }
 
 static void setplane(void)
 {
 
-    unsigned int buffer = readreg(I915_PLANE_BUF_CFG_1_A);
-    unsigned int blocks = ((buffer >> 16) & 0x7FF) - (buffer & 0x7FF);
     unsigned int level;
 
     writereg(I915_PIPE_MBUS_DBOX_CTL_B, readreg(I915_PIPE_MBUS_DBOX_CTL_A));
     writereg(I915_WM_LINETIME_B, readreg(I915_WM_LINETIME_A));
-    writereg(I915_PLANE_BUF_CFG_1_B, ((I915_DBUFSLICE + blocks) << 16) | I915_DBUFSLICE);
+    writereg(I915_PLANE_BUF_CFG_1_B, ((I915_DBUFSLICE * 2 - 1) << 16) | I915_DBUFSLICE);
 
     for (level = 0; level < I915_WMLEVELS; level++)
         writereg(I915_PLANE_WM_1_B + level * 4, readreg(I915_PLANE_WM_1_A + level * 4));
@@ -623,9 +744,6 @@ static unsigned int enablehdmi(void)
     if (hdmi.port != 1)
         return fail("port not B");
 
-    if (framebuffer->width < I915_HDMI_HACTIVE || framebuffer->height < I915_HDMI_VACTIVE)
-        return fail("framebuffer smaller than 1920x1080");
-
     if (readreg(I915_TRANS_CONF_B) & I915_TRANS_CONF_ENABLE)
         return fail("transcoder B in use");
 
@@ -637,9 +755,9 @@ static unsigned int enablehdmi(void)
 
     setswing();
     writereg(I915_TRANS_CLK_SEL_B, I915_TRANS_CLK_SEL_PORTB);
-    settimings();
+    settimings(&hdmi.mode);
     modifyreg(I915_PIPEMISC_B, I915_PIPEMISC_BPC, 0);
-    writereg(I915_TRANS_DDI_FUNC_CTL_B, I915_DDI_FUNC_ENABLE | I915_DDI_FUNC_PORTB | I915_DDI_FUNC_DVI | I915_DDI_FUNC_VSYNCHIGH | I915_DDI_FUNC_HSYNCHIGH);
+    writereg(I915_TRANS_DDI_FUNC_CTL_B, I915_DDI_FUNC_ENABLE | I915_DDI_FUNC_PORTB | I915_DDI_FUNC_DVI | hdmi.mode.sync);
     writereg(I915_TRANS_CONF_B, I915_TRANS_CONF_ENABLE);
 
     if (!waitreg(I915_TRANS_CONF_B, I915_TRANS_CONF_STATE, I915_TRANS_CONF_STATE))
@@ -651,10 +769,10 @@ static unsigned int enablehdmi(void)
         return fail("DDI B buffer idle");
 
     pipeb.on = 1;
-    pipeb.activewidth = I915_HDMI_HACTIVE;
-    pipeb.activeheight = I915_HDMI_VACTIVE;
+    pipeb.activewidth = hdmi.mode.hactive;
+    pipeb.activeheight = hdmi.mode.vactive;
     setplane();
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on, 1920x1080 at 60 Hz mirroring the panel");
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on, mirroring the panel");
 
     return 1;
 
@@ -684,10 +802,23 @@ static void probehdmi(void)
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on port %s, GMBUS pin %u, %s", port, &pin, (connected) ? "connected" : "not connected");
 
-    if (readgmbusedid(pin))
+    if (readgmbusedid(pin, 0))
+    {
+
         logedid("monitor");
+        choosemode((edid[126] && readgmbusedid(pin, 1)) ? 2 : 1);
+
+    }
+
     else
+    {
+
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no EDID over DDC");
+        choosemode(0);
+
+    }
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI mode %ux%u at %u kHz", &hdmi.mode.hactive, &hdmi.mode.vactive, &hdmi.mode.clock);
 
 }
 
