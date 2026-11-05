@@ -30,6 +30,8 @@
 #define ROOT                1
 #define ROOTRECORDS         2
 #define DISPLAYS            4
+#define ANYDISPLAY          DISPLAYS
+#define LINEBUFFER          3840
 
 struct listing
 {
@@ -74,6 +76,7 @@ struct state
     unsigned int layout;
     unsigned int windows;
     struct display displays[DISPLAYS];
+    struct widget *roots[DISPLAYS];
     unsigned int ndisplays;
     unsigned int active;
     unsigned int opaque;
@@ -88,7 +91,7 @@ struct state
 static struct state state;
 static struct keys_map keymap[KEYS_MAPSIZE];
 static unsigned int keymapcount;
-static unsigned int linebuffer[3840];
+static unsigned int linebuffer[LINEBUFFER];
 static char *fontn[FONTS] = {
     "initrd:data/font/ter-112n.pcf",
     "initrd:data/font/ter-114n.pcf",
@@ -130,8 +133,16 @@ static void setupdisplays(void)
 
         video = channel_lookup(name);
 
+        state.displays[i].video = video;
+
         if (video)
+        {
+
             channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.displays[i].videoconf);
+            channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0);
+            channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+
+        }
 
     }
 
@@ -210,7 +221,13 @@ static void loadbackground(char *path, unsigned int length)
 
             char data[128];
 
+            unsigned int i;
+
             parser_parse(0, "root", cstring_write_fmt(data, 128, 0, "= background mimetype \"image/raw\" %s", size), data);
+
+            for (i = 1; i < DISPLAYS; i++)
+                parser_parse(0, "root", cstring_write_fmt(data, 128, 0, "= background%u mimetype \"image/raw\" %s", &i, size), data);
+
             pool_loadresources();
 
         }
@@ -664,6 +681,32 @@ static struct util_region getarea(void)
     }
 
     return area;
+
+}
+
+static unsigned int getdisplayat(int x, int y)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < DISPLAYS; i++)
+    {
+
+        struct util_region *region = &state.displays[i].blit.region;
+
+        if (state.displays[i].blit.framebuffer && x >= region->position.x && x < region->position.x + (int)region->size.w && y >= region->position.y && y < region->position.y + (int)region->size.h)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int getdisplayof(struct widget *widget)
+{
+
+    return getdisplayat(widget->position.x + (int)widget->size.w / 2, widget->position.y + (int)widget->size.h / 2);
 
 }
 
@@ -1293,7 +1336,7 @@ static void placewindows(unsigned int source)
 
 }
 
-static struct widget *getadjacentwindow(unsigned int serial, int direction)
+static struct widget *getadjacentwindow(unsigned int serial, int direction, unsigned int display)
 {
 
     struct list_item *current = 0;
@@ -1306,7 +1349,7 @@ static struct widget *getadjacentwindow(unsigned int serial, int direction)
         struct widget *widget = current->data;
         int d = ((int)widget->serial - (int)serial) * direction;
 
-        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && d > 0 && (!nearest || d < distance))
+        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && d > 0 && (!nearest || d < distance) && (display == ANYDISPLAY || getdisplayof(widget) == display))
         {
 
             nearest = widget;
@@ -1326,10 +1369,10 @@ static void cyclewindow(unsigned int older)
     struct widget *window = 0;
 
     if (state.focusedwindow)
-        window = getadjacentwindow(state.focusedwindow->serial, (older) ? -1 : 1);
+        window = getadjacentwindow(state.focusedwindow->serial, (older) ? -1 : 1, state.active);
 
     if (!window)
-        window = (older) ? getadjacentwindow(state.windows + 1, -1) : getadjacentwindow(0, 1);
+        window = (older) ? getadjacentwindow(state.windows + 1, -1, state.active) : getadjacentwindow(0, 1, state.active);
 
     if (window)
     {
@@ -1344,7 +1387,7 @@ static void cyclewindow(unsigned int older)
 static void swapwindow(void)
 {
 
-    struct widget *first = getadjacentwindow(state.windows + 1, -1);
+    struct widget *first = getadjacentwindow(state.windows + 1, -1, state.active);
 
     if (state.focusedwindow && first && first != state.focusedwindow)
     {
@@ -1377,14 +1420,14 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int w, uns
 
 }
 
-static void tilewindows(void)
+static void tiledisplay(unsigned int display)
 {
 
-    struct util_region region = state.displays[0].blit.region;
-    struct widget *menu = pool_getwidgetbyid(0, "menu");
+    struct util_region region = state.displays[display].blit.region;
+    struct widget *menu = (display) ? 0 : pool_getwidgetbyid(0, "menu");
     int top = (menu) ? menu->placement.position.y + (int)menu->placement.size.h : region.position.y;
     unsigned int w = region.size.w / 2;
-    struct widget *first = getadjacentwindow(state.windows + 1, -1);
+    struct widget *first = getadjacentwindow(state.windows + 1, -1, display);
 
     if (first)
     {
@@ -1394,13 +1437,28 @@ static void tilewindows(void)
         unsigned int count = 0;
         unsigned int i = 0;
 
-        placewindow(first, region.position.x, top, w, h);
-
-        for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1))
+        for (widget = getadjacentwindow(first->serial, -1, display); widget; widget = getadjacentwindow(widget->serial, -1, display))
             count++;
 
-        for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1), i++)
+        placewindow(first, region.position.x, top, w, h);
+
+        for (widget = getadjacentwindow(first->serial, -1, display); widget; widget = getadjacentwindow(widget->serial, -1, display), i++)
             placewindow(widget, region.position.x + w, top + h * i / count, region.size.w - w, h * (i + 1) / count - h * i / count);
+
+    }
+
+}
+
+static void tilewindows(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < DISPLAYS; i++)
+    {
+
+        if (state.displays[i].blit.framebuffer)
+            tiledisplay(i);
 
     }
 
@@ -2013,7 +2071,7 @@ static void purge(unsigned int source)
     }
 
     if (!state.focusedwindow && state.layout == LAYOUT_TILING)
-        setfocuswindow(getadjacentwindow(state.windows + 1, -1));
+        setfocuswindow(getadjacentwindow(state.windows + 1, -1, state.active));
 
 }
 
@@ -2084,6 +2142,21 @@ static void damagechanged(void)
 
 }
 
+static void placeroots(void)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < DISPLAYS; i++)
+    {
+
+        if (state.roots[i] && state.displays[i].blit.framebuffer)
+            render_place(state.roots[i], &state.displays[i].blit.region, &state.displays[i].blit.region);
+
+    }
+
+}
+
 static void redraw(unsigned int relayout)
 {
 
@@ -2099,6 +2172,7 @@ static void redraw(unsigned int relayout)
                 tilewindows();
 
             render_place(state.rootwidget, &state.displays[0].blit.region, &area);
+            placeroots();
             damagechanged();
             render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
 
@@ -3113,38 +3187,157 @@ static void onmouserelease(struct message *message)
 
 }
 
+static unsigned int finddisplay(unsigned int video)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < DISPLAYS; i++)
+    {
+
+        if (state.displays[i].video == video)
+            return i;
+
+    }
+
+    return DISPLAYS;
+
+}
+
+static int getorigin(unsigned int index)
+{
+
+    int x = 0;
+    unsigned int i;
+
+    for (i = 0; i < index; i++)
+    {
+
+        if (state.displays[i].blit.framebuffer)
+            x += state.displays[i].blit.region.size.w;
+
+    }
+
+    return x;
+
+}
+
+static void movewindows(struct util_region *from, int x, int y)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+        int cx = widget->position.x + (int)widget->size.w / 2;
+        int cy = widget->position.y + (int)widget->size.h / 2;
+
+        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && cx >= from->position.x && cx < from->position.x + (int)from->size.w && cy >= from->position.y && cy < from->position.y + (int)from->size.h)
+            translatewindow(widget, x, y);
+
+    }
+
+}
+
+static void movedisplay(unsigned int index, int x)
+{
+
+    struct blit_display *blit = &state.displays[index].blit;
+
+    if (blit->framebuffer && blit->region.position.x != x)
+    {
+
+        struct util_region from = blit->region;
+
+        movewindows(&from, x - from.position.x, 0);
+
+        blit->region.position.x = x;
+
+    }
+
+}
+
+static void arrangedisplays(void)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < DISPLAYS; i++)
+        movedisplay(i, getorigin(i));
+
+}
+
+static void setupdisplay(unsigned int index, struct message_videoinfo *videoinfo)
+{
+
+    struct blit_display *blit = &state.displays[index].blit;
+    int x = getorigin(index);
+
+    movedisplay(index, x);
+    blit_initdisplay(blit, (void *)(unsigned long)videoinfo->framebuffer, x, 0, videoinfo->width, videoinfo->height, videoinfo->bpp, linebuffer);
+
+    blit->opaque = state.opaque;
+
+}
+
 static void onvideoinfo(struct message *message)
 {
 
     struct message_videoinfo videoinfo;
+    unsigned int index = finddisplay(message->source);
     unsigned int factor;
     unsigned int lineheight;
 
     buffer_copy(&videoinfo, message->data, sizeof (struct message_videoinfo));
 
+    if (index == DISPLAYS || videoinfo.width > LINEBUFFER)
+        return;
+
+    if (index)
+    {
+
+        struct util_region area;
+
+        if (!videoinfo.framebuffer)
+            return;
+
+        setupdisplay(index, &videoinfo);
+
+        area = getarea();
+
+        render_damage(0, 0, area.size.w, area.size.h);
+        redraw(1);
+
+        return;
+
+    }
+
     factor = util_min(videoinfo.height / 320, FONTS - 1);
     lineheight = 12 + factor * 4;
 
-    blit_initdisplay(&state.displays[0].blit, (void *)(unsigned long)videoinfo.framebuffer, 0, 0, videoinfo.width, videoinfo.height, videoinfo.bpp, linebuffer);
-    state.displays[0].blit.opaque = state.opaque;
+    setupdisplay(0, &videoinfo);
+    arrangedisplays();
     pool_loadfont(0, fontn[factor]);
     pool_setfont(0, lineheight);
     pool_loadfont(1, fontb[factor]);
     pool_setfont(1, lineheight);
     render_setunit(factor + 1);
 
+    state.active = 0;
     state.mouseposition.x = videoinfo.width / 4;
     state.mouseposition.y = videoinfo.height / 4;
 
     render_setmouse(state.mouseposition.x, state.mouseposition.y, BLIT_MOUSE_ARROW);
 
-    render_damage(0, 0, videoinfo.width, videoinfo.height);
-
     {
 
         struct util_region area = getarea();
 
+        render_damage(0, 0, area.size.w, area.size.h);
         render_place(state.rootwidget, &state.displays[0].blit.region, &area);
+        placeroots();
 
     }
 
@@ -3315,12 +3508,27 @@ static void setupwidgets(void)
 
     char *data0 = "+ layout id \"root\" flow \"stretch\"\n";
     char data1[4096];
+    unsigned int i;
 
     parser_parse(0, "", cstring_length(data0), data0);
     parser_parse(0, "root", fs_read_path(1, "initrd:data/alfi/wm.alfi", data1, 4096), data1);
     pool_loadresources();
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
+
+    for (i = 1; i < DISPLAYS; i++)
+    {
+
+        char data2[128];
+        char id[16];
+
+        parser_parse(0, "", cstring_write_fmt(data2, 128, 0, "+ layout id \"root%u\" flow \"stretch\"\n", &i), data2);
+        parser_parse(0, "", cstring_write_fmt(data2, 128, 0, "+ media id \"background%u\" in \"root%u\" source \"mem:background\"\n", &i, &i), data2);
+        cstring_write_fmt(id, 16, 0, "root%u\\0", &i);
+
+        state.roots[i] = pool_getwidgetbyid(0, id);
+
+    }
 
 }
 
