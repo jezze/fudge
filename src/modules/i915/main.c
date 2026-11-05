@@ -18,6 +18,17 @@ struct hdmi
 
 };
 
+struct pipe
+{
+
+    unsigned int registers;
+    unsigned int scaler;
+    unsigned int on;
+    unsigned int activewidth;
+    unsigned int activeheight;
+
+};
+
 struct aux
 {
 
@@ -35,8 +46,8 @@ static struct video_interface videointerface;
 static struct arch_framebuffer *framebuffer = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
 static unsigned short devices[I915_DEVICES] = {0x9A40, 0x9A49, 0x9A59, 0x9A60, 0x9A68, 0x9A70, 0x9A78, 0x9AC0, 0x9AC9, 0x9AD9, 0x9AF8};
 static unsigned long mmio;
-static unsigned int activewidth;
-static unsigned int activeheight;
+static struct pipe pipea = {0, 0, 0, 0, 0};
+static struct pipe pipeb = {I915_PIPESTRIDE, I915_SCALERSTRIDE, 0, 0, 0};
 static unsigned char edid[I915_EDIDSIZE];
 static struct hdmi hdmi;
 static unsigned long opregion;
@@ -390,6 +401,69 @@ static void logedid(char *name)
 
 }
 
+static void evadevblank(struct pipe *pipe)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < I915_TIMEOUT; i++)
+    {
+
+        unsigned int line = readreg(I915_PIPEDSL_A + pipe->registers) & I915_PIPEDSL_LINE;
+
+        if (line + I915_EVASION < pipe->activeheight || line >= pipe->activeheight)
+            return;
+
+    }
+
+}
+
+static void setscaler(struct pipe *pipe, unsigned int width, unsigned int height)
+{
+
+    unsigned int w = pipe->activewidth;
+    unsigned int h = pipe->activewidth * height / width;
+
+    if (h > pipe->activeheight)
+    {
+
+        h = pipe->activeheight;
+        w = pipe->activeheight * width / height;
+
+    }
+
+    if (width == pipe->activewidth && height == pipe->activeheight)
+    {
+
+        writereg(I915_PS_CTRL_1_A + pipe->scaler, 0);
+        writereg(I915_PS_WIN_POS_1_A + pipe->scaler, 0);
+        writereg(I915_PS_WIN_SZ_1_A + pipe->scaler, 0);
+
+    }
+
+    else
+    {
+
+        writereg(I915_PS_CTRL_1_A + pipe->scaler, I915_PS_CTRL_ENABLE);
+        writereg(I915_PS_WIN_POS_1_A + pipe->scaler, (((pipe->activewidth - w) / 2) << 16) | ((pipe->activeheight - h) / 2));
+        writereg(I915_PS_WIN_SZ_1_A + pipe->scaler, (w << 16) | h);
+
+    }
+
+}
+
+static void setsource(struct pipe *pipe, unsigned int width, unsigned int height, unsigned int surface)
+{
+
+    evadevblank(pipe);
+    writereg(I915_PIPESRC_A + pipe->registers, ((width - 1) << 16) | (height - 1));
+    setscaler(pipe, width, height);
+    writereg(I915_PLANE_STRIDE_1_A + pipe->registers, width * 4 / 64);
+    writereg(I915_PLANE_SIZE_1_A + pipe->registers, ((height - 1) << 16) | (width - 1));
+    writereg(I915_PLANE_SURF_1_A + pipe->registers, surface);
+
+}
+
 static unsigned int waitreg(unsigned int offset, unsigned int mask, unsigned int value)
 {
 
@@ -538,10 +612,8 @@ static void setplane(void)
     writereg(I915_PLANE_COLOR_CTL_1_B, I915_PLANE_COLOR_GAMMADISABLE);
     writereg(I915_PLANE_POS_1_B, 0);
     writereg(I915_PLANE_OFFSET_1_B, 0);
-    writereg(I915_PLANE_STRIDE_1_B, framebuffer->pitch / 64);
-    writereg(I915_PLANE_SIZE_1_B, ((I915_HDMI_VACTIVE - 1) << 16) | (I915_HDMI_HACTIVE - 1));
     writereg(I915_PLANE_CTL_1_B, readreg(I915_PLANE_CTL_1_A));
-    writereg(I915_PLANE_SURF_1_B, readreg(I915_PLANE_SURF_1_A));
+    setsource(&pipeb, videointerface.width, videointerface.height, readreg(I915_PLANE_SURF_1_A));
 
 }
 
@@ -578,6 +650,9 @@ static unsigned int enablehdmi(void)
     if (!waitreg(I915_DDI_BUF_CTL_B, I915_DDI_BUF_IDLE, 0))
         return fail("DDI B buffer idle");
 
+    pipeb.on = 1;
+    pipeb.activewidth = I915_HDMI_HACTIVE;
+    pipeb.activeheight = I915_HDMI_VACTIVE;
     setplane();
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on, 1920x1080 at 60 Hz mirroring the panel");
 
@@ -757,7 +832,7 @@ static void probepanel(void)
     {
 
         logedid("panel");
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: firmware %ux%u", &activewidth, &activeheight);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: firmware %ux%u", &pipea.activewidth, &pipea.activeheight);
 
     }
 
@@ -785,75 +860,22 @@ static unsigned int checkfirmware(void)
     if (readreg(I915_PS_CTRL_1_A) & I915_PS_CTRL_ENABLE)
         return 0;
 
-    return (source >> 16) + 1 == framebuffer->width && (source & 0xFFFF) + 1 == framebuffer->height && activewidth == framebuffer->width && activeheight == framebuffer->height;
-
-}
-
-static void evadevblank(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < I915_TIMEOUT; i++)
-    {
-
-        unsigned int line = readreg(I915_PIPEDSL_A) & I915_PIPEDSL_LINE;
-
-        if (line + I915_EVASION < activeheight || line >= activeheight)
-            return;
-
-    }
-
-}
-
-static void setscaler(unsigned int width, unsigned int height)
-{
-
-    unsigned int w = activewidth;
-    unsigned int h = activewidth * height / width;
-
-    if (h > activeheight)
-    {
-
-        h = activeheight;
-        w = activeheight * width / height;
-
-    }
-
-    if (width == activewidth && height == activeheight)
-    {
-
-        writereg(I915_PS_CTRL_1_A, 0);
-        writereg(I915_PS_WIN_POS_1_A, 0);
-        writereg(I915_PS_WIN_SZ_1_A, 0);
-
-    }
-
-    else
-    {
-
-        writereg(I915_PS_CTRL_1_A, I915_PS_CTRL_ENABLE);
-        writereg(I915_PS_WIN_POS_1_A, (((activewidth - w) / 2) << 16) | ((activeheight - h) / 2));
-        writereg(I915_PS_WIN_SZ_1_A, (w << 16) | h);
-
-    }
+    return (source >> 16) + 1 == framebuffer->width && (source & 0xFFFF) + 1 == framebuffer->height && pipea.activewidth == framebuffer->width && pipea.activeheight == framebuffer->height;
 
 }
 
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
-    if (mmio && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width <= activewidth && height <= activeheight && !(width % 16))
+    if (mmio && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width <= pipea.activewidth && height <= pipea.activeheight && !(width % 16))
     {
 
         unsigned int surface = readreg(I915_PLANE_SURF_1_A);
 
-        evadevblank();
-        writereg(I915_PIPESRC_A, ((width - 1) << 16) | (height - 1));
-        setscaler(width, height);
-        writereg(I915_PLANE_STRIDE_1_A, width * 4 / 64);
-        writereg(I915_PLANE_SIZE_1_A, ((height - 1) << 16) | (width - 1));
-        writereg(I915_PLANE_SURF_1_A, surface);
+        setsource(&pipea, width, height, surface);
+
+        if (pipeb.on)
+            setsource(&pipeb, width, height, surface);
 
         videointerface.width = width;
         videointerface.height = height;
@@ -897,8 +919,8 @@ static void driver_reset(unsigned int id)
     probevbt(id);
     probehdmi();
 
-    activewidth = (readreg(I915_TRANS_HTOTAL_A) & 0xFFFF) + 1;
-    activeheight = (readreg(I915_TRANS_VTOTAL_A) & 0xFFFF) + 1;
+    pipea.activewidth = (readreg(I915_TRANS_HTOTAL_A) & 0xFFFF) + 1;
+    pipea.activeheight = (readreg(I915_TRANS_VTOTAL_A) & 0xFFFF) + 1;
 
     if (checkfirmware())
     {

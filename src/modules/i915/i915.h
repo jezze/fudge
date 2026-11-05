@@ -4,6 +4,8 @@
 #define I915_MINSIZE                    64
 #define I915_TIMEOUT                    100000
 #define I915_EVASION                    16
+#define I915_PIPESTRIDE                 0x1000
+#define I915_SCALERSTRIDE               0x800
 
 #define I915_AUX_SIZE                   20
 #define I915_AUX_RETRIES                32
