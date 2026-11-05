@@ -115,7 +115,7 @@ static unsigned int readword(unsigned int target, unsigned int id, unsigned int 
 
     unsigned int value;
 
-    fs_read_all(1, target, id, &value, 4, offset);
+    fs_read_full(1, target, id, &value, 4, offset);
 
     return value;
 
@@ -186,7 +186,7 @@ static unsigned int relocateriscv(unsigned int target, unsigned int id, unsigned
 
     case ELF_RELOC_RISCV_ADD64:
     case ELF_RELOC_RISCV_SUB64:
-        fs_read_all(1, target, id, &data, 8, fileoffset);
+        fs_read_full(1, target, id, &data, 8, fileoffset);
 
         data = (type == ELF_RELOC_RISCV_ADD64) ? data + value : data - value;
 
@@ -262,7 +262,7 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
     if (header->shcount >= 64)
         return 0;
 
-    fs_read_all(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
+    fs_read_full(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
 
     for (i = 0; i < header->shcount; i++)
     {
@@ -288,7 +288,7 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
             if (stringheader->size > 4096)
                 PANIC(source);
 
-            fs_read_all(1, target, id, strings, stringheader->size, stringheader->offset);
+            fs_read_full(1, target, id, strings, stringheader->size, stringheader->offset);
 
             hicount = 0;
 
@@ -302,13 +302,13 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
                 unsigned int offset;
                 unsigned int value;
 
-                fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
-                fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+                fs_read_full(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                fs_read_full(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
 
                 if (relocationheader->type == ELF_SECTION_TYPE_RELA)
                     value = relocation.addend;
                 else
-                    fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
+                    fs_read_full(1, target, id, &value, 4, dataheader->offset + relocation.offset);
 
                 address = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
                 place = base + dataheader->offset + relocation.offset;
@@ -412,7 +412,7 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
     if (header->shcount >= 64)
         return 0;
 
-    fs_read_all(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
+    fs_read_full(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
 
     for (i = 0; i < header->shcount; i++)
     {
@@ -438,7 +438,7 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
             if (stringheader->size > 4096)
                 PANIC(source);
 
-            fs_read_all(1, target, id, strings, stringheader->size, stringheader->offset);
+            fs_read_full(1, target, id, strings, stringheader->size, stringheader->offset);
 
             hicount = 0;
 
@@ -450,8 +450,8 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
                 unsigned long value;
                 unsigned int value32;
 
-                fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
-                fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + relocation.symbol * symbolheader->esize);
+                fs_read_full(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                fs_read_full(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + relocation.symbol * symbolheader->esize);
 
                 if (symbol.shindex)
                 {
@@ -559,7 +559,7 @@ static void load(unsigned int source, char *path)
 
             struct elf64_header header;
 
-            if (fs_read_all(1, target, id, &header, ELF64_HEADER_SIZE, 0) >= ELF_HEADER_SIZE && elf_validate((struct elf_header *)&header))
+            if (fs_read_full(1, target, id, &header, ELF64_HEADER_SIZE, 0) >= ELF_HEADER_SIZE && elf_validate((struct elf_header *)&header))
             {
 
                 unsigned int class = (sizeof (void *) == 8) ? ELF_IDENTITY_CLASS_64 : ELF_IDENTITY_CLASS_32;

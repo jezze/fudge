@@ -57,7 +57,7 @@ static unsigned int decodepng(void)
 static unsigned int openpcx(struct pcx_header *header)
 {
 
-    if (fs_read_all(1, filetarget, fileid, header, sizeof (struct pcx_header), 0) != sizeof (struct pcx_header))
+    if (fs_read_full(1, filetarget, fileid, header, sizeof (struct pcx_header), 0) != sizeof (struct pcx_header))
         return 0;
 
     pcx_convertheader(header);
@@ -75,10 +75,10 @@ static unsigned int openpcx(struct pcx_header *header)
 
             unsigned char magic;
 
-            fs_read_all(1, filetarget, fileid, &magic, 1, record.size - 768 - 1);
+            fs_read_full(1, filetarget, fileid, &magic, 1, record.size - 768 - 1);
 
             if (magic == PCX_COLORMAP_MAGIC)
-                fs_read_all(1, filetarget, fileid, colormap, 768, record.size - 768);
+                fs_read_full(1, filetarget, fileid, colormap, 768, record.size - 768);
 
         }
 

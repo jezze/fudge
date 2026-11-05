@@ -328,13 +328,6 @@ unsigned int fs_read_path(unsigned int ichannel, char *path, void *buffer, unsig
 
 }
 
-unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return fs_read_full(ichannel, target, id, buffer, count, offset);
-
-}
-
 unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int parent, unsigned int id)
 {
 
