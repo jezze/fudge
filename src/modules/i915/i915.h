@@ -1,6 +1,6 @@
 #define I915_VENDOR                     0x8086
 #define I915_DEVICES                    11
-#define I915_MMIOSIZE                   0x100000
+#define I915_MMIOSIZE                   0x200000
 #define I915_MINSIZE                    64
 #define I915_TIMEOUT                    100000
 #define I915_EVASION                    16
