@@ -10,7 +10,7 @@ struct util_region render_getwindowbutton(struct widget *widget, unsigned int bu
 struct util_region render_getsliderknob(struct widget *widget);
 void render_setstate(struct widget *hover, struct widget *focus, struct widget *window);
 void render_setmouse(int x, int y, unsigned int type);
-void render_place(struct widget *widget, struct util_region *placement);
+void render_place(struct widget *widget, struct util_region *placement, struct util_region *clip);
 void render_damage(int x0, int y0, int x2, int y2);
 void render_undamage(void);
 struct util_region render_update(struct blit_display *display);

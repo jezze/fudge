@@ -47,6 +47,15 @@ struct statresult
 
 };
 
+struct display
+{
+
+    struct message_videoconf videoconf;
+    struct blit_display blit;
+    unsigned int video;
+
+};
+
 struct state
 {
 
@@ -64,10 +73,11 @@ struct state
     struct keys keys;
     unsigned int layout;
     unsigned int windows;
-    struct message_videoconf displays[DISPLAYS];
+    struct display displays[DISPLAYS];
     unsigned int ndisplays;
+    unsigned int active;
+    unsigned int opaque;
     struct widget *draggedthumb;
-    unsigned int video;
     unsigned int clock;
     unsigned int timer;
     int scrollgrab;
@@ -75,7 +85,6 @@ struct state
 
 };
 
-static struct blit_display display;
 static struct state state;
 static struct keys_map keymap[KEYS_MAPSIZE];
 static unsigned int keymapcount;
@@ -100,7 +109,7 @@ static void setupvideo(unsigned int video)
 
     buffer_clear(black, 768);
     channel_send(0, video, MESSAGE_TYPE_VIDEOCMAP, 768, &black);
-    channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.displays[0]);
+    channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.displays[0].videoconf);
     channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0);
     channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, 0, 0);
 
@@ -122,7 +131,7 @@ static void setupdisplays(void)
         video = channel_lookup(name);
 
         if (video)
-            channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.displays[i]);
+            channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.displays[i].videoconf);
 
     }
 
@@ -318,7 +327,7 @@ static void configline(char *line, unsigned int length)
         if (state.ndisplays < DISPLAYS)
         {
 
-            struct message_videoconf *videoconf = &state.displays[state.ndisplays];
+            struct message_videoconf *videoconf = &state.displays[state.ndisplays].videoconf;
 
             videoconf->width = getnumber(rest, length, 0, 10, videoconf->width);
             videoconf->height = getnumber(rest, length, 1, 10, videoconf->height);
@@ -332,7 +341,12 @@ static void configline(char *line, unsigned int length)
     else if (count == 12 && buffer_match(word, "transparency", 12))
     {
 
-        display.opaque = (length >= 3 && buffer_match(rest, "off", 3));
+        unsigned int i;
+
+        state.opaque = (length >= 3 && buffer_match(rest, "off", 3));
+
+        for (i = 0; i < DISPLAYS; i++)
+            state.displays[i].blit.opaque = state.opaque;
 
     }
 
@@ -621,22 +635,67 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 
 }
 
+static struct util_region getactiveregion(void)
+{
+
+    return state.displays[state.active].blit.region;
+
+}
+
+static struct util_region getarea(void)
+{
+
+    struct util_region area = util_region(0, 0, 0, 0);
+    unsigned int i;
+
+    for (i = 0; i < DISPLAYS; i++)
+    {
+
+        struct util_region *region = &state.displays[i].blit.region;
+
+        if (state.displays[i].blit.framebuffer)
+        {
+
+            area.size.w = util_max(area.size.w, region->position.x + region->size.w);
+            area.size.h = util_max(area.size.h, region->position.y + region->size.h);
+
+        }
+
+    }
+
+    return area;
+
+}
+
 static void update(void)
 {
 
-    struct util_region updated = render_update(&display);
+    unsigned int i;
 
-    if (updated.size.w && updated.size.h)
+    for (i = 0; i < DISPLAYS; i++)
     {
 
-        struct message_videoflush videoflush;
+        struct display *display = &state.displays[i];
+        struct util_region updated;
 
-        videoflush.x = updated.position.x;
-        videoflush.y = updated.position.y;
-        videoflush.width = updated.size.w;
-        videoflush.height = updated.size.h;
+        if (!display->blit.framebuffer)
+            continue;
 
-        channel_send(0, state.video, MESSAGE_TYPE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
+        updated = render_update(&display->blit);
+
+        if (updated.size.w && updated.size.h)
+        {
+
+            struct message_videoflush videoflush;
+
+            videoflush.x = updated.position.x;
+            videoflush.y = updated.position.y;
+            videoflush.width = updated.size.w;
+            videoflush.height = updated.size.h;
+
+            channel_send(0, display->video, MESSAGE_TYPE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
+
+        }
 
     }
 
@@ -647,17 +706,18 @@ static void update(void)
 static void damage(struct widget *widget)
 {
 
-    int x0 = util_clamp(widget->position.x, 0, display.region.size.w);
-    int y0 = util_clamp(widget->position.y, 0, display.region.size.h);
-    int x2 = util_clamp(widget->position.x + widget->size.w, 0, display.region.size.w);
-    int y2 = util_clamp(widget->position.y + widget->size.h, 0, display.region.size.h);
+    struct util_region area = getarea();
+    int x0 = util_clamp(widget->position.x, 0, area.size.w);
+    int y0 = util_clamp(widget->position.y, 0, area.size.h);
+    int x2 = util_clamp(widget->position.x + widget->size.w, 0, area.size.w);
+    int y2 = util_clamp(widget->position.y + widget->size.h, 0, area.size.h);
 
     render_damage(x0, y0, x2, y2);
 
-    x0 = util_clamp(widget->placement.position.x, 0, display.region.size.w);
-    y0 = util_clamp(widget->placement.position.y, 0, display.region.size.h);
-    x2 = util_clamp(widget->placement.position.x + widget->placement.size.w, 0, display.region.size.w);
-    y2 = util_clamp(widget->placement.position.y + widget->placement.size.h, 0, display.region.size.h);
+    x0 = util_clamp(widget->placement.position.x, 0, area.size.w);
+    y0 = util_clamp(widget->placement.position.y, 0, area.size.h);
+    x2 = util_clamp(widget->placement.position.x + widget->placement.size.w, 0, area.size.w);
+    y2 = util_clamp(widget->placement.position.y + widget->placement.size.h, 0, area.size.h);
 
     render_damage(x0, y0, x2, y2);
 
@@ -1199,14 +1259,14 @@ static void placewindows(unsigned int source)
             if (widget->size.w == 0 && widget->size.h == 0)
             {
 
-                struct util_size limit;
+                struct util_region region = getactiveregion();
+                struct util_size limit = util_size(region.size.w - region.size.w / 8 * 2, region.size.h - region.size.h / 8 * 2);
 
-                widget->position.x = display.region.size.w / 8;
-                widget->position.y = display.region.size.h / 8;
-                limit = util_size(util_max((int)display.region.size.w - widget->position.x * 2, 0), util_max((int)display.region.size.h - widget->position.y * 2, 0));
+                widget->position.x = region.position.x + region.size.w / 8;
+                widget->position.y = region.position.y + region.size.h / 8;
                 widget->size = render_getwindowsize(widget, &limit);
-                widget->size.w = util_min(util_max(widget->size.w, display.region.size.w / 2), limit.w);
-                widget->size.h = util_min(util_max(widget->size.h, display.region.size.h / 2), limit.h);
+                widget->size.w = util_min(util_max(widget->size.w, region.size.w / 2), limit.w);
+                widget->size.h = util_min(util_max(widget->size.h, region.size.h / 2), limit.h);
 
                 widget->serial = ++state.windows;
 
@@ -1219,7 +1279,8 @@ static void placewindows(unsigned int source)
             else if (state.layout == LAYOUT_DEFAULT)
             {
 
-                struct util_size minimum = render_getwindowminsize(widget, &display.region.size);
+                struct util_region region = getactiveregion();
+                struct util_size minimum = render_getwindowminsize(widget, &region.size);
 
                 if (widget->size.w < minimum.w || widget->size.h < minimum.h)
                     scalewidget(widget, util_max(widget->size.w, minimum.w), util_max(widget->size.h, minimum.h));
@@ -1319,26 +1380,27 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int w, uns
 static void tilewindows(void)
 {
 
+    struct util_region region = state.displays[0].blit.region;
     struct widget *menu = pool_getwidgetbyid(0, "menu");
-    int top = (menu) ? menu->placement.position.y + (int)menu->placement.size.h : 0;
-    unsigned int w = display.region.size.w / 2;
+    int top = (menu) ? menu->placement.position.y + (int)menu->placement.size.h : region.position.y;
+    unsigned int w = region.size.w / 2;
     struct widget *first = getadjacentwindow(state.windows + 1, -1);
 
     if (first)
     {
 
-        unsigned int h = util_max((int)display.region.size.h - top, 0);
+        unsigned int h = util_max(region.position.y + (int)region.size.h - top, 0);
         struct widget *widget;
         unsigned int count = 0;
         unsigned int i = 0;
 
-        placewindow(first, 0, top, w, h);
+        placewindow(first, region.position.x, top, w, h);
 
         for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1))
             count++;
 
         for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1), i++)
-            placewindow(widget, w, top + h * i / count, display.region.size.w - w, h * (i + 1) / count - h * i / count);
+            placewindow(widget, region.position.x + w, top + h * i / count, region.size.w - w, h * (i + 1) / count - h * i / count);
 
     }
 
@@ -2025,16 +2087,18 @@ static void damagechanged(void)
 static void redraw(unsigned int relayout)
 {
 
-    if (state.state == STATE_NORMAL && display.framebuffer)
+    if (state.state == STATE_NORMAL && state.displays[0].blit.framebuffer)
     {
 
         if (relayout)
         {
 
+            struct util_region area = getarea();
+
             if (state.layout == LAYOUT_TILING)
                 tilewindows();
 
-            render_place(state.rootwidget, &display.region);
+            render_place(state.rootwidget, &state.displays[0].blit.region, &area);
             damagechanged();
             render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
 
@@ -2569,17 +2633,19 @@ static void applyconfig(struct message_videoconf *videoconf)
 
     setupdisplays();
 
-    if (videoconf->width != state.displays[0].width || videoconf->height != state.displays[0].height || videoconf->bpp != state.displays[0].bpp)
+    if (videoconf->width != state.displays[0].videoconf.width || videoconf->height != state.displays[0].videoconf.height || videoconf->bpp != state.displays[0].videoconf.bpp)
     {
 
-        setupvideo(state.video);
+        setupvideo(state.displays[0].video);
 
     }
 
     else
     {
 
-        render_damage(0, 0, display.region.size.w, display.region.size.h);
+        struct util_region area = getarea();
+
+        render_damage(0, 0, area.size.w, area.size.h);
         redraw(1);
 
     }
@@ -2740,7 +2806,7 @@ static void onmain(struct message *message)
     unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
     unsigned int video = channel_lookup(option_getstring("video-service"));
 
-    state.video = video;
+    state.displays[0].video = video;
 
     loadconfig(option_getstring("config"));
 
@@ -2852,8 +2918,9 @@ static void onmousemove(struct message *message)
         int totaly = state.mouseremainder.y + mousemove->rely * quarters;
         int pixelsx = scalemove(totalx);
         int pixelsy = scalemove(totaly);
-        int x = util_clamp(state.mouseposition.x + pixelsx, 0, display.region.size.w);
-        int y = util_clamp(state.mouseposition.y + pixelsy, 0, display.region.size.h);
+        struct util_region region = getactiveregion();
+        int x = util_clamp(state.mouseposition.x + pixelsx, region.position.x, region.position.x + (int)region.size.w);
+        int y = util_clamp(state.mouseposition.y + pixelsy, region.position.y, region.position.y + (int)region.size.h);
         unsigned int relayout;
 
         state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
@@ -2921,7 +2988,8 @@ static void onmousemove(struct message *message)
                 if (state.layout == LAYOUT_DEFAULT && widget_isresizable(state.focusedwindow))
                 {
 
-                    struct util_size minimum = render_getwindowminsize(state.focusedwindow, &display.region.size);
+                    struct util_region region = getactiveregion();
+                    struct util_size minimum = render_getwindowminsize(state.focusedwindow, &region.size);
 
                     scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->placement.size.w) + state.mousemovement.x, minimum.w), util_max((int)(state.focusedwindow->placement.size.h) + state.mousemovement.y, minimum.h));
 
@@ -3057,7 +3125,8 @@ static void onvideoinfo(struct message *message)
     factor = util_min(videoinfo.height / 320, FONTS - 1);
     lineheight = 12 + factor * 4;
 
-    blit_initdisplay(&display, (void *)(unsigned long)videoinfo.framebuffer, videoinfo.width, videoinfo.height, videoinfo.bpp, linebuffer);
+    blit_initdisplay(&state.displays[0].blit, (void *)(unsigned long)videoinfo.framebuffer, 0, 0, videoinfo.width, videoinfo.height, videoinfo.bpp, linebuffer);
+    state.displays[0].blit.opaque = state.opaque;
     pool_loadfont(0, fontn[factor]);
     pool_setfont(0, lineheight);
     pool_loadfont(1, fontb[factor]);
@@ -3070,7 +3139,15 @@ static void onvideoinfo(struct message *message)
     render_setmouse(state.mouseposition.x, state.mouseposition.y, BLIT_MOUSE_ARROW);
 
     render_damage(0, 0, videoinfo.width, videoinfo.height);
-    render_place(state.rootwidget, &display.region);
+
+    {
+
+        struct util_region area = getarea();
+
+        render_place(state.rootwidget, &state.displays[0].blit.region, &area);
+
+    }
+
     update();
 
 }
@@ -3119,11 +3196,11 @@ static void onwmrenderdata(struct message *message)
 static void onwmconfig(struct message *message)
 {
 
-    struct message_videoconf videoconf = state.displays[0];
+    struct message_videoconf videoconf = state.displays[0].videoconf;
 
     configlines(message->data, message->length);
 
-    if (state.video)
+    if (state.displays[0].video)
         applyconfig(&videoconf);
 
 }
@@ -3251,9 +3328,9 @@ void init(void)
 {
 
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
-    state.displays[0].width = 1920;
-    state.displays[0].height = 1080;
-    state.displays[0].bpp = 4;
+    state.displays[0].videoconf.width = 1920;
+    state.displays[0].videoconf.height = 1080;
+    state.displays[0].videoconf.bpp = 4;
     state.ndisplays = 1;
     state.mousespeed = MOUSE_NORMAL;
     pool_setup();

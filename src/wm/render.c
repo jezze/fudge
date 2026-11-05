@@ -1179,10 +1179,10 @@ void render_setstate(struct widget *hover, struct widget *focus, struct widget *
 
 }
 
-void render_place(struct widget *widget, struct util_region *placement)
+void render_place(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
-    place(widget, placement, placement);
+    place(widget, placement, clip);
 
 }
 
@@ -1226,15 +1226,19 @@ struct util_region render_update(struct blit_display *display)
     static struct widget *damaged[POOL_WIDGETS];
     struct list_item *current = 0;
     unsigned int ndamaged = 0;
+    struct area clipped;
     int line;
 
     if (!hasdamage)
         return util_region(0, 0, 0, 0);
 
-    area.position0.x = util_clamp(area.position0.x, 0, display->region.size.w);
-    area.position0.y = util_clamp(area.position0.y, 0, display->region.size.h);
-    area.position2.x = util_clamp(area.position2.x, 0, display->region.size.w);
-    area.position2.y = util_clamp(area.position2.y, 0, display->region.size.h);
+    clipped.position0.x = util_clamp(area.position0.x, display->region.position.x, display->region.position.x + (int)display->region.size.w);
+    clipped.position0.y = util_clamp(area.position0.y, display->region.position.y, display->region.position.y + (int)display->region.size.h);
+    clipped.position2.x = util_clamp(area.position2.x, display->region.position.x, display->region.position.x + (int)display->region.size.w);
+    clipped.position2.y = util_clamp(area.position2.y, display->region.position.y, display->region.position.y + (int)display->region.size.h);
+
+    if (clipped.position0.x >= clipped.position2.x || clipped.position0.y >= clipped.position2.y)
+        return util_region(0, 0, 0, 0);
 
     while ((current = pool_next(current)) && ndamaged < POOL_WIDGETS)
     {
@@ -1242,12 +1246,12 @@ struct util_region render_update(struct blit_display *display)
         struct widget *widget = current->data;
         struct util_region visible = util_region_intersection(&widget->placement, &widget->clip);
 
-        if (visible.position.x < area.position2.x && visible.position.x + (int)visible.size.w > area.position0.x && visible.position.y < area.position2.y && visible.position.y + (int)visible.size.h > area.position0.y)
+        if (visible.position.x < clipped.position2.x && visible.position.x + (int)visible.size.w > clipped.position0.x && visible.position.y < clipped.position2.y && visible.position.y + (int)visible.size.h > clipped.position0.y)
             damaged[ndamaged++] = widget;
 
     }
 
-    for (line = area.position0.y; line < area.position2.y; line++)
+    for (line = clipped.position0.y; line < clipped.position2.y; line++)
     {
 
         unsigned int i;
@@ -1260,8 +1264,8 @@ struct util_region render_update(struct blit_display *display)
             if (widget_intersectsy(widget, line))
             {
 
-                int x0 = util_max(util_max(widget->placement.position.x, widget->clip.position.x), area.position0.x);
-                int x2 = util_min(util_min(widget->placement.position.x + widget->placement.size.w, widget->clip.position.x + widget->clip.size.w), area.position2.x);
+                int x0 = util_max(util_max(widget->placement.position.x, widget->clip.position.x), clipped.position0.x);
+                int x2 = util_min(util_min(widget->placement.position.x + widget->placement.size.w, widget->clip.position.x + widget->clip.size.w), clipped.position2.x);
 
                 calls[widget->type].render(display, widget, line, x0, x2);
 
@@ -1272,12 +1276,12 @@ struct util_region render_update(struct blit_display *display)
 
         }
 
-        blit_mouse(display, mousetype, mouse.x, mouse.y, line, area.position0.x, area.position2.x, getpalette(PALETTE_MOUSE, SHADE_NORMAL)->frame);
-        blit(display, line, area.position0.x, area.position2.x);
+        blit_mouse(display, mousetype, mouse.x, mouse.y, line, clipped.position0.x, clipped.position2.x, getpalette(PALETTE_MOUSE, SHADE_NORMAL)->frame);
+        blit(display, line, clipped.position0.x, clipped.position2.x);
 
     }
 
-    return util_region(area.position0.x, area.position0.y, area.position2.x - area.position0.x, area.position2.y - area.position0.y);
+    return util_region(clipped.position0.x - display->region.position.x, clipped.position0.y - display->region.position.y, clipped.position2.x - clipped.position0.x, clipped.position2.y - clipped.position0.y);
 
 }
 

@@ -162,7 +162,7 @@ void blit_line(struct blit_display *display, unsigned int color, int x0, int x2)
     int x;
 
     for (x = x0; x < x2; x++)
-        display->linebuffer[x] = color;
+        display->linebuffer[x - display->region.position.x] = color;
 
 }
 
@@ -192,9 +192,9 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
         for (x = x0; x < x2; x++)
         {
 
-            unsigned int bg = display->linebuffer[x];
+            unsigned int bg = display->linebuffer[x - display->region.position.x];
 
-            display->linebuffer[x] = 0xFF000000 | (((r + ialpha * ((bg >> 16) & 0xFF)) >> 8) << 16) | (((g + ialpha * ((bg >> 8) & 0xFF)) >> 8) << 8) | ((b + ialpha * (bg & 0xFF)) >> 8);
+            display->linebuffer[x - display->region.position.x] = 0xFF000000 | (((r + ialpha * ((bg >> 16) & 0xFF)) >> 8) << 16) | (((g + ialpha * ((bg >> 8) & 0xFF)) >> 8) << 8) | ((b + ialpha * (bg & 0xFF)) >> 8);
 
         }
 
@@ -574,18 +574,22 @@ void blit_raw(struct blit_display *display, unsigned int *data, unsigned int wid
 
 }
 
-void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer)
+void blit_initdisplay(struct blit_display *display, void *framebuffer, int x, int y, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer)
 {
 
     display->framebuffer = framebuffer;
     display->bpp = bpp;
     display->linebuffer = linebuffer;
-    display->region = util_region(0, 0, w, h);
+    display->region = util_region(x, y, w, h);
 
 }
 
 void blit(struct blit_display *display, int line, int x0, int x2)
 {
+
+    line -= display->region.position.y;
+    x0 -= display->region.position.x;
+    x2 -= display->region.position.x;
 
     if (display->bpp == 4)
     {
