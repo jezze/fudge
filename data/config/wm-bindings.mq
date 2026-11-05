@@ -6,6 +6,10 @@
     { key: k mod: alt action: next }
     { key: j mod: alt action: previous }
     { key: enter mod: alt action: swap }
+    { key: period mod: alt action: nextdisplay }
+    { key: comma mod: alt action: previousdisplay }
+    { key: period mod: alt+shift action: movenextdisplay }
+    { key: comma mod: alt+shift action: movepreviousdisplay }
     { key: pageup mod: none action: scrollup }
     { key: pagedown mod: none action: scrolldown }
     { key: tab mod: none action: focusnext }

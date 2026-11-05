@@ -1420,6 +1420,68 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int w, uns
 
 }
 
+static unsigned int getadjacentdisplay(int direction)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < DISPLAYS; i++)
+    {
+
+        unsigned int display = (state.active + ((direction > 0) ? i : DISPLAYS - i)) % DISPLAYS;
+
+        if (state.displays[display].blit.framebuffer)
+            return display;
+
+    }
+
+    return state.active;
+
+}
+
+static void switchdisplay(unsigned int display)
+{
+
+    struct util_region region;
+
+    if (display == state.active)
+        return;
+
+    state.active = display;
+    region = getactiveregion();
+    state.mouseposition.x = region.position.x + region.size.w / 2;
+    state.mouseposition.y = region.position.y + region.size.h / 2;
+
+    setfocuswindow(getadjacentwindow(state.windows + 1, -1, display));
+    setfocus(0);
+
+}
+
+static void movetodisplay(unsigned int display)
+{
+
+    struct widget *window = state.focusedwindow;
+
+    if (window && display != state.active)
+    {
+
+        struct util_region from = state.displays[getdisplayof(window)].blit.region;
+        struct util_region to = state.displays[display].blit.region;
+        unsigned int w = util_min(window->size.w, to.size.w);
+        unsigned int h = util_min(window->size.h, to.size.h);
+        int x = util_clamp(to.position.x + window->position.x - from.position.x, to.position.x, to.position.x + (int)(to.size.w - w));
+        int y = util_clamp(to.position.y + window->position.y - from.position.y, to.position.y, to.position.y + (int)(to.size.h - h));
+
+        placewindow(window, x, y, w, h);
+
+        window->serial = ++state.windows;
+
+        switchdisplay(display);
+
+    }
+
+}
+
 static void tiledisplay(unsigned int display)
 {
 
@@ -2475,6 +2537,26 @@ static unsigned int dobinding(struct bind_binding *binding)
 
     case BIND_ACTION_PREVIOUS:
         cyclewindow(0);
+
+        break;
+
+    case BIND_ACTION_NEXTDISPLAY:
+        switchdisplay(getadjacentdisplay(1));
+
+        break;
+
+    case BIND_ACTION_PREVIOUSDISPLAY:
+        switchdisplay(getadjacentdisplay(-1));
+
+        break;
+
+    case BIND_ACTION_MOVENEXTDISPLAY:
+        movetodisplay(getadjacentdisplay(1));
+
+        break;
+
+    case BIND_ACTION_MOVEPREVIOUSDISPLAY:
+        movetodisplay(getadjacentdisplay(-1));
 
         break;
 

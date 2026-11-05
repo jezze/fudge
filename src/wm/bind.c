@@ -4,7 +4,7 @@
 
 #define NUM_KEYS                        123
 #define NUM_MODS                        4
-#define NUM_ACTIONS                     13
+#define NUM_ACTIONS                     17
 #define NUM_BINDINGS                    32
 
 struct name
@@ -156,8 +156,12 @@ static struct name actions[NUM_ACTIONS] = {
     {BIND_ACTION_COPY, "copy"},
     {BIND_ACTION_CUT, "cut"},
     {BIND_ACTION_PASTE, "paste"},
+    {BIND_ACTION_MOVENEXTDISPLAY, "movenextdisplay"},
+    {BIND_ACTION_MOVEPREVIOUSDISPLAY, "movepreviousdisplay"},
     {BIND_ACTION_NEXT, "next"},
+    {BIND_ACTION_NEXTDISPLAY, "nextdisplay"},
     {BIND_ACTION_PREVIOUS, "previous"},
+    {BIND_ACTION_PREVIOUSDISPLAY, "previousdisplay"},
     {BIND_ACTION_RUN, "run"},
     {BIND_ACTION_SCROLLDOWN, "scrolldown"},
     {BIND_ACTION_SCROLLUP, "scrollup"},
