@@ -1158,8 +1158,6 @@ static void secondinterface_setmode(unsigned int width, unsigned int height, uns
 
     }
 
-    arch_kmap(pci_getbar(driver.id, 2) + secondsurface, I915_SECONDMAP, secondsize, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
-
 }
 
 static unsigned long readpte(unsigned long gsm, unsigned int index)
@@ -1246,7 +1244,7 @@ static void allocatesecond(unsigned int id)
 
     readpte(gsm, secondsurface / I915_PAGESIZE + pages - 1);
     writereg(I915_GFX_FLSH_CNTL, 1);
-    arch_kmap(pci_getbar(id, 2) + secondsurface, I915_SECONDMAP, secondsize, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_WRITETHROUGH);
+    arch_kmap(pci_getbar(id, 2) + secondsurface, I915_SECONDMAP, secondsize, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
     buffer_clear((void *)I915_SECONDMAP, secondsize);
 
     {
