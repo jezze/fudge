@@ -210,9 +210,7 @@ void pool_setroot(struct resource *resource)
 unsigned int pool_picktask(void)
 {
 
-    struct list_item *item = list_pickhead(&freetasks);
-
-    return (item) ? encodetaskrow(item->data) : 0;
+    return pool_picktaskfrom(&freetasks);
 
 }
 
