@@ -58,9 +58,7 @@ unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int 
 
         struct message_createresponse response;
 
-        channel_wait(ichannel, target, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
-
-        return response.id;
+        return (channel_wait(ichannel, target, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response)) ? response.id : 0;
 
     }
 
@@ -164,9 +162,7 @@ unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 
         struct message_mapresponse response;
 
-        channel_wait(ichannel, target, MESSAGE_TYPE_MAPRESPONSE, sizeof (struct message_mapresponse), &response);
-
-        return response.address;
+        return (channel_wait(ichannel, target, MESSAGE_TYPE_MAPRESPONSE, sizeof (struct message_mapresponse), &response)) ? response.address : 0;
 
     }
 
@@ -188,9 +184,7 @@ void *fs_mmap(unsigned int ichannel, unsigned int target, unsigned int id, unsig
 
         struct message_mmapresponse response;
 
-        channel_wait(ichannel, target, MESSAGE_TYPE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
-
-        return (void *)(unsigned long)response.address;
+        return (channel_wait(ichannel, target, MESSAGE_TYPE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response)) ? (void *)(unsigned long)response.address : 0;
 
     }
 
@@ -210,9 +204,7 @@ unsigned int fs_munmap(unsigned int ichannel, unsigned int target, unsigned int 
 
         struct message_munmapresponse response;
 
-        channel_wait(ichannel, target, MESSAGE_TYPE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
-
-        return response.status;
+        return (channel_wait(ichannel, target, MESSAGE_TYPE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response)) ? response.status : 0;
 
     }
 
@@ -356,9 +348,7 @@ unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int 
 
         struct message_removeresponse response;
 
-        channel_wait(ichannel, target, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
-
-        return response.status;
+        return (channel_wait(ichannel, target, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response)) ? response.status : 0;
 
     }
 
@@ -411,9 +401,7 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
 
         struct message_walkresponse response;
 
-        channel_wait(ichannel, target, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
-
-        return response.id;
+        return (channel_wait(ichannel, target, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
 
     }
 
@@ -458,9 +446,7 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
 
         struct message_writeresponse response;
 
-        channel_wait(ichannel, target, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
-
-        return response.count;
+        return (channel_wait(ichannel, target, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response)) ? response.count : 0;
 
     }
 
