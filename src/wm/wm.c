@@ -684,7 +684,7 @@ static struct util_region getarea(void)
 
 }
 
-static unsigned int getdisplayat(int x, int y)
+static unsigned int finddisplayat(int x, int y)
 {
 
     unsigned int i;
@@ -699,7 +699,16 @@ static unsigned int getdisplayat(int x, int y)
 
     }
 
-    return 0;
+    return DISPLAYS;
+
+}
+
+static unsigned int getdisplayat(int x, int y)
+{
+
+    unsigned int display = finddisplayat(x, y);
+
+    return (display == DISPLAYS) ? 0 : display;
 
 }
 
@@ -3074,10 +3083,28 @@ static void onmousemove(struct message *message)
         int totaly = state.mouseremainder.y + mousemove->rely * quarters;
         int pixelsx = scalemove(totalx);
         int pixelsy = scalemove(totaly);
-        struct util_region region = getactiveregion();
-        int x = util_clamp(state.mouseposition.x + pixelsx, region.position.x, region.position.x + (int)region.size.w);
-        int y = util_clamp(state.mouseposition.y + pixelsy, region.position.y, region.position.y + (int)region.size.h);
+        struct util_region area = getarea();
+        int x = util_clamp(state.mouseposition.x + pixelsx, 0, (int)area.size.w - 1);
+        int y = util_clamp(state.mouseposition.y + pixelsy, 0, (int)area.size.h - 1);
+        unsigned int display = finddisplayat(x, y);
         unsigned int relayout;
+
+        if (display == DISPLAYS)
+        {
+
+            struct util_region region = getactiveregion();
+
+            x = util_clamp(x, region.position.x, region.position.x + (int)region.size.w - 1);
+            y = util_clamp(y, region.position.y, region.position.y + (int)region.size.h - 1);
+
+        }
+
+        else
+        {
+
+            state.active = display;
+
+        }
 
         state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
         state.mouseremainder.y = totaly - pixelsy * MOUSE_NORMAL;
