@@ -14,6 +14,7 @@ struct hdmi
     unsigned int port;
     unsigned int ddc;
     unsigned int typec;
+    unsigned int connected;
 
 };
 
@@ -389,6 +390,201 @@ static void logedid(char *name)
 
 }
 
+static unsigned int waitreg(unsigned int offset, unsigned int mask, unsigned int value)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < I915_TIMEOUT; i++)
+    {
+
+        if ((readreg(offset) & mask) == value)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static void modifyreg(unsigned int offset, unsigned int clear, unsigned int set)
+{
+
+    writereg(offset, (readreg(offset) & ~clear) | set);
+
+}
+
+static unsigned int fail(char *step)
+{
+
+    debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: HDMI stopped at %s", step);
+
+    return 0;
+
+}
+
+static unsigned int powerup(void)
+{
+
+    modifyreg(I915_PWR_WELL_CTL, 0, (I915_PWR_WELL_PW2 << I915_PWR_WELL_REQUEST));
+
+    if (!waitreg(I915_PWR_WELL_CTL, I915_PWR_WELL_PW2, I915_PWR_WELL_PW2) || !waitreg(I915_FUSE_STATUS, I915_FUSE_PG2, I915_FUSE_PG2))
+        return fail("power well 2");
+
+    modifyreg(I915_PWR_WELL_CTL, 0, (I915_PWR_WELL_PW3 << I915_PWR_WELL_REQUEST));
+
+    if (!waitreg(I915_PWR_WELL_CTL, I915_PWR_WELL_PW3, I915_PWR_WELL_PW3) || !waitreg(I915_FUSE_STATUS, I915_FUSE_PG3, I915_FUSE_PG3))
+        return fail("power well 3");
+
+    modifyreg(I915_PWR_WELL_CTL_DDI, 0, (I915_PWR_WELL_DDIB << I915_PWR_WELL_REQUEST));
+
+    if (!waitreg(I915_PWR_WELL_CTL_DDI, I915_PWR_WELL_DDIB, I915_PWR_WELL_DDIB))
+        return fail("DDI B power");
+
+    modifyreg(I915_DBUF_CTL_S2, I915_DBUF_TRACKER, I915_DBUF_REQUEST | I915_DBUF_TRACKERVALUE);
+
+    if (!waitreg(I915_DBUF_CTL_S2, I915_DBUF_STATE, I915_DBUF_STATE))
+        return fail("DBUF slice 2");
+
+    return 1;
+
+}
+
+static unsigned int enablepll(void)
+{
+
+    unsigned int clocks = readreg(I915_DPCLKA_CFGCR0);
+    unsigned int pll = (!(clocks & I915_DPCLKA_DDIAOFF) && !((clocks >> I915_DPCLKA_DDIASHIFT) & I915_DPCLKA_DDIA)) ? 1 : 0;
+    unsigned int enable = I915_DPLL_ENABLE + pll * 4;
+    unsigned int reference = ((readreg(I915_DSSM) & I915_DSSM_REFCLK) == I915_DSSM_REFCLK24) ? 24000 : 19200;
+    unsigned int dco = I915_HDMI_CLOCK * 5 * I915_HDMI_DIVIDER;
+
+    if (readreg(enable) & I915_DPLL_ON)
+        return fail("DPLL busy");
+
+    modifyreg(enable, 0, I915_DPLL_POWER);
+
+    if (!waitreg(enable, I915_DPLL_POWERSTATE, I915_DPLL_POWERSTATE))
+        return fail("DPLL power");
+
+    writereg(I915_DPLL_CFGCR0 + pll * I915_DPLL_STRIDE, ((((dco % reference) << 15) / reference) << I915_DPLL_FRACTIONSHIFT) | (dco / reference));
+    writereg(I915_DPLL_CFGCR1 + pll * I915_DPLL_STRIDE, (I915_HDMI_QDIV << I915_DPLL_QDIVSHIFT) | I915_DPLL_QDIVMODE | I915_DPLL_KDIV2 | I915_DPLL_PDIV2);
+    readreg(I915_DPLL_CFGCR1 + pll * I915_DPLL_STRIDE);
+    modifyreg(enable, 0, I915_DPLL_ON);
+
+    if (!waitreg(enable, I915_DPLL_LOCK, I915_DPLL_LOCK))
+        return fail("DPLL lock");
+
+    modifyreg(I915_DPCLKA_CFGCR0, I915_DPCLKA_DDIA << I915_DPCLKA_DDIASHIFTB, pll << I915_DPCLKA_DDIASHIFTB);
+    modifyreg(I915_DPCLKA_CFGCR0, I915_DPCLKA_DDIBOFF, 0);
+
+    return 1;
+
+}
+
+static void setswing(void)
+{
+
+    unsigned int lane;
+
+    modifyreg(I915_PHYB_CL_DW10, I915_PWR_DOWN_LN, 0);
+    writereg(I915_PHYB_PCS_DW1_GRP, readreg(I915_PHYB_PCS_DW1_LN0) & ~I915_COMMON_KEEPER);
+
+    for (lane = 0; lane < I915_LANES; lane++)
+        modifyreg(I915_PHYB_TX_DW4_LN0 + lane * I915_PHY_LANESTRIDE, I915_TX_DW4_LOADGEN, (lane) ? I915_TX_DW4_LOADGEN : 0);
+
+    modifyreg(I915_PHYB_CL_DW5, 0, I915_SUS_CLOCK);
+    writereg(I915_PHYB_TX_DW5_GRP, readreg(I915_PHYB_TX_DW5_LN0) & ~I915_TX_DW5_TRAINING);
+    writereg(I915_PHYB_TX_DW5_GRP, (readreg(I915_PHYB_TX_DW5_LN0) & ~(I915_TX_DW5_SCALING | I915_TX_DW5_RTERM | I915_TX_DW5_TAP2 | I915_TX_DW5_TAP3)) | I915_TX_DW5_SCALINGVALUE | I915_TX_DW5_RTERMVALUE | I915_TX_DW5_TAP3);
+    writereg(I915_PHYB_TX_DW2_GRP, (readreg(I915_PHYB_TX_DW2_LN0) & ~(I915_TX_DW2_SWINGUPPER | I915_TX_DW2_SWINGLOWER | I915_TX_DW2_RCOMP)) | (((I915_HDMI_SWING >> 3) & 1) << 15) | ((I915_HDMI_SWING & 7) << 11) | I915_TX_DW2_RCOMPVALUE);
+
+    for (lane = 0; lane < I915_LANES; lane++)
+        modifyreg(I915_PHYB_TX_DW4_LN0 + lane * I915_PHY_LANESTRIDE, I915_TX_DW4_CURSORS, (I915_HDMI_POSTCURSOR << I915_TX_DW4_POST1SHIFT) | I915_HDMI_CURSOR);
+
+    writereg(I915_PHYB_TX_DW7_GRP, (readreg(I915_PHYB_TX_DW7_LN0) & ~I915_TX_DW7_NSCALAR) | (I915_HDMI_NSCALAR << I915_TX_DW7_NSCALARSHIFT));
+    writereg(I915_PHYB_TX_DW5_GRP, readreg(I915_PHYB_TX_DW5_LN0) | I915_TX_DW5_TRAINING);
+
+}
+
+static void settimings(void)
+{
+
+    writereg(I915_TRANS_HTOTAL_B, ((I915_HDMI_HTOTAL - 1) << 16) | (I915_HDMI_HACTIVE - 1));
+    writereg(I915_TRANS_HBLANK_B, ((I915_HDMI_HTOTAL - 1) << 16) | (I915_HDMI_HACTIVE - 1));
+    writereg(I915_TRANS_HSYNC_B, ((I915_HDMI_HSYNCEND - 1) << 16) | (I915_HDMI_HSYNCSTART - 1));
+    writereg(I915_TRANS_VTOTAL_B, ((I915_HDMI_VTOTAL - 1) << 16) | (I915_HDMI_VACTIVE - 1));
+    writereg(I915_TRANS_VBLANK_B, ((I915_HDMI_VTOTAL - 1) << 16) | (I915_HDMI_VACTIVE - 1));
+    writereg(I915_TRANS_VSYNC_B, ((I915_HDMI_VSYNCEND - 1) << 16) | (I915_HDMI_VSYNCSTART - 1));
+    writereg(I915_TRANS_VSYNCSHIFT_B, 0);
+    writereg(I915_PIPESRC_B, ((I915_HDMI_HACTIVE - 1) << 16) | (I915_HDMI_VACTIVE - 1));
+
+}
+
+static void setplane(void)
+{
+
+    unsigned int buffer = readreg(I915_PLANE_BUF_CFG_1_A);
+    unsigned int blocks = ((buffer >> 16) & 0x7FF) - (buffer & 0x7FF);
+    unsigned int level;
+
+    writereg(I915_PIPE_MBUS_DBOX_CTL_B, readreg(I915_PIPE_MBUS_DBOX_CTL_A));
+    writereg(I915_WM_LINETIME_B, readreg(I915_WM_LINETIME_A));
+    writereg(I915_PLANE_BUF_CFG_1_B, ((I915_DBUFSLICE + blocks) << 16) | I915_DBUFSLICE);
+
+    for (level = 0; level < I915_WMLEVELS; level++)
+        writereg(I915_PLANE_WM_1_B + level * 4, readreg(I915_PLANE_WM_1_A + level * 4));
+
+    writereg(I915_PLANE_WM_TRANS_1_B, readreg(I915_PLANE_WM_TRANS_1_A));
+    writereg(I915_PLANE_COLOR_CTL_1_B, I915_PLANE_COLOR_GAMMADISABLE);
+    writereg(I915_PLANE_POS_1_B, 0);
+    writereg(I915_PLANE_OFFSET_1_B, 0);
+    writereg(I915_PLANE_STRIDE_1_B, framebuffer->pitch / 64);
+    writereg(I915_PLANE_SIZE_1_B, ((I915_HDMI_VACTIVE - 1) << 16) | (I915_HDMI_HACTIVE - 1));
+    writereg(I915_PLANE_CTL_1_B, readreg(I915_PLANE_CTL_1_A));
+    writereg(I915_PLANE_SURF_1_B, readreg(I915_PLANE_SURF_1_A));
+
+}
+
+static unsigned int enablehdmi(void)
+{
+
+    if (hdmi.port != 1)
+        return fail("port not B");
+
+    if (framebuffer->width < I915_HDMI_HACTIVE || framebuffer->height < I915_HDMI_VACTIVE)
+        return fail("framebuffer smaller than 1920x1080");
+
+    if (readreg(I915_TRANS_CONF_B) & I915_TRANS_CONF_ENABLE)
+        return fail("transcoder B in use");
+
+    if (!(readreg(I915_PHYB_COMP_DW0) & I915_COMP_INIT))
+        return fail("combo PHY B not initialized");
+
+    if (!powerup() || !enablepll())
+        return 0;
+
+    setswing();
+    writereg(I915_TRANS_CLK_SEL_B, I915_TRANS_CLK_SEL_PORTB);
+    settimings();
+    modifyreg(I915_PIPEMISC_B, I915_PIPEMISC_BPC, 0);
+    writereg(I915_TRANS_DDI_FUNC_CTL_B, I915_DDI_FUNC_ENABLE | I915_DDI_FUNC_PORTB | I915_DDI_FUNC_DVI | I915_DDI_FUNC_VSYNCHIGH | I915_DDI_FUNC_HSYNCHIGH);
+    writereg(I915_TRANS_CONF_B, I915_TRANS_CONF_ENABLE);
+
+    if (!waitreg(I915_TRANS_CONF_B, I915_TRANS_CONF_STATE, I915_TRANS_CONF_STATE))
+        return fail("transcoder B state");
+
+    writereg(I915_DDI_BUF_CTL_B, I915_DDI_BUF_ENABLE);
+
+    if (!waitreg(I915_DDI_BUF_CTL_B, I915_DDI_BUF_IDLE, 0))
+        return fail("DDI B buffer idle");
+
+    setplane();
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on, 1920x1080 at 60 Hz mirroring the panel");
+
+    return 1;
+
+}
+
 static void probehdmi(void)
 {
 
@@ -407,6 +603,7 @@ static void probehdmi(void)
 
     pin = (hdmi.ddc <= I915_DDCCOMBOPINS) ? hdmi.ddc : hdmi.ddc + I915_DDCTCPIN;
     connected = isconnected(hdmi.port);
+    hdmi.connected = connected;
     port[0] = 'A' + hdmi.port;
     port[1] = '\0';
 
@@ -704,9 +901,21 @@ static void driver_reset(unsigned int id)
     activeheight = (readreg(I915_TRANS_VTOTAL_A) & 0xFFFF) + 1;
 
     if (checkfirmware())
+    {
+
         probepanel();
+
+        if (hdmi.connected)
+            enablehdmi();
+
+    }
+
     else
+    {
+
         mmio = 0;
+
+    }
 
 }
 

@@ -40,6 +40,27 @@
 #define I915_DDCCOMBOPINS               3
 #define I915_DDCTCPIN                   5
 
+#define I915_HDMI_CLOCK                 148500
+#define I915_HDMI_DIVIDER               12
+#define I915_HDMI_PDIV                  2
+#define I915_HDMI_QDIV                  3
+#define I915_HDMI_KDIV                  2
+#define I915_HDMI_HACTIVE               1920
+#define I915_HDMI_HSYNCSTART            2008
+#define I915_HDMI_HSYNCEND              2052
+#define I915_HDMI_HTOTAL                2200
+#define I915_HDMI_VACTIVE               1080
+#define I915_HDMI_VSYNCSTART            1084
+#define I915_HDMI_VSYNCEND              1089
+#define I915_HDMI_VTOTAL                1125
+#define I915_HDMI_SWING                 0x6
+#define I915_HDMI_NSCALAR               0x7F
+#define I915_HDMI_CURSOR                0x35
+#define I915_HDMI_POSTCURSOR            0x0A
+#define I915_WMLEVELS                   8
+#define I915_DBUFSLICE                  1024
+#define I915_LANES                      4
+
 #define I915_TRANS_HTOTAL_A             0x60000
 #define I915_TRANS_VTOTAL_A             0x6000C
 #define I915_PIPESRC_A                  0x6001C
@@ -51,6 +72,59 @@
 #define I915_GMBUS2                     0xC5108
 #define I915_GMBUS3                     0xC510C
 #define I915_GMBUS5                     0xC5120
+#define I915_FUSE_STATUS                0x42000
+#define I915_PWR_WELL_CTL               0x45404
+#define I915_PWR_WELL_CTL_DDI           0x45454
+#define I915_DBUF_CTL_S2                0x44FE8
+#define I915_WM_LINETIME_A              0x45270
+#define I915_WM_LINETIME_B              0x45274
+#define I915_DPLL_ENABLE                0x46010
+#define I915_TRANS_CLK_SEL_B            0x46144
+#define I915_DSSM                       0x51004
+#define I915_TRANS_HTOTAL_B             0x61000
+#define I915_TRANS_HBLANK_B             0x61004
+#define I915_TRANS_HSYNC_B              0x61008
+#define I915_TRANS_VTOTAL_B             0x6100C
+#define I915_TRANS_VBLANK_B             0x61010
+#define I915_TRANS_VSYNC_B              0x61014
+#define I915_PIPESRC_B                  0x6101C
+#define I915_TRANS_VSYNCSHIFT_B         0x61028
+#define I915_TRANS_DDI_FUNC_CTL_B       0x61400
+#define I915_DDI_BUF_CTL_B              0x64100
+#define I915_PHYB_CL_DW5                0x6C014
+#define I915_PHYB_CL_DW10               0x6C028
+#define I915_PHYB_COMP_DW0              0x6C100
+#define I915_PHYB_PCS_DW1_GRP           0x6C604
+#define I915_PHYB_PCS_DW1_LN0           0x6C804
+#define I915_PHYB_TX_DW2_GRP            0x6C688
+#define I915_PHYB_TX_DW2_LN0            0x6C888
+#define I915_PHYB_TX_DW4_LN0            0x6C890
+#define I915_PHYB_TX_DW5_GRP            0x6C694
+#define I915_PHYB_TX_DW5_LN0            0x6C894
+#define I915_PHYB_TX_DW7_GRP            0x6C69C
+#define I915_PHYB_TX_DW7_LN0            0x6C89C
+#define I915_PHY_LANESTRIDE             0x100
+#define I915_PIPE_MBUS_DBOX_CTL_A       0x7003C
+#define I915_PIPE_MBUS_DBOX_CTL_B       0x7103C
+#define I915_PIPEMISC_B                 0x71030
+#define I915_TRANS_CONF_B               0x71008
+#define I915_PLANE_WM_1_A               0x70240
+#define I915_PLANE_WM_1_B               0x71240
+#define I915_PLANE_WM_TRANS_1_A         0x70268
+#define I915_PLANE_WM_TRANS_1_B         0x71268
+#define I915_PLANE_BUF_CFG_1_A          0x7027C
+#define I915_PLANE_BUF_CFG_1_B          0x7127C
+#define I915_PLANE_CTL_1_B              0x71180
+#define I915_PLANE_POS_1_B              0x7118C
+#define I915_PLANE_STRIDE_1_B           0x71188
+#define I915_PLANE_SIZE_1_B             0x71190
+#define I915_PLANE_SURF_1_B             0x7119C
+#define I915_PLANE_OFFSET_1_B           0x711A4
+#define I915_PLANE_COLOR_CTL_1_B        0x711CC
+#define I915_DPCLKA_CFGCR0              0x164280
+#define I915_DPLL_CFGCR0                0x164284
+#define I915_DPLL_CFGCR1                0x164288
+#define I915_DPLL_STRIDE                8
 #define I915_AUX_CTL_A                  0x64010
 #define I915_AUX_DATA_A                 0x64014
 #define I915_PS_WIN_POS_1_A             0x68170
@@ -102,6 +176,64 @@
 #define I915_GMBUS2_HWREADY             (0x01u << 11)
 #define I915_GMBUS2_NAK                 (0x01u << 10)
 #define I915_GMBUS2_ACTIVE              (0x01u << 9)
+#define I915_FUSE_PG2                   (0x01u << 25)
+#define I915_FUSE_PG3                   (0x01u << 24)
+#define I915_PWR_WELL_PW2               (0x01u << 2)
+#define I915_PWR_WELL_PW3               (0x01u << 4)
+#define I915_PWR_WELL_DDIB              (0x01u << 2)
+#define I915_PWR_WELL_REQUEST           1
+#define I915_DBUF_REQUEST               (0x01u << 31)
+#define I915_DBUF_STATE                 (0x01u << 30)
+#define I915_DBUF_TRACKER               (0x1Fu << 19)
+#define I915_DBUF_TRACKERVALUE          (0x08u << 19)
+#define I915_DPLL_ON                    (0x01u << 31)
+#define I915_DPLL_LOCK                  (0x01u << 30)
+#define I915_DPLL_POWER                 (0x01u << 27)
+#define I915_DPLL_POWERSTATE            (0x01u << 26)
+#define I915_DPLL_FRACTIONSHIFT         10
+#define I915_DPLL_QDIVSHIFT             10
+#define I915_DPLL_QDIVMODE              (0x01u << 9)
+#define I915_DPLL_KDIV2                 (0x02u << 6)
+#define I915_DPLL_PDIV2                 (0x01u << 2)
+#define I915_DSSM_REFCLK                (0x07u << 29)
+#define I915_DSSM_REFCLK24              (0x00u << 29)
+#define I915_DPCLKA_DDIA                0x03u
+#define I915_DPCLKA_DDIASHIFT           0
+#define I915_DPCLKA_DDIASHIFTB          2
+#define I915_DPCLKA_DDIAOFF             (0x01u << 10)
+#define I915_DPCLKA_DDIBOFF             (0x01u << 11)
+#define I915_TRANS_CLK_SEL_PORTB        (0x02u << 28)
+#define I915_COMP_INIT                  (0x01u << 31)
+#define I915_SUS_CLOCK                  0x03u
+#define I915_PWR_DOWN_LN                (0x0Fu << 4)
+#define I915_COMMON_KEEPER              (0x01u << 26)
+#define I915_TX_DW2_SWINGUPPER          (0x01u << 15)
+#define I915_TX_DW2_SWINGLOWER          (0x07u << 11)
+#define I915_TX_DW2_RCOMP               0xFFu
+#define I915_TX_DW2_RCOMPVALUE          0x98u
+#define I915_TX_DW4_LOADGEN             (0x01u << 31)
+#define I915_TX_DW4_POST1SHIFT          12
+#define I915_TX_DW4_POST2SHIFT          6
+#define I915_TX_DW4_CURSORS             0x3FFFFu
+#define I915_TX_DW5_TRAINING            (0x01u << 31)
+#define I915_TX_DW5_TAP2                (0x01u << 30)
+#define I915_TX_DW5_TAP3                (0x01u << 29)
+#define I915_TX_DW5_SCALING             (0x07u << 18)
+#define I915_TX_DW5_SCALINGVALUE        (0x02u << 18)
+#define I915_TX_DW5_RTERM               (0x07u << 3)
+#define I915_TX_DW5_RTERMVALUE          (0x06u << 3)
+#define I915_TX_DW7_NSCALAR             (0x7Fu << 24)
+#define I915_TX_DW7_NSCALARSHIFT        24
+#define I915_DDI_FUNC_ENABLE            (0x01u << 31)
+#define I915_DDI_FUNC_PORTB             (0x02u << 27)
+#define I915_DDI_FUNC_DVI               (0x01u << 24)
+#define I915_DDI_FUNC_VSYNCHIGH         (0x01u << 17)
+#define I915_DDI_FUNC_HSYNCHIGH         (0x01u << 16)
+#define I915_DDI_BUF_ENABLE             (0x01u << 31)
+#define I915_DDI_BUF_IDLE               (0x01u << 7)
+#define I915_PIPEMISC_BPC               (0x07u << 5)
+#define I915_TRANS_CONF_STATE           (0x01u << 30)
+#define I915_PLANE_COLOR_GAMMADISABLE   (0x01u << 13)
 #define I915_TRANS_CONF_ENABLE          (0x01u << 31)
 #define I915_PS_CTRL_ENABLE             (0x01u << 31)
 #define I915_PLANE_CTL_ENABLE           (0x01u << 31)
