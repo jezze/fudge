@@ -22,6 +22,7 @@
     { path: initrd:kernel/virtio-keyboard.ko }
     { path: initrd:kernel/virtio-mouse.ko }
     { path: initrd:kernel/usb-block.ko }
+    { path: initrd:kernel/i915.ko }
     { path: initrd:kernel/gop.ko }
     { path: initrd:kernel/bga.ko }
     { path: initrd:kernel/virtio-gpu.ko }
