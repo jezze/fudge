@@ -27,14 +27,6 @@ void debug_fmtv(unsigned int level, char *file, unsigned int line, char *fmt, vo
 
 }
 
-void debug_assert(unsigned int level, unsigned int test, char *file, unsigned int line)
-{
-
-    if (!test)
-        debug(level, 11, "ASSERT FAIL", file, line);
-
-}
-
 void debug_registerinterface(struct debug_interface *interface)
 {
 
