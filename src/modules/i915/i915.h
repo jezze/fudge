@@ -1,6 +1,6 @@
 #define I915_VENDOR                     0x8086
 #define I915_DEVICES                    11
-#define I915_MMIOSIZE                   0x80000
+#define I915_MMIOSIZE                   0x100000
 #define I915_MINSIZE                    64
 #define I915_TIMEOUT                    100000
 #define I915_EVASION                    16
@@ -36,9 +36,21 @@
 #define I915_CHILD_MINSIZE              34
 #define I915_PORTS                      22
 
+#define I915_COMBOPORTS                 3
+#define I915_DDCCOMBOPINS               3
+#define I915_DDCTCPIN                   5
+
 #define I915_TRANS_HTOTAL_A             0x60000
 #define I915_TRANS_VTOTAL_A             0x6000C
 #define I915_PIPESRC_A                  0x6001C
+#define I915_SDEISR                     0xC4000
+#define I915_SHOTPLUG_CTL_DDI           0xC4030
+#define I915_SHOTPLUG_CTL_TC            0xC4034
+#define I915_GMBUS0                     0xC5100
+#define I915_GMBUS1                     0xC5104
+#define I915_GMBUS2                     0xC5108
+#define I915_GMBUS3                     0xC510C
+#define I915_GMBUS5                     0xC5120
 #define I915_AUX_CTL_A                  0x64010
 #define I915_AUX_DATA_A                 0x64014
 #define I915_PS_WIN_POS_1_A             0x68170
@@ -72,6 +84,24 @@
 #define I915_CHILD_TYPE_DP              (0x01u << 2)
 #define I915_CHILD_FLAGS_TYPEC          (0x01u << 0)
 #define I915_CHILD_FLAGS_TBT            (0x01u << 1)
+#define I915_SDEISR_COMBO               16
+#define I915_SDEISR_TC                  24
+#define I915_SHOTPLUG_ENABLE            0x08u
+#define I915_SHOTPLUG_STATUS            0x03u
+#define I915_SHOTPLUG_BITS              4
+#define I915_GMBUS0_RATE100KHZ          (0x00u << 8)
+#define I915_GMBUS1_CLEAR               (0x01u << 31)
+#define I915_GMBUS1_READY               (0x01u << 30)
+#define I915_GMBUS1_STOP                (0x04u << 25)
+#define I915_GMBUS1_INDEX               (0x02u << 25)
+#define I915_GMBUS1_WAIT                (0x01u << 25)
+#define I915_GMBUS1_COUNTSHIFT          16
+#define I915_GMBUS1_ADDRESSSHIFT        1
+#define I915_GMBUS1_READ                0x01u
+#define I915_GMBUS2_WAITPHASE           (0x01u << 14)
+#define I915_GMBUS2_HWREADY             (0x01u << 11)
+#define I915_GMBUS2_NAK                 (0x01u << 10)
+#define I915_GMBUS2_ACTIVE              (0x01u << 9)
 #define I915_TRANS_CONF_ENABLE          (0x01u << 31)
 #define I915_PS_CTRL_ENABLE             (0x01u << 31)
 #define I915_PLANE_CTL_ENABLE           (0x01u << 31)

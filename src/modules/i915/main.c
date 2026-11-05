@@ -7,6 +7,16 @@
 #include <modules/pci/pci.h>
 #include "i915.h"
 
+struct hdmi
+{
+
+    unsigned int found;
+    unsigned int port;
+    unsigned int ddc;
+    unsigned int typec;
+
+};
+
 struct aux
 {
 
@@ -27,6 +37,7 @@ static unsigned long mmio;
 static unsigned int activewidth;
 static unsigned int activeheight;
 static unsigned char edid[I915_EDIDSIZE];
+static struct hdmi hdmi;
 static unsigned long opregion;
 static unsigned int opregionsize;
 static char ports[I915_PORTS] = "ABCD???BCDAEEFFGGHHII";
@@ -169,6 +180,17 @@ static void logchild(unsigned int child, unsigned int size)
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: VBT port %s %s%s, type 0x%H4u, ddc %u, aux 0x%H2u", port, kind, link, &type, &ddc, &aux);
 
+    /* the first HDMI-capable connector, but a plain HDMI socket over a Type-C one */
+    if ((!hdmi.found || (hdmi.typec && !(flags & (I915_CHILD_FLAGS_TYPEC | I915_CHILD_FLAGS_TBT)))) && port[0] != '?' && ddc && (type & I915_CHILD_TYPE_TMDS) && !(type & (I915_CHILD_TYPE_NOTHDMI | I915_CHILD_TYPE_INTERNAL)))
+    {
+
+        hdmi.found = 1;
+        hdmi.port = port[0] - 'A';
+        hdmi.ddc = ddc;
+        hdmi.typec = flags & (I915_CHILD_FLAGS_TYPEC | I915_CHILD_FLAGS_TBT);
+
+    }
+
 }
 
 static void probevbt(unsigned int id)
@@ -242,6 +264,158 @@ static void probevbt(unsigned int id)
     }
 
     debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no general definitions in the VBT");
+
+}
+
+static unsigned int isconnected(unsigned int port)
+{
+
+    unsigned int control = (port < I915_COMBOPORTS) ? I915_SHOTPLUG_CTL_DDI : I915_SHOTPLUG_CTL_TC;
+    unsigned int pin = (port < I915_COMBOPORTS) ? port : port - I915_COMBOPORTS;
+    unsigned int status = (port < I915_COMBOPORTS) ? I915_SDEISR_COMBO + pin : I915_SDEISR_TC + pin;
+    unsigned int value = readreg(control);
+    unsigned int i;
+
+    if (!(value & (I915_SHOTPLUG_ENABLE << (pin * I915_SHOTPLUG_BITS))))
+    {
+
+        writereg(control, value | (I915_SHOTPLUG_ENABLE << (pin * I915_SHOTPLUG_BITS)));
+
+        for (i = 0; i < I915_TIMEOUT; i++)
+            readreg(I915_SDEISR);
+
+    }
+
+    return (readreg(I915_SDEISR) >> status) & 1;
+
+}
+
+static unsigned int gmbuswait(unsigned int bits)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < I915_TIMEOUT; i++)
+    {
+
+        unsigned int status = readreg(I915_GMBUS2);
+
+        if (status & I915_GMBUS2_NAK)
+            return 0;
+
+        if (status & bits)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static void gmbusreset(void)
+{
+
+    writereg(I915_GMBUS1, I915_GMBUS1_CLEAR);
+    writereg(I915_GMBUS1, 0);
+    writereg(I915_GMBUS0, 0);
+
+}
+
+static unsigned int readgmbusedid(unsigned int pin)
+{
+
+    unsigned int offset;
+    unsigned int i;
+
+    writereg(I915_GMBUS0, pin | I915_GMBUS0_RATE100KHZ);
+    writereg(I915_GMBUS5, 0);
+    writereg(I915_GMBUS1, I915_GMBUS1_READY | I915_GMBUS1_WAIT | I915_GMBUS1_INDEX | (I915_EDIDSIZE << I915_GMBUS1_COUNTSHIFT) | (I915_EDIDADDRESS << I915_GMBUS1_ADDRESSSHIFT) | I915_GMBUS1_READ);
+
+    for (offset = 0; offset < I915_EDIDSIZE; offset += 4)
+    {
+
+        unsigned int value;
+
+        if (!gmbuswait(I915_GMBUS2_HWREADY))
+        {
+
+            gmbusreset();
+
+            return 0;
+
+        }
+
+        value = readreg(I915_GMBUS3);
+
+        for (i = 0; i < 4; i++)
+            edid[offset + i] = value >> (i * 8);
+
+    }
+
+    if (!gmbuswait(I915_GMBUS2_WAITPHASE))
+    {
+
+        gmbusreset();
+
+        return 0;
+
+    }
+
+    writereg(I915_GMBUS1, I915_GMBUS1_READY | I915_GMBUS1_STOP);
+
+    for (i = 0; i < I915_TIMEOUT; i++)
+    {
+
+        if (!(readreg(I915_GMBUS2) & I915_GMBUS2_ACTIVE))
+            break;
+
+    }
+
+    writereg(I915_GMBUS0, 0);
+
+    return edid[0] == 0x00 && edid[1] == 0xFF && edid[7] == 0x00;
+
+}
+
+static void logedid(char *name)
+{
+
+    unsigned int clock = (edid[I915_EDIDTIMING] | (edid[I915_EDIDTIMING + 1] << 8)) * 10;
+    unsigned int width = edid[I915_EDIDTIMING + 2] | ((edid[I915_EDIDTIMING + 4] & 0xF0) << 4);
+    unsigned int height = edid[I915_EDIDTIMING + 5] | ((edid[I915_EDIDTIMING + 7] & 0xF0) << 4);
+    unsigned int extensions = edid[126];
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: %s %ux%u at %u kHz, %u extension blocks", name, &width, &height, &clock, &extensions);
+
+}
+
+static void probehdmi(void)
+{
+
+    unsigned int pin;
+    unsigned int connected;
+    char port[2];
+
+    if (!hdmi.found)
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no HDMI connector in the VBT");
+
+        return;
+
+    }
+
+    pin = (hdmi.ddc <= I915_DDCCOMBOPINS) ? hdmi.ddc : hdmi.ddc + I915_DDCTCPIN;
+    connected = isconnected(hdmi.port);
+    port[0] = 'A' + hdmi.port;
+    port[1] = '\0';
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on port %s, GMBUS pin %u, %s", port, &pin, (connected) ? "connected" : "not connected");
+
+    if (readgmbusedid(pin))
+        logedid("monitor");
+    else
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no EDID over DDC");
 
 }
 
@@ -385,11 +559,8 @@ static void probepanel(void)
     if (readedid(&aux))
     {
 
-        unsigned int clock = (edid[I915_EDIDTIMING] | (edid[I915_EDIDTIMING + 1] << 8)) * 10;
-        unsigned int width = edid[I915_EDIDTIMING + 2] | ((edid[I915_EDIDTIMING + 4] & 0xF0) << 4);
-        unsigned int height = edid[I915_EDIDTIMING + 5] | ((edid[I915_EDIDTIMING + 7] & 0xF0) << 4);
-
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: panel %ux%u at %u kHz, firmware %ux%u", &width, &height, &clock, &activewidth, &activeheight);
+        logedid("panel");
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: firmware %ux%u", &activewidth, &activeheight);
 
     }
 
@@ -527,6 +698,7 @@ static void driver_reset(unsigned int id)
 
     arch_kmap(mmio, mmio, I915_MMIOSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     probevbt(id);
+    probehdmi();
 
     activewidth = (readreg(I915_TRANS_HTOTAL_A) & 0xFFFF) + 1;
     activeheight = (readreg(I915_TRANS_VTOTAL_A) & 0xFFFF) + 1;
