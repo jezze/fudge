@@ -4,6 +4,8 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/video.h>
+#include <modules/pic/pic.h>
+#include <modules/apic/apic.h>
 #include <modules/pci/pci.h>
 #include "i915.h"
 
@@ -32,6 +34,7 @@ struct hdmi
     unsigned int ddc;
     unsigned int typec;
     unsigned int connected;
+    unsigned int pll;
     struct mode mode;
 
 };
@@ -659,6 +662,8 @@ static unsigned int enablepll(void)
     if (readreg(enable) & I915_DPLL_ON)
         return fail("DPLL busy");
 
+    hdmi.pll = pll;
+
     modifyreg(enable, 0, I915_DPLL_POWER);
 
     if (!waitreg(enable, I915_DPLL_POWERSTATE, I915_DPLL_POWERSTATE))
@@ -778,9 +783,49 @@ static unsigned int enablehdmi(void)
 
 }
 
+static void disablehdmi(void)
+{
+
+    unsigned int enable = I915_DPLL_ENABLE + hdmi.pll * 4;
+
+    pipeb.on = 0;
+
+    writereg(I915_PLANE_CTL_1_B, 0);
+    writereg(I915_PLANE_SURF_1_B, 0);
+    modifyreg(I915_TRANS_CONF_B, I915_TRANS_CONF_ENABLE, 0);
+
+    if (!waitreg(I915_TRANS_CONF_B, I915_TRANS_CONF_STATE, 0))
+        fail("transcoder B off");
+
+    writereg(I915_TRANS_DDI_FUNC_CTL_B, 0);
+    writereg(I915_PS_CTRL_1_A + pipeb.scaler, 0);
+    writereg(I915_PS_WIN_POS_1_A + pipeb.scaler, 0);
+    writereg(I915_PS_WIN_SZ_1_A + pipeb.scaler, 0);
+    modifyreg(I915_DDI_BUF_CTL_B, I915_DDI_BUF_ENABLE, 0);
+
+    if (!waitreg(I915_DDI_BUF_CTL_B, I915_DDI_BUF_IDLE, I915_DDI_BUF_IDLE))
+        fail("DDI B buffer off");
+
+    writereg(I915_TRANS_CLK_SEL_B, 0);
+    modifyreg(I915_DPCLKA_CFGCR0, 0, I915_DPCLKA_DDIBOFF);
+    modifyreg(enable, I915_DPLL_ON, 0);
+
+    if (!waitreg(enable, I915_DPLL_LOCK, 0))
+        fail("DPLL unlock");
+
+    modifyreg(enable, I915_DPLL_POWER, 0);
+
+    if (!waitreg(enable, I915_DPLL_POWERSTATE, 0))
+        fail("DPLL power off");
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI off");
+
+}
+
 static void probehdmi(void)
 {
 
+    unsigned int i;
     unsigned int pin;
     unsigned int connected;
     char port[2];
@@ -802,7 +847,15 @@ static void probehdmi(void)
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on port %s, GMBUS pin %u, %s", port, &pin, (connected) ? "connected" : "not connected");
 
-    if (readgmbusedid(pin, 0))
+    for (i = 0; i < I915_EDIDTRIES; i++)
+    {
+
+        if (readgmbusedid(pin, 0))
+            break;
+
+    }
+
+    if (i < I915_EDIDTRIES)
     {
 
         logedid("monitor");
@@ -819,6 +872,80 @@ static void probehdmi(void)
     }
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI mode %ux%u at %u kHz", &hdmi.mode.hactive, &hdmi.mode.vactive, &hdmi.mode.clock);
+
+}
+
+static void checkhdmi(void)
+{
+
+    if (isconnected(hdmi.port) == pipeb.on)
+        return;
+
+    if (pipeb.on)
+    {
+
+        disablehdmi();
+
+    }
+
+    else
+    {
+
+        probehdmi();
+
+        if (hdmi.connected)
+            enablehdmi();
+
+    }
+
+}
+
+static void handleirq(unsigned int irq)
+{
+
+    unsigned int master;
+
+    if (!mmio)
+        return;
+
+    master = readreg(I915_GFX_MSTR_IRQ);
+
+    if (!(master & I915_MSTR_DISPLAY))
+        return;
+
+    writereg(I915_GFX_MSTR_IRQ, 0);
+
+    if (readreg(I915_DISPLAY_INT_CTL) & I915_DISPLAY_INT_PCH)
+    {
+
+        unsigned int status = readreg(I915_SDEIIR);
+
+        writereg(I915_SDEIIR, status);
+        writereg(I915_SHOTPLUG_CTL_DDI, readreg(I915_SHOTPLUG_CTL_DDI));
+
+        if (status & (1u << (I915_SDEISR_COMBO + hdmi.port)))
+            checkhdmi();
+
+    }
+
+    writereg(I915_GFX_MSTR_IRQ, I915_MSTR_ENABLE);
+
+}
+
+static void enablehotplug(unsigned int id)
+{
+
+    unsigned int bit = 1u << (I915_SDEISR_COMBO + hdmi.port);
+
+    writereg(I915_SHPD_FILTER_CNT, I915_SHPD_FILTER);
+    writereg(I915_SDEIIR, bit);
+    modifyreg(I915_SDEIER, 0, bit);
+    modifyreg(I915_SDEIMR, bit, 0);
+    modifyreg(I915_DISPLAY_INT_CTL, 0, I915_DISPLAY_INT_ENABLE);
+    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) & ~I915_PCI_INTXDISABLE);
+    pic_setroutine(pci_getirq(id), handleirq);
+    apic_setroutine(pci_getirq(id), handleirq);
+    writereg(I915_GFX_MSTR_IRQ, I915_MSTR_ENABLE);
 
 }
 
@@ -1077,12 +1204,24 @@ static void driver_attach(unsigned int id)
 
     video_registerinterface(&videointerface);
 
+    if (mmio && hdmi.found && hdmi.port < I915_COMBOPORTS)
+        enablehotplug(id);
+
 }
 
 static void driver_detach(unsigned int id)
 {
 
     video_unregisterinterface(&videointerface);
+
+    if (mmio && hdmi.found && hdmi.port < I915_COMBOPORTS)
+    {
+
+        writereg(I915_GFX_MSTR_IRQ, 0);
+        pic_unsetroutine(pci_getirq(id), handleirq);
+        apic_unsetroutine(pci_getirq(id), handleirq);
+
+    }
 
 }
 

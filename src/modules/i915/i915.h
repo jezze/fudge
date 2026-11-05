@@ -62,6 +62,8 @@
 #define I915_WMLEVELS                   8
 #define I915_DBUFSLICE                  1024
 #define I915_LANES                      4
+#define I915_EDIDTRIES                  3
+#define I915_SHPD_FILTER                0x1D9
 
 #define I915_TRANS_HTOTAL_A             0x60000
 #define I915_TRANS_VTOTAL_A             0x6000C
@@ -127,6 +129,12 @@
 #define I915_DPLL_CFGCR0                0x164284
 #define I915_DPLL_CFGCR1                0x164288
 #define I915_DPLL_STRIDE                8
+#define I915_SDEIMR                     0xC4004
+#define I915_SDEIIR                     0xC4008
+#define I915_SDEIER                     0xC400C
+#define I915_SHPD_FILTER_CNT            0xC4038
+#define I915_DISPLAY_INT_CTL            0x44200
+#define I915_GFX_MSTR_IRQ               0x190010
 #define I915_AUX_CTL_A                  0x64010
 #define I915_AUX_DATA_A                 0x64014
 #define I915_PS_WIN_POS_1_A             0x68170
@@ -241,6 +249,11 @@
 #define I915_PIPEMISC_BPC               (0x07u << 5)
 #define I915_TRANS_CONF_STATE           (0x01u << 30)
 #define I915_PLANE_COLOR_GAMMADISABLE   (0x01u << 13)
+#define I915_DISPLAY_INT_ENABLE         (0x01u << 31)
+#define I915_DISPLAY_INT_PCH            (0x01u << 23)
+#define I915_MSTR_ENABLE                (0x01u << 31)
+#define I915_MSTR_DISPLAY               (0x01u << 16)
+#define I915_PCI_INTXDISABLE            (0x01u << 10)
 #define I915_TRANS_CONF_ENABLE          (0x01u << 31)
 #define I915_PS_CTRL_ENABLE             (0x01u << 31)
 #define I915_PLANE_CTL_ENABLE           (0x01u << 31)
