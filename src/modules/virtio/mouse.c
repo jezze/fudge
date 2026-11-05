@@ -46,7 +46,6 @@ static char clamp(int value)
 
 }
 
-/* a report ends with EV_SYN: movement is sent in pieces that fit the interface's chars */
 static void report(void)
 {
 
@@ -154,7 +153,6 @@ static void driver_init(unsigned int id)
 
 }
 
-/* keyboards and mice are both virtio input devices: a mouse is the one with relative axes */
 static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
@@ -167,7 +165,6 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 
 }
 
-/* the event queue gets one device-writable buffer per event */
 static void driver_reset(unsigned int id)
 {
 

@@ -48,7 +48,6 @@ static short audiobuffer[AUDIOSIZE];
 static unsigned int columns[SCALEDWIDTH];
 static unsigned int scaled[SCALEDWIDTH];
 
-/* buttons as upstream: B Y Select Start Up Down Left Right A X L R */
 static int getbutton(unsigned int id)
 {
 
@@ -117,7 +116,6 @@ static unsigned int getscale(void)
 
 }
 
-/* screen columns pick from the ppu's 512 half pixels */
 static void setupcolumns(unsigned int scale)
 {
 
@@ -139,7 +137,6 @@ static void scalerow(unsigned int width, unsigned int y)
 
 }
 
-/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
 static void flush(void)
 {
 
@@ -161,7 +158,6 @@ static void flush(void)
 
 }
 
-/* the 240 lines as upstream shows them (224 lines 8 down unless overscanning, interlaced frames take both fields), each line scale times */
 static void draw(unsigned int *buffer, unsigned int stride, unsigned int scale)
 {
 
@@ -215,7 +211,6 @@ static void draw(unsigned int *buffer, unsigned int stride, unsigned int scale)
 
 }
 
-/* at the largest whole scale that fits, centered; in a window at 1x, which the wm scales */
 static void present(void)
 {
 
@@ -262,7 +257,6 @@ static unsigned int getframerate(void)
 
 }
 
-/* samples go out as 16-bit stereo, unless the device already holds more than AUDIOLIMIT ticks */
 static void sendaudio(unsigned int count)
 {
 
@@ -275,7 +269,6 @@ static void sendaudio(unsigned int count)
 
 }
 
-/* the device plays rate / TICKRATE samples a tick; silence tops it up to AUDIOCUSHION ticks after a pause or a stall */
 static void fillaudio(void)
 {
 
@@ -286,7 +279,6 @@ static void fillaudio(void)
 
 }
 
-/* the clock is the timer's counter, so ticks dropped while a frame ran still count; the device plays as much meanwhile */
 static void ontimertick(struct message *message)
 {
 
@@ -322,7 +314,6 @@ static void ontimertick(struct message *message)
 
 }
 
-/* the mixer takes 48000 Hz 16-bit stereo */
 static void setupaudio(void)
 {
 
@@ -412,7 +403,6 @@ static void leavefullscreen(void)
 
 }
 
-/* the grab is answered on channel 1, so channel 0 must have room for what the wm sends before answering: run switches between drains, when its slots are free, and ticks stay away meanwhile */
 static void switchscreen(unsigned int on)
 {
 
@@ -427,7 +417,6 @@ static void switchscreen(unsigned int on)
 
 }
 
-/* frames follow the timer, and what arrived during one (ticks, keys) is taken before the next, so the mailbox never fills and drops keys; a stall of more than CATCHUP frames is skipped */
 static void run(void)
 {
 
@@ -474,7 +463,6 @@ static void run(void)
 
 }
 
-/* Alt+F and Alt+W ask for the screen or the window, when there is a window */
 static void press(unsigned int id, unsigned int mod)
 {
 
@@ -612,7 +600,6 @@ static void onwmack(struct message *message)
 
 }
 
-/* a mem: file the wm shows in a window, made as large as the screen by writing its last pixel */
 static unsigned int createscreen(void)
 {
 
@@ -661,7 +648,6 @@ static void showwindow(char *path)
 
 }
 
-/* the file is read onto the heap, which the cart's copy (padded to a power of 2) follows */
 static unsigned int load(unsigned int source, char *path)
 {
 

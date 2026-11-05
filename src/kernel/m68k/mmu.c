@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "mmu.h"
 
-/* the 68040's three levels with 4 KB pages: 128 root entries of 32 MB, 128 pointer entries of 256 KB, 64 pages */
 static unsigned int *getroot(unsigned long root, unsigned long vaddress)
 {
 

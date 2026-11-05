@@ -106,7 +106,6 @@ static void removeroutine(unsigned int irq, void (*routine)(unsigned int irq))
 
 }
 
-/* paula raises levels 1 to 6 for its fourteen sources; every level asks for all of them and clears what it handled */
 static void handleirq(void)
 {
 
@@ -162,7 +161,6 @@ unsigned int platform_unsetroutine(unsigned int irq, void (*routine)(unsigned in
 
 }
 
-/* reading cia-a's icr clears all its flags, so one read serves every source on it */
 static void handleports(unsigned int irq)
 {
 

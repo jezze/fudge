@@ -60,7 +60,6 @@ static unsigned int palette[COLORS];
 static unsigned char nearest[0x8000];
 static unsigned int created;
 
-/* indices 0 to 215 are a 6x6x6 colour cube, 216 to 255 the greys between the cube's six on a ramp of 46 */
 static void setuppalette(void)
 {
 
@@ -101,7 +100,6 @@ static unsigned int distance(unsigned int a, unsigned int b)
 
 }
 
-/* for every 15-bit colour the closer of its nearest cube colour and its nearest grey */
 static void setupnearest(void)
 {
 
@@ -124,7 +122,6 @@ static void setupnearest(void)
 
 }
 
-/* every frame the copper points the bitplane pointers back at the start of each plane */
 static void setupcopper(void)
 {
 
@@ -148,7 +145,6 @@ static void setupcopper(void)
 
 }
 
-/* aga keeps 24-bit colours in eight banks of 32: the high nibbles are written first, then with loct the low ones */
 static void setupcolors(void)
 {
 
@@ -173,7 +169,6 @@ static void setupcolors(void)
 
 }
 
-/* a pal hires screen in eight planes needs aga's 4x fetch; its data fetch window is the one aros computes for it */
 static void setupdisplay(void)
 {
 
@@ -206,7 +201,6 @@ static unsigned int getindex(unsigned int pixel)
 
 }
 
-/* chunky to planar on 32 pixels: their palette indices, four to a word with the last four in w0, become one word per plane in five rounds of swaps (each swaps a bit of the word number with a bit of the position in the word), so each plane gets one long write */
 static void convert(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
 {
 
@@ -321,7 +315,6 @@ static void convert(unsigned int x0, unsigned int y0, unsigned int x1, unsigned 
 
 }
 
-/* only one mode: whatever wm asks for, it gets pal hires in 256 colours */
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 

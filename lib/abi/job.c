@@ -107,7 +107,6 @@ static void addterm(struct message_pipe *pipe, unsigned int target, unsigned int
 
 }
 
-/* data that leaves the last stage goes to job->output (0: the owner) */
 static unsigned int sink(struct job *job, unsigned int to, unsigned int next)
 {
 

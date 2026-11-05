@@ -66,7 +66,6 @@ static void finish(struct block_session *session)
 
 }
 
-/* the whole sectors arrive in the bounce buffer: keep the requested bytes */
 static void progressdma(struct block_session *session)
 {
 

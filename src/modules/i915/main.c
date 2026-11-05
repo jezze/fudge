@@ -117,7 +117,6 @@ static unsigned int issignature(unsigned int offset, char *signature)
 
 }
 
-/* where the VBT is: mailbox 4, or from OpRegion 2.1 on possibly RVDA (an offset from the OpRegion) */
 static unsigned int findvbt(void)
 {
 
@@ -172,7 +171,6 @@ static void logchild(unsigned int child, unsigned int size)
 
 }
 
-/* the board's outputs from the VBT's general definitions (block 2): one child device per connector */
 static void probevbt(unsigned int id)
 {
 
@@ -247,7 +245,6 @@ static void probevbt(unsigned int id)
 
 }
 
-/* sends aux->count bytes of aux->data on AUX A (the eDP panel's) and puts the reply there, four bytes per register, first byte in the top bits */
 static unsigned int auxtransfer(struct aux *aux)
 {
 
@@ -291,7 +288,6 @@ static unsigned int auxtransfer(struct aux *aux)
 
 }
 
-/* one request: length 0 is address only, writes send one byte (value); returns the reply's size with its code (data[0]), 0 on failure */
 static unsigned int auxrequest(struct aux *aux)
 {
 
@@ -333,7 +329,6 @@ static unsigned int auxread(struct aux *aux, unsigned int command, unsigned int 
 
 }
 
-/* EDID over I2C-over-AUX: offset 0, then 16-byte reads, then a stop (address only, no MOT) */
 static unsigned int readedid(struct aux *aux)
 {
 
@@ -362,7 +357,6 @@ static unsigned int readedid(struct aux *aux)
 
 }
 
-/* what the panel says about itself, for the log: DPCD revision, link limits, preferred mode (the first detailed timing) */
 static void probepanel(void)
 {
 
@@ -408,7 +402,6 @@ static void probepanel(void)
 
 }
 
-/* the firmware's mode: transcoder A lit, its plane linear XRGB8888 over the whole pipe, showing the firmware framebuffer */
 static unsigned int checkfirmware(void)
 {
 
@@ -428,7 +421,6 @@ static unsigned int checkfirmware(void)
 
 }
 
-/* double-buffered registers latch at the start of vblank: don't start writing them in the lines just before it */
 static void evadevblank(void)
 {
 
@@ -446,7 +438,6 @@ static void evadevblank(void)
 
 }
 
-/* the pipe scaler stretches the source to the largest centered window with its aspect ratio; the rest shows the pipe's black background */
 static void setscaler(unsigned int width, unsigned int height)
 {
 
@@ -481,7 +472,6 @@ static void setscaler(unsigned int width, unsigned int height)
 
 }
 
-/* modes up to the firmware's size, width a multiple of 16 (the stride is counted in 64 bytes); others keep the current mode */
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -527,7 +517,6 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 
 }
 
-/* without the firmware's mode as expected the driver only shows the firmware framebuffer, like gop */
 static void driver_reset(unsigned int id)
 {
 

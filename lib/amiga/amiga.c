@@ -8,7 +8,6 @@
 #include <amiga/cpio.h>
 #include <amiga/elf.h>
 
-/* fudgeboot leaves the ramdisk right after the kernel, below ARCH_RAMDISK_BASE */
 void amiga_setup(unsigned long ramdisk, unsigned int size)
 {
 

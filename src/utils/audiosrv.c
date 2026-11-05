@@ -158,7 +158,6 @@ static void putframe(unsigned int frame, int left, int right)
 
 }
 
-/* linear interpolation down to the device's rate; phase counts in steps where one mixed frame is rate long and one device frame RATE */
 static unsigned int resample(unsigned int frames)
 {
 
@@ -189,7 +188,6 @@ static unsigned int resample(unsigned int frames)
 
 }
 
-/* samples are 16-bit stereo, little-endian like the devices take them; a client whose ring runs dry gives up its slot, and one waiting for room hears when there is a message's worth; the bytes of output are returned */
 static unsigned int mix(unsigned int frames)
 {
 
@@ -252,7 +250,6 @@ static unsigned int mix(unsigned int frames)
 
 }
 
-/* placed without retrying, so a full device queue never stalls the mailbox; the output stays pending until the device takes it */
 static unsigned int flush(void)
 {
 
@@ -282,7 +279,6 @@ static void ondata(struct message *message)
 
 }
 
-/* the answer waits until the client's ring has room for a message, so a sender that waits for it never overflows */
 static void oninfo(struct message *message)
 {
 
@@ -295,7 +291,6 @@ static void oninfo(struct message *message)
 
 }
 
-/* everything is counted in RATE frames; the device is kept CUSHION ticks ahead of the timer while anyone plays, unless its queue is full, and after a stall of more than a second the backlog is dropped */
 static void ontimertick(struct message *message)
 {
 
@@ -353,7 +348,6 @@ static unsigned int setformat(unsigned int value)
 
 }
 
-/* only . and .. lead anywhere: back to the root */
 static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 {
 
@@ -383,7 +377,6 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 
 }
 
-/* the root is a directory holding only . and ..: the record at offset i is named by the first i + 1 characters of "..", its offset is the next one */
 static void onreadrequest(struct message *message)
 {
 

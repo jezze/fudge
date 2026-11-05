@@ -60,7 +60,6 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
-/* only displays that show a copy of the framebuffer need to be told what changed */
 static unsigned int onvideoflush(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 

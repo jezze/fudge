@@ -53,7 +53,6 @@ static struct mmu_table *gettable(unsigned long daddress, unsigned long vaddress
 
 }
 
-/* a table entry without read, write or execute points at the next level */
 unsigned int mmu_tflags(unsigned int flags)
 {
 
@@ -97,7 +96,6 @@ unsigned long mmu_getpage(unsigned long daddress, unsigned long vaddress)
 
 }
 
-/* taddress is either a table's address or, from copytable, another directory's entry */
 void mmu_settable(unsigned long daddress, unsigned long vaddress, unsigned int level, unsigned long taddress, unsigned int flags)
 {
 

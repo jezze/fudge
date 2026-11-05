@@ -13,7 +13,6 @@ static struct base_driver driver;
 static struct timer_interface timerinterface;
 static unsigned int jiffies;
 
-/* the supervisor timer interrupt, rearmed through SBI for the next tick */
 static void handleirq(void)
 {
 

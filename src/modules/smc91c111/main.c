@@ -117,7 +117,6 @@ static void ethernetinterface_getmac(unsigned char address[6])
 
 }
 
-/* status, byte count, the data in 16-bit words and a control word that carries an odd last byte */
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 

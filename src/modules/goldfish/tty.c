@@ -21,7 +21,6 @@ static struct console_interface consoleinterface;
 static volatile unsigned int *tty;
 static unsigned char buffer[BUFFERSIZE];
 
-/* the tty copies what it received into memory at a physical address, which the kernel's mapping keeps equal */
 static void handleirq(unsigned int irq)
 {
 

@@ -10,7 +10,6 @@ static char lines[4096];
 static unsigned int linescount;
 static unsigned int width;
 
-/* cstring_write_value is signed, which turns addresses from 0x80000000 negative */
 static void writeaddress(char *out, unsigned int address)
 {
 
@@ -151,7 +150,6 @@ static unsigned int findhi(unsigned long place, unsigned int *offset)
 
 }
 
-/* value is the symbol plus addend, place where the instruction or data is when loaded */
 static unsigned int relocateriscv(unsigned int target, unsigned int id, unsigned int type, unsigned long value, unsigned long place, unsigned int fileoffset)
 {
 

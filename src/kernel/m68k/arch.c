@@ -122,7 +122,6 @@ static unsigned int mapmem(unsigned long root, unsigned long vaddress, struct mm
 
 }
 
-/* a task shares the kernel's pointer tables, so kernel mappings made after it started are copied on demand */
 static unsigned int copytable(unsigned long root, unsigned long vaddress)
 {
 
@@ -137,7 +136,6 @@ static unsigned int copytable(unsigned long root, unsigned long vaddress)
 
 }
 
-/* clears the pages in the running task, for memsrv */
 static void unmap(unsigned long vaddress, unsigned int size)
 {
 
@@ -213,7 +211,6 @@ static void setroot(unsigned long root)
 
 }
 
-/* saves the running task from the frame and fills it with the next one, or the idle loop */
 static unsigned int schedule(struct cpu_frame *frame)
 {
 
@@ -340,7 +337,6 @@ void arch_leave(void)
 
 }
 
-/* the page has to be there and writeable before a writeback goes to it, or the kernel would fault */
 static unsigned int canwrite(unsigned long vaddress)
 {
 
@@ -353,7 +349,6 @@ static unsigned int canwrite(unsigned long vaddress)
 
 }
 
-/* a 68040 leaves writes of finished instructions in the access fault's frame; plain data writes are done here, like Linux does (the first writeback is the faulted access, which the cpu does again) */
 static unsigned int writeback(unsigned short status, unsigned int address, unsigned int data)
 {
 
@@ -419,7 +414,6 @@ static unsigned int accessfault040(struct cpu_frame *frame, struct cpu_fault040 
 
 }
 
-/* a 68060 (and a 68080) restarts the faulted instruction; a misaligned access may fault on the page after its address */
 static unsigned int accessfault060(struct cpu_frame *frame, struct cpu_fault060 *fault)
 {
 
@@ -459,7 +453,6 @@ unsigned int arch_fault(struct cpu_frame *frame)
 
 }
 
-/* an interrupt in the kernel can only land on a handler's first instruction, so it goes back there unless the core was idle */
 unsigned int arch_interrupt(struct cpu_frame *frame)
 {
 

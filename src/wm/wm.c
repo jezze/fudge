@@ -581,7 +581,6 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 
 }
 
-/* draws the damage and tells the display what changed, which only displays showing a copy need */
 static void update(void)
 {
 
@@ -1941,7 +1940,6 @@ static unsigned int isdifferent(struct util_region *a, struct util_region *b)
 
 }
 
-/* after a relayout, widgets an update changed, that moved or that scrolled (their thumb) are drawn again where they were and where they are; so is a caret that moved */
 static void damagechanged(void)
 {
 
@@ -2604,7 +2602,6 @@ static void ontimerexpire(struct message *message)
 
 }
 
-/* only . and .. lead anywhere: back to the root */
 static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 {
 
@@ -2634,7 +2631,6 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 
 }
 
-/* the root is a directory holding only . and ..: the record at offset i is named by the first i + 1 characters of "..", its offset is the next one */
 static void onreadrequest(struct message *message)
 {
 
@@ -3139,7 +3135,6 @@ static void onwmrenderfile(struct message *message)
 
 }
 
-/* the media widget's file changed: only its visible part is drawn again, without a relayout; the answer lets the sender keep one flush on its way */
 static void onwmflush(struct message *message)
 {
 

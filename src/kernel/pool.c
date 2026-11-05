@@ -161,7 +161,6 @@ unsigned int pool_picknode(struct resource *resource)
 
 }
 
-/* a resource's own node, picked on first use and dropped with its links */
 unsigned int pool_attachnode(struct resource *resource)
 {
 

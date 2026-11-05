@@ -125,7 +125,6 @@ static unsigned int copytable(unsigned long directory, unsigned long vaddress)
 
 }
 
-/* clears the pages in the running task, for memsrv */
 static void unmap(unsigned long vaddress, unsigned int size)
 {
 

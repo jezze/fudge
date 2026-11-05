@@ -1000,7 +1000,6 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
 
 }
 
-/* the blocks go straight into the target's block buffer; holes and failures return 0 and are read the usual way */
 static unsigned int sendfile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int target)
 {
 
@@ -1167,7 +1166,6 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
 }
 
-/* the request's header and the count bytes after it are all in the message */
 static void oncreaterequest(struct message *message)
 {
 

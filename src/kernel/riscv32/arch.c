@@ -147,7 +147,6 @@ static void setdirectory(unsigned long directory)
 
 }
 
-/* clears the pages in the running task, for memsrv */
 static void unmap(unsigned long vaddress, unsigned int size)
 {
 

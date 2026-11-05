@@ -24,7 +24,6 @@ static unsigned int getnext(unsigned int id)
 
 }
 
-/* an id is the address of a header, so one from a request is only trusted if walking the archive reaches it */
 static unsigned int isheader(unsigned int id)
 {
 

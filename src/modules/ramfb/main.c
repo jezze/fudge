@@ -78,7 +78,6 @@ static unsigned int read32(void)
 
 }
 
-/* walks fw_cfg's file directory for etc/ramfb, which qemu offers with -device ramfb */
 static unsigned short findfile(char *name)
 {
 
@@ -137,7 +136,6 @@ static unsigned int write(unsigned short key, void *buffer, unsigned int count)
 
 }
 
-/* qemu shows the framebuffer from memory, so a mode is only its size and format */
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 

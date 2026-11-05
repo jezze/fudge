@@ -50,7 +50,6 @@ static void updatebutton(unsigned int button, unsigned int down)
 
 }
 
-/* joy0dat counts the mouse's movement in two 8-bit counters (vertical high, horizontal low); the buttons read low when held */
 static void handleirq(unsigned int irq)
 {
 
@@ -89,7 +88,6 @@ static void driver_reset(unsigned int id)
 
 }
 
-/* polled once a frame, on the vertical blank */
 static void driver_attach(unsigned int id)
 {
 

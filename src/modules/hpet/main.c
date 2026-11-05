@@ -45,7 +45,6 @@ static void write(unsigned int reg, unsigned int value)
 
 }
 
-/* counter ticks per 1/HZ second: 10^15 / HZ / period in femtoseconds, one decimal digit at a time to stay within 32 bits */
 static unsigned int getticks(unsigned int femtoseconds)
 {
 

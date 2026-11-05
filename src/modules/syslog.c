@@ -5,7 +5,6 @@ static struct debug_interface debuginterface;
 static struct server server;
 static struct service service;
 
-/* text from a reader is dropped: a reader whose output is routed here would otherwise feed itself or another reader forever */
 static void notify(unsigned int source, unsigned int level, unsigned int count, void *data)
 {
 

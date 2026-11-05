@@ -171,7 +171,6 @@ static void newline(void)
 
 }
 
-/* paula's serial port takes a character with its stop bit in SERDAT once SERDATR says the buffer is empty; the screen shows the same until amiga-video takes the display */
 static void print(unsigned int count, char *buffer)
 {
 
@@ -207,7 +206,6 @@ static void print(unsigned int count, char *buffer)
 
 }
 
-/* one hires bitplane (FMODE 0), its pointer reset by a copper list every frame */
 static void setupscreen(void)
 {
 
@@ -241,7 +239,6 @@ static void setupscreen(void)
 
 }
 
-/* the background tells how far the boot got when nothing is printed */
 void udebug_setbackground(unsigned short color)
 {
 
@@ -249,7 +246,6 @@ void udebug_setbackground(unsigned short color)
 
 }
 #else
-/* the goldfish tty takes one character per write to its first register */
 static void print(unsigned int count, char *buffer)
 {
 

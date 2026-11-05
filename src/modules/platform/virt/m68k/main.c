@@ -148,7 +148,6 @@ static volatile unsigned int *pic(unsigned int index, unsigned int offset)
 
 }
 
-/* goldfish pic n raises interrupt level n + 1; every level asks all of them */
 static void handleirq(void)
 {
 

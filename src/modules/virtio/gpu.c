@@ -136,7 +136,6 @@ static void setrect(struct rect *rect, unsigned int x, unsigned int y, unsigned 
 
 }
 
-/* one request at a time on the control queue, waiting for the device's answer */
 static unsigned int command(void *request, unsigned int count)
 {
 
@@ -174,7 +173,6 @@ static void unref(void)
 
 }
 
-/* the wm writes 0xAARRGGBB words, whose bytes are B G R X on little-endian cpus and X R G B on big-endian ones */
 static unsigned int create(unsigned int width, unsigned int height)
 {
 
@@ -257,7 +255,6 @@ static void flush(unsigned int x, unsigned int y, unsigned int width, unsigned i
 
 }
 
-/* the host shows its own copy of a resource backed by the framebuffer, created anew for every mode */
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 

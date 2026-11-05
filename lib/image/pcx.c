@@ -9,7 +9,6 @@ static short convert16(short value)
 
 }
 
-/* the header's words are little-endian on disk; this turns them into the cpu's order */
 void pcx_convertheader(struct pcx_header *header)
 {
 

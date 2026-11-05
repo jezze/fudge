@@ -10,7 +10,6 @@ static unsigned long pagealign(unsigned long value)
 
 }
 
-/* rings, descriptors and requests are little-endian: these convert a value read or about to be written in one access, either way */
 unsigned short virtio_le16(unsigned short value)
 {
 
@@ -29,7 +28,6 @@ unsigned int virtio_le32(unsigned int value)
 
 }
 
-/* lays the descriptors, the available ring and the page aligned used ring out in memory */
 unsigned int virtio_initqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, unsigned short size, void *memory)
 {
 
@@ -88,7 +86,6 @@ void virtio_push(struct virtio_queue *queue, unsigned short head)
 
 }
 
-/* for polled queues: a device that interrupts anyway keeps a shared level-triggered line asserted, as nothing reads its ISR */
 void virtio_nointerrupt(struct virtio_queue *queue)
 {
 

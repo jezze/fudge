@@ -26,7 +26,6 @@ static struct base_driver driver;
 static struct video_interface videointerface;
 static volatile unsigned int *regs = (volatile unsigned int *)REGISTERS;
 
-/* a mode larger than the controller's keeps its aspect ratio; pixels per line count in 16s and only 32-bit pixels are offered */
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -80,7 +79,6 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 
 }
 
-/* the registers are at 0xC0000000, where each task's mmap is mapped, so they get another address */
 static void driver_reset(unsigned int id)
 {
 

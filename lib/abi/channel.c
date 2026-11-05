@@ -558,7 +558,6 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 
 }
 
-/* the name before the colon is walked in the kernel's root, the rest in the service, as in block:1: the device's node is in its inode file, created on first use */
 unsigned int channel_lookup(char *name)
 {
 

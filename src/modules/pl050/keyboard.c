@@ -74,7 +74,6 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 
 }
 
-/* there is no 8042 to translate, so the keyboard is asked for scancode set 1 itself */
 static void driver_reset(unsigned int id)
 {
 

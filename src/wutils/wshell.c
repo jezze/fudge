@@ -97,7 +97,6 @@ static unsigned int fitlabel(char *data, unsigned int count, unsigned int size)
 
 }
 
-/* the label keeps the end of the data that fits; length is how much of it */
 static unsigned int writelabel(char *buffer, unsigned int size, unsigned int offset, char *id, char *data, unsigned int count, unsigned int *length)
 {
 

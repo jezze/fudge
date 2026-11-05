@@ -3,7 +3,6 @@
 #include "bus.h"
 #include "driver.h"
 
-/* a device belongs to the first driver that matches it and is offered to no other; a driver drives one device */
 static unsigned int isowned(unsigned int type, unsigned int id)
 {
 
@@ -45,7 +44,6 @@ static void detach(struct base_driver *driver)
 
 }
 
-/* every bus is offered: a driver's match checks the bus type itself */
 void base_registerdriver(struct base_driver *driver)
 {
 

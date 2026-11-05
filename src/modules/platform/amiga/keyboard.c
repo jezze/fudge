@@ -33,7 +33,6 @@ static unsigned short scancodes[KEYS] = {
     0x2A, 0x36, 0x3A, 0x1D, 0x38, EXTENDED | 0x38, EXTENDED | 0x5B, EXTENDED | 0x5C
 };
 
-/* the keyboard waits until the sdr line is held low for at least 85 microseconds; three changes of scanline (64 microseconds each) are enough at any cpu speed */
 static void handshake(void)
 {
 
@@ -54,7 +53,6 @@ static void handshake(void)
 
 }
 
-/* the keyboard sends each code inverted and rotated left, with bit 7 set on release */
 static void handleirq(unsigned int irq)
 {
 

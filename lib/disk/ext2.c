@@ -40,7 +40,6 @@ void ext2_write32(void *data, unsigned int value)
 
 }
 
-/* disk structures are little-endian: these swap fields on big-endian hosts, in either direction */
 void ext2_convertsuperblock(struct ext2_superblock *superblock)
 {
 

@@ -67,7 +67,6 @@ size_t strlen(const char *in)
 
 }
 
-/* the mem: file refuses writes past its end, so writing its last byte grows it */
 static unsigned int grow(unsigned int size)
 {
 
@@ -87,7 +86,6 @@ static unsigned int grow(unsigned int size)
 
 }
 
-/* the emulator only allocates while it starts and frees nothing, the whole heap goes when it ends */
 void *malloc(size_t size)
 {
 
@@ -104,7 +102,6 @@ void *malloc(size_t size)
 
 }
 
-/* a mem: file of our own holds the heap, named snes and the first free number */
 unsigned int port_init(void)
 {
 

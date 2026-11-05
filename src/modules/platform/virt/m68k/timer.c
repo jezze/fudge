@@ -20,7 +20,6 @@ static struct timer_interface timerinterface;
 static volatile unsigned int *rtc;
 static unsigned int jiffies;
 
-/* the alarm is in nanoseconds; writing its low half arms it */
 static void setalarm(void)
 {
 

@@ -82,7 +82,6 @@ static unsigned int waitstatus(unsigned int mask)
 
 }
 
-/* sends a command and waits for its response, or only for it to be sent when there is none */
 static unsigned int command(unsigned int index, unsigned int argument, unsigned int flags)
 {
 
@@ -180,7 +179,6 @@ static unsigned int writeblock(unsigned int block, unsigned int *buffer)
 
 }
 
-/* the session's data is copied block by block between the card's FIFO and the task's buffer */
 static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
@@ -212,7 +210,6 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
 }
 
-/* blocks from the CSD, version 1 (standard capacity) or 2 (high capacity) */
 static unsigned int getblockcount(void)
 {
 

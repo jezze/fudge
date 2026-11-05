@@ -14,7 +14,6 @@ static struct base_driver driver;
 static struct clock_interface clockinterface;
 static volatile unsigned int *rtc;
 
-/* nanoseconds since 1970, the low half read first latches the high half; divided bit by bit so that 32-bit longs do */
 static unsigned long getseconds(void)
 {
 
@@ -53,7 +52,6 @@ struct date
 
 };
 
-/* days since 1970 to year, month and day (Howard Hinnant's civil_from_days) */
 static struct date getdate(void)
 {
 

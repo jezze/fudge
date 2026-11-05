@@ -143,7 +143,6 @@ static unsigned short getmaster(unsigned int id)
 
 }
 
-/* each channel's table is 16-byte aligned, so it never crosses a 64 KB boundary */
 static unsigned int *getprd(unsigned int id)
 {
 
@@ -493,7 +492,6 @@ unsigned int ide_hasdma(unsigned int id)
 
 }
 
-/* address is physical; an entry may not cross a 64 KB boundary */
 unsigned int ide_setdma(unsigned int id, unsigned long address, unsigned int count, unsigned int read)
 {
 
@@ -547,7 +545,6 @@ void ide_startdma(unsigned int id)
 
 }
 
-/* IDE_DMA_BUSY while the transfer runs, then the engine is stopped and the result returned */
 unsigned int ide_checkdma(unsigned int id)
 {
 

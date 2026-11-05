@@ -17,7 +17,6 @@ struct readreply
 
 };
 
-/* the service's inode: its name, the part before the colon, walked in the kernel's root */
 unsigned int fs_auth(char *path)
 {
 
@@ -170,7 +169,6 @@ unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 
 }
 
-/* maps the file into this task and returns where; unlike fs_map, which tells where the service keeps the file in kernel memory */
 void *fs_mmap(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int size)
 {
 
@@ -212,7 +210,6 @@ unsigned int fs_munmap(unsigned int ichannel, unsigned int target, unsigned int 
 
 }
 
-/* the data stays in the reply's slot or in our block buffer until the next pick on ichannel or the next read */
 static struct readreply readreply(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int count, unsigned int offset)
 {
 
@@ -490,7 +487,6 @@ static unsigned int copyfile(unsigned int ichannel, unsigned int target, unsigne
 
 }
 
-/* programs run from mem: only: copy the file into a mem: file of our own, named spawn and the first free number, spawn it and remove it */
 static unsigned int spawn(unsigned int ichannel, unsigned int target, unsigned int id)
 {
 

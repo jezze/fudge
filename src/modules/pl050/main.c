@@ -35,7 +35,6 @@ unsigned char pl050_getdata(unsigned int id)
 
 }
 
-/* waits a bounded time, so a missing device does not hang module loading */
 unsigned char pl050_poll(unsigned int id)
 {
 
@@ -53,7 +52,6 @@ unsigned char pl050_poll(unsigned int id)
 
 }
 
-/* sends a byte to the device and returns its answer (0xFA when acknowledged) */
 unsigned char pl050_command(unsigned int id, unsigned char value)
 {
 

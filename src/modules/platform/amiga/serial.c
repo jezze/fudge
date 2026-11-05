@@ -19,7 +19,6 @@ static struct base_driver driver;
 static struct console_interface consoleinterface;
 static volatile unsigned short *custom = (volatile unsigned short *)REG_CUSTOM;
 
-/* the bus clears the receive interrupt after this */
 static void handleirq(unsigned int irq)
 {
 
@@ -67,7 +66,6 @@ static void driver_reset(unsigned int id)
 
 }
 
-/* the period counts paula's colour clock (3546895 Hz on PAL machines) */
 static void driver_attach(unsigned int id)
 {
 

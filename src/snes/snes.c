@@ -522,7 +522,6 @@ void snes_cpuWrite(void* mem, uint32_t adr, uint8_t val) {
   snes_write(snes, adr, val);
 }
 
-// sync->target follows snes->cycles * mul / div in 32-bit steps (no 64-bit division)
 uint64_t snes_sync(Snes* snes, SnesSync* sync, uint32_t mul, uint32_t div) {
   uint64_t delta = snes->cycles - sync->cycles;
   uint32_t limit = (0xffffffff - div) / mul;

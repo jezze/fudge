@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include "tar.h"
 
-/* an octal field: leading spaces, then digits up to a NUL, a space or the field's end */
 unsigned int tar_readvalue(char *attribute, unsigned int size)
 {
 

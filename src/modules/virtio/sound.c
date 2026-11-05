@@ -114,7 +114,6 @@ static unsigned int framesize;
 static unsigned int txnext;
 static unsigned int txpending;
 
-/* one request at a time on the control queue, waiting for the device's answer and any data after it */
 static unsigned int command(void *request, unsigned int count, void *reply, unsigned int replycount)
 {
 
@@ -198,7 +197,6 @@ static void reclaim(void)
 
 }
 
-/* samples go to the device as they come: virtio wants them little-endian, like WAV */
 static unsigned int audiointerface_setformat(unsigned int rate, unsigned int channels, unsigned int bits)
 {
 

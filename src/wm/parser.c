@@ -244,7 +244,6 @@ static void movecursortoend(struct widget *widget)
 
 }
 
-/* apps send their labels again with every update; one that has not changed needs no drawing */
 static unsigned int issamelabel(struct widget *widget, unsigned int attribute, char *value)
 {
 

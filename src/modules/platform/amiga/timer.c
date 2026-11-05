@@ -50,7 +50,6 @@ static void driver_reset(unsigned int id)
 
 }
 
-/* cia-a's timer a counts the e clock (709379 Hz on PAL machines) down in continuous mode */
 static void driver_attach(unsigned int id)
 {
 

@@ -56,7 +56,6 @@ static unsigned int safename(char *name)
 
 }
 
-/* ustar keeps long names as prefix/name; both fields may fill up without a NUL */
 static void readname(struct tar_header *header, char *name)
 {
 

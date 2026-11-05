@@ -84,7 +84,6 @@ static unsigned int getbutton(unsigned int id)
 
 }
 
-/* both controllers take the keyboard, as upstream does; start and select together reset */
 static void setbutton(unsigned int id, unsigned int pressed)
 {
 
@@ -101,7 +100,6 @@ static void setbutton(unsigned int id, unsigned int pressed)
 
 }
 
-/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
 static void flush(void)
 {
 
@@ -123,7 +121,6 @@ static void flush(void)
 
 }
 
-/* the 256x240 screen at the largest whole scale that fits, centered; in a window the wm scales it */
 static void present(void)
 {
 
@@ -184,7 +181,6 @@ static void present(void)
 
 }
 
-/* mono samples go out as 16-bit stereo, unless the device already holds more than AUDIOLIMIT ticks */
 static void sendaudio(short *samples, unsigned int count)
 {
 
@@ -207,7 +203,6 @@ static void sendaudio(short *samples, unsigned int count)
 
 }
 
-/* the device plays rate / TICKRATE samples a tick; silence tops it up to AUDIOCUSHION ticks after a pause or a stall */
 static void fillaudio(void)
 {
 
@@ -216,7 +211,6 @@ static void fillaudio(void)
 
 }
 
-/* the clock is the timer's counter, so ticks dropped while a frame ran still count; the device plays as much meanwhile */
 static void ontimertick(struct message *message)
 {
 
@@ -252,7 +246,6 @@ static void ontimertick(struct message *message)
 
 }
 
-/* the mixer takes 48000 Hz 16-bit stereo */
 static void setupaudio(void)
 {
 
@@ -336,7 +329,6 @@ static void leavefullscreen(void)
 
 }
 
-/* the grab is answered on channel 1, so channel 0 must have room for what the wm sends before answering: run switches between drains, when its slots are free, and ticks stay away meanwhile */
 static void switchscreen(unsigned int on)
 {
 
@@ -351,7 +343,6 @@ static void switchscreen(unsigned int on)
 
 }
 
-/* frames follow the timer, and what arrived during one (ticks, keys) is taken before the next, so the mailbox never fills and drops keys; a stall of more than CATCHUP frames is skipped */
 static void run(void)
 {
 
@@ -396,7 +387,6 @@ static void run(void)
 
 }
 
-/* Alt+F and Alt+W ask for the screen or the window, when there is a window */
 static void press(unsigned int id, unsigned int mod)
 {
 
@@ -532,7 +522,6 @@ static void onwmack(struct message *message)
 
 }
 
-/* a mem: file the wm shows in a window, made as large as the screen by writing its last pixel */
 static unsigned int createscreen(void)
 {
 
@@ -580,7 +569,6 @@ static void showwindow(char *path)
 
 }
 
-/* the whole file stays on the heap, the mapper points into it */
 static unsigned int load(unsigned int source, char *path)
 {
 

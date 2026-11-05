@@ -34,7 +34,6 @@
 #define FEATURE_VERSION1                (1 << 0)
 #define PAGESIZE                        0x1000
 
-/* the registers are little-endian whatever the cpu is */
 static unsigned int read32(unsigned long base, unsigned int offset)
 {
 
@@ -71,7 +70,6 @@ static void write64(struct virtio_device *device, unsigned int offset, unsigned 
 
 }
 
-/* only mapped slots with a device behind them match */
 unsigned int virtio_match(unsigned int bus, unsigned int id, unsigned int type)
 {
 
@@ -251,7 +249,6 @@ void virtio_notify(struct virtio_queue *queue)
 
 }
 
-/* the slot's line on the PLIC; there is no MSI, so this returns 0 like a PCI device without MSI-X */
 unsigned int virtio_setinterrupt(struct virtio_device *device, unsigned int queues, void (*routine)(unsigned int irq))
 {
 

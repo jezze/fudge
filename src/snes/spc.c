@@ -227,7 +227,6 @@ static void spc_adrDpx_stepped(Spc* spc) {
 }
 
 #if 0
-// deprecated/unused!
 static uint16_t spc_adrDpy(Spc* spc) {
   uint16_t res = ((spc_readOpcode(spc) + spc->y) & 0xff) | (spc->p << 8);
   spc_idle(spc);

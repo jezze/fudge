@@ -25,7 +25,6 @@ void message_init(struct message *message, unsigned int event, unsigned int sour
 
 }
 
-/* the pipe of a task started outside a job: no routes, TERM goes to the owner */
 void message_initpipe(struct message_pipe *pipe)
 {
 

@@ -68,7 +68,6 @@ static char frames[MESSAGE_SIZE + FRAMEMAX];
 static unsigned int framecount;
 static unsigned int framesize;
 
-/* a WAV file's numbers are little-endian */
 static unsigned int read16(void *data)
 {
 
@@ -137,7 +136,6 @@ static int decodemulaw(unsigned int value)
 
 }
 
-/* one sample as signed 16 bits: integers keep their top two bytes */
 static int decode(struct wav *wav, void *data)
 {
 
@@ -191,7 +189,6 @@ static unsigned int checkwav(struct wav *wav)
 
 }
 
-/* an empty format when the service doesn't answer */
 static struct message_audioinfo getinfo(void)
 {
 
@@ -204,7 +201,6 @@ static struct message_audioinfo getinfo(void)
 
 }
 
-/* the mixer answers INFO once it has room for more, which keeps sound from sending faster than it plays */
 static void senddata(unsigned int count, void *buffer)
 {
 
@@ -223,7 +219,6 @@ static void initoutput(struct output *output, unsigned int rate, unsigned int ch
 
 }
 
-/* 16-bit integers in the service's format pass through, anything else is converted to it */
 static unsigned int choose(struct wav *wav, struct output *output)
 {
 
@@ -271,7 +266,6 @@ static void emit(struct output *output, struct resampler *resampler)
 
 }
 
-/* a mono file plays on every channel; with fewer channels out, the first ones are kept */
 static void decodeframe(struct wav *wav, struct resampler *resampler, unsigned int channels, void *data)
 {
 
@@ -283,7 +277,6 @@ static void decodeframe(struct wav *wav, struct resampler *resampler, unsigned i
 
 }
 
-/* linear interpolation; phase counts in steps where one input frame is resampler->to long and one output frame resampler->from */
 static void resample(struct output *output, struct resampler *resampler)
 {
 
@@ -480,7 +473,6 @@ static unsigned int lookup(unsigned int source)
 
 }
 
-/* raw data plays in the service's format, which sound only needs to know the frame size of */
 static unsigned int getframesize(void)
 {
 

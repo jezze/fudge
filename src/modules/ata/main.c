@@ -32,7 +32,6 @@ static void finish(struct block_session *session)
 
 }
 
-/* one interrupt for the whole transfer: the bus master says whether it was ours */
 static void progressdma(struct block_session *session)
 {
 

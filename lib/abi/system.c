@@ -32,7 +32,6 @@ static unsigned int start(char *command, unsigned int length, unsigned int input
 
 }
 
-/* target 0: nobody reads the output, so it goes to log (dropped if log isn't there) */
 unsigned int system_runv(unsigned int target, char *fmt, void **args)
 {
 

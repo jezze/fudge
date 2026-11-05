@@ -51,7 +51,6 @@ static unsigned char memory[ENTRIES * sizeof (struct entry) + ENTRIES * ENTRYSIZ
 static struct entry *entries;
 static unsigned char *buffers;
 
-/* stop pcm out and reset its registers; the next write starts it again */
 static void resetpcmout(void)
 {
 

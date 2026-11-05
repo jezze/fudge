@@ -46,7 +46,6 @@ void net_save32(unsigned char data[4], unsigned int num)
 
 }
 
-/* the internet checksum adds big-endian words, an odd last byte as the high half */
 unsigned int net_sum16(void *data, unsigned int count, unsigned int sum)
 {
 

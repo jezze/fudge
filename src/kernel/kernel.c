@@ -462,7 +462,6 @@ void kernel_notify(struct resource *resource, unsigned int event, unsigned int c
 
 }
 
-/* id 0: the whole image is at base (init), otherwise it is the mem: file id and base its first page */
 static unsigned int loadbinary(struct mmap_header *header, unsigned long base, unsigned int id)
 {
 

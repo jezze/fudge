@@ -1451,7 +1451,6 @@ static unsigned int removenode(unsigned int parent, unsigned int id)
 
 }
 
-/* the request's header and the count bytes after it are all in the message */
 static void oncreaterequest(struct message *message)
 {
 

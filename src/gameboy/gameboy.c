@@ -98,7 +98,6 @@ static void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const unsign
 
 }
 
-/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
 static void flush(void)
 {
 
@@ -283,7 +282,6 @@ static void leavefullscreen(void)
 
 }
 
-/* the grab is answered on channel 1, so channel 0 must have room for what the wm sends before answering: run switches between drains, when its slots are free, and ticks stay away meanwhile */
 static void switchscreen(unsigned int on)
 {
 
@@ -298,7 +296,6 @@ static void switchscreen(unsigned int on)
 
 }
 
-/* a frame runs on each tick */
 static void run(void)
 {
 
@@ -315,7 +312,6 @@ static void run(void)
 
 }
 
-/* Alt+F and Alt+W ask for the screen or the window, when there is a window */
 static void press(unsigned int id, unsigned int mod)
 {
 
@@ -430,7 +426,6 @@ static void setupaudio(void)
 
 }
 
-/* a mem: file the wm shows in a window, made as large as the screen by writing its last pixel */
 static unsigned int createscreen(void)
 {
 

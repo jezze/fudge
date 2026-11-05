@@ -22,7 +22,6 @@ struct date
 
 };
 
-/* days since 1970 to year, month and day (Howard Hinnant's civil_from_days) */
 static struct date getdate(void)
 {
 

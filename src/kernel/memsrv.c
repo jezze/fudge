@@ -39,7 +39,6 @@ static unsigned int nfree;
 static unsigned long base;
 static void (*unmapcallback)(unsigned long vaddress, unsigned int size);
 
-/* a removed file stays used until its last mapping goes */
 static struct file *getused(unsigned int id)
 {
 

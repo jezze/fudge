@@ -46,7 +46,6 @@ static unsigned int crc32(unsigned char *data, unsigned int count)
 
 }
 
-/* a file of our own in mem:, named unzip and the first free number */
 static unsigned int createmem(void)
 {
 
@@ -72,7 +71,6 @@ static unsigned int createmem(void)
 
 }
 
-/* the mem: file refuses writes past its end, so writing the last byte tells whether count + extra bytes fit */
 static unsigned int fit(unsigned int count, unsigned int extra)
 {
 

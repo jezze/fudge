@@ -160,7 +160,6 @@ static void setenable(unsigned int irq, unsigned int enable)
 
 }
 
-/* hart 0's supervisor context: claim each pending source, run its routines and complete it */
 static void handleirq(void)
 {
 

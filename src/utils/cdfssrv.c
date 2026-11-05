@@ -70,7 +70,6 @@ static unsigned int sendblockrequest(unsigned int sector, unsigned int count, un
 
 }
 
-/* metadata sectors are copied out, file reads use the block buffer too */
 static unsigned int readsector(unsigned int sector)
 {
 
@@ -90,7 +89,6 @@ static unsigned int readsector(unsigned int sector)
 
 }
 
-/* records never cross a sector and must hold their name */
 static unsigned int checkentry(unsigned int offset)
 {
 
@@ -115,7 +113,6 @@ static struct node getentrynode(unsigned int offset)
 
 }
 
-/* an id is the byte address of a record; a directory's is its own . record, the start of its extent */
 static struct node getnode(unsigned int id)
 {
 
@@ -146,7 +143,6 @@ static void appendname(struct cursor *cursor, unsigned char c)
 
 }
 
-/* uppercase d-characters: shown in lowercase, without the version and a trailing dot */
 static void getplainname(struct cursor *cursor, unsigned int offset, unsigned int count)
 {
 
@@ -160,7 +156,6 @@ static void getplainname(struct cursor *cursor, unsigned int offset, unsigned in
 
 }
 
-/* big-endian UCS-2, surrogate pairs allowed */
 static void getjolietname(struct cursor *cursor, unsigned int offset, unsigned int count)
 {
 
@@ -195,7 +190,6 @@ static void getjolietname(struct cursor *cursor, unsigned int offset, unsigned i
 
 }
 
-/* NM entries in the record's system use area; continuation areas (CE) are not followed */
 static unsigned int getrockridgename(struct cursor *cursor, unsigned int offset)
 {
 
@@ -263,7 +257,6 @@ static void getname(struct cursor *cursor, unsigned int offset)
 
 }
 
-/* the next record at or after cursor->next; zero bytes pad a sector's end */
 static unsigned int nextentry(struct cursor *cursor)
 {
 
@@ -434,7 +427,6 @@ static unsigned int readfile(struct node *node, unsigned int offset, unsigned in
 
 }
 
-/* the sectors go straight into the target's block buffer; failures return 0 and are read the usual way */
 static unsigned int sendfile(struct node *node, unsigned int offset, unsigned int count, unsigned int target)
 {
 
@@ -480,7 +472,6 @@ static unsigned int isjoliet(struct cdfs_descriptor *descriptor)
 
 }
 
-/* SUSP's SP entry in the root's . record; Rock Ridge names are taken when present */
 static unsigned int hassusp(void)
 {
 
@@ -499,7 +490,6 @@ static unsigned int hassusp(void)
 
 }
 
-/* the primary volume's root, or Joliet's when the primary has no Rock Ridge names */
 static unsigned int findroot(void)
 {
 
