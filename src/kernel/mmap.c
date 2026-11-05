@@ -29,17 +29,6 @@ void mmap_setbinary(struct mmap_entry *entry, unsigned int foffset, unsigned int
 
 }
 
-void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags)
-{
-
-    entry->type = type;
-    entry->paddress = paddress;
-    entry->vaddress = vaddress;
-    entry->size = size;
-    entry->flags = flags;
-
-}
-
 struct mmap_entry *mmap_allocate(struct mmap_header *header, unsigned int type, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags)
 {
 
@@ -48,7 +37,12 @@ struct mmap_entry *mmap_allocate(struct mmap_header *header, unsigned int type, 
 
         struct mmap_entry *entry = &header->entries[header->nentries];
 
-        mmap_initentry(entry, type, paddress, vaddress, size, flags);
+        entry->type = type;
+        entry->paddress = paddress;
+        entry->vaddress = vaddress;
+        entry->size = size;
+        entry->flags = flags;
+
         mmap_setbinary(entry, 0, 0, 0);
 
         header->nentries++;

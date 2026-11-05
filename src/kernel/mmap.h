@@ -36,7 +36,6 @@ struct mmap_header
 
 struct mmap_entry *mmap_find(struct mmap_header *header, unsigned long vaddress);
 void mmap_setbinary(struct mmap_entry *entry, unsigned int foffset, unsigned int fsize, unsigned int msize);
-void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags);
 struct mmap_entry *mmap_allocate(struct mmap_header *header, unsigned int type, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags);
 void mmap_remove(struct mmap_header *header, struct mmap_entry *entry);
 void mmap_initheader(struct mmap_header *header);
