@@ -1,157 +1,196 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <cpu.h>
+#include <arch.h>
 #include <modules/driver.h>
 #include <modules/video.h>
-#include <modules/pic/pic.h>
-#include <modules/apic/apic.h>
 #include <modules/pci/pci.h>
-#include <modules/pit/pit.h>
 #include "i915.h"
 
 static struct base_driver driver;
 static struct video_interface videointerface;
+static struct arch_framebuffer *framebuffer = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
+static unsigned short devices[I915_DEVICES] = {0x9A40, 0x9A49, 0x9A59, 0x9A60, 0x9A68, 0x9A70, 0x9A78, 0x9AC0, 0x9AC9, 0x9AD9, 0x9AF8};
+static unsigned long mmio;
+static unsigned int activewidth;
+static unsigned int activeheight;
 
-static unsigned long read(unsigned long reg)
+static unsigned int readreg(unsigned int offset)
 {
 
-    unsigned long *value = (unsigned long *)(unsigned long)reg;
-
-    return *value;
+    return *(volatile unsigned int *)(mmio + offset);
 
 }
 
-static void write(unsigned long reg, unsigned long val)
+static void writereg(unsigned int offset, unsigned int value)
 {
 
-    unsigned long *value = (unsigned long *)(unsigned long)reg;
-
-    *value = val;
+    *(volatile unsigned int *)(mmio + offset) = value;
 
 }
 
-static void waitvblank(void)
+static unsigned int isdevice(unsigned short device)
 {
 
-    write(I915_PIPEB_STATUS, I915_PIPE_STATUS_VBLANK);
+    unsigned int i;
 
-    while (!(read(I915_PIPEB_STATUS) & I915_PIPE_STATUS_VBLANK));
-
-}
-
-static void disablevga(void)
-{
-
-    write(I915_VGA_CONTROL, I915_VGA_CONTROL_DISABLE);
-
-}
-
-static void enabledpll(void)
-{
-
-    unsigned int pllb = read(I915_DPLLB_CONTROL);
-
-    if (!(pllb & I915_DPLL_CONTROL_ENABLE_VCO))
+    for (i = 0; i < I915_DEVICES; i++)
     {
 
-        write(I915_DPLLB_CONTROL, pllb);
-        read(I915_DPLLB_CONTROL);
-        pit_wait(150);
-        write(I915_DPLLB_CONTROL, pllb | I915_DPLL_CONTROL_ENABLE_VCO);
-        read(I915_DPLLB_CONTROL);
-        pit_wait(150);
-        write(I915_DPLLB_CONTROL, pllb | I915_DPLL_CONTROL_ENABLE_VCO);
-        read(I915_DPLLB_CONTROL);
-        pit_wait(150);
+        if (devices[i] == device)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int ownsframebuffer(unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 6; i++)
+    {
+
+        if (pci_getbar(id, i) == framebuffer->address)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+/* the firmware's mode: transcoder A lit, its plane linear XRGB8888 over the whole pipe, showing the firmware framebuffer */
+static unsigned int checkfirmware(void)
+{
+
+    unsigned int control = readreg(I915_PLANE_CTL_1_A);
+    unsigned int source = readreg(I915_PIPESRC_A);
+
+    if (!(readreg(I915_TRANS_CONF_A) & I915_TRANS_CONF_ENABLE) || !(control & I915_PLANE_CTL_ENABLE))
+        return 0;
+
+    if ((control & I915_PLANE_CTL_FORMAT) != I915_PLANE_CTL_FORMAT_XRGB8888 || (control & I915_PLANE_CTL_TILED))
+        return 0;
+
+    if (readreg(I915_PS_CTRL_1_A) & I915_PS_CTRL_ENABLE)
+        return 0;
+
+    return (source >> 16) + 1 == framebuffer->width && (source & 0xFFFF) + 1 == framebuffer->height && activewidth == framebuffer->width && activeheight == framebuffer->height;
+
+}
+
+/* the pipe scaler stretches the source to the largest centered window with its aspect ratio; the rest shows the pipe's black background */
+static void setscaler(unsigned int width, unsigned int height)
+{
+
+    unsigned int w = activewidth;
+    unsigned int h = activewidth * height / width;
+
+    if (h > activeheight)
+    {
+
+        h = activeheight;
+        w = activeheight * width / height;
+
+    }
+
+    if (width == activewidth && height == activeheight)
+    {
+
+        writereg(I915_PS_CTRL_1_A, 0);
+        writereg(I915_PS_WIN_POS_1_A, 0);
+        writereg(I915_PS_WIN_SZ_1_A, 0);
+
+    }
+
+    else
+    {
+
+        writereg(I915_PS_CTRL_1_A, I915_PS_CTRL_ENABLE);
+        writereg(I915_PS_WIN_POS_1_A, (((activewidth - w) / 2) << 16) | ((activeheight - h) / 2));
+        writereg(I915_PS_WIN_SZ_1_A, (w << 16) | h);
 
     }
 
 }
 
-static void enablepipe(void)
+/* modes up to the firmware's size, width a multiple of 16 (the stride is counted in 64 bytes); others keep the current mode */
+static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
-    write(I915_PIPEB_CONFIG, read(I915_PIPEB_CONFIG) & I915_PIPE_CONFIG_ENABLE);
+    if (mmio && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width <= activewidth && height <= activeheight && !(width % 16))
+    {
 
-}
+        writereg(I915_PIPESRC_A, ((width - 1) << 16) | (height - 1));
+        setscaler(width, height);
+        writereg(I915_PLANE_STRIDE_1_A, width * 4 / 64);
+        writereg(I915_PLANE_SIZE_1_A, ((height - 1) << 16) | (width - 1));
+        writereg(I915_PLANE_SURF_1_A, readreg(I915_PLANE_SURF_1_A));
 
-static void enableplane(void)
-{
+        videointerface.width = width;
+        videointerface.height = height;
 
-    write(I915_DISPLAYB_CONTROL, read(I915_DISPLAYB_CONTROL) & I915_DISPLAY_CONTROL_ENPLANE);
+    }
 
-}
-
-static void setpipemode(unsigned int width, unsigned int height)
-{
-
-    unsigned int htotal = (read(I915_DISPLAYB_HTOTAL) >> 16) + 1;
-    unsigned int hdisplay = (read(I915_DISPLAYB_HTOTAL) & 0xFFFF) + 1;
-    unsigned int hsyncs = (read(I915_DISPLAYB_HSYNC) >> 16) + 1;
-    unsigned int hsynce = (read(I915_DISPLAYB_HSYNC) & 0xFFFF) + 1;
-    unsigned int vtotal = (read(I915_DISPLAYB_VTOTAL) >> 16) + 1;
-    unsigned int vdisplay = (read(I915_DISPLAYB_VTOTAL) & 0xFFFF) + 1;
-    unsigned int vsyncs = (read(I915_DISPLAYB_VSYNC) >> 16) + 1;
-    unsigned int vsynce = (read(I915_DISPLAYB_VSYNC) & 0xFFFF) + 1;
-
-    write(I915_DISPLAYB_HTOTAL, ((htotal - 1) << 16) | ((hdisplay - 1)));
-    write(I915_DISPLAYB_HBLANK, ((htotal - 1) << 16) | ((hdisplay - 1)));
-    write(I915_DISPLAYB_HSYNC, ((hsyncs - 1) << 16) | ((hsynce - 1)));
-    write(I915_DISPLAYB_VTOTAL, ((vtotal - 1) << 16) | ((vdisplay - 1)));
-    write(I915_DISPLAYB_VBLANK, ((vtotal - 1) << 16) | ((vdisplay - 1)));
-    write(I915_DISPLAYB_VSYNC, ((vsyncs - 1) << 16) | ((vsynce - 1)));
-
-}
-
-static void handleirq(unsigned int irq)
-{
+    arch_kmap(framebuffer->address, 0xA0000000, framebuffer->pitch * framebuffer->height, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, 0, 0, 0);
+    video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
+
+    videointerface.width = framebuffer->width;
+    videointerface.height = framebuffer->height;
+    videointerface.bpp = 4;
 
 }
 
 static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    return type == PCI_BUS && pci_inw(id, PCI_CONFIG_VENDOR) == 0x8086 && pci_inw(id, PCI_CONFIG_DEVICE) == 0x27AE;
+    if (type != PCI_BUS || !framebuffer->address || framebuffer->bpp != 32 || framebuffer->pitch != framebuffer->width * 4)
+        return 0;
+
+    return pci_inw(id, PCI_CONFIG_VENDOR) == I915_VENDOR && isdevice(pci_inw(id, PCI_CONFIG_DEVICE)) && ownsframebuffer(id);
 
 }
 
+/* without the firmware's mode as expected the driver only shows the firmware framebuffer, like gop */
 static void driver_reset(unsigned int id)
 {
 
-    enabledpll();
-    enablepipe();
-    enableplane();
-    waitvblank();
-    disablevga();
-    setpipemode(640, 480);
+    mmio = pci_getbar(id, 0);
+
+    if (!mmio)
+        return;
+
+    arch_kmap(mmio, mmio, I915_MMIOSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
+    activewidth = (readreg(I915_TRANS_HTOTAL_A) & 0xFFFF) + 1;
+    activeheight = (readreg(I915_TRANS_VTOTAL_A) & 0xFFFF) + 1;
+
+    if (!checkfirmware())
+        mmio = 0;
 
 }
 
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
-
     video_registerinterface(&videointerface);
-    pic_setroutine(irq, handleirq);
-    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
-
     video_unregisterinterface(&videointerface);
-    pic_unsetroutine(irq, handleirq);
-    apic_unsetroutine(irq, handleirq);
 
 }
 
