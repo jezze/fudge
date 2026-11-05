@@ -62,6 +62,19 @@
 #define I915_WMLEVELS                   8
 #define I915_DBUFSLICE                  1024
 #define I915_LANES                      4
+#define I915_SECONDMAP                  0xA8000000
+#define I915_SECONDLARGE                0x1000000
+#define I915_SECONDSMALL                0x800000
+#define I915_SECONDALIGN                0x40000
+#define I915_SECONDWIDTH                1920
+#define I915_SECONDHEIGHT               1080
+#define I915_STOLENRESERVE              0x800000
+#define I915_GSM                        0x800000
+#define I915_PAGESIZE                   0x1000
+#define I915_GMCH_CTRL                  0x50
+#define I915_BDSM                       0xC0
+#define I915_BDSMLEGACY                 0x5C
+#define I915_BDSM_MASK                  0xFFF00000u
 #define I915_EDIDTRIES                  3
 #define I915_SHPD_FILTER                0x1D9
 
@@ -135,6 +148,7 @@
 #define I915_SHPD_FILTER_CNT            0xC4038
 #define I915_DISPLAY_INT_CTL            0x44200
 #define I915_GFX_MSTR_IRQ               0x190010
+#define I915_GFX_FLSH_CNTL              0x101008
 #define I915_AUX_CTL_A                  0x64010
 #define I915_AUX_DATA_A                 0x64014
 #define I915_PS_WIN_POS_1_A             0x68170
@@ -253,6 +267,7 @@
 #define I915_DISPLAY_INT_PCH            (0x01u << 23)
 #define I915_MSTR_ENABLE                (0x01u << 31)
 #define I915_MSTR_DISPLAY               (0x01u << 16)
+#define I915_PTE_PRESENT                0x01u
 #define I915_PCI_INTXDISABLE            (0x01u << 10)
 #define I915_TRANS_CONF_ENABLE          (0x01u << 31)
 #define I915_PS_CTRL_ENABLE             (0x01u << 31)

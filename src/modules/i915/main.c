@@ -64,6 +64,9 @@ struct aux
 
 static struct base_driver driver;
 static struct video_interface videointerface;
+static struct video_interface secondinterface;
+static unsigned int secondsurface;
+static unsigned int secondsize;
 static struct arch_framebuffer *framebuffer = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
 static unsigned short devices[I915_DEVICES] = {0x9A40, 0x9A49, 0x9A59, 0x9A60, 0x9A68, 0x9A70, 0x9A78, 0x9AC0, 0x9AC9, 0x9AD9, 0x9AF8};
 static unsigned long mmio;
@@ -739,7 +742,7 @@ static void setplane(void)
     writereg(I915_PLANE_POS_1_B, 0);
     writereg(I915_PLANE_OFFSET_1_B, 0);
     writereg(I915_PLANE_CTL_1_B, readreg(I915_PLANE_CTL_1_A));
-    setsource(&pipeb, videointerface.width, videointerface.height, readreg(I915_PLANE_SURF_1_A));
+    setsource(&pipeb, secondinterface.width, secondinterface.height, secondsurface);
 
 }
 
@@ -777,7 +780,7 @@ static unsigned int enablehdmi(void)
     pipeb.activewidth = hdmi.mode.hactive;
     pipeb.activeheight = hdmi.mode.vactive;
     setplane();
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on, mirroring the panel");
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on, showing video:1");
 
     return 1;
 
@@ -1132,15 +1135,127 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 
         setsource(&pipea, width, height, surface);
 
-        if (pipeb.on)
-            setsource(&pipeb, width, height, surface);
-
         videointerface.width = width;
         videointerface.height = height;
 
     }
 
     arch_kmap(framebuffer->address, 0xA0000000, framebuffer->pitch * framebuffer->height, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
+
+}
+
+static void secondinterface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    if (secondsize && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width * height * 4 <= secondsize && !(width % 16))
+    {
+
+        secondinterface.width = width;
+        secondinterface.height = height;
+
+        if (pipeb.on)
+            setsource(&pipeb, width, height, secondsurface);
+
+    }
+
+    arch_kmap(pci_getbar(driver.id, 2) + secondsurface, I915_SECONDMAP, secondsize, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
+
+}
+
+static unsigned long readpte(unsigned long gsm, unsigned int index)
+{
+
+    unsigned long low = *(volatile unsigned int *)(gsm + index * 8);
+    unsigned long high = *(volatile unsigned int *)(gsm + index * 8 + 4);
+
+    return (sizeof (unsigned long) > 4) ? low | ((high << 16) << 16) : low;
+
+}
+
+static void writepte(unsigned long gsm, unsigned int index, unsigned long address)
+{
+
+    *(volatile unsigned int *)(gsm + index * 8 + 4) = (sizeof (unsigned long) > 4) ? (address >> 16) >> 16 : 0;
+    *(volatile unsigned int *)(gsm + index * 8) = (address & 0xFFFFFFFF) | I915_PTE_PRESENT;
+
+}
+
+static unsigned long stolenbase(unsigned int id)
+{
+
+    unsigned long base = pci_ind(id, I915_BDSM) & I915_BDSM_MASK;
+
+    if (sizeof (unsigned long) > 4)
+        base |= ((unsigned long)pci_ind(id, I915_BDSM + 4) << 16) << 16;
+
+    return (base) ? base : pci_ind(id, I915_BDSMLEGACY) & I915_BDSM_MASK;
+
+}
+
+static unsigned long stolensize(unsigned int id)
+{
+
+    unsigned int gms = (pci_inw(id, I915_GMCH_CTRL) >> 8) & 0xFF;
+
+    return (gms < 0xF0) ? gms * 0x2000000UL : (gms - 0xF0 + 1) * 0x400000UL;
+
+}
+
+static void allocatesecond(unsigned int id)
+{
+
+    unsigned long gsm = mmio + I915_GSM;
+    unsigned int first = readreg(I915_PLANE_SURF_1_A) & ~(I915_PAGESIZE - 1);
+    unsigned long table = (gsm + (first / I915_PAGESIZE) * 8) & ~(unsigned long)(I915_PAGESIZE - 1);
+    unsigned int fbsize = (framebuffer->pitch * framebuffer->height + I915_SECONDALIGN - 1) & ~(I915_SECONDALIGN - 1);
+    unsigned long base = stolenbase(id);
+    unsigned long end = base + stolensize(id) - I915_STOLENRESERVE;
+    unsigned long physical;
+    unsigned int pages;
+    unsigned int i;
+
+    arch_kmap(table, table, ((fbsize + I915_SECONDLARGE) / I915_PAGESIZE) * 8 + I915_PAGESIZE * 2, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
+    physical = (readpte(gsm, first / I915_PAGESIZE) & ~(unsigned long)(I915_PAGESIZE - 1)) + fbsize;
+
+    if (!base || physical < base + fbsize)
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: firmware framebuffer not in stolen memory, no video:1");
+
+        return;
+
+    }
+
+    secondsize = (physical + I915_SECONDLARGE <= end) ? I915_SECONDLARGE : (physical + I915_SECONDSMALL <= end) ? I915_SECONDSMALL : 0;
+
+    if (!secondsize)
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no stolen memory left, no video:1");
+
+        return;
+
+    }
+
+    secondsurface = first + fbsize;
+    pages = secondsize / I915_PAGESIZE;
+
+    for (i = 0; i < pages; i++)
+        writepte(gsm, secondsurface / I915_PAGESIZE + i, physical + i * I915_PAGESIZE);
+
+    readpte(gsm, secondsurface / I915_PAGESIZE + pages - 1);
+    writereg(I915_GFX_FLSH_CNTL, 1);
+    arch_kmap(pci_getbar(id, 2) + secondsurface, I915_SECONDMAP, secondsize, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_WRITETHROUGH);
+    buffer_clear((void *)I915_SECONDMAP, secondsize);
+
+    {
+
+        unsigned int megabytes = secondsize >> 20;
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: video:1 framebuffer at GGTT 0x%H8u, %u MB", &secondsurface, &megabytes);
+
+    }
 
 }
 
@@ -1152,6 +1267,12 @@ static void driver_init(unsigned int id)
     videointerface.width = framebuffer->width;
     videointerface.height = framebuffer->height;
     videointerface.bpp = 4;
+
+    video_initinterface(&secondinterface, I915_SECONDMAP, 0, secondinterface_setmode);
+
+    secondinterface.width = I915_SECONDWIDTH;
+    secondinterface.height = I915_SECONDHEIGHT;
+    secondinterface.bpp = 4;
 
 }
 
@@ -1185,7 +1306,10 @@ static void driver_reset(unsigned int id)
 
         probepanel();
 
-        if (hdmi.connected)
+        if (hdmi.found && hdmi.port < I915_COMBOPORTS)
+            allocatesecond(id);
+
+        if (hdmi.connected && secondsize)
             enablehdmi();
 
     }
@@ -1204,8 +1328,13 @@ static void driver_attach(unsigned int id)
 
     video_registerinterface(&videointerface);
 
-    if (mmio && hdmi.found && hdmi.port < I915_COMBOPORTS)
+    if (secondsize)
+    {
+
+        video_registerinterface(&secondinterface);
         enablehotplug(id);
+
+    }
 
 }
 
@@ -1214,9 +1343,10 @@ static void driver_detach(unsigned int id)
 
     video_unregisterinterface(&videointerface);
 
-    if (mmio && hdmi.found && hdmi.port < I915_COMBOPORTS)
+    if (secondsize)
     {
 
+        video_unregisterinterface(&secondinterface);
         writereg(I915_GFX_MSTR_IRQ, 0);
         pic_unsetroutine(pci_getirq(id), handleirq);
         apic_unsetroutine(pci_getirq(id), handleirq);
