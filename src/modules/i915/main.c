@@ -27,6 +27,9 @@ static unsigned long mmio;
 static unsigned int activewidth;
 static unsigned int activeheight;
 static unsigned char edid[I915_EDIDSIZE];
+static unsigned long opregion;
+static unsigned int opregionsize;
+static char ports[I915_PORTS] = "ABCD???BCDAEEFFGGHHII";
 
 static unsigned int readreg(unsigned int offset)
 {
@@ -73,6 +76,174 @@ static unsigned int ownsframebuffer(unsigned int id)
     }
 
     return 0;
+
+}
+
+static unsigned int read8(unsigned int offset)
+{
+
+    return *(volatile unsigned char *)(opregion + offset);
+
+}
+
+static unsigned int read16(unsigned int offset)
+{
+
+    return read8(offset) | (read8(offset + 1) << 8);
+
+}
+
+static unsigned int read32(unsigned int offset)
+{
+
+    return read16(offset) | (read16(offset + 2) << 16);
+
+}
+
+static unsigned int issignature(unsigned int offset, char *signature)
+{
+
+    unsigned int i;
+
+    for (i = 0; signature[i]; i++)
+    {
+
+        if (read8(offset + i) != (unsigned char)signature[i])
+            return 0;
+
+    }
+
+    return 1;
+
+}
+
+/* where the VBT is: mailbox 4, or from OpRegion 2.1 on possibly RVDA (an offset from the OpRegion) */
+static unsigned int findvbt(void)
+{
+
+    if (!issignature(0, "IntelGraphicsMem"))
+        return 0;
+
+    if ((read32(I915_OPREGION_MAILBOXES) & I915_OPREGION_MAILBOX_VBT) && issignature(I915_OPREGION_VBT, "$VBT"))
+        return I915_OPREGION_VBT;
+
+    if (read8(I915_OPREGION_VERSION + 3) > 2 || (read8(I915_OPREGION_VERSION + 3) == 2 && read8(I915_OPREGION_VERSION + 2) >= 1))
+    {
+
+        unsigned int rvda = read32(I915_OPREGION_RVDA);
+
+        if (!read32(I915_OPREGION_RVDA + 4) && rvda && rvda + read32(I915_OPREGION_RVDS) <= opregionsize && issignature(rvda, "$VBT"))
+            return rvda;
+
+    }
+
+    return 0;
+
+}
+
+static char *kindof(unsigned int type)
+{
+
+    unsigned int hdmi = (type & I915_CHILD_TYPE_TMDS) && !(type & I915_CHILD_TYPE_NOTHDMI);
+
+    if (type & I915_CHILD_TYPE_DP)
+        return (type & I915_CHILD_TYPE_INTERNAL) ? "eDP" : (hdmi) ? "DP+HDMI" : "DP";
+
+    return (hdmi) ? "HDMI" : "other";
+
+}
+
+static void logchild(unsigned int child, unsigned int size)
+{
+
+    unsigned int type = read16(child + I915_CHILD_TYPE);
+    unsigned int dvo = read8(child + I915_CHILD_PORT);
+    unsigned int ddc = read8(child + I915_CHILD_DDC);
+    unsigned int aux = read8(child + I915_CHILD_AUX);
+    unsigned int flags = (size >= I915_CHILD_MINSIZE) ? read8(child + I915_CHILD_FLAGS) : 0;
+    char *kind = kindof(type);
+    char *link = (flags & I915_CHILD_FLAGS_TBT) ? " Type-C/TBT" : (flags & I915_CHILD_FLAGS_TYPEC) ? " Type-C" : "";
+    char port[2];
+
+    port[0] = (dvo < I915_PORTS - 1) ? ports[dvo] : '?';
+    port[1] = '\0';
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: VBT port %s %s%s, type 0x%H4u, ddc %u, aux 0x%H2u", port, kind, link, &type, &ddc, &aux);
+
+}
+
+/* the board's outputs from the VBT's general definitions (block 2): one child device per connector */
+static void probevbt(unsigned int id)
+{
+
+    unsigned long asls = pci_ind(id, I915_ASLS);
+    unsigned int vbt;
+    unsigned int bdb;
+    unsigned int end;
+    unsigned int index;
+
+    if (!asls)
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no OpRegion");
+
+        return;
+
+    }
+
+    arch_kmap(asls & ~0xFFFUL, I915_OPREGIONMAP, I915_OPREGIONSIZE, MMAP_FLAG_GLOBAL);
+
+    opregion = I915_OPREGIONMAP + (asls & 0xFFF);
+    opregionsize = I915_OPREGIONSIZE - (asls & 0xFFF);
+    vbt = findvbt();
+
+    if (!vbt || vbt + read32(vbt + I915_VBT_BDB) + I915_BDB_SIZE + 2 > opregionsize)
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no VBT in the OpRegion");
+
+        return;
+
+    }
+
+    bdb = vbt + read32(vbt + I915_VBT_BDB);
+    end = bdb + read16(bdb + I915_BDB_SIZE);
+
+    if (!issignature(bdb, "BIOS_DATA_BLOCK") || end > opregionsize)
+        return;
+
+    for (index = bdb + read16(bdb + I915_BDB_HEADERSIZE); index + 3 <= end; index += 3 + read16(index + 1))
+    {
+
+        if (read8(index) == I915_BDB_GENERAL)
+        {
+
+            unsigned int block = index + 3;
+            unsigned int size = read8(block + I915_GENERAL_CHILDSIZE);
+            unsigned int last = block + read16(index + 1);
+            unsigned int version = read16(bdb + I915_BDB_VERSION);
+            unsigned int child;
+
+            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: VBT version %u, child devices of %u bytes", &version, &size);
+
+            if (!size || last > end)
+                return;
+
+            for (child = block + I915_GENERAL_CHILDREN; child + size <= last; child += size)
+            {
+
+                if (read16(child + I915_CHILD_TYPE))
+                    logchild(child, size);
+
+            }
+
+            return;
+
+        }
+
+    }
+
+    debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no general definitions in the VBT");
 
 }
 
@@ -366,6 +537,7 @@ static void driver_reset(unsigned int id)
         return;
 
     arch_kmap(mmio, mmio, I915_MMIOSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    probevbt(id);
 
     activewidth = (readreg(I915_TRANS_HTOTAL_A) & 0xFFFF) + 1;
     activeheight = (readreg(I915_TRANS_VTOTAL_A) & 0xFFFF) + 1;
