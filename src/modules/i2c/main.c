@@ -5,6 +5,7 @@
 #include <modules/driver.h>
 #include <modules/acpi/acpi.h>
 #include <modules/pci/pci.h>
+#include <modules/cpuid/cpuid.h>
 
 #define VENDOR_INTEL                    0x8086
 #define SUBCLASS_SERIALOTHER            0x80
@@ -22,6 +23,19 @@
 #define PCI_PMCSR                       0x04
 #define PCI_PMCSR_STATE                 0x03
 #define PCI_COMMAND_MEMORY              0x0002
+#define PCI_HEADERTYPE                  0x0E
+#define PCI_HEADERTYPE_MASK             0x7F
+#define PCI_HEADERTYPE_BRIDGE           0x01
+#define PCI_BARS                        6
+#define PCI_BRIDGEBARS                  2
+#define PCI_BAR_TYPE                    0x07
+#define PCI_BAR_MEMORY64                0x04
+#define PCI_BRIDGE_PREFLIMITUPPER       0x2C
+#define HOST_TOUUDUPPER                 0xAC
+#define HOST_TOUUDUPPER_MASK            0x7F
+#define CPUID_EXTENDED                  0x80000000
+#define CPUID_ADDRESSSIZE               0x80000008
+#define ADDRESSBITS_DEFAULT             36
 #define LPSS_RESETS                     0x204
 #define LPSS_RESETS_DONE                0x07
 #define LPSS_REMAPLOW                   0x240
@@ -572,6 +586,102 @@ static void poweron(unsigned int id)
 
 }
 
+static unsigned int getupperlimit(void)
+{
+
+    struct cpuid_data data;
+    unsigned int bits = ADDRESSBITS_DEFAULT;
+
+    cpuid_getdata(CPUID_EXTENDED, &data);
+
+    if (data.eax >= CPUID_ADDRESSSIZE)
+    {
+
+        cpuid_getdata(CPUID_ADDRESSSIZE, &data);
+
+        bits = data.eax & 0xFF;
+
+    }
+
+    return 1 << (bits - 32);
+
+}
+
+static unsigned int max(unsigned int a, unsigned int b)
+{
+
+    return (a > b) ? a : b;
+
+}
+
+static unsigned int getupperinuse(void)
+{
+
+    unsigned int id = pci_next(0);
+    unsigned int upper = 0;
+
+    if (id && pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_BRIDGE && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_BRIDGE_HOST)
+        upper = pci_ind(id, HOST_TOUUDUPPER) & HOST_TOUUDUPPER_MASK;
+
+    for (; id; id = pci_next(id))
+    {
+
+        unsigned int header = pci_inb(id, PCI_HEADERTYPE) & PCI_HEADERTYPE_MASK;
+        unsigned int bars = (header == PCI_HEADERTYPE_BRIDGE) ? PCI_BRIDGEBARS : PCI_BARS;
+        unsigned int i;
+
+        for (i = 0; i + 1 < bars; i++)
+        {
+
+            if ((pci_ind(id, PCI_CONFIG_BAR0 + i * 4) & PCI_BAR_TYPE) == PCI_BAR_MEMORY64)
+            {
+
+                upper = max(upper, pci_ind(id, PCI_CONFIG_BAR0 + (i + 1) * 4));
+                i++;
+
+            }
+
+        }
+
+        if (header == PCI_HEADERTYPE_BRIDGE)
+            upper = max(upper, pci_ind(id, PCI_BRIDGE_PREFLIMITUPPER));
+
+    }
+
+    return upper;
+
+}
+
+static unsigned int assignregisters(unsigned int id)
+{
+
+    unsigned short command = pci_inw(id, PCI_CONFIG_COMMAND);
+    unsigned int inuse;
+    unsigned int upper;
+    unsigned int limit;
+
+    if (sizeof (unsigned long) == 4 || (pci_ind(id, PCI_CONFIG_BAR0) & PCI_BAR_TYPE) != PCI_BAR_MEMORY64)
+        return 0;
+
+    /* firmware leaves these unassigned, as Linux shows assigning them; take a 4 GB slot above everything in use */
+    inuse = getupperinuse();
+    upper = inuse + 2;
+    limit = getupperlimit();
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: highest address in use 0x%H2u00000000, assigning 0x%H2u00000000, limit 0x%H2u00000000", &inuse, &upper, &limit);
+
+    if (upper >= limit)
+        return 0;
+
+    pci_outw(id, PCI_CONFIG_COMMAND, command & ~PCI_COMMAND_MEMORY);
+    pci_outd(id, PCI_CONFIG_BAR0, 0);
+    pci_outd(id, PCI_CONFIG_BAR1, upper);
+    pci_outw(id, PCI_CONFIG_COMMAND, command);
+
+    return pci_ind(id, PCI_CONFIG_BAR1) == upper;
+
+}
+
 static unsigned int disable(void)
 {
 
@@ -783,11 +893,14 @@ static void driver_reset(unsigned int id)
     unsigned long address = pci_getbar(id, 0);
     unsigned int index = getindex(id);
     unsigned int device = pci_inw(id, PCI_CONFIG_DEVICE);
-    unsigned int low = address;
-    unsigned int high = high32(address);
+    unsigned int low;
+    unsigned int high;
     unsigned int comptype;
     unsigned int param;
     unsigned int caps;
+
+    if (!address && assignregisters(id))
+        address = pci_getbar(id, 0);
 
     if (!address)
     {
@@ -797,6 +910,9 @@ static void driver_reset(unsigned int id)
         return;
 
     }
+
+    low = address;
+    high = high32(address);
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: controller %u device 0x%H4u at 0x%H8u%H8u", &index, &device, &high, &low);
     poweron(id);
