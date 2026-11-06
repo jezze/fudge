@@ -26,6 +26,7 @@
 #define DRAINS                          4
 #define STORM                           10000
 #define QUIETTICKS                      30
+#define HEALTHTICKS                     120
 #define P2SB                            (0x80000000 | (0x1F << 11) | (1 << 8))
 #define P2SB_HIDE                       0xE1
 #define SBREG_DEFAULT                   0xFD000000
@@ -282,6 +283,7 @@ static struct hidmouse hidmouse;
 static struct parser parser;
 static struct gpiopad gpiopad;
 static struct stats stats;
+static struct {unsigned int ticks; unsigned int irqs; unsigned int failed; unsigned int abort; unsigned int lastirqs; unsigned int lastfailed;} health;
 static struct spinlock spinlock;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
@@ -1353,6 +1355,8 @@ static unsigned int poll(unsigned int force)
 
             stats.failed++;
             stats.abort = transfer.abort;
+            health.failed++;
+            health.abort = transfer.abort;
 
             break;
 
@@ -1430,6 +1434,25 @@ static void handleirq(unsigned int irq)
 
     gpiopad.spurious = 0;
 
+    /* diagnostic: every two seconds, say if reads failed or the pad's status waits without interrupts */
+    if (gpiopad.found && ++health.ticks == HEALTHTICKS)
+    {
+
+        unsigned int is = readpad(gpiopad.community + GPIO_GPIIS + GPIO_GROUP * 4);
+        unsigned int ie = readpad(gpiopad.community + GPIO_GPIIE + GPIO_GROUP * 4);
+        unsigned int line = readpad(gpiopad.dw0) & GPIO_DW0_RXSTATE;
+        unsigned int failed = health.failed - health.lastfailed;
+        unsigned int irqs = health.irqs - health.lastirqs;
+
+        if (failed || ((is & ie & (1 << GPIO_GROUPBIT)) && !irqs))
+            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: health failed %u abort 0x%H8u irqs %u interrupt %u line %u is 0x%H8u ie 0x%H8u", &failed, &health.abort, &irqs, &gpiopad.interrupt, &line, &is, &ie);
+
+        health.ticks = 0;
+        health.lastirqs = health.irqs;
+        health.lastfailed = health.failed;
+
+    }
+
     /* diagnostic: a summary of each touch, once the pad has been quiet for half a second */
     stats.asserted += asserted;
     stats.timerreports += count;
@@ -1480,6 +1503,7 @@ static void handlegpio(unsigned int irq)
         return;
 
     stats.irqs++;
+    health.irqs++;
 
     if (readpad(is) & (1 << GPIO_GROUPBIT))
     {
