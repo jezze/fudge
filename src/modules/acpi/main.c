@@ -13,6 +13,12 @@
 #define AML_DWORDPREFIX                 0x0C
 #define AML_QWORDPREFIX                 0x0E
 #define AML_SPACE_MEMORY                0x00
+#define AML_NAME                        0x08
+#define AML_ZERO                        0x00
+#define AML_ONE                         0x01
+#define AML_ONES                        0xFF
+#define AML_DUALNAME                    0x2E
+#define AML_MULTINAME                   0x2F
 #define FIELD_RESERVED                  0x00
 #define FIELD_ACCESS                    0x01
 #define FIELD_EXTENDEDACCESS            0x03
@@ -42,6 +48,14 @@ struct integer
 
 };
 
+struct namestring
+{
+
+    unsigned int seg;
+    unsigned int bytes;
+
+};
+
 struct region
 {
 
@@ -57,6 +71,7 @@ struct fieldunit
     unsigned int found;
     unsigned int bitoffset;
     unsigned int bitwidth;
+    char region[5];
 
 };
 
@@ -281,36 +296,181 @@ static struct aml getaml(struct acpi_sdth *header)
 
 }
 
-static struct region findregion(struct aml *aml, char *name)
+static struct acpi_sdth *gettable(unsigned int index)
+{
+
+    return (index) ? acpi_findheader("SSDT", index - 1) : dsdt;
+
+}
+
+/* where the last NameSeg of the NameString at offset is, and how many bytes the NameString takes */
+static struct namestring getnamestring(struct aml *aml, unsigned int offset)
+{
+
+    struct namestring namestring;
+    unsigned int start = offset;
+
+    offset = skipprefixes(aml, offset);
+
+    if (getbyte(aml, offset) == AML_DUALNAME)
+    {
+
+        namestring.seg = offset + 5;
+        namestring.bytes = offset + 9 - start;
+
+    }
+
+    else if (getbyte(aml, offset) == AML_MULTINAME && getbyte(aml, offset + 1))
+    {
+
+        namestring.seg = offset + 2 + (getbyte(aml, offset + 1) - 1) * 4;
+        namestring.bytes = offset + 2 + getbyte(aml, offset + 1) * 4 - start;
+
+    }
+
+    else
+    {
+
+        namestring.seg = offset;
+        namestring.bytes = offset + 4 - start;
+
+    }
+
+    return namestring;
+
+}
+
+/* Name (<name>, <integer>) anywhere in the tables, the way firmware stores addresses it patches at boot */
+static struct integer findnamedinteger(struct aml *name, unsigned int nameoffset)
+{
+
+    struct integer integer;
+    unsigned int t;
+
+    integer.found = 0;
+
+    for (t = 0; t < TABLES; t++)
+    {
+
+        struct acpi_sdth *header = gettable(t);
+        struct aml aml;
+        unsigned int i;
+
+        if (!header)
+            continue;
+
+        aml = getaml(header);
+
+        for (i = 0; i + 5 < aml.length; i++)
+        {
+
+            struct namestring namestring;
+
+            if (getbyte(&aml, i) != AML_NAME)
+                continue;
+
+            namestring = getnamestring(&aml, i + 1);
+
+            if (namestring.seg + 4 <= aml.length && buffer_match(aml.data + namestring.seg, name->data + nameoffset, 4))
+            {
+
+                integer = getinteger(&aml, i + 1 + namestring.bytes);
+
+                if (integer.found)
+                    return integer;
+
+            }
+
+        }
+
+    }
+
+    return integer;
+
+}
+
+/* an integer operand: a constant, or a name holding one */
+static struct integer getoperand(struct aml *aml, unsigned int offset)
+{
+
+    struct integer integer = getinteger(aml, offset);
+    unsigned int b = getbyte(aml, offset);
+
+    if (integer.found)
+        return integer;
+
+    if (b == AML_ZERO || b == AML_ONE || b == AML_ONES)
+    {
+
+        integer.found = 1;
+        integer.value = (b == AML_ONES) ? ~0UL : b;
+        integer.bytes = 1;
+
+        return integer;
+
+    }
+
+    if (b == '\\' || b == '^' || b == '_' || (b >= 'A' && b <= 'Z') || b == AML_DUALNAME || b == AML_MULTINAME)
+    {
+
+        struct namestring namestring = getnamestring(aml, offset);
+
+        integer = findnamedinteger(aml, namestring.seg);
+        integer.bytes = namestring.bytes;
+
+        return integer;
+
+    }
+
+    return integer;
+
+}
+
+static struct region findregion(char *name)
 {
 
     struct region region;
-    unsigned int i;
+    unsigned int t;
 
     region.found = 0;
 
-    for (i = 0; i + 1 < aml->length; i++)
+    for (t = 0; t < TABLES; t++)
     {
 
-        if (getbyte(aml, i) == AML_EXTPREFIX && getbyte(aml, i + 1) == AML_OPREGION)
+        struct acpi_sdth *header = gettable(t);
+        struct aml aml;
+        unsigned int i;
+
+        if (!header)
+            continue;
+
+        aml = getaml(header);
+
+        for (i = 0; i + 1 < aml.length; i++)
         {
 
-            unsigned int offset = skipprefixes(aml, i + 2);
-
-            if (matchname(aml, offset, name) && getbyte(aml, offset + 4) == AML_SPACE_MEMORY)
+            if (getbyte(&aml, i) == AML_EXTPREFIX && getbyte(&aml, i + 1) == AML_OPREGION)
             {
 
-                struct integer address = getinteger(aml, offset + 5);
-                struct integer length = getinteger(aml, offset + 5 + address.bytes);
+                struct namestring namestring = getnamestring(&aml, i + 2);
+                unsigned int offset = i + 2 + namestring.bytes;
 
-                if (address.found && length.found)
+                if (matchname(&aml, namestring.seg, name) && getbyte(&aml, offset) == AML_SPACE_MEMORY)
                 {
 
-                    region.found = 1;
-                    region.address = address.value;
-                    region.length = length.value;
+                    struct integer address = getoperand(&aml, offset + 1);
+                    struct integer length = getoperand(&aml, offset + 1 + address.bytes);
 
-                    return region;
+                    if (address.found && length.found)
+                    {
+
+                        region.found = 1;
+                        region.address = address.value;
+                        region.length = length.value;
+
+                        return region;
+
+                    }
 
                 }
 
@@ -324,7 +484,7 @@ static struct region findregion(struct aml *aml, char *name)
 
 }
 
-static struct fieldunit findfieldunit(struct aml *aml, char *region, char *name)
+static struct fieldunit findfieldunit(struct aml *aml, char *name)
 {
 
     struct fieldunit unit;
@@ -340,14 +500,15 @@ static struct fieldunit findfieldunit(struct aml *aml, char *region, char *name)
 
             struct pkglength pkglength = getpkglength(aml, i + 2);
             unsigned int end = i + 2 + pkglength.length;
-            unsigned int offset = skipprefixes(aml, i + 2 + pkglength.bytes);
+            struct namestring namestring = getnamestring(aml, i + 2 + pkglength.bytes);
+            unsigned int offset = i + 2 + pkglength.bytes + namestring.bytes;
             unsigned int bits = 0;
 
-            if (end > aml->length || !matchname(aml, offset, region))
+            if (end > aml->length || namestring.seg + 4 > aml->length)
                 continue;
 
             /* field list: named and reserved units add their bit widths, access entries take no bits */
-            for (offset += 5; offset < end;)
+            for (offset += 1; offset < end;)
             {
 
                 unsigned int b = getbyte(aml, offset);
@@ -387,6 +548,10 @@ static struct fieldunit findfieldunit(struct aml *aml, char *region, char *name)
                         unit.found = 1;
                         unit.bitoffset = bits;
                         unit.bitwidth = width.length;
+
+                        buffer_copy(unit.region, aml->data + namestring.seg, 4);
+
+                        unit.region[4] = '\0';
 
                         return unit;
 
@@ -437,58 +602,43 @@ static unsigned int readbits(unsigned long address, struct fieldunit *unit)
 
 }
 
-struct acpi_field acpi_readfield(char *region, char *name)
+struct acpi_field acpi_readfield(char *name)
 {
 
     struct acpi_field field;
-    struct region found;
-    unsigned int i;
+    unsigned int t;
 
     field.found = 0;
     field.value = 0;
-    found.found = 0;
 
-    for (i = 0; i < TABLES && !found.found; i++)
+    for (t = 0; t < TABLES; t++)
     {
 
-        struct acpi_sdth *header = (i) ? acpi_findheader("SSDT", i - 1) : dsdt;
-        struct aml aml;
-
-        if (!header)
-            continue;
-
-        aml = getaml(header);
-        found = findregion(&aml, region);
-
-    }
-
-    if (!found.found || !found.address || high32(found.address))
-        return field;
-
-    for (i = 0; i < TABLES; i++)
-    {
-
-        struct acpi_sdth *header = (i) ? acpi_findheader("SSDT", i - 1) : dsdt;
+        struct acpi_sdth *header = gettable(t);
         struct fieldunit unit;
+        struct region region;
         struct aml aml;
 
         if (!header)
             continue;
 
         aml = getaml(header);
-        unit = findfieldunit(&aml, region, name);
+        unit = findfieldunit(&aml, name);
 
-        if (unit.found && (unit.bitoffset + unit.bitwidth + 7) / 8 <= found.length)
-        {
+        if (!unit.found)
+            continue;
 
-            arch_kmap(found.address, found.address, found.length, MMAP_FLAG_GLOBAL);
+        region = findregion(unit.region);
 
-            field.found = 1;
-            field.value = readbits(found.address, &unit);
-
+        if (!region.found || !region.address || high32(region.address) || (unit.bitoffset + unit.bitwidth + 7) / 8 > region.length)
             return field;
 
-        }
+        arch_kmap(region.address, region.address, region.length, MMAP_FLAG_GLOBAL);
+
+        field.found = 1;
+        field.value = readbits(region.address, &unit);
+
+        return field;
 
     }
 

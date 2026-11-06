@@ -150,7 +150,6 @@
 #define AML_DWORDPREFIX                 0x0C
 #define AML_MULTINAME                   0x2F
 #define TOKENS                          3
-#define NVS_REGION                      "GNVS"
 #define AML_EXTPREFIX                   0x5B
 #define AML_DUALNAME                    0x2E
 #define AML_STRING                      0x0D
@@ -328,6 +327,7 @@ static struct mouse_interface mouseinterface;
 static struct touchpad touchpad;
 static struct bus bus;
 static char *bussource = "guessed";
+static struct {unsigned int method; char operand[5]; unsigned int high; unsigned int low; unsigned int hold;} fmcn;
 static unsigned int repeatticks;
 static struct transfer transfer;
 static struct hid hid;
@@ -844,7 +844,7 @@ static unsigned int gettokenvalue(struct scan *scan, struct tokens *tokens, unsi
     buffer_copy(name, scan->aml + tokens->offset[index], 4);
 
     name[4] = '\0';
-    field = acpi_readfield(NVS_REGION, name);
+    field = acpi_readfield(name);
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s.%s %s 0x%H4u", scan->signature, name, field.found ? "is" : "not found, taking", &field.value);
 
@@ -905,6 +905,21 @@ static struct timing findtimingtable(struct scan *scan, char *device, char *meth
             timing.high = gettokenvalue(scan, &tokens, 0);
             timing.low = gettokenvalue(scan, &tokens, 1);
             timing.hold = gettokenvalue(scan, &tokens, 2);
+
+            /* diagnostic: remember what FMCN looked like for the repeated bus line */
+            if (matches(scan, j + 1 + methodlength.bytes, "FMCN", 4))
+            {
+
+                fmcn.method = 1;
+                fmcn.high = timing.high;
+                fmcn.low = timing.low;
+                fmcn.hold = timing.hold;
+
+                buffer_copy(fmcn.operand, (tokens.isname[0]) ? (char *)(scan->aml + tokens.offset[0]) : "int ", 4);
+
+                fmcn.operand[4] = '\0';
+
+            }
 
             return timing;
 
@@ -1804,7 +1819,7 @@ static void handleirq(unsigned int irq)
 
     /* diagnostic: the boot lines scroll away, so repeat the bus setup ten seconds later where log and the wm show it */
     if (++repeatticks == REPEATTICKS)
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: bus %s, high %u low %u hold 0x%H8u", bussource, &bus.high, &bus.low, &bus.hold);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: bus %s, high %u low %u hold 0x%H8u, FMCN method %u first operand %s values %u %u %u", bussource, &bus.high, &bus.low, &bus.hold, &fmcn.method, (fmcn.method) ? fmcn.operand : "-", &fmcn.high, &fmcn.low, &fmcn.hold);
 
     /* diagnostic: every two seconds, say if reads failed or the pad's status waits without interrupts */
     if (gpiopad.found && ++health.ticks == HEALTHTICKS)
