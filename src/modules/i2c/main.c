@@ -24,6 +24,29 @@
 #define TRANSFER_IN                     512
 #define POLLTIMEOUT                     20000
 #define DRAINS                          4
+#define STORM                           10000
+#define P2SB                            (0x80000000 | (0x1F << 11) | (1 << 8))
+#define P2SB_HIDE                       0xE1
+#define SBREG_DEFAULT                   0xFD000000
+#define SBREG_PORTSIZE                  0x10000
+#define GPIO_PORT                       0x6A
+#define GPIO_PAD                        62
+#define GPIO_GROUP                      3
+#define GPIO_GROUPBIT                   7
+#define GPIO_IRQ                        14
+#define GPIO_PADBAR                     0x0C
+#define GPIO_PADSIZE                    16
+#define GPIO_PADCFGLOCK                 0x80
+#define GPIO_HOSTSWOWN                  0xB0
+#define GPIO_GPIIS                      0x100
+#define GPIO_GPIIE                      0x120
+#define GPIO_DW0_RXSTATE                (1 << 1)
+#define GPIO_DW0_TXDIS                  (1 << 8)
+#define GPIO_DW0_RXDIS                  (1 << 9)
+#define GPIO_DW0_PMODE                  (7 << 10)
+#define GPIO_DW0_ROUTES                 (0xF << 17)
+#define GPIO_DW0_RXINV                  (1 << 23)
+#define GPIO_DW0_RXEVCFG                (3 << 25)
 #define RESETDELAY                      200000
 #define TIMERIRQ                        0
 #define USAGES                          16
@@ -203,6 +226,17 @@ struct hidmouse
 
 };
 
+struct gpiopad
+{
+
+    unsigned long community;
+    unsigned long dw0;
+    unsigned int found;
+    unsigned int interrupt;
+    unsigned int spurious;
+
+};
+
 struct parser
 {
 
@@ -227,6 +261,8 @@ static struct transfer transfer;
 static struct hid hid;
 static struct hidmouse hidmouse;
 static struct parser parser;
+static struct gpiopad gpiopad;
+static struct spinlock spinlock;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
 static unsigned short devicestglh[CONTROLLERS] = {0x43E8, 0x43E9, 0x43EA, 0x43EB, 0x43AD, 0x43AE};
@@ -1234,6 +1270,28 @@ static char clamp(int value)
 
 }
 
+static unsigned int readpad(unsigned long address)
+{
+
+    return *(volatile unsigned int *)address;
+
+}
+
+static void writepad(unsigned long address, unsigned int value)
+{
+
+    *(volatile unsigned int *)address = value;
+
+}
+
+static unsigned int ispadasserted(void)
+{
+
+    /* the line is active low; without the pad, read as before and let the device answer empty */
+    return !gpiopad.found || !(readpad(gpiopad.dw0) & GPIO_DW0_RXSTATE);
+
+}
+
 static void notifymove(int x, int y)
 {
 
@@ -1252,7 +1310,7 @@ static void notifymove(int x, int y)
 
 }
 
-static void poll(void)
+static unsigned int poll(void)
 {
 
     unsigned int start = (hidmouse.usesids) ? 3 : 2;
@@ -1263,8 +1321,8 @@ static void poll(void)
     int wheel = 0;
     unsigned int i;
 
-    /* the touchpad keeps only a few reports while nobody reads, so take all it has each tick */
-    for (i = 0; i < DRAINS; i++)
+    /* the touchpad drops a report nobody reads soon after its interrupt, so take all it has now */
+    for (i = 0; i < DRAINS && ispadasserted(); i++)
     {
 
         unsigned int j;
@@ -1296,7 +1354,7 @@ static void poll(void)
     }
 
     if (!seen)
-        return;
+        return 0;
 
     for (i = 0; i < hidmouse.buttoncount; i++)
     {
@@ -1318,12 +1376,146 @@ static void poll(void)
     if (wheel)
         mouse_notifyscroll(&mouseinterface, -clamp(wheel));
 
+    return 1;
+
 }
 
 static void handleirq(unsigned int irq)
 {
 
+    spinlock_acquire(&spinlock);
     poll();
+    spinlock_release(&spinlock);
+
+    gpiopad.spurious = 0;
+
+}
+
+static void stopinterrupt(void)
+{
+
+    unsigned long ie = gpiopad.community + GPIO_GPIIE + GPIO_GROUP * 4;
+
+    writepad(ie, readpad(ie) & ~(1 << GPIO_GROUPBIT));
+
+    gpiopad.interrupt = 0;
+
+}
+
+static void handlegpio(unsigned int irq)
+{
+
+    unsigned long is = gpiopad.community + GPIO_GPIIS + GPIO_GROUP * 4;
+    unsigned int found = 0;
+
+    if (!gpiopad.interrupt)
+        return;
+
+    if (readpad(is) & (1 << GPIO_GROUPBIT))
+    {
+
+        spinlock_acquire(&spinlock);
+
+        found = poll();
+
+        writepad(is, 1 << GPIO_GROUPBIT);
+        spinlock_release(&spinlock);
+
+    }
+
+    /* a line that keeps firing without reports is set up wrong (pad or apic polarity): give up on it and keep polling */
+    gpiopad.spurious = (found) ? 0 : gpiopad.spurious + 1;
+
+    if (gpiopad.spurious == STORM)
+    {
+
+        stopinterrupt();
+        apic_unsetroutine(GPIO_IRQ, handlegpio);
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: touchpad interrupt fires without reports, polling instead");
+
+    }
+
+}
+
+static unsigned long getsbreg(void)
+{
+
+    unsigned long sbreg;
+
+    /* the sideband registers sit behind the hidden P2SB device: show it, read its BAR, hide it again */
+    pci_outb(P2SB, P2SB_HIDE, 0);
+
+    sbreg = pci_ind(P2SB, PCI_CONFIG_BAR0) & 0xFFFFFFF0;
+
+    pci_outb(P2SB, P2SB_HIDE, 1);
+
+    return (!sbreg || sbreg == 0xFFFFFFF0) ? SBREG_DEFAULT : sbreg;
+
+}
+
+static void findpad(void)
+{
+
+    unsigned long community = getsbreg() + (GPIO_PORT << 16);
+    unsigned int padbar;
+    unsigned int dw0;
+    unsigned int lock;
+    unsigned int owner;
+
+    arch_kmap(community, community, SBREG_PORTSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
+    padbar = readpad(community + GPIO_PADBAR);
+
+    if (!padbar || padbar >= SBREG_PORTSIZE - (GPIO_PAD + 1) * GPIO_PADSIZE)
+        return;
+
+    gpiopad.community = community;
+    gpiopad.dw0 = community + padbar + GPIO_PAD * GPIO_PADSIZE;
+
+    dw0 = readpad(gpiopad.dw0);
+    lock = readpad(community + GPIO_PADCFGLOCK + GPIO_GROUP * 8);
+    owner = readpad(community + GPIO_HOSTSWOWN + GPIO_GROUP * 4);
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: touchpad interrupt pad dw0 0x%H8u lock 0x%H8u owner 0x%H8u", &dw0, &lock, &owner);
+
+    /* the touchpad's line is a GPIO input; anything else means this is not the pin */
+    if ((dw0 & GPIO_DW0_PMODE) || (dw0 & GPIO_DW0_RXDIS) || !(dw0 & GPIO_DW0_TXDIS))
+        return;
+
+    gpiopad.found = 1;
+
+}
+
+static void startinterrupt(void)
+{
+
+    unsigned long is = gpiopad.community + GPIO_GPIIS + GPIO_GROUP * 4;
+    unsigned long ie = gpiopad.community + GPIO_GPIIE + GPIO_GROUP * 4;
+    unsigned long owner = gpiopad.community + GPIO_HOSTSWOWN + GPIO_GROUP * 4;
+    unsigned int dw0 = readpad(gpiopad.dw0);
+
+    /* level, inverted so the active low line reads as set, routed to the GPIO controller's shared interrupt instead of SCI, SMI, NMI or the IOxAPIC */
+    dw0 &= ~(GPIO_DW0_ROUTES | GPIO_DW0_RXEVCFG);
+    dw0 |= GPIO_DW0_RXINV;
+
+    writepad(gpiopad.dw0, dw0);
+    writepad(owner, readpad(owner) | (1 << GPIO_GROUPBIT));
+    writepad(is, 1 << GPIO_GROUPBIT);
+
+    if (!apic_setlevel(GPIO_IRQ, 1))
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no apic line for the GPIO interrupt, polling");
+
+        return;
+
+    }
+
+    gpiopad.interrupt = 1;
+
+    apic_setroutine(GPIO_IRQ, handlegpio);
+    writepad(ie, readpad(ie) | (1 << GPIO_GROUPBIT));
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: touchpad interrupt on, pad dw0 0x%H8u", &dw0);
 
 }
 
@@ -1514,6 +1706,10 @@ static void driver_attach(unsigned int id)
         mouse_registerinterface(&mouseinterface);
         pic_setroutine(TIMERIRQ, handleirq);
         apic_setroutine(TIMERIRQ, handleirq);
+        findpad();
+
+        if (gpiopad.found)
+            startinterrupt();
 
     }
 
@@ -1524,6 +1720,14 @@ static void driver_detach(unsigned int id)
 
     if (hidmouse.found)
     {
+
+        if (gpiopad.interrupt)
+        {
+
+            stopinterrupt();
+            apic_unsetroutine(GPIO_IRQ, handlegpio);
+
+        }
 
         pic_unsetroutine(TIMERIRQ, handleirq);
         apic_unsetroutine(TIMERIRQ, handleirq);
@@ -1540,6 +1744,7 @@ void module_init(void)
 {
 
     mouse_initinterface(&mouseinterface);
+    spinlock_init(&spinlock);
 
     touchpad.found = 0;
     touchpad.address = 0;
