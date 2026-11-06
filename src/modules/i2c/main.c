@@ -23,6 +23,7 @@
 #define TRANSFER_OUT                    4
 #define TRANSFER_IN                     512
 #define POLLTIMEOUT                     20000
+#define DRAINS                          4
 #define RESETDELAY                      200000
 #define TIMERIRQ                        0
 #define USAGES                          16
@@ -194,6 +195,7 @@ struct hidmouse
     unsigned int reportid;
     unsigned int buttoncount;
     unsigned int oldbuttons;
+    unsigned int length;
     struct field buttons;
     struct field x;
     struct field y;
@@ -951,7 +953,7 @@ static unsigned int readinput(struct transfer *transfer)
 
     transfer->address = hid.address;
     transfer->outcount = 0;
-    transfer->incount = (hid.inputlength < TRANSFER_IN) ? hid.inputlength : TRANSFER_IN;
+    transfer->incount = hidmouse.length;
     transfer->abort = 0;
     transfer->timeout = POLLTIMEOUT;
 
@@ -1166,6 +1168,11 @@ static void parsereportdescriptor(struct transfer *transfer, struct parser *pars
     }
 
     mouse->found = mouse->x.found && mouse->y.found && mouse->x.relative && mouse->y.relative;
+    mouse->length = 2 + mouse->usesids + (parser->offsets[mouse->reportid] + 7) / 8;
+
+    /* reading just the mouse report keeps each poll short; the length word says what the device had */
+    if (mouse->length > hid.inputlength || mouse->length > TRANSFER_IN)
+        mouse->length = (hid.inputlength < TRANSFER_IN) ? hid.inputlength : TRANSFER_IN;
 
 }
 
@@ -1227,35 +1234,69 @@ static char clamp(int value)
 
 }
 
+static void notifymove(int x, int y)
+{
+
+    while (x || y)
+    {
+
+        char relx = clamp(x);
+        char rely = clamp(y);
+
+        mouse_notifymove(&mouseinterface, relx, rely);
+
+        x -= relx;
+        y -= rely;
+
+    }
+
+}
+
 static void poll(void)
 {
 
-    unsigned int start = 2;
-    unsigned int buttons = 0;
+    unsigned int start = (hidmouse.usesids) ? 3 : 2;
+    unsigned int buttons = hidmouse.oldbuttons;
+    unsigned int seen = 0;
+    int x = 0;
+    int y = 0;
+    int wheel = 0;
     unsigned int i;
-    int x;
-    int y;
 
-    if (!readinput(&transfer) || getinword(&transfer, 0) < 3)
+    /* the touchpad keeps only a few reports while nobody reads, so take all it has each tick */
+    for (i = 0; i < DRAINS; i++)
+    {
+
+        unsigned int j;
+
+        if (!readinput(&transfer) || getinword(&transfer, 0) < start + 1)
+            break;
+
+        if (hidmouse.usesids && transfer.in[2] != hidmouse.reportid)
+            continue;
+
+        buttons = 0;
+
+        for (j = 0; j < hidmouse.buttoncount; j++)
+        {
+
+            if (getbits(&transfer, start, &hidmouse.buttons, j))
+                buttons |= 1 << j;
+
+        }
+
+        x += getbits(&transfer, start, &hidmouse.x, 0);
+        y += getbits(&transfer, start, &hidmouse.y, 0);
+
+        if (hidmouse.wheel.found && hidmouse.wheel.relative)
+            wheel += getbits(&transfer, start, &hidmouse.wheel, 0);
+
+        seen = 1;
+
+    }
+
+    if (!seen)
         return;
-
-    if (hidmouse.usesids)
-    {
-
-        if (transfer.in[2] != hidmouse.reportid)
-            return;
-
-        start = 3;
-
-    }
-
-    for (i = 0; i < hidmouse.buttoncount; i++)
-    {
-
-        if (getbits(&transfer, start, &hidmouse.buttons, i))
-            buttons |= 1 << i;
-
-    }
 
     for (i = 0; i < hidmouse.buttoncount; i++)
     {
@@ -1272,21 +1313,10 @@ static void poll(void)
 
     hidmouse.oldbuttons = buttons;
 
-    x = getbits(&transfer, start, &hidmouse.x, 0);
-    y = getbits(&transfer, start, &hidmouse.y, 0);
+    notifymove(x, y);
 
-    if (x || y)
-        mouse_notifymove(&mouseinterface, clamp(x), clamp(y));
-
-    if (hidmouse.wheel.found && hidmouse.wheel.relative)
-    {
-
-        int wheel = getbits(&transfer, start, &hidmouse.wheel, 0);
-
-        if (wheel)
-            mouse_notifyscroll(&mouseinterface, -clamp(wheel));
-
-    }
+    if (wheel)
+        mouse_notifyscroll(&mouseinterface, -clamp(wheel));
 
 }
 
@@ -1332,7 +1362,7 @@ static void setupmouse(void)
 
     }
 
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: mouse report %u buttons %u at bit %u x %u bits at %u y %u bits at %u wheel %u", &hidmouse.reportid, &hidmouse.buttoncount, &hidmouse.buttons.offset, &hidmouse.x.size, &hidmouse.x.offset, &hidmouse.y.size, &hidmouse.y.offset, &hidmouse.wheel.found);
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: mouse report %u length %u buttons %u at bit %u x %u bits at %u y %u bits at %u wheel %u", &hidmouse.reportid, &hidmouse.length, &hidmouse.buttoncount, &hidmouse.buttons.offset, &hidmouse.x.size, &hidmouse.x.offset, &hidmouse.y.size, &hidmouse.y.offset, &hidmouse.wheel.found);
 
 }
 
