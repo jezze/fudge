@@ -103,6 +103,7 @@
 #define REG_CON                         0x00
 #define REG_CON_MASTER                  (1 << 0)
 #define REG_CON_STANDARD                (1 << 1)
+#define REG_CON_FAST                    (2 << 1)
 #define REG_CON_RESTART                 (1 << 5)
 #define REG_CON_SLAVEDISABLE            (1 << 6)
 #define REG_TAR                         0x04
@@ -112,6 +113,8 @@
 #define REG_DATACMD_RESTART             (1 << 10)
 #define REG_SSHCNT                      0x14
 #define REG_SSLCNT                      0x18
+#define REG_FSHCNT                      0x1C
+#define REG_FSLCNT                      0x20
 #define REG_INTRMASK                    0x30
 #define REG_RAWINTRSTAT                 0x34
 #define REG_RAWINTRSTAT_TXABRT          (1 << 6)
@@ -124,6 +127,7 @@
 #define REG_STATUS_TFNF                 (1 << 1)
 #define REG_STATUS_RFNE                 (1 << 3)
 #define REG_SDAHOLD                     0x7C
+#define REG_SDAHOLD_RXSHIFT             16
 #define REG_TXABRTSOURCE                0x80
 #define REG_ENABLESTATUS                0x9C
 #define REG_COMPPARAM1                  0xF4
@@ -135,6 +139,17 @@
 #define HIDDESC_LENGTH                  30
 #define HIDDESC_VERSION                 0x0100
 #define AML_DEVICE                      0x82
+#define AML_SCOPE                       0x10
+#define AML_METHOD                      0x14
+#define AML_PACKAGE                     0x12
+#define AML_ZERO                        0x00
+#define AML_ONE                         0x01
+#define AML_BYTEPREFIX                  0x0A
+#define AML_WORDPREFIX                  0x0B
+#define AML_DWORDPREFIX                 0x0C
+#define AML_MULTINAME                   0x2F
+#define TOKENS                          3
+#define NVS_REGION                      "GNVS"
 #define AML_EXTPREFIX                   0x5B
 #define AML_DUALNAME                    0x2E
 #define AML_STRING                      0x0D
@@ -168,12 +183,45 @@ struct pkglength
 
 };
 
+struct timing
+{
+
+    unsigned int found;
+    unsigned int high;
+    unsigned int low;
+    unsigned int hold;
+
+};
+
+struct bus
+{
+
+    unsigned int speed;
+    unsigned int hcnt;
+    unsigned int lcnt;
+    unsigned int high;
+    unsigned int low;
+    unsigned int hold;
+
+};
+
+struct tokens
+{
+
+    unsigned int count;
+    unsigned int isname[TOKENS];
+    unsigned int offset[TOKENS];
+    unsigned int value[TOKENS];
+
+};
+
 struct touchpad
 {
 
     unsigned int found;
     unsigned int address;
     unsigned int controller;
+    unsigned int speed;
 
 };
 
@@ -277,6 +325,7 @@ struct parser
 static struct base_driver driver;
 static struct mouse_interface mouseinterface;
 static struct touchpad touchpad;
+static struct bus bus;
 static struct transfer transfer;
 static struct hid hid;
 static struct hidmouse hidmouse;
@@ -466,6 +515,7 @@ static unsigned int scani2c(struct scan *scan, struct device *device, unsigned i
         touchpad.found = 1;
         touchpad.address = address;
         touchpad.controller = getcontroller(scan, source);
+        touchpad.speed = speed;
 
     }
 
@@ -636,6 +686,263 @@ static unsigned int scantables(unsigned int hidonly)
     }
 
     return hits;
+
+}
+
+static struct scan getscan(struct acpi_sdth *header)
+{
+
+    struct scan scan;
+
+    scan.aml = (unsigned char *)(header + 1);
+    scan.length = header->length - sizeof (struct acpi_sdth);
+
+    buffer_copy(scan.signature, header->signature, 4);
+
+    scan.signature[4] = '\0';
+
+    return scan;
+
+}
+
+static unsigned int isnamechar(unsigned int c, unsigned int lead)
+{
+
+    return c == '_' || (c >= 'A' && c <= 'Z') || (!lead && c >= '0' && c <= '9');
+
+}
+
+static unsigned int isnameseg(struct scan *scan, unsigned int offset)
+{
+
+    return isnamechar(getbyte(scan, offset), 1) && isnamechar(getbyte(scan, offset + 1), 0) && isnamechar(getbyte(scan, offset + 2), 0) && isnamechar(getbyte(scan, offset + 3), 0);
+
+}
+
+/* the last segment of the NameString at offset, or the table length when there is none */
+static unsigned int getlastseg(struct scan *scan, unsigned int offset)
+{
+
+    while (getbyte(scan, offset) == '\\' || getbyte(scan, offset) == '^')
+        offset++;
+
+    if (getbyte(scan, offset) == AML_DUALNAME)
+        offset += 5;
+
+    else if (getbyte(scan, offset) == AML_MULTINAME && getbyte(scan, offset + 1))
+        offset += 2 + (getbyte(scan, offset + 1) - 1) * 4;
+
+    return isnameseg(scan, offset) ? offset : scan->length;
+
+}
+
+/* the operands of a short method body like Return (PKG3 (FMH1, FML1, FMD1)) or Return (Package () {0x80, 0xA0, 0x1E}): its last three names or integers */
+static struct tokens gettokens(struct scan *scan, unsigned int start, unsigned int end)
+{
+
+    struct tokens tokens;
+    unsigned int offset = start;
+
+    tokens.count = 0;
+
+    while (offset < end)
+    {
+
+        unsigned int b = getbyte(scan, offset);
+        unsigned int isname = 0;
+        unsigned int value = 0;
+        unsigned int size = 0;
+        unsigned int i;
+
+        if (b == AML_PACKAGE)
+        {
+
+            offset += 1 + getpkglength(scan, offset + 1).bytes + 1;
+
+            continue;
+
+        }
+
+        if (isnameseg(scan, offset))
+        {
+
+            isname = 1;
+            size = 4;
+
+        }
+
+        else if (b == AML_BYTEPREFIX || b == AML_WORDPREFIX || b == AML_DWORDPREFIX)
+        {
+
+            unsigned int bytes = (b == AML_BYTEPREFIX) ? 1 : (b == AML_WORDPREFIX) ? 2 : 4;
+
+            for (i = 0; i < bytes; i++)
+                value |= getbyte(scan, offset + 1 + i) << (i * 8);
+
+            size = 1 + bytes;
+
+        }
+
+        else if (b == AML_ZERO || b == AML_ONE)
+        {
+
+            value = b;
+            size = 1;
+
+        }
+
+        else
+        {
+
+            offset++;
+
+            continue;
+
+        }
+
+        if (tokens.count == TOKENS)
+        {
+
+            for (i = 1; i < TOKENS; i++)
+            {
+
+                tokens.isname[i - 1] = tokens.isname[i];
+                tokens.offset[i - 1] = tokens.offset[i];
+                tokens.value[i - 1] = tokens.value[i];
+
+            }
+
+            tokens.count--;
+
+        }
+
+        tokens.isname[tokens.count] = isname;
+        tokens.offset[tokens.count] = offset;
+        tokens.value[tokens.count] = value;
+        tokens.count++;
+
+        offset += size;
+
+    }
+
+    return tokens;
+
+}
+
+static unsigned int gettokenvalue(struct scan *scan, struct tokens *tokens, unsigned int index)
+{
+
+    char name[5];
+    struct acpi_field field;
+
+    if (!tokens->isname[index])
+        return tokens->value[index];
+
+    buffer_copy(name, scan->aml + tokens->offset[index], 4);
+
+    name[4] = '\0';
+    field = acpi_readfield(NVS_REGION, name);
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s.%s %s 0x%H4u", scan->signature, name, field.found ? "is" : "not found, taking", &field.value);
+
+    return field.value;
+
+}
+
+/* Method (<method>) inside a Device or Scope whose last name segment is <device> */
+static struct timing findtimingtable(struct scan *scan, char *device, char *method)
+{
+
+    struct timing timing;
+    unsigned int i;
+
+    timing.found = 0;
+
+    for (i = 0; i + 1 < scan->length; i++)
+    {
+
+        unsigned int op = (getbyte(scan, i) == AML_EXTPREFIX && getbyte(scan, i + 1) == AML_DEVICE) ? 2 : (getbyte(scan, i) == AML_SCOPE) ? 1 : 0;
+        struct pkglength pkglength;
+        unsigned int end;
+        unsigned int name;
+        unsigned int j;
+
+        if (!op)
+            continue;
+
+        pkglength = getpkglength(scan, i + op);
+        end = i + op + pkglength.length;
+        name = getlastseg(scan, i + op + pkglength.bytes);
+
+        if (end > scan->length || name == scan->length || !matches(scan, name, device, 4))
+            continue;
+
+        for (j = name + 4; j + 6 < end; j++)
+        {
+
+            struct pkglength methodlength;
+            unsigned int methodend;
+            struct tokens tokens;
+
+            if (getbyte(scan, j) != AML_METHOD)
+                continue;
+
+            methodlength = getpkglength(scan, j + 1);
+            methodend = j + 1 + methodlength.length;
+
+            if (methodend > end || !matches(scan, j + 1 + methodlength.bytes, method, 4))
+                continue;
+
+            tokens = gettokens(scan, j + 1 + methodlength.bytes + 5, methodend);
+
+            if (tokens.count < TOKENS)
+                continue;
+
+            timing.found = 1;
+            timing.high = gettokenvalue(scan, &tokens, 0);
+            timing.low = gettokenvalue(scan, &tokens, 1);
+            timing.hold = gettokenvalue(scan, &tokens, 2);
+
+            return timing;
+
+        }
+
+    }
+
+    return timing;
+
+}
+
+static struct timing findtiming(unsigned int controller, char *method)
+{
+
+    struct timing timing;
+    char device[5];
+    unsigned int i;
+
+    buffer_copy(device, "I2C0", 5);
+
+    device[3] = '0' + controller;
+    timing.found = 0;
+
+    for (i = 0; i <= TABLES && !timing.found; i++)
+    {
+
+        struct acpi_sdth *header = (i) ? acpi_findheader("SSDT", i - 1) : acpi_findheader("DSDT", 0);
+        struct scan scan;
+
+        if (!header)
+            continue;
+
+        scan = getscan(header);
+        timing = findtimingtable(&scan, device, method);
+
+    }
+
+    if (timing.found)
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s.%s high %u low %u hold %u", device, method, &timing.high, &timing.low, &timing.hold);
+
+    return timing;
 
 }
 
@@ -844,17 +1151,69 @@ static unsigned int disable(void)
 
 }
 
+static void setbus(unsigned int speed, unsigned int hcnt, unsigned int lcnt, struct timing *timing)
+{
+
+    bus.speed = speed;
+    bus.hcnt = hcnt;
+    bus.lcnt = lcnt;
+    bus.high = timing->high;
+    bus.low = timing->low;
+
+    /* like Linux: hold the transmitted SDA as the firmware says and the received one a cycle */
+    bus.hold = timing->hold | (1 << REG_SDAHOLD_RXSHIFT);
+
+}
+
+/* the counts and SDA hold the firmware gives for the controller (FMCN for 400 kHz, SSCN for 100 kHz), else our own standard mode guess for a 120 MHz clock */
+static void choosebus(unsigned int controller)
+{
+
+    struct timing fast = findtiming(controller, "FMCN");
+    struct timing standard = findtiming(controller, "SSCN");
+
+    if (touchpad.speed >= 400000 && fast.found && fast.high && fast.low)
+    {
+
+        setbus(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &fast);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: fast mode from FMCN");
+
+    }
+
+    else if (standard.found && standard.high && standard.low)
+    {
+
+        setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &standard);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: standard mode from SSCN");
+
+    }
+
+    else
+    {
+
+        struct timing guess;
+
+        guess.high = SSHCNT;
+        guess.low = SSLCNT;
+        guess.hold = SDAHOLD;
+
+        setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &guess);
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no timing from the firmware, standard mode guessed for 120 MHz");
+
+    }
+
+}
+
 static unsigned int setup(void)
 {
 
     if (!disable())
         return 0;
 
-    /* standard mode, counted for a 120 MHz input clock; a faster clock still stays within fast mode */
-    write32(REG_CON, REG_CON_MASTER | REG_CON_STANDARD | REG_CON_RESTART | REG_CON_SLAVEDISABLE);
-    write32(REG_SSHCNT, SSHCNT);
-    write32(REG_SSLCNT, SSLCNT);
-    write32(REG_SDAHOLD, SDAHOLD);
+    write32(REG_CON, REG_CON_MASTER | bus.speed | REG_CON_RESTART | REG_CON_SLAVEDISABLE);
+    write32(bus.hcnt, bus.high);
+    write32(bus.lcnt, bus.low);
+    write32(REG_SDAHOLD, bus.hold);
     write32(REG_INTRMASK, 0);
     write32(REG_RXTL, 0);
     write32(REG_TXTL, 0);
@@ -1776,6 +2135,8 @@ static void driver_reset(unsigned int id)
         return;
 
     }
+
+    choosebus(index);
 
     if (!setup())
     {
