@@ -171,4 +171,13 @@ struct acpi_xsdp
 
 };
 
+struct acpi_field
+{
+
+    unsigned int found;
+    unsigned int value;
+
+};
+
 struct acpi_sdth *acpi_findheader(char *name, unsigned int index);
+struct acpi_field acpi_readfield(char *region, char *name);
