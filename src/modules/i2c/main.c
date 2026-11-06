@@ -291,7 +291,8 @@ static unsigned int scani2c(struct scan *scan, struct device *device, unsigned i
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s %s address 0x%H2u speed %u on %s", scan->signature, device->name, &address, &speed, getstring(scan, source));
 
-    if (hid && !touchpad.found)
+    /* firmware templates leave address 0 (general call) until their methods fill it in */
+    if (hid && address && !touchpad.found)
     {
 
         touchpad.found = 1;
@@ -851,6 +852,13 @@ void module_init(void)
     {
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: PNP0C50 device without a static I2C address");
+
+    }
+
+    else
+    {
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: using address 0x%H2u on controller %u", &touchpad.address, &touchpad.controller);
 
     }
 
