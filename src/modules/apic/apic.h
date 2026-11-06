@@ -71,6 +71,7 @@ unsigned int apic_getid(void);
 void apic_test(void);
 void apic_isr(void);
 void apic_spurious(void);
+unsigned int apic_setlevel(unsigned int irq, unsigned int activelow);
 unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq));
 unsigned int apic_setmsiroutine(void (*routine)(unsigned int irq));
 unsigned int apic_getmsiaddress(void);

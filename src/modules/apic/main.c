@@ -17,6 +17,8 @@
 #define MSR_APIC_ENABLE                 (1 << 11)
 #define MSR_X2APIC                      0x800
 #define MSR_X2APIC_ICR                  0x830
+#define IOAPIC_ACTIVELOW                (1 << 13)
+#define IOAPIC_LEVEL                    (1 << 15)
 #define IOAPIC_MASK                     (1 << 16)
 #define MSIBASE                         0x10
 #define MSIS                            16
@@ -32,6 +34,7 @@ static unsigned int mmio;
 static unsigned int x2apic;
 static unsigned long ioapicbase;
 static unsigned int redirections[OVERRIDES];
+static unsigned int modes[OVERRIDES];
 static struct spinlock spinlock;
 
 static unsigned int hasroutines(unsigned int irq)
@@ -125,6 +128,9 @@ static void updatepin(unsigned int pin)
 
     unsigned int value = redirections[pin];
 
+    if (overrides[pin] < OVERRIDES)
+        value |= modes[overrides[pin]];
+
     if (!hasroutines(overrides[pin]))
         value |= IOAPIC_MASK;
 
@@ -191,8 +197,8 @@ void apic_setupisrs(void)
                     redirections[0x03] = 0x63;
                     redirections[0x04] = 0x64;
                     redirections[0x08] = 0x68;
-                    redirections[0x0A] = 0x6A | (1 << 15);
-                    redirections[0x0B] = 0x6B | (1 << 15);
+                    redirections[0x0A] = 0x6A | IOAPIC_LEVEL;
+                    redirections[0x0B] = 0x6B | IOAPIC_LEVEL;
                     redirections[0x0C] = 0x6C;
                     redirections[0x0E] = 0x6E;
                     redirections[0x0F] = 0x6F;
@@ -453,6 +459,21 @@ unsigned short apic_interruptnone(struct cpu_general *general, struct cpu_interr
     apic_outd(APIC_REG_EOI, 0);
 
     return arch_resume(general, interrupt);
+
+}
+
+unsigned int apic_setlevel(unsigned int irq, unsigned int activelow)
+{
+
+    if (irq >= OVERRIDES)
+        return 0;
+
+    /* kept per irq, because the pins are only programmed once smp.ko sets up the IOAPIC */
+    modes[irq] = IOAPIC_LEVEL | ((activelow) ? IOAPIC_ACTIVELOW : 0);
+
+    updateirq(irq);
+
+    return 1;
 
 }
 
