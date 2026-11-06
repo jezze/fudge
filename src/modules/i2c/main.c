@@ -48,6 +48,7 @@
 #define GPIO_DW0_ROUTES                 (0xF << 17)
 #define GPIO_DW0_RXINV                  (1 << 23)
 #define GPIO_DW0_RXEVCFG                (3 << 25)
+#define GPIO_DW0_RXEVCFG_EDGE           (1 << 25)
 #define RESETDELAY                      200000
 #define TIMERIRQ                        0
 #define USAGES                          16
@@ -1839,11 +1840,12 @@ static void handlegpio(unsigned int irq)
     if (readpad(is) & (1 << GPIO_GROUPBIT))
     {
 
+        /* clear first: the next announcement, even one made while we read, latches again and is not wiped out */
+        writepad(is, 1 << GPIO_GROUPBIT);
         spinlock_acquire(&spinlock);
 
         found = poll(1);
 
-        writepad(is, 1 << GPIO_GROUPBIT);
         spinlock_release(&spinlock);
 
     }
@@ -1919,9 +1921,9 @@ static void startinterrupt(void)
     unsigned long owner = gpiopad.community + GPIO_HOSTSWOWN + GPIO_GROUP * 4;
     unsigned int dw0 = readpad(gpiopad.dw0);
 
-    /* level, inverted so the active low line reads as set, routed to the GPIO controller's shared interrupt instead of SCI, SMI, NMI or the IOxAPIC */
+    /* edge, inverted so each falling edge of the active low line (one announced report) latches the status once, routed to the GPIO controller's shared interrupt instead of SCI, SMI, NMI or the IOxAPIC */
     dw0 &= ~(GPIO_DW0_ROUTES | GPIO_DW0_RXEVCFG);
-    dw0 |= GPIO_DW0_RXINV;
+    dw0 |= GPIO_DW0_RXINV | GPIO_DW0_RXEVCFG_EDGE;
 
     writepad(gpiopad.dw0, dw0);
     writepad(owner, readpad(owner) | (1 << GPIO_GROUPBIT));
