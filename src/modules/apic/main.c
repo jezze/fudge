@@ -152,7 +152,7 @@ static void updateirq(unsigned int irq)
 void apic_setupisrs(void)
 {
 
-    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC", 0);
 
     if (madt)
     {
@@ -223,7 +223,7 @@ void apic_setupisrs(void)
 static void detect(void)
 {
 
-    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC", 0);
 
     if (madt)
     {

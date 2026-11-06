@@ -77,7 +77,7 @@ static void handleirq(unsigned int irq)
 static unsigned long findmmio(void)
 {
 
-    struct acpi_hpet *hpet = (struct acpi_hpet *)acpi_findheader("HPET");
+    struct acpi_hpet *hpet = (struct acpi_hpet *)acpi_findheader("HPET", 0);
 
     if (!hpet || hpet->addressspace != 0)
         return 0;

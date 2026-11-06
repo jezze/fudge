@@ -6,6 +6,7 @@
 
 static unsigned long sdt;
 static unsigned int sdtentrysize;
+static struct acpi_sdth *dsdt;
 
 static unsigned int validate(void *address, unsigned int length)
 {
@@ -70,8 +71,23 @@ static unsigned long getentry(unsigned int index)
 
 }
 
-struct acpi_sdth *acpi_findheader(char *name)
+static void maptable(unsigned long address)
 {
+
+    struct acpi_sdth *header = (struct acpi_sdth *)address;
+
+    arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL);
+
+    if (header->length > 0x00010000)
+        arch_kmap(address, address, header->length, MMAP_FLAG_GLOBAL);
+
+}
+
+struct acpi_sdth *acpi_findheader(char *name, unsigned int index)
+{
+
+    if (buffer_match(name, "DSDT", 4))
+        return (index) ? 0 : dsdt;
 
     if (sdt)
     {
@@ -84,7 +100,14 @@ struct acpi_sdth *acpi_findheader(char *name)
             struct acpi_sdth *entry = (struct acpi_sdth *)getentry(i);
 
             if (buffer_match(entry->signature, name, 4))
-                return entry;
+            {
+
+                if (!index)
+                    return entry;
+
+                index--;
+
+            }
 
         }
 
@@ -155,10 +178,22 @@ void module_init(void)
     if (sdt)
     {
 
+        struct acpi_fadt *fadt;
         unsigned int i;
 
         for (i = 0; i < getcount(); i++)
-            arch_kmap(getentry(i), getentry(i), 0x00010000, MMAP_FLAG_GLOBAL);
+            maptable(getentry(i));
+
+        fadt = (struct acpi_fadt *)acpi_findheader("FACP", 0);
+
+        if (fadt && fadt->dsdt)
+        {
+
+            maptable(fadt->dsdt);
+
+            dsdt = (struct acpi_sdth *)(unsigned long)fadt->dsdt;
+
+        }
 
     }
 

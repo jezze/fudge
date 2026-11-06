@@ -57,7 +57,7 @@ static void coreassign(unsigned int itask)
 void module_init(void)
 {
 
-    if (acpi_findheader("APIC"))
+    if (acpi_findheader("APIC", 0))
     {
 
         unsigned int icore;

@@ -13,6 +13,15 @@ struct acpi_sdth
 
 };
 
+struct acpi_fadt
+{
+
+    struct acpi_sdth base;
+    unsigned int firmwarectrl;
+    unsigned int dsdt;
+
+};
+
 struct acpi_madt
 {
 
@@ -162,4 +171,4 @@ struct acpi_xsdp
 
 };
 
-struct acpi_sdth *acpi_findheader(char *name);
+struct acpi_sdth *acpi_findheader(char *name, unsigned int index);
