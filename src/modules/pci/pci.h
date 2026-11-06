@@ -177,3 +177,4 @@ void pci_unsetmsi(unsigned int id);
 unsigned long pci_getbar(unsigned int id, unsigned int index);
 unsigned int pci_setmsix(unsigned int id, unsigned int entry, unsigned int address, unsigned int data);
 void pci_unsetmsix(unsigned int id);
+unsigned int pci_next(unsigned int id);

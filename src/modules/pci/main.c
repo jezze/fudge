@@ -402,6 +402,13 @@ static unsigned int bus_next(unsigned int id)
 }
 */
 
+unsigned int pci_next(unsigned int id)
+{
+
+    return bus_next(id);
+
+}
+
 void module_init(void)
 {
 
