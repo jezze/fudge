@@ -4,6 +4,9 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/acpi/acpi.h>
+#include <modules/mouse.h>
+#include <modules/pic/pic.h>
+#include <modules/apic/apic.h>
 #include <modules/pci/pci.h>
 #include <modules/cpuid/cpuid.h>
 
@@ -18,7 +21,37 @@
 #define POWERDELAY                      10000
 #define RXFIFO                          8
 #define TRANSFER_OUT                    4
-#define TRANSFER_IN                     32
+#define TRANSFER_IN                     512
+#define POLLTIMEOUT                     20000
+#define RESETDELAY                      200000
+#define TIMERIRQ                        0
+#define USAGES                          16
+#define REPORTIDS                       256
+#define BUTTONS                         3
+#define DUMPLINE                        16
+#define HID_POWERON                     0x0800
+#define HID_RESET                       0x0100
+#define HID_ITEM_SIZE                   0x03
+#define HID_ITEM_LONG                   0xFE
+#define HID_MAIN_INPUT                  0x80
+#define HID_MAIN_COLLECTION             0xA0
+#define HID_MAIN_ENDCOLLECTION          0xC0
+#define HID_GLOBAL_USAGEPAGE            0x04
+#define HID_GLOBAL_REPORTSIZE           0x74
+#define HID_GLOBAL_REPORTID             0x84
+#define HID_GLOBAL_REPORTCOUNT          0x94
+#define HID_LOCAL_USAGE                 0x08
+#define HID_LOCAL_USAGEMIN              0x18
+#define HID_LOCAL_USAGEMAX              0x28
+#define HID_INPUT_CONSTANT              0x01
+#define HID_INPUT_VARIABLE              0x02
+#define HID_INPUT_RELATIVE              0x04
+#define HID_COLLECTION_APPLICATION      0x01
+#define HID_USAGE_MOUSE                 0x00010002
+#define HID_USAGE_X                     0x00010030
+#define HID_USAGE_Y                     0x00010031
+#define HID_USAGE_WHEEL                 0x00010038
+#define HID_PAGE_BUTTON                 0x0009
 #define PCI_CAPABILITY_PM               0x01
 #define PCI_PMCSR                       0x04
 #define PCI_PMCSR_STATE                 0x03
@@ -127,11 +160,71 @@ struct transfer
     unsigned char in[TRANSFER_IN];
     unsigned int incount;
     unsigned int abort;
+    unsigned int timeout;
+
+};
+
+struct hid
+{
+
+    unsigned int address;
+    unsigned int reportregister;
+    unsigned int reportlength;
+    unsigned int inputregister;
+    unsigned int inputlength;
+    unsigned int commandregister;
+
+};
+
+struct field
+{
+
+    unsigned int found;
+    unsigned int offset;
+    unsigned int size;
+    unsigned int relative;
+
+};
+
+struct hidmouse
+{
+
+    unsigned int found;
+    unsigned int usesids;
+    unsigned int reportid;
+    unsigned int buttoncount;
+    unsigned int oldbuttons;
+    struct field buttons;
+    struct field x;
+    struct field y;
+    struct field wheel;
+
+};
+
+struct parser
+{
+
+    unsigned int usagepage;
+    unsigned int reportsize;
+    unsigned int reportcount;
+    unsigned int reportid;
+    unsigned int usages[USAGES];
+    unsigned int nusages;
+    unsigned int usagemin;
+    unsigned int usagemax;
+    unsigned int depth;
+    unsigned int mousedepth;
+    unsigned int offsets[REPORTIDS];
 
 };
 
 static struct base_driver driver;
+static struct mouse_interface mouseinterface;
 static struct touchpad touchpad;
+static struct transfer transfer;
+static struct hid hid;
+static struct hidmouse hidmouse;
+static struct parser parser;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
 static unsigned short devicestglh[CONTROLLERS] = {0x43E8, 0x43E9, 0x43EA, 0x43EB, 0x43AD, 0x43AE};
@@ -725,7 +818,7 @@ static unsigned int runtransfer(struct transfer *transfer)
     read32(REG_CLRINTR);
     write32(REG_ENABLE, 1);
 
-    for (i = 0; i < TIMEOUT; i++)
+    for (i = 0; i < transfer->timeout; i++)
     {
 
         unsigned int status = read32(REG_STATUS);
@@ -815,15 +908,437 @@ static unsigned int readhiddescriptor(struct transfer *transfer, unsigned int ad
     transfer->outcount = 2;
     transfer->incount = HIDDESC_LENGTH;
     transfer->abort = 0;
+    transfer->timeout = TIMEOUT;
 
     return runtransfer(transfer) && getinword(transfer, 0) == HIDDESC_LENGTH && getinword(transfer, 2) == HIDDESC_VERSION;
+
+}
+
+static unsigned int sendcommand(struct transfer *transfer, unsigned int command)
+{
+
+    transfer->address = hid.address;
+    transfer->out[0] = hid.commandregister;
+    transfer->out[1] = hid.commandregister >> 8;
+    transfer->out[2] = command;
+    transfer->out[3] = command >> 8;
+    transfer->outcount = 4;
+    transfer->incount = 0;
+    transfer->abort = 0;
+    transfer->timeout = TIMEOUT;
+
+    return runtransfer(transfer);
+
+}
+
+static unsigned int readreportdescriptor(struct transfer *transfer)
+{
+
+    transfer->address = hid.address;
+    transfer->out[0] = hid.reportregister;
+    transfer->out[1] = hid.reportregister >> 8;
+    transfer->outcount = 2;
+    transfer->incount = hid.reportlength;
+    transfer->abort = 0;
+    transfer->timeout = TIMEOUT;
+
+    return runtransfer(transfer);
+
+}
+
+static unsigned int readinput(struct transfer *transfer)
+{
+
+    transfer->address = hid.address;
+    transfer->outcount = 0;
+    transfer->incount = (hid.inputlength < TRANSFER_IN) ? hid.inputlength : TRANSFER_IN;
+    transfer->abort = 0;
+    transfer->timeout = POLLTIMEOUT;
+
+    return runtransfer(transfer);
+
+}
+
+static void delay(unsigned int count)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+        read32(REG_STATUS);
+
+}
+
+static unsigned int getitemdata(struct transfer *transfer, unsigned int offset, unsigned int size)
+{
+
+    unsigned int value = 0;
+    unsigned int i;
+
+    for (i = 0; i < size; i++)
+        value |= transfer->in[offset + i] << (i * 8);
+
+    return value;
+
+}
+
+static unsigned int getusage(struct parser *parser, unsigned int index)
+{
+
+    if (parser->nusages)
+        return parser->usages[(index < parser->nusages) ? index : parser->nusages - 1];
+
+    if (parser->usagemax >= parser->usagemin)
+        return (parser->usagemin + index <= parser->usagemax) ? parser->usagemin + index : parser->usagemax;
+
+    return 0;
+
+}
+
+static void setfield(struct field *field, unsigned int offset, unsigned int size, unsigned int flags)
+{
+
+    if (field->found)
+        return;
+
+    field->found = 1;
+    field->offset = offset;
+    field->size = size;
+    field->relative = (flags & HID_INPUT_RELATIVE) ? 1 : 0;
+
+}
+
+static void parseinput(struct parser *parser, struct hidmouse *mouse, unsigned int flags)
+{
+
+    unsigned int base = parser->offsets[parser->reportid];
+    unsigned int i;
+
+    parser->offsets[parser->reportid] += parser->reportsize * parser->reportcount;
+
+    if (!parser->mousedepth || (flags & HID_INPUT_CONSTANT))
+        return;
+
+    if (mouse->x.found && mouse->reportid != parser->reportid)
+        return;
+
+    for (i = 0; i < parser->reportcount; i++)
+    {
+
+        unsigned int usage = getusage(parser, i);
+        unsigned int offset = base + i * parser->reportsize;
+
+        if ((usage >> 16) == HID_PAGE_BUTTON && parser->reportsize == 1 && (flags & HID_INPUT_VARIABLE))
+        {
+
+            if (!mouse->buttons.found)
+                setfield(&mouse->buttons, offset, 1, flags);
+
+            if (mouse->buttoncount < BUTTONS && offset == mouse->buttons.offset + mouse->buttoncount)
+                mouse->buttoncount++;
+
+        }
+
+        if (usage == HID_USAGE_X)
+            setfield(&mouse->x, offset, parser->reportsize, flags);
+
+        if (usage == HID_USAGE_Y)
+            setfield(&mouse->y, offset, parser->reportsize, flags);
+
+        if (usage == HID_USAGE_WHEEL)
+            setfield(&mouse->wheel, offset, parser->reportsize, flags);
+
+        mouse->reportid = parser->reportid;
+
+    }
+
+}
+
+static void parsereportdescriptor(struct transfer *transfer, struct parser *parser, struct hidmouse *mouse)
+{
+
+    unsigned int offset = 0;
+
+    buffer_clear(parser, sizeof (struct parser));
+    buffer_clear(mouse, sizeof (struct hidmouse));
+
+    while (offset < transfer->incount)
+    {
+
+        unsigned int prefix = transfer->in[offset];
+        unsigned int size = ((prefix & HID_ITEM_SIZE) == HID_ITEM_SIZE) ? 4 : prefix & HID_ITEM_SIZE;
+        unsigned int data;
+
+        if (prefix == HID_ITEM_LONG)
+        {
+
+            offset += 3 + ((offset + 1 < transfer->incount) ? transfer->in[offset + 1] : 0);
+
+            continue;
+
+        }
+
+        if (offset + 1 + size > transfer->incount)
+            break;
+
+        data = getitemdata(transfer, offset + 1, size);
+
+        switch (prefix & ~HID_ITEM_SIZE)
+        {
+
+        case HID_GLOBAL_USAGEPAGE:
+            parser->usagepage = data;
+
+            break;
+
+        case HID_GLOBAL_REPORTSIZE:
+            parser->reportsize = data;
+
+            break;
+
+        case HID_GLOBAL_REPORTCOUNT:
+            parser->reportcount = data;
+
+            break;
+
+        case HID_GLOBAL_REPORTID:
+            parser->reportid = data % REPORTIDS;
+            mouse->usesids = 1;
+
+            break;
+
+        case HID_LOCAL_USAGE:
+            if (parser->nusages < USAGES)
+            {
+
+                parser->usages[parser->nusages] = (size == 4) ? data : (parser->usagepage << 16) | data;
+                parser->nusages++;
+
+            }
+
+            break;
+
+        case HID_LOCAL_USAGEMIN:
+            parser->usagemin = (size == 4) ? data : (parser->usagepage << 16) | data;
+
+            break;
+
+        case HID_LOCAL_USAGEMAX:
+            parser->usagemax = (size == 4) ? data : (parser->usagepage << 16) | data;
+
+            break;
+
+        case HID_MAIN_INPUT:
+            parseinput(parser, mouse, data);
+
+            break;
+
+        case HID_MAIN_COLLECTION:
+            parser->depth++;
+
+            if (!parser->mousedepth && !mouse->x.found && data == HID_COLLECTION_APPLICATION && getusage(parser, 0) == HID_USAGE_MOUSE)
+                parser->mousedepth = parser->depth;
+
+            break;
+
+        case HID_MAIN_ENDCOLLECTION:
+            if (parser->depth == parser->mousedepth)
+                parser->mousedepth = 0;
+
+            if (parser->depth)
+                parser->depth--;
+
+            break;
+
+        }
+
+        if ((prefix & 0x0C) == 0x00)
+        {
+
+            parser->nusages = 0;
+            parser->usagemin = 0;
+            parser->usagemax = 0;
+
+        }
+
+        offset += 1 + size;
+
+    }
+
+    mouse->found = mouse->x.found && mouse->y.found && mouse->x.relative && mouse->y.relative;
+
+}
+
+static void dumpreportdescriptor(struct transfer *transfer)
+{
+
+    unsigned int offset;
+
+    for (offset = 0; offset < transfer->incount; offset += DUMPLINE)
+    {
+
+        char line[DUMPLINE * 3 + 1];
+        unsigned int count = 0;
+        unsigned int i;
+
+        for (i = offset; i < offset + DUMPLINE && i < transfer->incount; i++)
+        {
+
+            count += cstring_write_value(line, DUMPLINE * 3, transfer->in[i], 16, 2, count);
+            count += buffer_write(line, DUMPLINE * 3, " ", 1, count);
+
+        }
+
+        line[count] = '\0';
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %u: %s", &offset, line);
+
+    }
+
+}
+
+static int getbits(struct transfer *transfer, unsigned int start, struct field *field, unsigned int index)
+{
+
+    unsigned int value = 0;
+    unsigned int i;
+
+    for (i = 0; i < field->size; i++)
+    {
+
+        unsigned int bit = start * 8 + field->offset + index * field->size + i;
+
+        if ((bit >> 3) < transfer->incount && (transfer->in[bit >> 3] & (1 << (bit & 7))))
+            value |= 1 << i;
+
+    }
+
+    if (field->size > 1 && field->size < 32 && (value & (1 << (field->size - 1))))
+        return (int)value - (1 << field->size);
+
+    return value;
+
+}
+
+static char clamp(int value)
+{
+
+    return (value > 127) ? 127 : (value < -127) ? -127 : value;
+
+}
+
+static void poll(void)
+{
+
+    unsigned int start = 2;
+    unsigned int buttons = 0;
+    unsigned int i;
+    int x;
+    int y;
+
+    if (!readinput(&transfer) || getinword(&transfer, 0) < 3)
+        return;
+
+    if (hidmouse.usesids)
+    {
+
+        if (transfer.in[2] != hidmouse.reportid)
+            return;
+
+        start = 3;
+
+    }
+
+    for (i = 0; i < hidmouse.buttoncount; i++)
+    {
+
+        if (getbits(&transfer, start, &hidmouse.buttons, i))
+            buttons |= 1 << i;
+
+    }
+
+    for (i = 0; i < hidmouse.buttoncount; i++)
+    {
+
+        unsigned int bit = 1 << i;
+
+        if (!(hidmouse.oldbuttons & bit) && (buttons & bit))
+            mouse_notifypress(&mouseinterface, i + 1);
+
+        if ((hidmouse.oldbuttons & bit) && !(buttons & bit))
+            mouse_notifyrelease(&mouseinterface, i + 1);
+
+    }
+
+    hidmouse.oldbuttons = buttons;
+
+    x = getbits(&transfer, start, &hidmouse.x, 0);
+    y = getbits(&transfer, start, &hidmouse.y, 0);
+
+    if (x || y)
+        mouse_notifymove(&mouseinterface, clamp(x), clamp(y));
+
+    if (hidmouse.wheel.found && hidmouse.wheel.relative)
+    {
+
+        int wheel = getbits(&transfer, start, &hidmouse.wheel, 0);
+
+        if (wheel)
+            mouse_notifyscroll(&mouseinterface, -clamp(wheel));
+
+    }
+
+}
+
+static void handleirq(unsigned int irq)
+{
+
+    poll();
+
+}
+
+static void setupmouse(void)
+{
+
+    if (!sendcommand(&transfer, HID_POWERON) || !sendcommand(&transfer, HID_RESET))
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: hid power on or reset failed, abort 0x%H8u", &transfer.abort);
+
+        return;
+
+    }
+
+    delay(RESETDELAY);
+
+    if (hid.reportlength > TRANSFER_IN || !readreportdescriptor(&transfer))
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: report descriptor failed, abort 0x%H8u", &transfer.abort);
+
+        return;
+
+    }
+
+    parsereportdescriptor(&transfer, &parser, &hidmouse);
+
+    if (!hidmouse.found)
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no relative mouse in the report descriptor:");
+        dumpreportdescriptor(&transfer);
+
+        return;
+
+    }
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: mouse report %u buttons %u at bit %u x %u bits at %u y %u bits at %u wheel %u", &hidmouse.reportid, &hidmouse.buttoncount, &hidmouse.buttons.offset, &hidmouse.x.size, &hidmouse.x.offset, &hidmouse.y.size, &hidmouse.y.offset, &hidmouse.wheel.found);
 
 }
 
 static void probe(unsigned int address)
 {
 
-    struct transfer transfer;
     unsigned int i;
 
     for (i = 0; i < HIDREGISTERS; i++)
@@ -836,14 +1351,17 @@ static void probe(unsigned int address)
 
             unsigned int vendor = getinword(&transfer, 20);
             unsigned int product = getinword(&transfer, 22);
-            unsigned int reportlength = getinword(&transfer, 4);
-            unsigned int reportregister = getinword(&transfer, 6);
-            unsigned int inputregister = getinword(&transfer, 8);
-            unsigned int inputlength = getinword(&transfer, 10);
-            unsigned int commandregister = getinword(&transfer, 16);
+
+            hid.address = address;
+            hid.reportlength = getinword(&transfer, 4);
+            hid.reportregister = getinword(&transfer, 6);
+            hid.inputregister = getinword(&transfer, 8);
+            hid.inputlength = getinword(&transfer, 10);
+            hid.commandregister = getinword(&transfer, 16);
 
             debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: hid 0x%H2u descriptor at 0x%H4u vendor 0x%H4u product 0x%H4u", &address, &reg, &vendor, &product);
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: report descriptor %u bytes at 0x%H4u input 0x%H4u max %u command 0x%H4u", &reportlength, &reportregister, &inputregister, &inputlength, &commandregister);
+            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: report descriptor %u bytes at 0x%H4u input 0x%H4u max %u command 0x%H4u", &hid.reportlength, &hid.reportregister, &hid.inputregister, &hid.inputlength, &hid.commandregister);
+            setupmouse();
 
             return;
 
@@ -960,10 +1478,28 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    if (hidmouse.found)
+    {
+
+        mouse_registerinterface(&mouseinterface);
+        pic_setroutine(TIMERIRQ, handleirq);
+        apic_setroutine(TIMERIRQ, handleirq);
+
+    }
+
 }
 
 static void driver_detach(unsigned int id)
 {
+
+    if (hidmouse.found)
+    {
+
+        pic_unsetroutine(TIMERIRQ, handleirq);
+        apic_unsetroutine(TIMERIRQ, handleirq);
+        mouse_unregisterinterface(&mouseinterface);
+
+    }
 
     if (mmio)
         disable();
@@ -972,6 +1508,8 @@ static void driver_detach(unsigned int id)
 
 void module_init(void)
 {
+
+    mouse_initinterface(&mouseinterface);
 
     touchpad.found = 0;
     touchpad.address = 0;
