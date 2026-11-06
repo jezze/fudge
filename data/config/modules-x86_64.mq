@@ -18,6 +18,7 @@
     { path: initrd:kernel/ps2-mouse.ko }
     { path: initrd:kernel/gpio.ko }
     { path: initrd:kernel/i2c.ko }
+    { path: initrd:kernel/i2c-hid.ko }
     { path: initrd:kernel/usb.ko }
     { path: initrd:kernel/usb-keyboard.ko }
     { path: initrd:kernel/usb-mouse.ko }
