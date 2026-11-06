@@ -328,6 +328,7 @@ static struct touchpad touchpad;
 static struct bus bus;
 static char *bussource = "guessed";
 static struct {unsigned int method; char operand[5]; unsigned int high; unsigned int low; unsigned int hold;} fmcn;
+static struct {unsigned int count; char table[4][5]; unsigned int offset[4]; unsigned int op[4]; char device[4][5]; char name[4][5];} hits;
 static unsigned int repeatticks;
 static struct transfer transfer;
 static struct hid hid;
@@ -931,6 +932,49 @@ static struct timing findtimingtable(struct scan *scan, char *device, char *meth
 
 }
 
+/* diagnostic: where the bytes of a timing method name occur at all, for when FMCN is not where we look */
+static void findhits(char *name)
+{
+
+    unsigned int t;
+
+    for (t = 0; t <= TABLES; t++)
+    {
+
+        struct acpi_sdth *header = (t) ? acpi_findheader("SSDT", t - 1) : acpi_findheader("DSDT", 0);
+        struct scan scan;
+        unsigned int i;
+
+        if (!header)
+            continue;
+
+        scan = getscan(header);
+
+        for (i = 0; i < scan.length && hits.count < 4; i++)
+        {
+
+            struct device device;
+            unsigned int n = hits.count;
+
+            if (!matches(&scan, i, name, 4))
+                continue;
+
+            device = getdevice(&scan, i);
+
+            buffer_copy(hits.table[n], scan.signature, 5);
+            buffer_copy(hits.device[n], device.name, 5);
+            buffer_copy(hits.name[n], name, 5);
+
+            hits.offset[n] = i;
+            hits.op[n] = (i >= 2 && getbyte(&scan, i - 2) == AML_METHOD) ? AML_METHOD : (i >= 3 && getbyte(&scan, i - 3) == AML_METHOD) ? AML_METHOD : getbyte(&scan, (i) ? i - 1 : 0);
+            hits.count++;
+
+        }
+
+    }
+
+}
+
 static struct timing findtiming(unsigned int controller, char *method)
 {
 
@@ -1187,8 +1231,14 @@ static void setbus(unsigned int speed, unsigned int hcnt, unsigned int lcnt, str
 static void choosebus(unsigned int controller)
 {
 
-    struct timing fast = findtiming(controller, "FMCN");
-    struct timing standard = findtiming(controller, "SSCN");
+    struct timing fast;
+    struct timing standard;
+
+    findhits("FMCN");
+    findhits("SSCN");
+
+    fast = findtiming(controller, "FMCN");
+    standard = findtiming(controller, "SSCN");
 
     if (touchpad.speed >= 400000 && fast.found && fast.high && fast.low)
     {
@@ -1820,6 +1870,19 @@ static void handleirq(unsigned int irq)
     /* diagnostic: the boot lines scroll away, so repeat the bus setup ten seconds later where log and the wm show it */
     if (++repeatticks == REPEATTICKS)
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: bus %s, high %u low %u hold 0x%H8u, FMCN method %u first operand %s values %u %u %u", bussource, &bus.high, &bus.low, &bus.hold, &fmcn.method, (fmcn.method) ? fmcn.operand : "-", &fmcn.high, &fmcn.low, &fmcn.hold);
+
+    if (repeatticks == REPEATTICKS)
+    {
+
+        unsigned int i;
+
+        if (!hits.count)
+            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no FMCN or SSCN anywhere in the tables");
+
+        for (i = 0; i < hits.count; i++)
+            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s in %s at 0x%H8u after 0x%H2u in device %s", hits.name[i], hits.table[i], &hits.offset[i], &hits.op[i], hits.device[i]);
+
+    }
 
     /* diagnostic: every two seconds, say if reads failed or the pad's status waits without interrupts */
     if (gpiopad.found && ++health.ticks == HEALTHTICKS)
