@@ -315,6 +315,7 @@ static struct touchpad touchpad;
 static struct bus bus;
 static struct transfer transfer;
 static unsigned int unread;
+static struct {int x; int y; int wheel;} motion;
 static struct hid hid;
 static struct hidmouse hidmouse;
 static struct parser parser;
@@ -1719,7 +1720,22 @@ static void notifymove(int x, int y)
 
 }
 
-/* one report at a time, so a press and release that arrive in the same drain are both seen */
+/* motion is sent at most once a tick: a task's mailbox holds 8 messages and kernel_notify drops what does not fit, so a stream of moves would push out presses and releases */
+static void flushmotion(void)
+{
+
+    notifymove(motion.x, motion.y);
+
+    if (motion.wheel)
+        mouse_notifyscroll(&mouseinterface, -clamp(motion.wheel));
+
+    motion.x = 0;
+    motion.y = 0;
+    motion.wheel = 0;
+
+}
+
+/* one report at a time, so a press and release that arrive in the same drain are both seen; motion before a button change is sent first to keep the order */
 static void handlereport(struct transfer *transfer, unsigned int start)
 {
 
@@ -1734,7 +1750,14 @@ static void handlereport(struct transfer *transfer, unsigned int start)
 
     }
 
-    notifymove(getbits(transfer, start, &hidmouse.x, 0), getbits(transfer, start, &hidmouse.y, 0));
+    if (buttons != hidmouse.oldbuttons)
+        flushmotion();
+
+    motion.x += getbits(transfer, start, &hidmouse.x, 0);
+    motion.y += getbits(transfer, start, &hidmouse.y, 0);
+
+    if (hidmouse.wheel.found && hidmouse.wheel.relative)
+        motion.wheel += getbits(transfer, start, &hidmouse.wheel, 0);
 
     for (i = 0; i < hidmouse.buttoncount; i++)
     {
@@ -1750,16 +1773,6 @@ static void handlereport(struct transfer *transfer, unsigned int start)
     }
 
     hidmouse.oldbuttons = buttons;
-
-    if (hidmouse.wheel.found && hidmouse.wheel.relative)
-    {
-
-        int wheel = getbits(transfer, start, &hidmouse.wheel, 0);
-
-        if (wheel)
-            mouse_notifyscroll(&mouseinterface, -clamp(wheel));
-
-    }
 
 }
 
@@ -1811,6 +1824,7 @@ static void handleirq(unsigned int irq)
 
     spinlock_acquire(&spinlock);
     poll(unread);
+    flushmotion();
     spinlock_release(&spinlock);
 
     gpiopad.spurious = 0;
