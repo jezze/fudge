@@ -24,6 +24,7 @@
 #define TRANSFER_IN                     512
 #define POLLTIMEOUT                     200000
 #define DRAINS                          4
+#define RETRIES                         2
 #define STORM                           10000
 #define QUIETTICKS                      30
 #define HEALTHTICKS                     120
@@ -339,12 +340,13 @@ static struct {unsigned int method; char operand[5]; unsigned int high; unsigned
 static struct {unsigned int count; char table[4][5]; unsigned int offset[4]; unsigned int op[4]; char device[4][5]; char name[4][5];} hits;
 static unsigned int repeatticks;
 static struct transfer transfer;
+static unsigned int unread;
 static struct hid hid;
 static struct hidmouse hidmouse;
 static struct parser parser;
 static struct gpiopad gpiopad;
 static struct stats stats;
-static struct {unsigned int ticks; unsigned int irqs; unsigned int failed; unsigned int abort; unsigned int timeouts; unsigned int maxloops; unsigned int lastirqs; unsigned int lastfailed;} health;
+static struct {unsigned int ticks; unsigned int irqs; unsigned int failed; unsigned int abort; unsigned int timeouts; unsigned int maxloops; unsigned int retries; unsigned int lastretries; unsigned int lastirqs; unsigned int lastfailed;} health;
 static struct spinlock spinlock;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
@@ -1845,7 +1847,16 @@ static unsigned int poll(unsigned int force)
 
         unsigned int j;
 
-        if (!readinput(&transfer))
+        unsigned int tries;
+        unsigned int ok = 0;
+
+        /* the touchpad announced a report: a read that fails leaves it unread, and it waits for it before announcing more */
+        for (tries = 0; tries <= RETRIES && !(ok = readinput(&transfer)); tries++)
+            health.retries++;
+
+        unread = !ok;
+
+        if (!ok)
         {
 
             stats.failed++;
@@ -1930,7 +1941,7 @@ static void handleirq(unsigned int irq)
     unsigned int count;
 
     spinlock_acquire(&spinlock);
-    count = poll(0);
+    count = poll(unread);
     spinlock_release(&spinlock);
 
     gpiopad.spurious = 0;
@@ -1961,13 +1972,15 @@ static void handleirq(unsigned int irq)
         unsigned int line = readpad(gpiopad.dw0) & GPIO_DW0_RXSTATE;
         unsigned int failed = health.failed - health.lastfailed;
         unsigned int irqs = health.irqs - health.lastirqs;
+        unsigned int retries = health.retries - health.lastretries;
 
-        if (failed || ((is & ie & (1 << GPIO_GROUPBIT)) && !irqs))
-            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: health failed %u timeouts %u abort 0x%H8u most loops %u irqs %u interrupt %u line %u is 0x%H8u ie 0x%H8u", &failed, &health.timeouts, &health.abort, &health.maxloops, &irqs, &gpiopad.interrupt, &line, &is, &ie);
+        if (failed || retries || ((is & ie & (1 << GPIO_GROUPBIT)) && !irqs))
+            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: health retries %u failed %u timeouts %u abort 0x%H8u most loops %u irqs %u interrupt %u line %u is 0x%H8u ie 0x%H8u", &retries, &failed, &health.timeouts, &health.abort, &health.maxloops, &irqs, &gpiopad.interrupt, &line, &is, &ie);
 
         health.ticks = 0;
         health.lastirqs = health.irqs;
         health.lastfailed = health.failed;
+        health.lastretries = health.retries;
 
     }
 
