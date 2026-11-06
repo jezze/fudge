@@ -26,9 +26,6 @@
 #define DRAINS                          4
 #define RETRIES                         2
 #define STORM                           10000
-#define QUIETTICKS                      30
-#define HEALTHTICKS                     120
-#define REPEATTICKS                     600
 #define P2SB                            (0x80000000 | (0x1F << 11) | (1 << 8))
 #define P2SB_HIDE                       0xE1
 #define SBREG_DEFAULT                   0xFD000000
@@ -242,8 +239,6 @@ struct transfer
     unsigned int incount;
     unsigned int abort;
     unsigned int timeout;
-    unsigned int timedout;
-    unsigned int loops;
 
 };
 
@@ -285,24 +280,6 @@ struct hidmouse
 
 };
 
-struct stats
-{
-
-    unsigned int ticks;
-    unsigned int quiet;
-    unsigned int asserted;
-    unsigned int timerreports;
-    unsigned int irqs;
-    unsigned int irqstatus;
-    unsigned int irqreports;
-    unsigned int lastirqreports;
-    unsigned int spurious;
-    unsigned int failed;
-    unsigned int abort;
-    unsigned int empty;
-
-};
-
 struct gpiopad
 {
 
@@ -335,18 +312,12 @@ static struct base_driver driver;
 static struct mouse_interface mouseinterface;
 static struct touchpad touchpad;
 static struct bus bus;
-static char *bussource = "guessed";
-static struct {unsigned int method; char operand[5]; unsigned int high; unsigned int low; unsigned int hold;} fmcn;
-static struct {unsigned int count; char table[4][5]; unsigned int offset[4]; unsigned int op[4]; char device[4][5]; char name[4][5];} hits;
-static unsigned int repeatticks;
 static struct transfer transfer;
 static unsigned int unread;
 static struct hid hid;
 static struct hidmouse hidmouse;
 static struct parser parser;
 static struct gpiopad gpiopad;
-static struct stats stats;
-static struct {unsigned int ticks; unsigned int irqs; unsigned int failed; unsigned int abort; unsigned int timeouts; unsigned int maxloops; unsigned int retries; unsigned int lastretries; unsigned int lastirqs; unsigned int lastfailed;} health;
 static struct spinlock spinlock;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
@@ -917,21 +888,6 @@ static struct timing findtimingtable(struct scan *scan, char *device, char *meth
             timing.low = gettokenvalue(scan, &tokens, 1);
             timing.hold = gettokenvalue(scan, &tokens, 2);
 
-            /* diagnostic: remember what FMCN looked like for the repeated bus line */
-            if (matches(scan, j + 1 + methodlength.bytes, "FMCN", 4))
-            {
-
-                fmcn.method = 1;
-                fmcn.high = timing.high;
-                fmcn.low = timing.low;
-                fmcn.hold = timing.hold;
-
-                buffer_copy(fmcn.operand, (tokens.isname[0]) ? (char *)(scan->aml + tokens.offset[0]) : "int ", 4);
-
-                fmcn.operand[4] = '\0';
-
-            }
-
             return timing;
 
         }
@@ -939,49 +895,6 @@ static struct timing findtimingtable(struct scan *scan, char *device, char *meth
     }
 
     return timing;
-
-}
-
-/* diagnostic: where the bytes of a timing method name occur at all, for when FMCN is not where we look */
-static void findhits(char *name)
-{
-
-    unsigned int t;
-
-    for (t = 0; t <= TABLES; t++)
-    {
-
-        struct acpi_sdth *header = (t) ? acpi_findheader("SSDT", t - 1) : acpi_findheader("DSDT", 0);
-        struct scan scan;
-        unsigned int i;
-
-        if (!header)
-            continue;
-
-        scan = getscan(header);
-
-        for (i = 0; i < scan.length && hits.count < 4; i++)
-        {
-
-            struct device device;
-            unsigned int n = hits.count;
-
-            if (!matches(&scan, i, name, 4))
-                continue;
-
-            device = getdevice(&scan, i);
-
-            buffer_copy(hits.table[n], scan.signature, 5);
-            buffer_copy(hits.device[n], device.name, 5);
-            buffer_copy(hits.name[n], name, 5);
-
-            hits.offset[n] = i;
-            hits.op[n] = (i >= 2 && getbyte(&scan, i - 2) == AML_METHOD) ? AML_METHOD : (i >= 3 && getbyte(&scan, i - 3) == AML_METHOD) ? AML_METHOD : getbyte(&scan, (i) ? i - 1 : 0);
-            hits.count++;
-
-        }
-
-    }
 
 }
 
@@ -1266,9 +1179,6 @@ static void choosebus(unsigned int controller)
     struct timing fast;
     struct timing standard;
 
-    findhits("FMCN");
-    findhits("SSCN");
-
     fast = findtiming(controller, "FMCN");
     standard = findtiming(controller, "SSCN");
 
@@ -1278,8 +1188,6 @@ static void choosebus(unsigned int controller)
         setbus(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &fast);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: fast mode from FMCN");
 
-        bussource = "fast mode from FMCN";
-
     }
 
     else if (standard.found && standard.high && standard.low)
@@ -1287,8 +1195,6 @@ static void choosebus(unsigned int controller)
 
         setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &standard);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: standard mode from SSCN");
-
-        bussource = "standard mode from SSCN";
 
     }
 
@@ -1300,8 +1206,6 @@ static void choosebus(unsigned int controller)
         setbus(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &computed);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, fast mode computed for 120 MHz");
 
-        bussource = "fast mode computed for 120 MHz";
-
     }
 
     else
@@ -1311,8 +1215,6 @@ static void choosebus(unsigned int controller)
 
         setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &computed);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, standard mode computed for 120 MHz");
-
-        bussource = "standard mode computed for 120 MHz";
 
     }
 
@@ -1355,17 +1257,8 @@ static unsigned int runtransfer(struct transfer *transfer)
     unsigned int received = 0;
     unsigned int i;
 
-    transfer->timedout = 0;
-    transfer->loops = 0;
-
     if (!disable())
-    {
-
-        transfer->timedout = 1;
-
         return 0;
-
-    }
 
     write32(REG_TAR, transfer->address);
     read32(REG_CLRINTR);
@@ -1431,8 +1324,6 @@ static unsigned int runtransfer(struct transfer *transfer)
         else if (sent == transfer->outcount && received == transfer->incount && (raw & REG_RAWINTRSTAT_STOPDET))
         {
 
-            transfer->loops = i;
-
             disable();
 
             return 1;
@@ -1440,8 +1331,6 @@ static unsigned int runtransfer(struct transfer *transfer)
         }
 
     }
-
-    transfer->timedout = 1;
 
     stoptransfer();
 
@@ -1846,42 +1735,24 @@ static unsigned int poll(unsigned int force)
     {
 
         unsigned int j;
-
         unsigned int tries;
         unsigned int ok = 0;
 
         /* the touchpad announced a report: a read that fails leaves it unread, and it waits for it before announcing more */
-        for (tries = 0; tries <= RETRIES && !(ok = readinput(&transfer)); tries++)
-            health.retries++;
+        for (tries = 0; tries <= RETRIES && !ok; tries++)
+            ok = readinput(&transfer);
 
         unread = !ok;
 
         if (!ok)
         {
 
-            stats.failed++;
-            stats.abort = transfer.abort;
-            health.failed++;
-            health.timeouts += transfer.timedout;
-
-            if (transfer.abort)
-                health.abort = transfer.abort;
-
             break;
 
         }
-
-        if (transfer.loops > health.maxloops)
-            health.maxloops = transfer.loops;
 
         if (getinword(&transfer, 0) < start + 1)
-        {
-
-            stats.empty++;
-
             break;
-
-        }
 
         if (hidmouse.usesids && transfer.in[2] != hidmouse.reportid)
             continue;
@@ -1937,79 +1808,11 @@ static unsigned int poll(unsigned int force)
 static void handleirq(unsigned int irq)
 {
 
-    unsigned int asserted = gpiopad.found && ispadasserted();
-    unsigned int count;
-
     spinlock_acquire(&spinlock);
-    count = poll(unread);
+    poll(unread);
     spinlock_release(&spinlock);
 
     gpiopad.spurious = 0;
-
-    /* diagnostic: the boot lines scroll away, so repeat the bus setup ten seconds later where log and the wm show it */
-    if (++repeatticks == REPEATTICKS)
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: bus %s, high %u low %u hold 0x%H8u, FMCN method %u first operand %s values %u %u %u", bussource, &bus.high, &bus.low, &bus.hold, &fmcn.method, (fmcn.method) ? fmcn.operand : "-", &fmcn.high, &fmcn.low, &fmcn.hold);
-
-    if (repeatticks == REPEATTICKS)
-    {
-
-        unsigned int i;
-
-        if (!hits.count)
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no FMCN or SSCN anywhere in the tables");
-
-        for (i = 0; i < hits.count; i++)
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s in %s at 0x%H8u after 0x%H2u in device %s", hits.name[i], hits.table[i], &hits.offset[i], &hits.op[i], hits.device[i]);
-
-    }
-
-    /* diagnostic: every two seconds, say if reads failed or the pad's status waits without interrupts */
-    if (gpiopad.found && ++health.ticks == HEALTHTICKS)
-    {
-
-        unsigned int is = readpad(gpiopad.community + GPIO_GPIIS + GPIO_GROUP * 4);
-        unsigned int ie = readpad(gpiopad.community + GPIO_GPIIE + GPIO_GROUP * 4);
-        unsigned int line = readpad(gpiopad.dw0) & GPIO_DW0_RXSTATE;
-        unsigned int failed = health.failed - health.lastfailed;
-        unsigned int irqs = health.irqs - health.lastirqs;
-        unsigned int retries = health.retries - health.lastretries;
-
-        if (failed || retries || ((is & ie & (1 << GPIO_GROUPBIT)) && !irqs))
-            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: health retries %u failed %u timeouts %u abort 0x%H8u most loops %u irqs %u interrupt %u line %u is 0x%H8u ie 0x%H8u", &retries, &failed, &health.timeouts, &health.abort, &health.maxloops, &irqs, &gpiopad.interrupt, &line, &is, &ie);
-
-        health.ticks = 0;
-        health.lastirqs = health.irqs;
-        health.lastfailed = health.failed;
-        health.lastretries = health.retries;
-
-    }
-
-    /* diagnostic: a summary of each touch, once the pad has been quiet for half a second */
-    stats.asserted += asserted;
-    stats.timerreports += count;
-
-    if (count || stats.irqreports || stats.timerreports)
-    {
-
-        stats.ticks++;
-        stats.quiet = (count || stats.irqreports != stats.lastirqreports) ? 0 : stats.quiet + 1;
-        stats.lastirqreports = stats.irqreports;
-
-    }
-
-    if (stats.quiet == QUIETTICKS)
-    {
-
-        unsigned int ticks = stats.ticks - QUIETTICKS;
-        unsigned int dw0 = (gpiopad.found) ? readpad(gpiopad.dw0) : 0;
-        unsigned int is = (gpiopad.found) ? readpad(gpiopad.community + GPIO_GPIIS + GPIO_GROUP * 4) : 0;
-        unsigned int ie = (gpiopad.found) ? readpad(gpiopad.community + GPIO_GPIIE + GPIO_GROUP * 4) : 0;
-
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: touch %u ticks, asserted at %u ticks, timer reports %u, irqs %u with status %u reports %u, empty %u failed %u abort 0x%H8u", &ticks, &stats.asserted, &stats.timerreports, &stats.irqs, &stats.irqstatus, &stats.irqreports, &stats.empty, &stats.failed, &stats.abort);
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: interrupt %u found %u dw0 0x%H8u is 0x%H8u ie 0x%H8u", &gpiopad.interrupt, &gpiopad.found, &dw0, &is, &ie);
-        buffer_clear(&stats, sizeof (struct stats));
-
-    }
 
 }
 
@@ -2033,17 +1836,12 @@ static void handlegpio(unsigned int irq)
     if (!gpiopad.interrupt)
         return;
 
-    stats.irqs++;
-    health.irqs++;
-
     if (readpad(is) & (1 << GPIO_GROUPBIT))
     {
 
         spinlock_acquire(&spinlock);
 
         found = poll(1);
-        stats.irqstatus++;
-        stats.irqreports += found;
 
         writepad(is, 1 << GPIO_GROUPBIT);
         spinlock_release(&spinlock);
