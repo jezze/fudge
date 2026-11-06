@@ -27,6 +27,7 @@
 #define STORM                           10000
 #define QUIETTICKS                      30
 #define HEALTHTICKS                     120
+#define REPEATTICKS                     600
 #define P2SB                            (0x80000000 | (0x1F << 11) | (1 << 8))
 #define P2SB_HIDE                       0xE1
 #define SBREG_DEFAULT                   0xFD000000
@@ -326,6 +327,8 @@ static struct base_driver driver;
 static struct mouse_interface mouseinterface;
 static struct touchpad touchpad;
 static struct bus bus;
+static char *bussource = "guessed";
+static unsigned int repeatticks;
 static struct transfer transfer;
 static struct hid hid;
 static struct hidmouse hidmouse;
@@ -1178,6 +1181,8 @@ static void choosebus(unsigned int controller)
         setbus(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &fast);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: fast mode from FMCN");
 
+        bussource = "fast mode from FMCN";
+
     }
 
     else if (standard.found && standard.high && standard.low)
@@ -1185,6 +1190,8 @@ static void choosebus(unsigned int controller)
 
         setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &standard);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: standard mode from SSCN");
+
+        bussource = "standard mode from SSCN";
 
     }
 
@@ -1199,6 +1206,8 @@ static void choosebus(unsigned int controller)
 
         setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &guess);
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no timing from the firmware, standard mode guessed for 120 MHz");
+
+        bussource = "standard mode guessed for 120 MHz";
 
     }
 
@@ -1792,6 +1801,10 @@ static void handleirq(unsigned int irq)
     spinlock_release(&spinlock);
 
     gpiopad.spurious = 0;
+
+    /* diagnostic: the boot lines scroll away, so repeat the bus setup ten seconds later where log and the wm show it */
+    if (++repeatticks == REPEATTICKS)
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: bus %s, high %u low %u hold 0x%H8u", bussource, &bus.high, &bus.low, &bus.hold);
 
     /* diagnostic: every two seconds, say if reads failed or the pad's status waits without interrupts */
     if (gpiopad.found && ++health.ticks == HEALTHTICKS)
