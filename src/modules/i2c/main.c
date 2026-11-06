@@ -22,7 +22,7 @@
 #define RXFIFO                          8
 #define TRANSFER_OUT                    4
 #define TRANSFER_IN                     512
-#define POLLTIMEOUT                     20000
+#define POLLTIMEOUT                     200000
 #define DRAINS                          4
 #define STORM                           10000
 #define QUIETTICKS                      30
@@ -124,6 +124,8 @@
 #define REG_TXTL                        0x3C
 #define REG_CLRINTR                     0x40
 #define REG_ENABLE                      0x6C
+#define REG_ENABLE_ENABLE               (1 << 0)
+#define REG_ENABLE_ABORT                (1 << 1)
 #define REG_STATUS                      0x70
 #define REG_STATUS_TFNF                 (1 << 1)
 #define REG_STATUS_RFNE                 (1 << 3)
@@ -239,6 +241,8 @@ struct transfer
     unsigned int incount;
     unsigned int abort;
     unsigned int timeout;
+    unsigned int timedout;
+    unsigned int loops;
 
 };
 
@@ -340,7 +344,7 @@ static struct hidmouse hidmouse;
 static struct parser parser;
 static struct gpiopad gpiopad;
 static struct stats stats;
-static struct {unsigned int ticks; unsigned int irqs; unsigned int failed; unsigned int abort; unsigned int lastirqs; unsigned int lastfailed;} health;
+static struct {unsigned int ticks; unsigned int irqs; unsigned int failed; unsigned int abort; unsigned int timeouts; unsigned int maxloops; unsigned int lastirqs; unsigned int lastfailed;} health;
 static struct spinlock spinlock;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
@@ -1330,6 +1334,17 @@ static unsigned int setup(void)
 
 }
 
+/* a transfer that runs out of time is still on the bus: like Linux, have the controller finish it with a STOP before turning it off, so the device is not left holding SDA */
+static void stoptransfer(void)
+{
+
+    write32(REG_ENABLE, REG_ENABLE_ENABLE | REG_ENABLE_ABORT);
+    waitbits32(REG_ENABLE, REG_ENABLE_ABORT, 0);
+    read32(REG_CLRINTR);
+    disable();
+
+}
+
 static unsigned int runtransfer(struct transfer *transfer)
 {
 
@@ -1338,8 +1353,17 @@ static unsigned int runtransfer(struct transfer *transfer)
     unsigned int received = 0;
     unsigned int i;
 
+    transfer->timedout = 0;
+    transfer->loops = 0;
+
     if (!disable())
+    {
+
+        transfer->timedout = 1;
+
         return 0;
+
+    }
 
     write32(REG_TAR, transfer->address);
     read32(REG_CLRINTR);
@@ -1405,6 +1429,8 @@ static unsigned int runtransfer(struct transfer *transfer)
         else if (sent == transfer->outcount && received == transfer->incount && (raw & REG_RAWINTRSTAT_STOPDET))
         {
 
+            transfer->loops = i;
+
             disable();
 
             return 1;
@@ -1413,7 +1439,9 @@ static unsigned int runtransfer(struct transfer *transfer)
 
     }
 
-    disable();
+    transfer->timedout = 1;
+
+    stoptransfer();
 
     return 0;
 
@@ -1823,11 +1851,17 @@ static unsigned int poll(unsigned int force)
             stats.failed++;
             stats.abort = transfer.abort;
             health.failed++;
-            health.abort = transfer.abort;
+            health.timeouts += transfer.timedout;
+
+            if (transfer.abort)
+                health.abort = transfer.abort;
 
             break;
 
         }
+
+        if (transfer.loops > health.maxloops)
+            health.maxloops = transfer.loops;
 
         if (getinword(&transfer, 0) < start + 1)
         {
@@ -1929,7 +1963,7 @@ static void handleirq(unsigned int irq)
         unsigned int irqs = health.irqs - health.lastirqs;
 
         if (failed || ((is & ie & (1 << GPIO_GROUPBIT)) && !irqs))
-            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: health failed %u abort 0x%H8u irqs %u interrupt %u line %u is 0x%H8u ie 0x%H8u", &failed, &health.abort, &irqs, &gpiopad.interrupt, &line, &is, &ie);
+            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: health failed %u timeouts %u abort 0x%H8u most loops %u irqs %u interrupt %u line %u is 0x%H8u ie 0x%H8u", &failed, &health.timeouts, &health.abort, &health.maxloops, &irqs, &gpiopad.interrupt, &line, &is, &ie);
 
         health.ticks = 0;
         health.lastirqs = health.irqs;
