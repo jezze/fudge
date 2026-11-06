@@ -134,9 +134,13 @@
 #define REG_COMPPARAM1                  0xF4
 #define REG_COMPTYPE                    0xFC
 #define COMPTYPE_DESIGNWARE             0x44570140
-#define SSHCNT                          600
-#define SSLCNT                          672
-#define SDAHOLD                         64
+#define CLOCKKHZ                        120000
+#define TSTANDARD_HIGH                  4000
+#define TSTANDARD_LOW                   4700
+#define TFAST_HIGH                      600
+#define TFAST_LOW                       1300
+#define TFALL                           300
+#define TSDAHOLD                        230
 #define HIDDESC_LENGTH                  30
 #define HIDDESC_VERSION                 0x0100
 #define AML_DEVICE                      0x82
@@ -1213,6 +1217,28 @@ static unsigned int disable(void)
 
 }
 
+static unsigned int getcycles(unsigned int ns)
+{
+
+    return (CLOCKKHZ * ns + 500000) / 1000000;
+
+}
+
+/* what Linux computes without FMCN/SSCN: the bus minimum high and low times plus the default 300 ns fall time, less the controller's own cycles, and its 230 ns SDA hold for these Intel controllers */
+static struct timing computetiming(unsigned int high, unsigned int low)
+{
+
+    struct timing timing;
+
+    timing.found = 1;
+    timing.high = getcycles(high + TFALL) - 3;
+    timing.low = getcycles(low + TFALL) - 1;
+    timing.hold = getcycles(TSDAHOLD);
+
+    return timing;
+
+}
+
 static void setbus(unsigned int speed, unsigned int hcnt, unsigned int lcnt, struct timing *timing)
 {
 
@@ -1260,19 +1286,27 @@ static void choosebus(unsigned int controller)
 
     }
 
+    else if (touchpad.speed >= 400000)
+    {
+
+        struct timing computed = computetiming(TFAST_HIGH, TFAST_LOW);
+
+        setbus(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &computed);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, fast mode computed for 120 MHz");
+
+        bussource = "fast mode computed for 120 MHz";
+
+    }
+
     else
     {
 
-        struct timing guess;
+        struct timing computed = computetiming(TSTANDARD_HIGH, TSTANDARD_LOW);
 
-        guess.high = SSHCNT;
-        guess.low = SSLCNT;
-        guess.hold = SDAHOLD;
+        setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &computed);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, standard mode computed for 120 MHz");
 
-        setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &guess);
-        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no timing from the firmware, standard mode guessed for 120 MHz");
-
-        bussource = "standard mode guessed for 120 MHz";
+        bussource = "standard mode computed for 120 MHz";
 
     }
 
