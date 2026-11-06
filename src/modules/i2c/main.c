@@ -10,19 +10,20 @@
 #include <modules/pci/pci.h>
 #include <modules/cpuid/cpuid.h>
 #include <modules/gpio/gpio.h>
+#include <modules/bus.h>
+#include "i2c.h"
 
 #define VENDOR_INTEL                    0x8086
 #define SUBCLASS_SERIALOTHER            0x80
 #define CONTROLLERS                     6
 #define TABLES                          32
+#define DEVICES                         8
 #define HIDREGISTERS                    2
 #define MMIOSIZE                        0x1000
 #define MMIOMAP                         0xB8008000
 #define TIMEOUT                         1000000
 #define POWERDELAY                      10000
 #define RXFIFO                          8
-#define TRANSFER_OUT                    16
-#define TRANSFER_IN                     512
 #define POLLTIMEOUT                     50000
 #define DRAINS                          4
 #define RETRIES                         2
@@ -197,7 +198,7 @@ struct timing
 
 };
 
-struct bus
+struct mode
 {
 
     unsigned int speed;
@@ -219,26 +220,13 @@ struct tokens
 
 };
 
-struct touchpad
+struct client
 {
 
-    unsigned int found;
     unsigned int address;
     unsigned int controller;
     unsigned int speed;
-
-};
-
-struct transfer
-{
-
-    unsigned int address;
-    unsigned char out[TRANSFER_OUT];
-    unsigned int outcount;
-    unsigned char in[TRANSFER_IN];
-    unsigned int incount;
-    unsigned int abort;
-    unsigned int timeout;
+    unsigned int hid;
 
 };
 
@@ -322,9 +310,11 @@ struct parser
 
 static struct base_driver driver;
 static struct mouse_interface mouseinterface;
-static struct touchpad touchpad;
-static struct bus bus;
-static struct transfer transfer;
+static struct base_bus bus;
+static struct client clients[DEVICES];
+static unsigned int nclients;
+static struct mode mode;
+static struct i2c_transfer transfer;
 static unsigned int unread;
 static struct {int x; int y; int wheel;} motion;
 static struct hid hid;
@@ -338,6 +328,7 @@ static struct parser parser;
 static struct gpio_pad pad;
 static unsigned int padinterrupt;
 static struct spinlock spinlock;
+static struct spinlock buslock;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
 static unsigned short devicestglh[CONTROLLERS] = {0x43E8, 0x43E9, 0x43EA, 0x43EB, 0x43AD, 0x43AE};
@@ -494,6 +485,30 @@ static unsigned int getcontroller(struct scan *scan, unsigned int source)
 
 }
 
+static void addclient(unsigned int address, unsigned int index, unsigned int speed, unsigned int hid)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < nclients; i++)
+    {
+
+        if (clients[i].address == address && clients[i].controller == index)
+            return;
+
+    }
+
+    if (nclients == DEVICES)
+        return;
+
+    clients[nclients].address = address;
+    clients[nclients].controller = index;
+    clients[nclients].speed = speed;
+    clients[nclients].hid = hid;
+    nclients++;
+
+}
+
 static unsigned int scani2c(struct scan *scan, struct device *device, unsigned int offset, unsigned int hid)
 {
 
@@ -513,15 +528,8 @@ static unsigned int scani2c(struct scan *scan, struct device *device, unsigned i
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s %s address 0x%H2u speed %u on %s", scan->signature, device->name, &address, &speed, getstring(scan, source));
 
     /* firmware templates leave address 0 (general call) until their methods fill it in */
-    if (hid && address && !touchpad.found)
-    {
-
-        touchpad.found = 1;
-        touchpad.address = address;
-        touchpad.controller = getcontroller(scan, source);
-        touchpad.speed = speed;
-
-    }
+    if (hid && address)
+        addclient(address, getcontroller(scan, source), speed, hid);
 
     return 1;
 
@@ -1177,34 +1185,34 @@ static struct timing computetiming(unsigned int high, unsigned int low)
 
 }
 
-static void setbus(unsigned int speed, unsigned int hcnt, unsigned int lcnt, struct timing *timing)
+static void setmode(unsigned int speed, unsigned int hcnt, unsigned int lcnt, struct timing *timing)
 {
 
-    bus.speed = speed;
-    bus.hcnt = hcnt;
-    bus.lcnt = lcnt;
-    bus.high = timing->high;
-    bus.low = timing->low;
+    mode.speed = speed;
+    mode.hcnt = hcnt;
+    mode.lcnt = lcnt;
+    mode.high = timing->high;
+    mode.low = timing->low;
 
     /* like Linux: hold the transmitted SDA as the firmware says and the received one a cycle */
-    bus.hold = timing->hold | (1 << REG_SDAHOLD_RXSHIFT);
+    mode.hold = timing->hold | (1 << REG_SDAHOLD_RXSHIFT);
 
 }
 
 /* the counts and SDA hold the firmware gives for the controller (FMCN for 400 kHz, SSCN for 100 kHz), else our own standard mode guess for a 120 MHz clock */
-static void choosebus(unsigned int controller)
+static void choosemode(unsigned int index, unsigned int speed)
 {
 
     struct timing fast;
     struct timing standard;
 
-    fast = findtiming(controller, "FMCN");
-    standard = findtiming(controller, "SSCN");
+    fast = findtiming(index, "FMCN");
+    standard = findtiming(index, "SSCN");
 
-    if (touchpad.speed >= 400000 && fast.found && fast.high && fast.low)
+    if (speed >= 400000 && fast.found && fast.high && fast.low)
     {
 
-        setbus(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &fast);
+        setmode(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &fast);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: fast mode from FMCN");
 
     }
@@ -1212,17 +1220,17 @@ static void choosebus(unsigned int controller)
     else if (standard.found && standard.high && standard.low)
     {
 
-        setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &standard);
+        setmode(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &standard);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: standard mode from SSCN");
 
     }
 
-    else if (touchpad.speed >= 400000)
+    else if (speed >= 400000)
     {
 
         struct timing computed = computetiming(TFAST_HIGH, TFAST_LOW);
 
-        setbus(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &computed);
+        setmode(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &computed);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, fast mode computed for 120 MHz");
 
     }
@@ -1232,7 +1240,7 @@ static void choosebus(unsigned int controller)
 
         struct timing computed = computetiming(TSTANDARD_HIGH, TSTANDARD_LOW);
 
-        setbus(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &computed);
+        setmode(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &computed);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, standard mode computed for 120 MHz");
 
     }
@@ -1245,10 +1253,10 @@ static unsigned int setup(void)
     if (!disable())
         return 0;
 
-    write32(REG_CON, REG_CON_MASTER | bus.speed | REG_CON_RESTART | REG_CON_SLAVEDISABLE);
-    write32(bus.hcnt, bus.high);
-    write32(bus.lcnt, bus.low);
-    write32(REG_SDAHOLD, bus.hold);
+    write32(REG_CON, REG_CON_MASTER | mode.speed | REG_CON_RESTART | REG_CON_SLAVEDISABLE);
+    write32(mode.hcnt, mode.high);
+    write32(mode.lcnt, mode.low);
+    write32(REG_SDAHOLD, mode.hold);
     write32(REG_INTRMASK, 0);
     write32(REG_RXTL, 0);
     write32(REG_TXTL, 0);
@@ -1268,7 +1276,7 @@ static void stoptransfer(void)
 
 }
 
-static unsigned int runtransfer(struct transfer *transfer)
+static unsigned int runtransfer(struct i2c_transfer *transfer)
 {
 
     unsigned int sent = 0;
@@ -1357,14 +1365,59 @@ static unsigned int runtransfer(struct transfer *transfer)
 
 }
 
-static unsigned int getinword(struct transfer *transfer, unsigned int offset)
+unsigned int i2c_getaddress(unsigned int id)
+{
+
+    return (id && id <= nclients) ? clients[id - 1].address : 0;
+
+}
+
+unsigned int i2c_ishid(unsigned int id)
+{
+
+    return id && id <= nclients && clients[id - 1].hid;
+
+}
+
+unsigned int i2c_runtransfer(struct i2c_transfer *transfer)
+{
+
+    unsigned int ok;
+
+    if (!mmio)
+        return 0;
+
+    spinlock_acquire(&buslock);
+
+    ok = runtransfer(transfer);
+
+    spinlock_release(&buslock);
+
+    return ok;
+
+}
+
+void i2c_wait(unsigned int count)
+{
+
+    unsigned int i;
+
+    if (!mmio)
+        return;
+
+    for (i = 0; i < count; i++)
+        read32(REG_STATUS);
+
+}
+
+static unsigned int getinword(struct i2c_transfer *transfer, unsigned int offset)
 {
 
     return transfer->in[offset] | (transfer->in[offset + 1] << 8);
 
 }
 
-static unsigned int readhiddescriptor(struct transfer *transfer, unsigned int address, unsigned int reg)
+static unsigned int readhiddescriptor(struct i2c_transfer *transfer, unsigned int address, unsigned int reg)
 {
 
     transfer->address = address;
@@ -1375,11 +1428,11 @@ static unsigned int readhiddescriptor(struct transfer *transfer, unsigned int ad
     transfer->abort = 0;
     transfer->timeout = TIMEOUT;
 
-    return runtransfer(transfer) && getinword(transfer, 0) == HIDDESC_LENGTH && getinword(transfer, 2) == HIDDESC_VERSION;
+    return i2c_runtransfer(transfer) && getinword(transfer, 0) == HIDDESC_LENGTH && getinword(transfer, 2) == HIDDESC_VERSION;
 
 }
 
-static unsigned int sendcommand(struct transfer *transfer, unsigned int command)
+static unsigned int sendcommand(struct i2c_transfer *transfer, unsigned int command)
 {
 
     transfer->address = hid.address;
@@ -1392,12 +1445,12 @@ static unsigned int sendcommand(struct transfer *transfer, unsigned int command)
     transfer->abort = 0;
     transfer->timeout = TIMEOUT;
 
-    return runtransfer(transfer);
+    return i2c_runtransfer(transfer);
 
 }
 
 /* SET_REPORT of a one-byte feature report: command register with opcode and report, then the data register, the length, the report id and the value */
-static unsigned int setfeature(struct transfer *transfer, unsigned int reportid, unsigned int value)
+static unsigned int setfeature(struct i2c_transfer *transfer, unsigned int reportid, unsigned int value)
 {
 
     unsigned int n = 0;
@@ -1434,11 +1487,11 @@ static unsigned int setfeature(struct transfer *transfer, unsigned int reportid,
     transfer->abort = 0;
     transfer->timeout = TIMEOUT;
 
-    return runtransfer(transfer);
+    return i2c_runtransfer(transfer);
 
 }
 
-static unsigned int readreportdescriptor(struct transfer *transfer)
+static unsigned int readreportdescriptor(struct i2c_transfer *transfer)
 {
 
     transfer->address = hid.address;
@@ -1449,11 +1502,11 @@ static unsigned int readreportdescriptor(struct transfer *transfer)
     transfer->abort = 0;
     transfer->timeout = TIMEOUT;
 
-    return runtransfer(transfer);
+    return i2c_runtransfer(transfer);
 
 }
 
-static unsigned int readinput(struct transfer *transfer)
+static unsigned int readinput(struct i2c_transfer *transfer)
 {
 
     transfer->address = hid.address;
@@ -1462,21 +1515,11 @@ static unsigned int readinput(struct transfer *transfer)
     transfer->abort = 0;
     transfer->timeout = POLLTIMEOUT;
 
-    return runtransfer(transfer);
+    return i2c_runtransfer(transfer);
 
 }
 
-static void delay(unsigned int count)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-        read32(REG_STATUS);
-
-}
-
-static unsigned int getitemdata(struct transfer *transfer, unsigned int offset, unsigned int size)
+static unsigned int getitemdata(struct i2c_transfer *transfer, unsigned int offset, unsigned int size)
 {
 
     unsigned int value = 0;
@@ -1642,7 +1685,7 @@ static void parseinput(struct parser *parser, struct hidmouse *mouse, unsigned i
 
 }
 
-static void parsereportdescriptor(struct transfer *transfer, struct parser *parser, struct hidmouse *mouse)
+static void parsereportdescriptor(struct i2c_transfer *transfer, struct parser *parser, struct hidmouse *mouse)
 {
 
     unsigned int offset = 0;
@@ -1786,12 +1829,12 @@ static void parsereportdescriptor(struct transfer *transfer, struct parser *pars
     mouse->length = 2 + mouse->usesids + (parser->offsets[mouse->reportid] + 7) / 8;
 
     /* reading just the mouse report keeps each poll short; the length word says what the device had */
-    if (mouse->length > hid.inputlength || mouse->length > TRANSFER_IN)
-        mouse->length = (hid.inputlength < TRANSFER_IN) ? hid.inputlength : TRANSFER_IN;
+    if (mouse->length > hid.inputlength || mouse->length > I2C_TRANSFER_IN)
+        mouse->length = (hid.inputlength < I2C_TRANSFER_IN) ? hid.inputlength : I2C_TRANSFER_IN;
 
 }
 
-static void dumpreportdescriptor(struct transfer *transfer)
+static void dumpreportdescriptor(struct i2c_transfer *transfer)
 {
 
     unsigned int offset;
@@ -1819,7 +1862,7 @@ static void dumpreportdescriptor(struct transfer *transfer)
 
 }
 
-static int getbits(struct transfer *transfer, unsigned int start, struct field *field, unsigned int index)
+static int getbits(struct i2c_transfer *transfer, unsigned int start, struct field *field, unsigned int index)
 {
 
     unsigned int value = 0;
@@ -1891,7 +1934,7 @@ static void flushmotion(void)
 }
 
 /* one report at a time, so a press and release that arrive in the same drain are both seen; motion before a button change is sent first to keep the order */
-static void handlereport(struct transfer *transfer, unsigned int start)
+static void handlereport(struct i2c_transfer *transfer, unsigned int start)
 {
 
     unsigned int buttons = 0;
@@ -1955,7 +1998,7 @@ static void click(unsigned int button)
 }
 
 /* one finger moves the pointer, two scroll; a short touch that barely moves is a tap: one finger left click, two right click; the pad's own button is the left button */
-static void handlepadreport(struct transfer *transfer, unsigned int start)
+static void handlepadreport(struct i2c_transfer *transfer, unsigned int start)
 {
 
     unsigned int count = (hidpad.contactcount.found) ? getbits(transfer, start, &hidpad.contactcount, 0) : 0;
@@ -2133,9 +2176,9 @@ static void setupmouse(void)
 
     }
 
-    delay(RESETDELAY);
+    i2c_wait(RESETDELAY);
 
-    if (hid.reportlength > TRANSFER_IN || !readreportdescriptor(&transfer))
+    if (hid.reportlength > I2C_TRANSFER_IN || !readreportdescriptor(&transfer))
     {
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: report descriptor failed, abort 0x%H8u", &transfer.abort);
@@ -2156,7 +2199,7 @@ static void setupmouse(void)
             setfeature(&transfer, hidpad.selectreport, HID_SELECT_ALL);
 
         padmode = 1;
-        readlength = (hid.inputlength < TRANSFER_IN) ? hid.inputlength : TRANSFER_IN;
+        readlength = (hid.inputlength < I2C_TRANSFER_IN) ? hid.inputlength : I2C_TRANSFER_IN;
 
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: touchpad mode, report %u, x max %u y max %u", &hidpad.reportid, &hidpad.xmax, &hidpad.ymax);
 
@@ -2216,39 +2259,29 @@ static void probe(unsigned int address)
 
 }
 
-static void driver_init(unsigned int id)
+static unsigned int ismatch(unsigned int id)
 {
 
-}
-
-static unsigned int driver_match(unsigned int type, unsigned int id)
-{
-
-    unsigned int index;
-
-    if (type != PCI_BUS)
-        return 0;
-
-    index = getindex(id);
+    unsigned int index = getindex(id);
 
     if (pci_inw(id, PCI_CONFIG_VENDOR) == VENDOR_INTEL && pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_SERIAL && pci_inb(id, PCI_CONFIG_SUBCLASS) == SUBCLASS_SERIALOTHER)
     {
 
         unsigned int device = pci_inw(id, PCI_CONFIG_DEVICE);
         unsigned int bar = pci_ind(id, PCI_CONFIG_BAR0);
-        unsigned int bus = (id >> 16) & 0xFF;
+        unsigned int number = (id >> 16) & 0xFF;
         unsigned int slot = (id >> 11) & 0x1F;
         unsigned int function = (id >> 8) & 0x07;
 
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: serial io %H2u:%H2u.%u device 0x%H4u bar 0x%H8u index %u", &bus, &slot, &function, &device, &bar, &index);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: serial io %H2u:%H2u.%u device 0x%H4u bar 0x%H8u index %u", &number, &slot, &function, &device, &bar, &index);
 
     }
 
-    return index < CONTROLLERS && (touchpad.controller == CONTROLLERS || index == touchpad.controller);
+    return index < CONTROLLERS && (!nclients || clients[0].controller == CONTROLLERS || index == clients[0].controller);
 
 }
 
-static void driver_reset(unsigned int id)
+static void reset(unsigned int id)
 {
 
     unsigned long address = pci_getbar(id, 0);
@@ -2302,7 +2335,7 @@ static void driver_reset(unsigned int id)
 
     }
 
-    choosebus(index);
+    choosemode(index, (nclients) ? clients[0].speed : 0);
 
     if (!setup())
     {
@@ -2315,8 +2348,85 @@ static void driver_reset(unsigned int id)
 
     }
 
-    if (touchpad.found)
-        probe(touchpad.address);
+}
+
+static unsigned int findcontroller(void)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_foreachtype(current, RESOURCE_BUS)))
+    {
+
+        struct base_bus *pcibus = current->data;
+
+        if (pcibus->type == PCI_BUS)
+        {
+
+            unsigned int id = 0;
+
+            while ((id = pcibus->next(id)))
+            {
+
+                if (ismatch(id))
+                    return id;
+
+            }
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static void bus_setup(void)
+{
+
+    unsigned int id = findcontroller();
+
+    if (id)
+        reset(id);
+
+}
+
+static unsigned int bus_next(unsigned int id)
+{
+
+    unsigned int i;
+
+    if (!mmio)
+        return 0;
+
+    for (i = id; i < nclients; i++)
+    {
+
+        if (clients[i].controller == clients[0].controller)
+            return i + 1;
+
+    }
+
+    return 0;
+
+}
+
+static void driver_init(unsigned int id)
+{
+
+}
+
+static unsigned int driver_match(unsigned int type, unsigned int id)
+{
+
+    return type == I2C_BUS && i2c_ishid(id);
+
+}
+
+static void driver_reset(unsigned int id)
+{
+
+    probe(i2c_getaddress(id));
 
 }
 
@@ -2360,9 +2470,6 @@ static void driver_detach(unsigned int id)
 
     }
 
-    if (mmio)
-        disable();
-
 }
 
 void module_init(void)
@@ -2370,10 +2477,7 @@ void module_init(void)
 
     mouse_initinterface(&mouseinterface);
     spinlock_init(&spinlock);
-
-    touchpad.found = 0;
-    touchpad.address = 0;
-    touchpad.controller = CONTROLLERS;
+    spinlock_init(&buslock);
 
     if (!scantables(1))
     {
@@ -2383,7 +2487,7 @@ void module_init(void)
 
     }
 
-    else if (!touchpad.found)
+    else if (!nclients)
     {
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: PNP0C50 device without a static I2C address");
@@ -2393,17 +2497,19 @@ void module_init(void)
     else
     {
 
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: using address 0x%H2u on controller %u", &touchpad.address, &touchpad.controller);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: using address 0x%H2u on controller %u", &clients[0].address, &clients[0].controller);
 
     }
 
-    base_initdriver(&driver, "i2c", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
+    base_initbus(&bus, I2C_BUS, "i2c", bus_setup, bus_next);
+    base_initdriver(&driver, "i2c-hid", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }
 
 void module_register(void)
 {
 
+    base_registerbus(&bus);
     base_registerdriver(&driver);
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: done");
 
@@ -2413,6 +2519,10 @@ void module_unregister(void)
 {
 
     base_unregisterdriver(&driver);
+    base_unregisterbus(&bus);
+
+    if (mmio)
+        disable();
 
 }
 
