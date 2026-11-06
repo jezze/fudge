@@ -25,6 +25,7 @@
 #define POLLTIMEOUT                     20000
 #define DRAINS                          4
 #define STORM                           10000
+#define QUIETTICKS                      30
 #define P2SB                            (0x80000000 | (0x1F << 11) | (1 << 8))
 #define P2SB_HIDE                       0xE1
 #define SBREG_DEFAULT                   0xFD000000
@@ -226,6 +227,21 @@ struct hidmouse
 
 };
 
+struct stats
+{
+
+    unsigned int ticks;
+    unsigned int quiet;
+    unsigned int asserted;
+    unsigned int timerreports;
+    unsigned int irqs;
+    unsigned int irqstatus;
+    unsigned int irqreports;
+    unsigned int lastirqreports;
+    unsigned int spurious;
+
+};
+
 struct gpiopad
 {
 
@@ -262,6 +278,7 @@ static struct hid hid;
 static struct hidmouse hidmouse;
 static struct parser parser;
 static struct gpiopad gpiopad;
+static struct stats stats;
 static struct spinlock spinlock;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
@@ -1316,6 +1333,7 @@ static unsigned int poll(void)
     unsigned int start = (hidmouse.usesids) ? 3 : 2;
     unsigned int buttons = hidmouse.oldbuttons;
     unsigned int seen = 0;
+    unsigned int count = 0;
     int x = 0;
     int y = 0;
     int wheel = 0;
@@ -1350,6 +1368,7 @@ static unsigned int poll(void)
             wheel += getbits(&transfer, start, &hidmouse.wheel, 0);
 
         seen = 1;
+        count++;
 
     }
 
@@ -1376,18 +1395,48 @@ static unsigned int poll(void)
     if (wheel)
         mouse_notifyscroll(&mouseinterface, -clamp(wheel));
 
-    return 1;
+    return count;
 
 }
 
 static void handleirq(unsigned int irq)
 {
 
+    unsigned int asserted = gpiopad.found && ispadasserted();
+    unsigned int count;
+
     spinlock_acquire(&spinlock);
-    poll();
+    count = poll();
     spinlock_release(&spinlock);
 
     gpiopad.spurious = 0;
+
+    /* diagnostic: a summary of each touch, once the pad has been quiet for half a second */
+    stats.asserted += asserted;
+    stats.timerreports += count;
+
+    if (count || stats.irqreports || stats.timerreports)
+    {
+
+        stats.ticks++;
+        stats.quiet = (count || stats.irqreports != stats.lastirqreports) ? 0 : stats.quiet + 1;
+        stats.lastirqreports = stats.irqreports;
+
+    }
+
+    if (stats.quiet == QUIETTICKS)
+    {
+
+        unsigned int ticks = stats.ticks - QUIETTICKS;
+        unsigned int dw0 = (gpiopad.found) ? readpad(gpiopad.dw0) : 0;
+        unsigned int is = (gpiopad.found) ? readpad(gpiopad.community + GPIO_GPIIS + GPIO_GROUP * 4) : 0;
+        unsigned int ie = (gpiopad.found) ? readpad(gpiopad.community + GPIO_GPIIE + GPIO_GROUP * 4) : 0;
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: touch %u ticks, asserted at %u ticks, timer reports %u, irqs %u with status %u reports %u", &ticks, &stats.asserted, &stats.timerreports, &stats.irqs, &stats.irqstatus, &stats.irqreports);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: interrupt %u found %u dw0 0x%H8u is 0x%H8u ie 0x%H8u", &gpiopad.interrupt, &gpiopad.found, &dw0, &is, &ie);
+        buffer_clear(&stats, sizeof (struct stats));
+
+    }
 
 }
 
@@ -1411,12 +1460,16 @@ static void handlegpio(unsigned int irq)
     if (!gpiopad.interrupt)
         return;
 
+    stats.irqs++;
+
     if (readpad(is) & (1 << GPIO_GROUPBIT))
     {
 
         spinlock_acquire(&spinlock);
 
         found = poll();
+        stats.irqstatus++;
+        stats.irqreports += found;
 
         writepad(is, 1 << GPIO_GROUPBIT);
         spinlock_release(&spinlock);
