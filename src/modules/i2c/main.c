@@ -20,7 +20,7 @@
 #define TIMEOUT                         1000000
 #define POWERDELAY                      10000
 #define RXFIFO                          8
-#define TRANSFER_OUT                    4
+#define TRANSFER_OUT                    16
 #define TRANSFER_IN                     512
 #define POLLTIMEOUT                     50000
 #define DRAINS                          4
@@ -57,11 +57,20 @@
 #define DUMPLINE                        16
 #define HID_POWERON                     0x0800
 #define HID_RESET                       0x0100
+#define HID_SETREPORT                   0x03
+#define HID_REPORTTYPE_FEATURE          0x03
+#define HID_INPUTMODE_TOUCHPAD          3
+#define HID_SELECT_ALL                  3
+#define TAPTICKS                        12
+#define PADCOUNTS                       1600
+#define WHEELCOUNTS                     24
 #define HID_ITEM_SIZE                   0x03
 #define HID_ITEM_LONG                   0xFE
 #define HID_MAIN_INPUT                  0x80
 #define HID_MAIN_COLLECTION             0xA0
 #define HID_MAIN_ENDCOLLECTION          0xC0
+#define HID_MAIN_FEATURE                0xB0
+#define HID_GLOBAL_LOGICALMAX           0x24
 #define HID_GLOBAL_USAGEPAGE            0x04
 #define HID_GLOBAL_REPORTSIZE           0x74
 #define HID_GLOBAL_REPORTID             0x84
@@ -78,6 +87,15 @@
 #define HID_USAGE_Y                     0x00010031
 #define HID_USAGE_WHEEL                 0x00010038
 #define HID_PAGE_BUTTON                 0x0009
+#define HID_USAGE_BUTTON1               0x00090001
+#define HID_USAGE_TOUCHPAD              0x000D0005
+#define HID_USAGE_FINGER                0x000D0022
+#define HID_USAGE_TIPSWITCH             0x000D0042
+#define HID_USAGE_CONTACTID             0x000D0051
+#define HID_USAGE_INPUTMODE             0x000D0052
+#define HID_USAGE_CONTACTCOUNT          0x000D0054
+#define HID_USAGE_SURFACESWITCH         0x000D0057
+#define HID_USAGE_BUTTONSWITCH          0x000D0058
 #define PCI_CAPABILITY_PM               0x01
 #define PCI_PMCSR                       0x04
 #define PCI_PMCSR_STATE                 0x03
@@ -252,6 +270,7 @@ struct hid
     unsigned int inputregister;
     unsigned int inputlength;
     unsigned int commandregister;
+    unsigned int dataregister;
 
 };
 
@@ -281,6 +300,24 @@ struct hidmouse
 
 };
 
+struct hidpad
+{
+
+    unsigned int found;
+    unsigned int reportid;
+    unsigned int modereport;
+    unsigned int selectreport;
+    unsigned int xmax;
+    unsigned int ymax;
+    struct field tip;
+    struct field contactid;
+    struct field x;
+    struct field y;
+    struct field contactcount;
+    struct field button;
+
+};
+
 struct gpiopad
 {
 
@@ -305,6 +342,10 @@ struct parser
     unsigned int usagemax;
     unsigned int depth;
     unsigned int mousedepth;
+    unsigned int logicalmax;
+    unsigned int application;
+    unsigned int fingerdepth;
+    unsigned int fingerdone;
     unsigned int offsets[REPORTIDS];
 
 };
@@ -318,6 +359,11 @@ static unsigned int unread;
 static struct {int x; int y; int wheel;} motion;
 static struct hid hid;
 static struct hidmouse hidmouse;
+static struct hidpad hidpad;
+static unsigned int padmode;
+static unsigned int readlength;
+static unsigned int ticks;
+static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtick; unsigned int travel; unsigned int fingers; unsigned int button; int accx; int accy; int accw;} touch;
 static struct parser parser;
 static struct gpiopad gpiopad;
 static struct spinlock spinlock;
@@ -1379,6 +1425,48 @@ static unsigned int sendcommand(struct transfer *transfer, unsigned int command)
 
 }
 
+/* SET_REPORT of a one-byte feature report: command register with opcode and report, then the data register, the length, the report id and the value */
+static unsigned int setfeature(struct transfer *transfer, unsigned int reportid, unsigned int value)
+{
+
+    unsigned int n = 0;
+
+    transfer->address = hid.address;
+    transfer->out[n++] = hid.commandregister;
+    transfer->out[n++] = hid.commandregister >> 8;
+
+    if (reportid < 15)
+    {
+
+        transfer->out[n++] = (HID_REPORTTYPE_FEATURE << 4) | reportid;
+        transfer->out[n++] = HID_SETREPORT;
+
+    }
+
+    else
+    {
+
+        transfer->out[n++] = (HID_REPORTTYPE_FEATURE << 4) | 15;
+        transfer->out[n++] = HID_SETREPORT;
+        transfer->out[n++] = reportid;
+
+    }
+
+    transfer->out[n++] = hid.dataregister;
+    transfer->out[n++] = hid.dataregister >> 8;
+    transfer->out[n++] = 4;
+    transfer->out[n++] = 0;
+    transfer->out[n++] = reportid;
+    transfer->out[n++] = value;
+    transfer->outcount = n;
+    transfer->incount = 0;
+    transfer->abort = 0;
+    transfer->timeout = TIMEOUT;
+
+    return runtransfer(transfer);
+
+}
+
 static unsigned int readreportdescriptor(struct transfer *transfer)
 {
 
@@ -1399,7 +1487,7 @@ static unsigned int readinput(struct transfer *transfer)
 
     transfer->address = hid.address;
     transfer->outcount = 0;
-    transfer->incount = hidmouse.length;
+    transfer->incount = readlength;
     transfer->abort = 0;
     transfer->timeout = POLLTIMEOUT;
 
@@ -1456,6 +1544,85 @@ static void setfield(struct field *field, unsigned int offset, unsigned int size
 
 }
 
+/* the touchpad collection of a Precision Touchpad: one finger per report (hybrid reporting), its tip switch, contact id and absolute X/Y, the contact count and the button */
+static void parsepadinput(struct parser *parser, struct hidpad *pad, unsigned int base, unsigned int flags)
+{
+
+    unsigned int i;
+
+    if (parser->application != HID_USAGE_TOUCHPAD || (flags & HID_INPUT_CONSTANT))
+        return;
+
+    if (pad->x.found && pad->reportid != parser->reportid)
+        return;
+
+    for (i = 0; i < parser->reportcount; i++)
+    {
+
+        unsigned int usage = getusage(parser, i);
+        unsigned int offset = base + i * parser->reportsize;
+
+        if (parser->fingerdepth)
+        {
+
+            if (usage == HID_USAGE_TIPSWITCH)
+                setfield(&pad->tip, offset, parser->reportsize, flags);
+
+            if (usage == HID_USAGE_CONTACTID)
+                setfield(&pad->contactid, offset, parser->reportsize, flags);
+
+            if (usage == HID_USAGE_X && !pad->x.found)
+            {
+
+                setfield(&pad->x, offset, parser->reportsize, flags);
+
+                pad->xmax = parser->logicalmax;
+
+            }
+
+            if (usage == HID_USAGE_Y && !pad->y.found)
+            {
+
+                setfield(&pad->y, offset, parser->reportsize, flags);
+
+                pad->ymax = parser->logicalmax;
+
+            }
+
+        }
+
+        if (usage == HID_USAGE_CONTACTCOUNT)
+            setfield(&pad->contactcount, offset, parser->reportsize, flags);
+
+        if (usage == HID_USAGE_BUTTON1)
+            setfield(&pad->button, offset, parser->reportsize, flags);
+
+        pad->reportid = parser->reportid;
+
+    }
+
+}
+
+static void parsepadfeature(struct parser *parser, struct hidpad *pad)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < parser->reportcount; i++)
+    {
+
+        unsigned int usage = getusage(parser, i);
+
+        if (usage == HID_USAGE_INPUTMODE && !pad->modereport)
+            pad->modereport = parser->reportid;
+
+        if ((usage == HID_USAGE_SURFACESWITCH || usage == HID_USAGE_BUTTONSWITCH) && !pad->selectreport)
+            pad->selectreport = parser->reportid;
+
+    }
+
+}
+
 static void parseinput(struct parser *parser, struct hidmouse *mouse, unsigned int flags)
 {
 
@@ -1463,6 +1630,8 @@ static void parseinput(struct parser *parser, struct hidmouse *mouse, unsigned i
     unsigned int i;
 
     parser->offsets[parser->reportid] += parser->reportsize * parser->reportcount;
+
+    parsepadinput(parser, &hidpad, base, flags);
 
     if (!parser->mousedepth || (flags & HID_INPUT_CONSTANT))
         return;
@@ -1509,6 +1678,7 @@ static void parsereportdescriptor(struct transfer *transfer, struct parser *pars
 
     buffer_clear(parser, sizeof (struct parser));
     buffer_clear(mouse, sizeof (struct hidmouse));
+    buffer_clear(&hidpad, sizeof (struct hidpad));
 
     while (offset < transfer->incount)
     {
@@ -1549,6 +1719,11 @@ static void parsereportdescriptor(struct transfer *transfer, struct parser *pars
 
             break;
 
+        case HID_GLOBAL_LOGICALMAX:
+            parser->logicalmax = data;
+
+            break;
+
         case HID_GLOBAL_REPORTID:
             parser->reportid = data % REPORTIDS;
             mouse->usesids = 1;
@@ -1581,8 +1756,19 @@ static void parsereportdescriptor(struct transfer *transfer, struct parser *pars
 
             break;
 
+        case HID_MAIN_FEATURE:
+            parsepadfeature(parser, &hidpad);
+
+            break;
+
         case HID_MAIN_COLLECTION:
             parser->depth++;
+
+            if (parser->depth == 1)
+                parser->application = getusage(parser, 0);
+
+            if (parser->application == HID_USAGE_TOUCHPAD && !parser->fingerdepth && !parser->fingerdone && getusage(parser, 0) == HID_USAGE_FINGER)
+                parser->fingerdepth = parser->depth;
 
             if (!parser->mousedepth && !mouse->x.found && data == HID_COLLECTION_APPLICATION && getusage(parser, 0) == HID_USAGE_MOUSE)
                 parser->mousedepth = parser->depth;
@@ -1592,6 +1778,17 @@ static void parsereportdescriptor(struct transfer *transfer, struct parser *pars
         case HID_MAIN_ENDCOLLECTION:
             if (parser->depth == parser->mousedepth)
                 parser->mousedepth = 0;
+
+            if (parser->depth == parser->fingerdepth)
+            {
+
+                parser->fingerdepth = 0;
+                parser->fingerdone = 1;
+
+            }
+
+            if (parser->depth == 1)
+                parser->application = 0;
 
             if (parser->depth)
                 parser->depth--;
@@ -1614,6 +1811,7 @@ static void parsereportdescriptor(struct transfer *transfer, struct parser *pars
     }
 
     mouse->found = mouse->x.found && mouse->y.found && mouse->x.relative && mouse->y.relative;
+    hidpad.found = hidpad.modereport && hidpad.tip.found && hidpad.x.found && hidpad.y.found && !hidpad.x.relative && hidpad.xmax && hidpad.ymax;
     mouse->length = 2 + mouse->usesids + (parser->offsets[mouse->reportid] + 7) / 8;
 
     /* reading just the mouse report keeps each poll short; the length word says what the device had */
@@ -1776,6 +1974,115 @@ static void handlereport(struct transfer *transfer, unsigned int start)
 
 }
 
+/* touchpad counts to pointer counts, the whole width being PADCOUNTS; the remainder is kept so slow movement is not lost */
+static int scale(int delta, int *accumulator, unsigned int range, unsigned int counts)
+{
+
+    int quotient;
+
+    *accumulator += delta * (int)counts;
+    quotient = (*accumulator >= 0) ? *accumulator / (int)range : -(-*accumulator / (int)range);
+    *accumulator -= quotient * (int)range;
+
+    return quotient;
+
+}
+
+static void click(unsigned int button)
+{
+
+    flushmotion();
+    mouse_notifypress(&mouseinterface, button);
+    mouse_notifyrelease(&mouseinterface, button);
+
+}
+
+/* one finger moves the pointer, two scroll; a short touch that barely moves is a tap: one finger left click, two right click; the pad's own button is the left button */
+static void handlepadreport(struct transfer *transfer, unsigned int start)
+{
+
+    unsigned int count = (hidpad.contactcount.found) ? getbits(transfer, start, &hidpad.contactcount, 0) : 0;
+    unsigned int button = (hidpad.button.found) ? getbits(transfer, start, &hidpad.button, 0) & 1 : 0;
+    unsigned int tip = getbits(transfer, start, &hidpad.tip, 0) & 1;
+    unsigned int id = (hidpad.contactid.found) ? getbits(transfer, start, &hidpad.contactid, 0) & 0xFF : 0;
+    int x = getbits(transfer, start, &hidpad.x, 0) & 0xFFFF;
+    int y = getbits(transfer, start, &hidpad.y, 0) & 0xFFFF;
+
+    if (button != touch.button)
+    {
+
+        flushmotion();
+
+        if (button)
+            mouse_notifypress(&mouseinterface, 1);
+        else
+            mouse_notifyrelease(&mouseinterface, 1);
+
+        touch.button = button;
+
+    }
+
+    if (touch.active && count > touch.fingers)
+        touch.fingers = count;
+
+    if (!touch.active)
+    {
+
+        if (tip)
+        {
+
+            touch.active = 1;
+            touch.id = id;
+            touch.lastx = x;
+            touch.lasty = y;
+            touch.downtick = ticks;
+            touch.travel = 0;
+            touch.fingers = (count) ? count : 1;
+            touch.accx = 0;
+            touch.accy = 0;
+            touch.accw = 0;
+
+        }
+
+        return;
+
+    }
+
+    if (id != touch.id)
+        return;
+
+    if (tip)
+    {
+
+        int dx = x - touch.lastx;
+        int dy = y - touch.lasty;
+
+        touch.lastx = x;
+        touch.lasty = y;
+        touch.travel += ((dx < 0) ? -dx : dx) + ((dy < 0) ? -dy : dy);
+
+        if (touch.fingers >= 2)
+            motion.wheel -= scale(dy, &touch.accw, hidpad.ymax, WHEELCOUNTS);
+
+        else
+        {
+
+            motion.x += scale(dx, &touch.accx, hidpad.xmax, PADCOUNTS);
+            motion.y += scale(dy, &touch.accy, hidpad.xmax, PADCOUNTS);
+
+        }
+
+        return;
+
+    }
+
+    if (ticks - touch.downtick <= TAPTICKS && touch.travel <= hidpad.xmax / 50 && !touch.button)
+        click((touch.fingers >= 2) ? 2 : 1);
+
+    touch.active = 0;
+
+}
+
 static unsigned int poll(unsigned int force)
 {
 
@@ -1806,7 +2113,18 @@ static unsigned int poll(unsigned int force)
         if (!ok || getinword(&transfer, 0) < start + 1)
             break;
 
-        if (hidmouse.usesids && transfer.in[2] != hidmouse.reportid)
+        if (padmode && transfer.in[2] == hidpad.reportid)
+        {
+
+            handlepadreport(&transfer, start);
+
+            count++;
+
+            continue;
+
+        }
+
+        if (padmode || (hidmouse.usesids && transfer.in[2] != hidmouse.reportid))
             continue;
 
         handlereport(&transfer, start);
@@ -1826,6 +2144,8 @@ static void handleirq(unsigned int irq)
     poll(unread);
     flushmotion();
     spinlock_release(&spinlock);
+
+    ticks++;
 
     gpiopad.spurious = 0;
 
@@ -1985,6 +2305,24 @@ static void setupmouse(void)
 
     parsereportdescriptor(&transfer, &parser, &hidmouse);
 
+    readlength = hidmouse.length;
+
+    /* like Linux, put a Precision Touchpad into touchpad mode and do pointer motion and taps ourselves; its mouse emulation recognises taps poorly */
+    if (hidpad.found && setfeature(&transfer, hidpad.modereport, HID_INPUTMODE_TOUCHPAD))
+    {
+
+        if (hidpad.selectreport)
+            setfeature(&transfer, hidpad.selectreport, HID_SELECT_ALL);
+
+        padmode = 1;
+        readlength = (hid.inputlength < TRANSFER_IN) ? hid.inputlength : TRANSFER_IN;
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: touchpad mode, report %u, x max %u y max %u", &hidpad.reportid, &hidpad.xmax, &hidpad.ymax);
+
+        return;
+
+    }
+
     if (!hidmouse.found)
     {
 
@@ -2021,6 +2359,7 @@ static void probe(unsigned int address)
             hid.inputregister = getinword(&transfer, 8);
             hid.inputlength = getinword(&transfer, 10);
             hid.commandregister = getinword(&transfer, 16);
+            hid.dataregister = getinword(&transfer, 18);
 
             debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: hid 0x%H2u descriptor at 0x%H4u vendor 0x%H4u product 0x%H4u", &address, &reg, &vendor, &product);
             debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: report descriptor %u bytes at 0x%H4u input 0x%H4u max %u command 0x%H4u", &hid.reportlength, &hid.reportregister, &hid.inputregister, &hid.inputlength, &hid.commandregister);
@@ -2143,7 +2482,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    if (hidmouse.found)
+    if (hidmouse.found || padmode)
     {
 
         mouse_registerinterface(&mouseinterface);
@@ -2161,7 +2500,7 @@ static void driver_attach(unsigned int id)
 static void driver_detach(unsigned int id)
 {
 
-    if (hidmouse.found)
+    if (hidmouse.found || padmode)
     {
 
         if (gpiopad.interrupt)
