@@ -7,6 +7,7 @@
 #include <modules/pci/pci.h>
 
 #define VENDOR_INTEL                    0x8086
+#define SUBCLASS_SERIALOTHER            0x80
 #define CONTROLLERS                     6
 #define TABLES                          32
 #define HIDREGISTERS                    2
@@ -759,6 +760,19 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 
     index = getindex(id);
 
+    if (pci_inw(id, PCI_CONFIG_VENDOR) == VENDOR_INTEL && pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_SERIAL && pci_inb(id, PCI_CONFIG_SUBCLASS) == SUBCLASS_SERIALOTHER)
+    {
+
+        unsigned int device = pci_inw(id, PCI_CONFIG_DEVICE);
+        unsigned int bar = pci_ind(id, PCI_CONFIG_BAR0);
+        unsigned int bus = (id >> 16) & 0xFF;
+        unsigned int slot = (id >> 11) & 0x1F;
+        unsigned int function = (id >> 8) & 0x07;
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: serial io %H2u:%H2u.%u device 0x%H4u bar 0x%H8u index %u", &bus, &slot, &function, &device, &bar, &index);
+
+    }
+
     return index < CONTROLLERS && (touchpad.controller == CONTROLLERS || index == touchpad.controller);
 
 }
@@ -776,8 +790,15 @@ static void driver_reset(unsigned int id)
     unsigned int caps;
 
     if (!address)
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: controller %u has no registers (BAR0 unset or above 4 GB on 32-bit)", &index);
+
         return;
 
+    }
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: controller %u device 0x%H4u at 0x%H8u%H8u", &index, &device, &high, &low);
     poweron(id);
 
     mmio = mapregisters(address);
@@ -791,7 +812,7 @@ static void driver_reset(unsigned int id)
     param = read32(REG_COMPPARAM1);
     caps = read32(LPSS_CAPS);
 
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: controller %u device 0x%H4u at 0x%H8u%H8u type 0x%H8u param 0x%H8u caps 0x%H8u", &index, &device, &high, &low, &comptype, &param, &caps);
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: type 0x%H8u param 0x%H8u caps 0x%H8u", &comptype, &param, &caps);
 
     if (comptype != COMPTYPE_DESIGNWARE)
     {
@@ -870,6 +891,7 @@ void module_register(void)
 {
 
     base_registerdriver(&driver);
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: done");
 
 }
 
