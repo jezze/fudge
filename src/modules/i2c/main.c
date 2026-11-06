@@ -239,6 +239,9 @@ struct stats
     unsigned int irqreports;
     unsigned int lastirqreports;
     unsigned int spurious;
+    unsigned int failed;
+    unsigned int abort;
+    unsigned int empty;
 
 };
 
@@ -1327,7 +1330,7 @@ static void notifymove(int x, int y)
 
 }
 
-static unsigned int poll(void)
+static unsigned int poll(unsigned int force)
 {
 
     unsigned int start = (hidmouse.usesids) ? 3 : 2;
@@ -1339,14 +1342,30 @@ static unsigned int poll(void)
     int wheel = 0;
     unsigned int i;
 
-    /* the touchpad drops a report nobody reads soon after its interrupt, so take all it has now */
-    for (i = 0; i < DRAINS && ispadasserted(); i++)
+    /* the touchpad drops a report nobody reads soon after its interrupt, so take all it has now; its line can already be released when the interrupt arrives, so an interrupt reads once regardless */
+    for (i = 0; i < DRAINS && ((force && !i) || ispadasserted()); i++)
     {
 
         unsigned int j;
 
-        if (!readinput(&transfer) || getinword(&transfer, 0) < start + 1)
+        if (!readinput(&transfer))
+        {
+
+            stats.failed++;
+            stats.abort = transfer.abort;
+
             break;
+
+        }
+
+        if (getinword(&transfer, 0) < start + 1)
+        {
+
+            stats.empty++;
+
+            break;
+
+        }
 
         if (hidmouse.usesids && transfer.in[2] != hidmouse.reportid)
             continue;
@@ -1406,7 +1425,7 @@ static void handleirq(unsigned int irq)
     unsigned int count;
 
     spinlock_acquire(&spinlock);
-    count = poll();
+    count = poll(0);
     spinlock_release(&spinlock);
 
     gpiopad.spurious = 0;
@@ -1432,7 +1451,7 @@ static void handleirq(unsigned int irq)
         unsigned int is = (gpiopad.found) ? readpad(gpiopad.community + GPIO_GPIIS + GPIO_GROUP * 4) : 0;
         unsigned int ie = (gpiopad.found) ? readpad(gpiopad.community + GPIO_GPIIE + GPIO_GROUP * 4) : 0;
 
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: touch %u ticks, asserted at %u ticks, timer reports %u, irqs %u with status %u reports %u", &ticks, &stats.asserted, &stats.timerreports, &stats.irqs, &stats.irqstatus, &stats.irqreports);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: touch %u ticks, asserted at %u ticks, timer reports %u, irqs %u with status %u reports %u, empty %u failed %u abort 0x%H8u", &ticks, &stats.asserted, &stats.timerreports, &stats.irqs, &stats.irqstatus, &stats.irqreports, &stats.empty, &stats.failed, &stats.abort);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: interrupt %u found %u dw0 0x%H8u is 0x%H8u ie 0x%H8u", &gpiopad.interrupt, &gpiopad.found, &dw0, &is, &ie);
         buffer_clear(&stats, sizeof (struct stats));
 
@@ -1467,7 +1486,7 @@ static void handlegpio(unsigned int irq)
 
         spinlock_acquire(&spinlock);
 
-        found = poll();
+        found = poll(1);
         stats.irqstatus++;
         stats.irqreports += found;
 
