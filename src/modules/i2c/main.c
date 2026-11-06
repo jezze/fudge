@@ -22,7 +22,7 @@
 #define RXFIFO                          8
 #define TRANSFER_OUT                    4
 #define TRANSFER_IN                     512
-#define POLLTIMEOUT                     200000
+#define POLLTIMEOUT                     50000
 #define DRAINS                          4
 #define RETRIES                         2
 #define STORM                           10000
@@ -1718,68 +1718,22 @@ static void notifymove(int x, int y)
 
 }
 
-static unsigned int poll(unsigned int force)
+/* one report at a time, so a press and release that arrive in the same drain are both seen */
+static void handlereport(struct transfer *transfer, unsigned int start)
 {
 
-    unsigned int start = (hidmouse.usesids) ? 3 : 2;
-    unsigned int buttons = hidmouse.oldbuttons;
-    unsigned int seen = 0;
-    unsigned int count = 0;
-    int x = 0;
-    int y = 0;
-    int wheel = 0;
+    unsigned int buttons = 0;
     unsigned int i;
 
-    /* the touchpad drops a report nobody reads soon after its interrupt, so take all it has now; its line can already be released when the interrupt arrives, so an interrupt reads once regardless */
-    for (i = 0; i < DRAINS && ((force && !i) || ispadasserted()); i++)
+    for (i = 0; i < hidmouse.buttoncount; i++)
     {
 
-        unsigned int j;
-        unsigned int tries;
-        unsigned int ok = 0;
-
-        /* the touchpad announced a report: a read that fails leaves it unread, and it waits for it before announcing more */
-        for (tries = 0; tries <= RETRIES && !ok; tries++)
-            ok = readinput(&transfer);
-
-        unread = !ok;
-
-        if (!ok)
-        {
-
-            break;
-
-        }
-
-        if (getinword(&transfer, 0) < start + 1)
-            break;
-
-        if (hidmouse.usesids && transfer.in[2] != hidmouse.reportid)
-            continue;
-
-        buttons = 0;
-
-        for (j = 0; j < hidmouse.buttoncount; j++)
-        {
-
-            if (getbits(&transfer, start, &hidmouse.buttons, j))
-                buttons |= 1 << j;
-
-        }
-
-        x += getbits(&transfer, start, &hidmouse.x, 0);
-        y += getbits(&transfer, start, &hidmouse.y, 0);
-
-        if (hidmouse.wheel.found && hidmouse.wheel.relative)
-            wheel += getbits(&transfer, start, &hidmouse.wheel, 0);
-
-        seen = 1;
-        count++;
+        if (getbits(transfer, start, &hidmouse.buttons, i))
+            buttons |= 1 << i;
 
     }
 
-    if (!seen)
-        return 0;
+    notifymove(getbits(transfer, start, &hidmouse.x, 0), getbits(transfer, start, &hidmouse.y, 0));
 
     for (i = 0; i < hidmouse.buttoncount; i++)
     {
@@ -1796,10 +1750,56 @@ static unsigned int poll(unsigned int force)
 
     hidmouse.oldbuttons = buttons;
 
-    notifymove(x, y);
+    if (hidmouse.wheel.found && hidmouse.wheel.relative)
+    {
 
-    if (wheel)
-        mouse_notifyscroll(&mouseinterface, -clamp(wheel));
+        int wheel = getbits(transfer, start, &hidmouse.wheel, 0);
+
+        if (wheel)
+            mouse_notifyscroll(&mouseinterface, -clamp(wheel));
+
+    }
+
+}
+
+static unsigned int poll(unsigned int force)
+{
+
+    unsigned int start = (hidmouse.usesids) ? 3 : 2;
+    unsigned int count = 0;
+    unsigned int i;
+
+    /* the touchpad drops a report nobody reads soon after its interrupt, so take all it has now; its line can already be released when the interrupt arrives, so an interrupt reads once regardless */
+    for (i = 0; i < DRAINS && ((force && !i) || ispadasserted()); i++)
+    {
+
+        unsigned int tries;
+        unsigned int ok = 0;
+
+        /* the touchpad announced a report: a read that fails leaves it unread, and it waits for it before announcing more; a lost arbitration is retried at once, a timeout (already long) waits for the next tick */
+        for (tries = 0; tries <= RETRIES && !ok; tries++)
+        {
+
+            ok = readinput(&transfer);
+
+            if (!ok && !transfer.abort)
+                break;
+
+        }
+
+        unread = !ok;
+
+        if (!ok || getinword(&transfer, 0) < start + 1)
+            break;
+
+        if (hidmouse.usesids && transfer.in[2] != hidmouse.reportid)
+            continue;
+
+        handlereport(&transfer, start);
+
+        count++;
+
+    }
 
     return count;
 
