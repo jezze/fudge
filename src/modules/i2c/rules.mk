@@ -13,10 +13,24 @@ L:=\
 include $(DIR_MK)/kmod.mk
 
 M:=\
-    $(DIR_SRC)/modules/i2c/i2c-hid.ko \
+    $(DIR_SRC)/modules/i2c/i2c-hid.0.ko \
 
 N:=\
-    $(DIR_SRC)/modules/i2c/i2c-hid.ko.map \
+    $(DIR_SRC)/modules/i2c/i2c-hid.0.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/i2c/hid.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk
+
+M:=\
+    $(DIR_SRC)/modules/i2c/i2c-hid.1.ko \
+
+N:=\
+    $(DIR_SRC)/modules/i2c/i2c-hid.1.ko.map \
 
 O:=\
     $(DIR_SRC)/modules/i2c/hid.o \

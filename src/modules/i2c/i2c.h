@@ -1,6 +1,6 @@
 #define I2C_BUS                         0x0006
 #define I2C_TRANSFER_OUT                16
-#define I2C_TRANSFER_IN                 512
+#define I2C_TRANSFER_IN                 1024
 
 struct i2c_transfer
 {

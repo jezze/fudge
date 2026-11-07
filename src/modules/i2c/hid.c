@@ -17,7 +17,6 @@
 #define USAGES                          16
 #define REPORTIDS                       256
 #define BUTTONS                         3
-#define DUMPLINE                        16
 #define HID_POWERON                     0x0800
 #define HID_RESET                       0x0100
 #define HID_SETREPORT                   0x03
@@ -582,29 +581,105 @@ static void parsereportdescriptor(struct i2c_transfer *transfer, struct parser *
 
 }
 
-static void dumpreportdescriptor(struct i2c_transfer *transfer)
+/* one line per top-level collection, its usage and the report ids inside, which fits on a screen where a dump would not */
+static void listcollections(struct i2c_transfer *transfer)
 {
 
-    unsigned int offset;
+    unsigned int offset = 0;
+    unsigned int page = 0;
+    unsigned int usage = 0;
+    unsigned int depth = 0;
+    unsigned int application = 0;
+    unsigned int reports = 0;
+    unsigned int first = 0;
+    unsigned int last = 0;
 
-    for (offset = 0; offset < transfer->incount; offset += DUMPLINE)
+    while (offset < transfer->incount)
     {
 
-        char line[DUMPLINE * 3 + 1];
-        unsigned int count = 0;
+        unsigned int prefix = transfer->in[offset];
+        unsigned int size = ((prefix & 3) == 3) ? 4 : prefix & 3;
+        unsigned int data = 0;
         unsigned int i;
 
-        for (i = offset; i < offset + DUMPLINE && i < transfer->incount; i++)
+        if (prefix == 0xFE)
         {
 
-            count += cstring_write_value(line, DUMPLINE * 3, transfer->in[i], 16, 2, count);
-            count += buffer_write(line, DUMPLINE * 3, " ", 1, count);
+            offset += (offset + 1 < transfer->incount) ? 3 + transfer->in[offset + 1] : 1;
+
+            continue;
 
         }
 
-        line[count] = '\0';
+        for (i = 0; i < size && offset + 1 + i < transfer->incount; i++)
+            data |= transfer->in[offset + 1 + i] << (i * 8);
 
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: %u: %s", &offset, line);
+        offset += 1 + size;
+
+        switch (prefix & 0xFC)
+        {
+
+        case 0x04:
+            page = data;
+
+            break;
+
+        case 0x08:
+            if (!usage)
+                usage = (size == 4) ? data : (page << 16) | data;
+
+            break;
+
+        case 0x84:
+            if (depth)
+            {
+
+                if (!reports)
+                    first = data;
+
+                last = data;
+                reports++;
+
+            }
+
+            break;
+
+        case 0xA0:
+            if (!depth)
+                application = usage;
+
+            depth++;
+            usage = 0;
+
+            break;
+
+        case 0xC0:
+            if (depth)
+                depth--;
+
+            if (!depth)
+            {
+
+                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: collection 0x%H8u, %u report ids, %u to %u", &application, &reports, &first, &last);
+
+                reports = 0;
+                first = 0;
+                last = 0;
+
+            }
+
+            usage = 0;
+
+            break;
+
+        case 0x80:
+        case 0x90:
+        case 0xB0:
+            usage = 0;
+
+            break;
+
+        }
 
     }
 
@@ -958,8 +1033,8 @@ static void setupmouse(void)
     if (!hidmouse.found)
     {
 
-        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c-hid: no relative mouse in the report descriptor:");
-        dumpreportdescriptor(&transfer);
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c-hid: no mouse or touchpad in the report descriptor, its collections:");
+        listcollections(&transfer);
 
         return;
 
