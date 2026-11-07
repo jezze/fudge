@@ -172,6 +172,15 @@ struct client
 
 };
 
+struct controller
+{
+
+    unsigned long mmio;
+    struct mode mode;
+    struct spinlock lock;
+
+};
+
 struct setting
 {
 
@@ -189,15 +198,14 @@ struct setting
 static struct base_bus bus;
 static struct client clients[DEVICES];
 static unsigned int nclients;
-static struct mode mode;
 
 /* Intel's reference firmware has a touchpad (TPD0) under I2C1 and a touch panel (TPL0) under I2C0 whose _INI fills their templates from these; the touchpad comes first so it stays the device the bus drives */
 static struct setting settings[] = {
     {1, "SDS1", 0x01, "TPDT", "TPDB", "TPDS", "TPDH", "GPDI"},
     {0, "SDS0", 0x02, "TPLT", "TPLB", "TPLS", "TPLH", "GPLI"}
 };
-static struct spinlock buslock;
-static unsigned long mmio;
+static struct controller controllers[CONTROLLERS];
+static struct i2c_transfer check;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
 static unsigned short devicestglh[CONTROLLERS] = {0x43E8, 0x43E9, 0x43EA, 0x43EB, 0x43AD, 0x43AE};
 
@@ -892,21 +900,21 @@ static struct timing findtiming(unsigned int controller, char *method)
 
 }
 
-static unsigned int read32(unsigned int offset)
+static unsigned int read32(struct controller *controller, unsigned int offset)
 {
 
-    return *(volatile unsigned int *)(mmio + offset);
+    return *(volatile unsigned int *)(controller->mmio + offset);
 
 }
 
-static void write32(unsigned int offset, unsigned int value)
+static void write32(struct controller *controller, unsigned int offset, unsigned int value)
 {
 
-    *(volatile unsigned int *)(mmio + offset) = value;
+    *(volatile unsigned int *)(controller->mmio + offset) = value;
 
 }
 
-static unsigned int waitbits32(unsigned int offset, unsigned int mask, unsigned int value)
+static unsigned int waitbits32(struct controller *controller, unsigned int offset, unsigned int mask, unsigned int value)
 {
 
     unsigned int i;
@@ -914,7 +922,7 @@ static unsigned int waitbits32(unsigned int offset, unsigned int mask, unsigned 
     for (i = 0; i < TIMEOUT; i++)
     {
 
-        if ((read32(offset) & mask) == value)
+        if ((read32(controller, offset) & mask) == value)
             return 1;
 
     }
@@ -930,16 +938,18 @@ static unsigned int high32(unsigned long address)
 
 }
 
-static unsigned long mapregisters(unsigned long address)
+static unsigned long mapregisters(unsigned long address, unsigned int index)
 {
 
-    /* tasks only share the kernel's mappings below 4 GB, and Tiger Lake firmware often puts these above */
+    /* tasks only share the kernel's mappings below 4 GB, and Tiger Lake firmware often puts these above: each controller gets its own page of a fixed window */
     if (high32(address))
     {
 
-        arch_kmap(address, MMIOMAP, MMIOSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+        unsigned long window = MMIOMAP + index * MMIOSIZE;
 
-        return MMIOMAP;
+        arch_kmap(address, window, MMIOSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
+        return window;
 
     }
 
@@ -1088,12 +1098,12 @@ static unsigned int assignregisters(unsigned int id)
 
 }
 
-static unsigned int disable(void)
+static unsigned int disable(struct controller *controller)
 {
 
-    write32(REG_ENABLE, 0);
+    write32(controller, REG_ENABLE, 0);
 
-    return waitbits32(REG_ENABLESTATUS, 1, 0);
+    return waitbits32(controller, REG_ENABLESTATUS, 1, 0);
 
 }
 
@@ -1119,22 +1129,22 @@ static struct timing computetiming(unsigned int high, unsigned int low)
 
 }
 
-static void setmode(unsigned int speed, unsigned int hcnt, unsigned int lcnt, struct timing *timing)
+static void setmode(struct controller *controller, unsigned int speed, unsigned int hcnt, unsigned int lcnt, struct timing *timing)
 {
 
-    mode.speed = speed;
-    mode.hcnt = hcnt;
-    mode.lcnt = lcnt;
-    mode.high = timing->high;
-    mode.low = timing->low;
+    controller->mode.speed = speed;
+    controller->mode.hcnt = hcnt;
+    controller->mode.lcnt = lcnt;
+    controller->mode.high = timing->high;
+    controller->mode.low = timing->low;
 
     /* like Linux: hold the transmitted SDA as the firmware says and the received one a cycle */
-    mode.hold = timing->hold | (1 << REG_SDAHOLD_RXSHIFT);
+    controller->mode.hold = timing->hold | (1 << REG_SDAHOLD_RXSHIFT);
 
 }
 
 /* the counts and SDA hold the firmware gives for the controller (FMCN for 400 kHz, SSCN for 100 kHz), else our own standard mode guess for a 120 MHz clock */
-static void choosemode(unsigned int index, unsigned int speed)
+static void choosemode(struct controller *controller, unsigned int index, unsigned int speed)
 {
 
     struct timing fast;
@@ -1146,7 +1156,7 @@ static void choosemode(unsigned int index, unsigned int speed)
     if (speed >= 400000 && fast.found && fast.high && fast.low)
     {
 
-        setmode(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &fast);
+        setmode(controller, REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &fast);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: fast mode from FMCN");
 
     }
@@ -1154,7 +1164,7 @@ static void choosemode(unsigned int index, unsigned int speed)
     else if (standard.found && standard.high && standard.low)
     {
 
-        setmode(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &standard);
+        setmode(controller, REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &standard);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: standard mode from SSCN");
 
     }
@@ -1164,7 +1174,7 @@ static void choosemode(unsigned int index, unsigned int speed)
 
         struct timing computed = computetiming(TFAST_HIGH, TFAST_LOW);
 
-        setmode(REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &computed);
+        setmode(controller, REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &computed);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, fast mode computed for 120 MHz");
 
     }
@@ -1174,43 +1184,43 @@ static void choosemode(unsigned int index, unsigned int speed)
 
         struct timing computed = computetiming(TSTANDARD_HIGH, TSTANDARD_LOW);
 
-        setmode(REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &computed);
+        setmode(controller, REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &computed);
         debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, standard mode computed for 120 MHz");
 
     }
 
 }
 
-static unsigned int setup(void)
+static unsigned int setup(struct controller *controller)
 {
 
-    if (!disable())
+    if (!disable(controller))
         return 0;
 
-    write32(REG_CON, REG_CON_MASTER | mode.speed | REG_CON_RESTART | REG_CON_SLAVEDISABLE);
-    write32(mode.hcnt, mode.high);
-    write32(mode.lcnt, mode.low);
-    write32(REG_SDAHOLD, mode.hold);
-    write32(REG_INTRMASK, 0);
-    write32(REG_RXTL, 0);
-    write32(REG_TXTL, 0);
+    write32(controller, REG_CON, REG_CON_MASTER | controller->mode.speed | REG_CON_RESTART | REG_CON_SLAVEDISABLE);
+    write32(controller, controller->mode.hcnt, controller->mode.high);
+    write32(controller, controller->mode.lcnt, controller->mode.low);
+    write32(controller, REG_SDAHOLD, controller->mode.hold);
+    write32(controller, REG_INTRMASK, 0);
+    write32(controller, REG_RXTL, 0);
+    write32(controller, REG_TXTL, 0);
 
     return 1;
 
 }
 
 /* a transfer that runs out of time is still on the bus: like Linux, have the controller finish it with a STOP before turning it off, so the device is not left holding SDA */
-static void stoptransfer(void)
+static void stoptransfer(struct controller *controller)
 {
 
-    write32(REG_ENABLE, REG_ENABLE_ENABLE | REG_ENABLE_ABORT);
-    waitbits32(REG_ENABLE, REG_ENABLE_ABORT, 0);
-    read32(REG_CLRINTR);
-    disable();
+    write32(controller, REG_ENABLE, REG_ENABLE_ENABLE | REG_ENABLE_ABORT);
+    waitbits32(controller, REG_ENABLE, REG_ENABLE_ABORT, 0);
+    read32(controller, REG_CLRINTR);
+    disable(controller);
 
 }
 
-static unsigned int runtransfer(struct i2c_transfer *transfer)
+static unsigned int runtransfer(struct controller *controller, unsigned int address, struct i2c_transfer *transfer)
 {
 
     unsigned int sent = 0;
@@ -1218,26 +1228,26 @@ static unsigned int runtransfer(struct i2c_transfer *transfer)
     unsigned int received = 0;
     unsigned int i;
 
-    if (!disable())
+    if (!disable(controller))
         return 0;
 
-    write32(REG_TAR, transfer->address);
-    read32(REG_CLRINTR);
-    write32(REG_ENABLE, 1);
+    write32(controller, REG_TAR, address);
+    read32(controller, REG_CLRINTR);
+    write32(controller, REG_ENABLE, 1);
 
     for (i = 0; i < transfer->timeout; i++)
     {
 
-        unsigned int status = read32(REG_STATUS);
-        unsigned int raw = read32(REG_RAWINTRSTAT);
+        unsigned int status = read32(controller, REG_STATUS);
+        unsigned int raw = read32(controller, REG_RAWINTRSTAT);
 
         if (raw & REG_RAWINTRSTAT_TXABRT)
         {
 
-            transfer->abort = read32(REG_TXABRTSOURCE);
+            transfer->abort = read32(controller, REG_TXABRTSOURCE);
 
-            read32(REG_CLRINTR);
-            disable();
+            read32(controller, REG_CLRINTR);
+            disable(controller);
 
             return 0;
 
@@ -1246,7 +1256,7 @@ static unsigned int runtransfer(struct i2c_transfer *transfer)
         if (received < transfer->incount && (status & REG_STATUS_RFNE))
         {
 
-            transfer->in[received] = read32(REG_DATACMD);
+            transfer->in[received] = read32(controller, REG_DATACMD);
             received++;
 
         }
@@ -1259,7 +1269,7 @@ static unsigned int runtransfer(struct i2c_transfer *transfer)
             if (sent + 1 == transfer->outcount && !transfer->incount)
                 command |= REG_DATACMD_STOP;
 
-            write32(REG_DATACMD, command);
+            write32(controller, REG_DATACMD, command);
 
             sent++;
 
@@ -1276,7 +1286,7 @@ static unsigned int runtransfer(struct i2c_transfer *transfer)
             if (asked + 1 == transfer->incount)
                 command |= REG_DATACMD_STOP;
 
-            write32(REG_DATACMD, command);
+            write32(controller, REG_DATACMD, command);
 
             asked++;
 
@@ -1285,7 +1295,7 @@ static unsigned int runtransfer(struct i2c_transfer *transfer)
         else if (sent == transfer->outcount && received == transfer->incount && (raw & REG_RAWINTRSTAT_STOPDET))
         {
 
-            disable();
+            disable(controller);
 
             return 1;
 
@@ -1293,7 +1303,7 @@ static unsigned int runtransfer(struct i2c_transfer *transfer)
 
     }
 
-    stoptransfer();
+    stoptransfer(controller);
 
     return 0;
 
@@ -1333,34 +1343,99 @@ unsigned int i2c_ishid(unsigned int id)
 
 }
 
+static struct controller *findcontroller(unsigned int id)
+{
+
+    unsigned int index = (id && id <= nclients) ? clients[id - 1].controller : CONTROLLERS;
+
+    return (index < CONTROLLERS && controllers[index].mmio) ? &controllers[index] : 0;
+
+}
+
 unsigned int i2c_runtransfer(struct i2c_transfer *transfer)
 {
 
+    struct controller *controller = findcontroller(transfer->id);
     unsigned int ok;
 
-    if (!mmio)
+    if (!controller)
         return 0;
 
-    spinlock_acquire(&buslock);
+    spinlock_acquire(&controller->lock);
 
-    ok = runtransfer(transfer);
+    ok = runtransfer(controller, clients[transfer->id - 1].address, transfer);
 
-    spinlock_release(&buslock);
+    spinlock_release(&controller->lock);
 
     return ok;
 
 }
 
-void i2c_wait(unsigned int count)
+void i2c_wait(unsigned int id, unsigned int count)
+{
+
+    struct controller *controller = findcontroller(id);
+    unsigned int i;
+
+    if (!controller)
+        return;
+
+    for (i = 0; i < count; i++)
+        read32(controller, REG_STATUS);
+
+}
+
+static unsigned int countcontrollers(void)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    for (i = 0; i < CONTROLLERS; i++)
+    {
+
+        if (controllers[i].mmio)
+            count++;
+
+    }
+
+    return count;
+
+}
+
+static unsigned int isused(unsigned int index)
 {
 
     unsigned int i;
 
-    if (!mmio)
-        return;
+    for (i = 0; i < nclients; i++)
+    {
 
-    for (i = 0; i < count; i++)
-        read32(REG_STATUS);
+        if (clients[i].controller == index || (clients[i].controller == CONTROLLERS && !countcontrollers()))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+/* the slowest device on the controller sets its speed */
+static unsigned int getspeed(unsigned int index)
+{
+
+    unsigned int speed = 0;
+    unsigned int i;
+
+    for (i = 0; i < nclients; i++)
+    {
+
+        if ((clients[i].controller == index || clients[i].controller == CONTROLLERS) && (!speed || clients[i].speed < speed))
+            speed = clients[i].speed;
+
+    }
+
+    return speed;
 
 }
 
@@ -1382,7 +1457,8 @@ static unsigned int ismatch(unsigned int id)
 
     }
 
-    return index < CONTROLLERS && (!nclients || clients[0].controller == CONTROLLERS || index == clients[0].controller);
+    /* without any device the first controller is still set up, for its log */
+    return index < CONTROLLERS && !controllers[index].mmio && ((!nclients && !countcontrollers()) || isused(index));
 
 }
 
@@ -1391,6 +1467,7 @@ static void reset(unsigned int id)
 
     unsigned long address = pci_getbar(id, 0);
     unsigned int index = getindex(id);
+    struct controller *controller = &controllers[index];
     unsigned int device = pci_inw(id, PCI_CONFIG_DEVICE);
     unsigned int low;
     unsigned int high;
@@ -1416,16 +1493,16 @@ static void reset(unsigned int id)
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: controller %u device 0x%H4u at 0x%H8u%H8u", &index, &device, &high, &low);
     poweron(id);
 
-    mmio = mapregisters(address);
+    controller->mmio = mapregisters(address, index);
 
-    write32(LPSS_RESETS, 0);
-    write32(LPSS_RESETS, LPSS_RESETS_DONE);
-    write32(LPSS_REMAPLOW, low);
-    write32(LPSS_REMAPHIGH, high);
+    write32(controller, LPSS_RESETS, 0);
+    write32(controller, LPSS_RESETS, LPSS_RESETS_DONE);
+    write32(controller, LPSS_REMAPLOW, low);
+    write32(controller, LPSS_REMAPHIGH, high);
 
-    comptype = read32(REG_COMPTYPE);
-    param = read32(REG_COMPPARAM1);
-    caps = read32(LPSS_CAPS);
+    comptype = read32(controller, REG_COMPTYPE);
+    param = read32(controller, REG_COMPPARAM1);
+    caps = read32(controller, LPSS_CAPS);
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: type 0x%H8u param 0x%H8u caps 0x%H8u", &comptype, &param, &caps);
 
@@ -1434,20 +1511,20 @@ static void reset(unsigned int id)
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: not a DesignWare controller");
 
-        mmio = 0;
+        controller->mmio = 0;
 
         return;
 
     }
 
-    choosemode(index, (nclients) ? clients[0].speed : 0);
+    choosemode(controller, index, getspeed(index));
 
-    if (!setup())
+    if (!setup(controller))
     {
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: controller does not disable");
 
-        mmio = 0;
+        controller->mmio = 0;
 
         return;
 
@@ -1455,10 +1532,28 @@ static void reset(unsigned int id)
 
 }
 
-static unsigned int findcontroller(void)
+static unsigned int getfirstcontroller(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < CONTROLLERS; i++)
+    {
+
+        if (controllers[i].mmio)
+            return i;
+
+    }
+
+    return CONTROLLERS;
+
+}
+
+static void bus_setup(void)
 {
 
     struct resource *current = 0;
+    unsigned int i;
 
     while ((current = resource_foreachtype(current, RESOURCE_BUS)))
     {
@@ -1474,7 +1569,7 @@ static unsigned int findcontroller(void)
             {
 
                 if (ismatch(id))
-                    return id;
+                    reset(id);
 
             }
 
@@ -1482,17 +1577,35 @@ static unsigned int findcontroller(void)
 
     }
 
-    return 0;
+    /* a device whose controller the scan could not name goes on the first one */
+    for (i = 0; i < nclients; i++)
+    {
 
-}
+        if (clients[i].controller == CONTROLLERS)
+            clients[i].controller = getfirstcontroller();
 
-static void bus_setup(void)
-{
+    }
 
-    unsigned int id = findcontroller();
+    /* a one-byte read shows whether each device answers at its address before any driver takes it */
+    for (i = 0; i < nclients; i++)
+    {
 
-    if (id)
-        reset(id);
+        struct controller *controller = findcontroller(i + 1);
+
+        if (!controller)
+            continue;
+
+        check.outcount = 0;
+        check.incount = 1;
+        check.abort = 0;
+        check.timeout = TIMEOUT;
+
+        if (runtransfer(controller, clients[i].address, &check))
+            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: device 0x%H2u on controller %u answers", &clients[i].address, &clients[i].controller);
+        else
+            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: device 0x%H2u on controller %u does not answer, abort 0x%H8u", &clients[i].address, &clients[i].controller, &check.abort);
+
+    }
 
 }
 
@@ -1501,13 +1614,10 @@ static unsigned int bus_next(unsigned int id)
 
     unsigned int i;
 
-    if (!mmio)
-        return 0;
-
     for (i = id; i < nclients; i++)
     {
 
-        if (clients[i].controller == clients[0].controller)
+        if (findcontroller(i + 1))
             return i + 1;
 
     }
@@ -1519,7 +1629,10 @@ static unsigned int bus_next(unsigned int id)
 void module_init(void)
 {
 
-    spinlock_init(&buslock);
+    unsigned int i;
+
+    for (i = 0; i < CONTROLLERS; i++)
+        spinlock_init(&controllers[i].lock);
 
     if (!readsettings() && !scantables(1))
     {
@@ -1558,10 +1671,17 @@ void module_register(void)
 void module_unregister(void)
 {
 
+    unsigned int i;
+
     base_unregisterbus(&bus);
 
-    if (mmio)
-        disable();
+    for (i = 0; i < CONTROLLERS; i++)
+    {
+
+        if (controllers[i].mmio)
+            disable(&controllers[i]);
+
+    }
 
 }
 

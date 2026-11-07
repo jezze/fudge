@@ -65,7 +65,7 @@
 struct hid
 {
 
-    unsigned int address;
+    unsigned int id;
     unsigned int reportregister;
     unsigned int reportlength;
     unsigned int inputregister;
@@ -165,10 +165,10 @@ static unsigned int getinword(struct i2c_transfer *transfer, unsigned int offset
 
 }
 
-static unsigned int readhiddescriptor(struct i2c_transfer *transfer, unsigned int address, unsigned int reg)
+static unsigned int readhiddescriptor(struct i2c_transfer *transfer, unsigned int id, unsigned int reg)
 {
 
-    transfer->address = address;
+    transfer->id = id;
     transfer->out[0] = reg;
     transfer->out[1] = reg >> 8;
     transfer->outcount = 2;
@@ -183,7 +183,7 @@ static unsigned int readhiddescriptor(struct i2c_transfer *transfer, unsigned in
 static unsigned int sendcommand(struct i2c_transfer *transfer, unsigned int command)
 {
 
-    transfer->address = hid.address;
+    transfer->id = hid.id;
     transfer->out[0] = hid.commandregister;
     transfer->out[1] = hid.commandregister >> 8;
     transfer->out[2] = command;
@@ -203,7 +203,7 @@ static unsigned int setfeature(struct i2c_transfer *transfer, unsigned int repor
 
     unsigned int n = 0;
 
-    transfer->address = hid.address;
+    transfer->id = hid.id;
     transfer->out[n++] = hid.commandregister;
     transfer->out[n++] = hid.commandregister >> 8;
 
@@ -242,7 +242,7 @@ static unsigned int setfeature(struct i2c_transfer *transfer, unsigned int repor
 static unsigned int readreportdescriptor(struct i2c_transfer *transfer)
 {
 
-    transfer->address = hid.address;
+    transfer->id = hid.id;
     transfer->out[0] = hid.reportregister;
     transfer->out[1] = hid.reportregister >> 8;
     transfer->outcount = 2;
@@ -257,7 +257,7 @@ static unsigned int readreportdescriptor(struct i2c_transfer *transfer)
 static unsigned int readinput(struct i2c_transfer *transfer)
 {
 
-    transfer->address = hid.address;
+    transfer->id = hid.id;
     transfer->outcount = 0;
     transfer->incount = readlength;
     transfer->abort = 0;
@@ -924,7 +924,7 @@ static void setupmouse(void)
 
     }
 
-    i2c_wait(RESETDELAY);
+    i2c_wait(hid.id, RESETDELAY);
 
     if (hid.reportlength > I2C_TRANSFER_IN || !readreportdescriptor(&transfer))
     {
@@ -969,9 +969,10 @@ static void setupmouse(void)
 
 }
 
-static void probe(unsigned int address, unsigned int known)
+static void probe(unsigned int id, unsigned int known)
 {
 
+    unsigned int address = i2c_getaddress(id);
     unsigned int i;
 
     for (i = 0; i < HIDREGISTERS; i++)
@@ -979,13 +980,13 @@ static void probe(unsigned int address, unsigned int known)
 
         unsigned int reg = (known) ? known : hidregisters[i];
 
-        if (readhiddescriptor(&transfer, address, reg))
+        if (readhiddescriptor(&transfer, id, reg))
         {
 
             unsigned int vendor = getinword(&transfer, 20);
             unsigned int product = getinword(&transfer, 22);
 
-            hid.address = address;
+            hid.id = id;
             hid.reportlength = getinword(&transfer, 4);
             hid.reportregister = getinword(&transfer, 6);
             hid.inputregister = getinword(&transfer, 8);
@@ -1025,7 +1026,7 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    probe(i2c_getaddress(id), i2c_gethidregister(id));
+    probe(id, i2c_gethidregister(id));
 
 }
 
