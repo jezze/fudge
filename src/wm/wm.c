@@ -32,6 +32,10 @@
 #define DISPLAYS            4
 #define ANYDISPLAY          DISPLAYS
 #define UNITS               8
+#define TOUCH_PADCOUNTS     1600
+#define TOUCH_WHEELCOUNTS   24
+#define TOUCH_TAPTICKS      12
+#define TOUCH_TAPDRAG       1
 #define LINEBUFFER          3840
 
 struct listing
@@ -90,6 +94,7 @@ struct state
 };
 
 static struct state state;
+static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
 static struct keys_map keymap[KEYS_MAPSIZE];
 static unsigned int keymapcount;
 static unsigned int linebuffer[LINEBUFFER];
@@ -3020,6 +3025,7 @@ static void onmain(struct message *message)
 
     channel_send(0, keyboard, MESSAGE_TYPE_LINK, 0, 0);
     sendunits(option_getstring("mouse-service"), MESSAGE_TYPE_LINK);
+    sendunits(option_getstring("touch-service"), MESSAGE_TYPE_LINK);
     setupvideo(video);
     setupdisplays();
 
@@ -3036,6 +3042,7 @@ static void onmain(struct message *message)
     if (state.clock && state.timer)
         requestclock(0);
 
+    sendunits(option_getstring("touch-service"), MESSAGE_TYPE_UNLINK);
     sendunits(option_getstring("mouse-service"), MESSAGE_TYPE_UNLINK);
     channel_send(0, keyboard, MESSAGE_TYPE_UNLINK, 0, 0);
 
@@ -3204,28 +3211,31 @@ static void movemouse(int x, int y, unsigned int buttons)
 
 }
 
+static void moverelative(int relx, int rely, unsigned int buttons)
+{
+
+    int quarters = getquarters(relx, rely);
+    int totalx = state.mouseremainder.x + relx * quarters;
+    int totaly = state.mouseremainder.y + rely * quarters;
+    int pixelsx = scalemove(totalx);
+    int pixelsy = scalemove(totaly);
+    struct util_region area = getarea();
+    int x = util_clamp(state.mouseposition.x + pixelsx, 0, (int)area.size.w - 1);
+    int y = util_clamp(state.mouseposition.y + pixelsy, 0, (int)area.size.h - 1);
+    state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
+    state.mouseremainder.y = totaly - pixelsy * MOUSE_NORMAL;
+
+    movemouse(x, y, buttons);
+
+}
+
 static void onmousemove(struct message *message)
 {
 
     struct message_mousemove *mousemove = message_validate(MESSAGE_TYPE_MOUSEMOVE, message->data, message->length);
 
     if (mousemove)
-    {
-
-        int quarters = getquarters(mousemove->relx, mousemove->rely);
-        int totalx = state.mouseremainder.x + mousemove->relx * quarters;
-        int totaly = state.mouseremainder.y + mousemove->rely * quarters;
-        int pixelsx = scalemove(totalx);
-        int pixelsy = scalemove(totaly);
-        struct util_region area = getarea();
-        int x = util_clamp(state.mouseposition.x + pixelsx, 0, (int)area.size.w - 1);
-        int y = util_clamp(state.mouseposition.y + pixelsy, 0, (int)area.size.h - 1);
-        state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
-        state.mouseremainder.y = totaly - pixelsy * MOUSE_NORMAL;
-
-        movemouse(x, y, mousemove->buttons);
-
-    }
+        moverelative(mousemove->relx, mousemove->rely, mousemove->buttons);
 
 }
 
@@ -3263,17 +3273,15 @@ static void grabthumb(void)
 
 }
 
-static void onmousepress(struct message *message)
+static void pressbutton(unsigned int button)
 {
 
-    struct message_mousepress *mousepress = message_validate(MESSAGE_TYPE_MOUSEPRESS, message->data, message->length);
     struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
     struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    if (mousepress)
     {
 
-        switch (mousepress->button)
+        switch (button)
         {
 
         case 1:
@@ -3329,18 +3337,37 @@ static void onmousepress(struct message *message)
 
 }
 
-static void onmousescroll(struct message *message)
+static void onmousepress(struct message *message)
 {
 
-    struct message_mousescroll *mousescroll = message_validate(MESSAGE_TYPE_MOUSESCROLL, message->data, message->length);
+    struct message_mousepress *mousepress = message_validate(MESSAGE_TYPE_MOUSEPRESS, message->data, message->length);
+
+    if (mousepress)
+        pressbutton(mousepress->button);
+
+}
+
+static void scrollby(int relz)
+{
+
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    if (mousescroll && scrollablewidget)
-        scrollwidget(scrollablewidget, mousescroll->relz * 16);
+    if (scrollablewidget)
+        scrollwidget(scrollablewidget, relz * 16);
 
     sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
 
     redraw(1);
+
+}
+
+static void onmousescroll(struct message *message)
+{
+
+    struct message_mousescroll *mousescroll = message_validate(MESSAGE_TYPE_MOUSESCROLL, message->data, message->length);
+
+    if (mousescroll)
+        scrollby(mousescroll->relz);
 
 }
 
@@ -3354,6 +3381,192 @@ static void onmouserelease(struct message *message)
 
         releasebutton(mouserelease->button);
         redraw(1);
+
+    }
+
+}
+
+/* surface units to pointer counts, the whole range being counts; the remainder is kept so slow movement is not lost */
+static int scaletouch(int delta, int *accumulator, unsigned int range, unsigned int counts)
+{
+
+    int quotient;
+
+    if (!range)
+        return 0;
+
+    *accumulator += delta * (int)counts;
+    quotient = (*accumulator >= 0) ? *accumulator / (int)range : -(-*accumulator / (int)range);
+    *accumulator -= quotient * (int)range;
+
+    return quotient;
+
+}
+
+static unsigned int getbuttons(void)
+{
+
+    return (state.mousebuttonleft ? 1 : 0) | (state.mousebuttonright ? 2 : 0);
+
+}
+
+/* motion is gathered per driver tick and moved at once, so the acceleration sees what a mouse report would */
+static void flushtouch(void)
+{
+
+    while (touch.motionx || touch.motiony)
+    {
+
+        int x = util_clamp(touch.motionx, -127, 127);
+        int y = util_clamp(touch.motiony, -127, 127);
+
+        moverelative(x, y, getbuttons());
+
+        touch.motionx -= x;
+        touch.motiony -= y;
+
+    }
+
+    if (touch.wheel)
+        scrollby(touch.wheel);
+
+    touch.wheel = 0;
+
+}
+
+static void clicktouch(unsigned int button)
+{
+
+    flushtouch();
+    pressbutton(button);
+    releasebutton(button);
+    redraw(1);
+
+}
+
+/* one finger moves the pointer, two scroll; a short touch that barely moves is a tap, one finger a left click and two a right click; a touch soon after a one-finger tap holds the left button until it lifts (tap and drag, a quick second tap being a double click); the surface's own button is the left button */
+static void ontouchcontact(struct message *message)
+{
+
+    struct message_touchcontact *contact = message_validate(MESSAGE_TYPE_TOUCHCONTACT, message->data, message->length);
+
+    if (!contact)
+        return;
+
+    if (contact->time != touch.time)
+        flushtouch();
+
+    touch.time = contact->time;
+
+    if (contact->button != touch.button)
+    {
+
+        flushtouch();
+
+        if (contact->button)
+            pressbutton(1);
+        else
+            releasebutton(1);
+
+        touch.button = contact->button;
+
+        redraw(1);
+
+    }
+
+    if (!touch.active)
+    {
+
+        if (contact->tip)
+        {
+
+            touch.active = 1;
+            touch.id = contact->id;
+            touch.lastx = contact->x;
+            touch.lasty = contact->y;
+            touch.downtime = contact->time;
+            touch.travel = 0;
+            touch.fingers = (contact->count) ? contact->count : 1;
+            touch.accx = 0;
+            touch.accy = 0;
+            touch.accw = 0;
+
+            if (TOUCH_TAPDRAG && touch.tapped && contact->time - touch.taptime <= TOUCH_TAPTICKS && !touch.button)
+            {
+
+                touch.dragging = 1;
+
+                pressbutton(1);
+                redraw(1);
+
+            }
+
+            touch.tapped = 0;
+
+        }
+
+        return;
+
+    }
+
+    if (contact->count > touch.fingers)
+        touch.fingers = contact->count;
+
+    if (contact->id != touch.id)
+        return;
+
+    if (contact->tip)
+    {
+
+        int dx = (int)contact->x - touch.lastx;
+        int dy = (int)contact->y - touch.lasty;
+
+        touch.lastx = contact->x;
+        touch.lasty = contact->y;
+        touch.travel += ((dx < 0) ? -dx : dx) + ((dy < 0) ? -dy : dy);
+
+        if (touch.fingers >= 2)
+        {
+
+            touch.wheel -= scaletouch(dy, &touch.accw, contact->ymax, TOUCH_WHEELCOUNTS);
+
+        }
+
+        else
+        {
+
+            touch.motionx += scaletouch(dx, &touch.accx, contact->xmax, TOUCH_PADCOUNTS);
+            touch.motiony += scaletouch(dy, &touch.accy, contact->xmax, TOUCH_PADCOUNTS);
+
+        }
+
+        return;
+
+    }
+
+    touch.active = 0;
+
+    flushtouch();
+
+    if (touch.dragging)
+    {
+
+        releasebutton(1);
+        redraw(1);
+
+        touch.dragging = 0;
+
+        return;
+
+    }
+
+    if (contact->time - touch.downtime <= TOUCH_TAPTICKS && touch.travel <= contact->xmax / 50u && !touch.button)
+    {
+
+        clicktouch((touch.fingers >= 2) ? 2 : 1);
+
+        touch.tapped = touch.fingers < 2;
+        touch.taptime = contact->time;
 
     }
 
@@ -3524,6 +3737,7 @@ static void bindinput(unsigned int on)
     channel_bind(MESSAGE_TYPE_KEYRELEASE, (on) ? onkeyrelease : 0);
     channel_bind(MESSAGE_TYPE_MOUSEMOVE, (on) ? onmousemove : 0);
     channel_bind(MESSAGE_TYPE_MOUSEPOSITION, (on) ? onmouseposition : 0);
+    channel_bind(MESSAGE_TYPE_TOUCHCONTACT, (on) ? ontouchcontact : 0);
     channel_bind(MESSAGE_TYPE_MOUSEPRESS, (on) ? onmousepress : 0);
     channel_bind(MESSAGE_TYPE_MOUSESCROLL, (on) ? onmousescroll : 0);
     channel_bind(MESSAGE_TYPE_MOUSERELEASE, (on) ? onmouserelease : 0);
@@ -3721,6 +3935,7 @@ void init(void)
     option_add("config", "initrd:data/config/wm.mq");
     option_add("keyboard-service", "keyboard:0");
     option_add("mouse-service", "mouse");
+    option_add("touch-service", "touch");
     option_add("video-service", "video:0");
     option_add("clock-service", "clock:0");
     option_add("timer-service", "timer:0");

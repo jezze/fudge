@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/mouse.h>
+#include <modules/touch.h>
 #include <modules/pic/pic.h>
 #include <modules/apic/apic.h>
 #include <modules/gpio/gpio.h>
@@ -23,9 +24,6 @@
 #define HID_REPORTTYPE_FEATURE          0x03
 #define HID_INPUTMODE_TOUCHPAD          3
 #define HID_SELECT_ALL                  3
-#define TAPTICKS                        12
-#define PADCOUNTS                       1600
-#define WHEELCOUNTS                     24
 #define HID_ITEM_SIZE                   0x03
 #define HID_ITEM_LONG                   0xFE
 #define HID_MAIN_INPUT                  0x80
@@ -143,6 +141,8 @@ struct parser
 
 static struct base_driver driver;
 static struct mouse_interface mouseinterface;
+static struct touch_interface touchinterface;
+static unsigned int contacts;
 static struct i2c_transfer transfer;
 static unsigned int unread;
 static struct {int x; int y; int wheel;} motion;
@@ -153,7 +153,7 @@ static unsigned int padmode;
 static unsigned int screenmode;
 static unsigned int readlength;
 static unsigned int ticks;
-static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtick; unsigned int travel; unsigned int fingers; unsigned int button; int accx; int accy; int accw;} touch;
+static struct {unsigned int active; int lastx; int lasty;} touch;
 static struct parser parser;
 static struct gpio_pad pad;
 static unsigned int padinterrupt;
@@ -814,119 +814,28 @@ static void handlereport(struct i2c_transfer *transfer, unsigned int start)
 
 }
 
-/* touchpad counts to pointer counts, the whole width being PADCOUNTS; the remainder is kept so slow movement is not lost */
-static int scale(int delta, int *accumulator, unsigned int range, unsigned int counts)
-{
-
-    int quotient;
-
-    *accumulator += delta * (int)counts;
-    quotient = (*accumulator >= 0) ? *accumulator / (int)range : -(-*accumulator / (int)range);
-    *accumulator -= quotient * (int)range;
-
-    return quotient;
-
-}
-
-static void click(unsigned int button)
-{
-
-    flushmotion();
-    mouse_notifypress(&mouseinterface, button);
-    mouse_notifyrelease(&mouseinterface, button);
-
-}
-
-/* one finger moves the pointer, two scroll; a short touch that barely moves is a tap: one finger left click, two right click; the pad's own button is the left button */
-static void handlepadreport(struct i2c_transfer *transfer, unsigned int start)
-{
-
-    unsigned int count = (hidpad.contactcount.found) ? getbits(transfer, start, &hidpad.contactcount, 0) : 0;
-    unsigned int button = (hidpad.button.found) ? getbits(transfer, start, &hidpad.button, 0) & 1 : 0;
-    unsigned int tip = getbits(transfer, start, &hidpad.tip, 0) & 1;
-    unsigned int id = (hidpad.contactid.found) ? getbits(transfer, start, &hidpad.contactid, 0) & 0xFF : 0;
-    int x = getunsigned(transfer, start, &hidpad.x, 0);
-    int y = getunsigned(transfer, start, &hidpad.y, 0);
-
-    if (button != touch.button)
-    {
-
-        flushmotion();
-
-        if (button)
-            mouse_notifypress(&mouseinterface, 1);
-        else
-            mouse_notifyrelease(&mouseinterface, 1);
-
-        touch.button = button;
-
-    }
-
-    if (touch.active && count > touch.fingers)
-        touch.fingers = count;
-
-    if (!touch.active)
-    {
-
-        if (tip)
-        {
-
-            touch.active = 1;
-            touch.id = id;
-            touch.lastx = x;
-            touch.lasty = y;
-            touch.downtick = ticks;
-            touch.travel = 0;
-            touch.fingers = (count) ? count : 1;
-            touch.accx = 0;
-            touch.accy = 0;
-            touch.accw = 0;
-
-        }
-
-        return;
-
-    }
-
-    if (id != touch.id)
-        return;
-
-    if (tip)
-    {
-
-        int dx = x - touch.lastx;
-        int dy = y - touch.lasty;
-
-        touch.lastx = x;
-        touch.lasty = y;
-        touch.travel += ((dx < 0) ? -dx : dx) + ((dy < 0) ? -dy : dy);
-
-        if (touch.fingers >= 2)
-            motion.wheel -= scale(dy, &touch.accw, hidpad.ymax, WHEELCOUNTS);
-
-        else
-        {
-
-            motion.x += scale(dx, &touch.accx, hidpad.xmax, PADCOUNTS);
-            motion.y += scale(dy, &touch.accy, hidpad.xmax, PADCOUNTS);
-
-        }
-
-        return;
-
-    }
-
-    if (ticks - touch.downtick <= TAPTICKS && touch.travel <= hidpad.xmax / 50 && !touch.button)
-        click((touch.fingers >= 2) ? 2 : 1);
-
-    touch.active = 0;
-
-}
-
 static unsigned short scaleposition(unsigned int value, unsigned int max)
 {
 
     return ((value < max) ? value : max) * 65535 / max;
+
+}
+
+/* the touchpad reports its fingers as they are, one per report, and the wm makes pointer motion, taps and scrolling of them; only a frame's first report has the contact count */
+static void handlepadreport(struct i2c_transfer *transfer, unsigned int start)
+{
+
+    unsigned int count = (hidpad.contactcount.found) ? getunsigned(transfer, start, &hidpad.contactcount, 0) : 0;
+    unsigned int button = (hidpad.button.found) ? getunsigned(transfer, start, &hidpad.button, 0) & 1 : 0;
+    unsigned int tip = getunsigned(transfer, start, &hidpad.tip, 0) & 1;
+    unsigned int id = (hidpad.contactid.found) ? getunsigned(transfer, start, &hidpad.contactid, 0) & 0xFF : 0;
+    unsigned int x = getunsigned(transfer, start, &hidpad.x, 0);
+    unsigned int y = getunsigned(transfer, start, &hidpad.y, 0);
+
+    if (count)
+        contacts = count;
+
+    touch_notifycontact(&touchinterface, id, tip, x, y, hidpad.xmax, hidpad.ymax, contacts, button, ticks);
 
 }
 
@@ -1181,7 +1090,11 @@ static void driver_attach(unsigned int id)
         struct i2c_pad interrupt = i2c_getpad(id);
         unsigned int address = i2c_getaddress(id);
 
-        mouse_registerinterface(&mouseinterface);
+        if (padmode)
+            touch_registerinterface(&touchinterface);
+        else
+            mouse_registerinterface(&mouseinterface);
+
         pic_setroutine(TIMERIRQ, handleirq);
         apic_setroutine(TIMERIRQ, handleirq);
 
@@ -1213,7 +1126,10 @@ static void driver_detach(unsigned int id)
 
         pic_unsetroutine(TIMERIRQ, handleirq);
         apic_unsetroutine(TIMERIRQ, handleirq);
-        mouse_unregisterinterface(&mouseinterface);
+        if (padmode)
+            touch_unregisterinterface(&touchinterface);
+        else
+            mouse_unregisterinterface(&mouseinterface);
 
     }
 
@@ -1223,6 +1139,7 @@ void module_init(void)
 {
 
     mouse_initinterface(&mouseinterface);
+    touch_initinterface(&touchinterface);
     spinlock_init(&spinlock);
     base_initdriver(&driver, "i2c-hid", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 

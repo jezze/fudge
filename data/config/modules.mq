@@ -7,6 +7,7 @@
     { path: initrd:kernel/console.ko }
     { path: initrd:kernel/keyboard.ko }
     { path: initrd:kernel/mouse.ko }
+    { path: initrd:kernel/touch.ko }
     { path: initrd:kernel/timer.ko }
     { path: initrd:kernel/audio.ko }
     { path: initrd:kernel/video.ko }

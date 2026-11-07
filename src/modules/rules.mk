@@ -113,6 +113,20 @@ L:=\
 include $(DIR_MK)/kmod.mk
 
 M:=\
+    $(DIR_SRC)/modules/touch.ko \
+
+N:=\
+    $(DIR_SRC)/modules/touch.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/touch.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk
+
+M:=\
     $(DIR_SRC)/modules/sysinfo.ko \
 
 N:=\
