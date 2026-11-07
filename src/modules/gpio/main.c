@@ -56,7 +56,6 @@ struct interrupt
 
     struct gpio_pad pad;
     unsigned int (*routine)(void);
-    unsigned int spurious;
 
 };
 
@@ -89,6 +88,7 @@ static struct interrupt interrupts[PADS];
 static struct chip *chip;
 static unsigned long sbreg;
 static unsigned int irq;
+static unsigned int spurious;
 
 static unsigned int readpad(unsigned long address)
 {
@@ -136,6 +136,7 @@ static void stopinterrupt(struct interrupt *interrupt)
 static void handleirq(unsigned int irq)
 {
 
+    unsigned int found = 0;
     unsigned int i;
 
     for (i = 0; i < PADS; i++)
@@ -143,7 +144,6 @@ static void handleirq(unsigned int irq)
 
         struct interrupt *interrupt = &interrupts[i];
         unsigned long is = interrupt->pad.community + chip->gpiis + interrupt->pad.reg * 4;
-        unsigned int found = 0;
 
         if (!interrupt->routine)
             continue;
@@ -154,24 +154,28 @@ static void handleirq(unsigned int irq)
             /* clear first: the next announcement, even one made while the client reads, latches again and is not wiped out */
             writepad(is, 1 << interrupt->pad.bit);
 
-            found = interrupt->routine();
+            found += interrupt->routine();
 
         }
 
-        /* a line that keeps firing without the client finding anything is set up wrong (pad or apic polarity): give up on it, the client polls */
-        interrupt->spurious = (found) ? 0 : interrupt->spurious + 1;
+    }
 
-        if (interrupt->spurious == STORM)
+    /* the line is shared by every pad: one that keeps firing without any client finding anything is set up wrong (pad or apic polarity), so give up on it and the clients poll */
+    spurious = (found) ? 0 : spurious + 1;
+
+    if (spurious == STORM)
+    {
+
+        for (i = 0; i < PADS; i++)
         {
 
-            stopinterrupt(interrupt);
-
-            if (!countinterrupts())
-                apic_unsetroutine(irq, handleirq);
-
-            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "gpio: interrupt fires without results, turned off");
+            if (interrupts[i].routine)
+                stopinterrupt(&interrupts[i]);
 
         }
+
+        apic_unsetroutine(irq, handleirq);
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "gpio: interrupt fires without results, turned off");
 
     }
 
@@ -355,13 +359,18 @@ unsigned int gpio_setinterrupt(struct gpio_pad *pad, unsigned int (*routine)(voi
     }
 
     if (!countinterrupts())
+    {
+
+        spurious = 0;
+
         apic_setroutine(irq, handleirq);
+
+    }
 
     interrupts[i].pad.community = pad->community;
     interrupts[i].pad.dw0 = pad->dw0;
     interrupts[i].pad.reg = pad->reg;
     interrupts[i].pad.bit = pad->bit;
-    interrupts[i].spurious = 0;
     interrupts[i].routine = routine;
 
     writepad(ie, readpad(ie) | (1 << pad->bit));

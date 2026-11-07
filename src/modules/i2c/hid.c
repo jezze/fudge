@@ -50,6 +50,7 @@
 #define HID_USAGE_WHEEL                 0x00010038
 #define HID_PAGE_BUTTON                 0x0009
 #define HID_USAGE_BUTTON1               0x00090001
+#define HID_USAGE_TOUCHSCREEN           0x000D0004
 #define HID_USAGE_TOUCHPAD              0x000D0005
 #define HID_USAGE_FINGER                0x000D0022
 #define HID_USAGE_TIPSWITCH             0x000D0042
@@ -104,6 +105,7 @@ struct hidpad
 {
 
     unsigned int found;
+    unsigned int application;
     unsigned int reportid;
     unsigned int modereport;
     unsigned int selectreport;
@@ -148,6 +150,7 @@ static struct hid hid;
 static struct hidmouse hidmouse;
 static struct hidpad hidpad;
 static unsigned int padmode;
+static unsigned int screenmode;
 static unsigned int readlength;
 static unsigned int ticks;
 static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtick; unsigned int travel; unsigned int fingers; unsigned int button; int accx; int accy; int accw;} touch;
@@ -305,14 +308,19 @@ static void setfield(struct field *field, unsigned int offset, unsigned int size
 
 }
 
-/* the touchpad collection of a Precision Touchpad: one finger per report (hybrid reporting), its tip switch, contact id and absolute X/Y, the contact count and the button */
+/* the touchpad collection of a Precision Touchpad (one finger per report, hybrid reporting) or a touch screen's (its first finger): the tip switch, contact id and absolute X/Y, the contact count and the button */
 static void parsepadinput(struct parser *parser, struct hidpad *pad, unsigned int base, unsigned int flags)
 {
 
     unsigned int i;
 
-    if (parser->application != HID_USAGE_TOUCHPAD || (flags & HID_INPUT_CONSTANT))
+    if ((parser->application != HID_USAGE_TOUCHPAD && parser->application != HID_USAGE_TOUCHSCREEN) || (flags & HID_INPUT_CONSTANT))
         return;
+
+    if (pad->application && pad->application != parser->application)
+        return;
+
+    pad->application = parser->application;
 
     if (pad->x.found && pad->reportid != parser->reportid)
         return;
@@ -528,7 +536,7 @@ static void parsereportdescriptor(struct i2c_transfer *transfer, struct parser *
             if (parser->depth == 1)
                 parser->application = getusage(parser, 0);
 
-            if (parser->application == HID_USAGE_TOUCHPAD && !parser->fingerdepth && !parser->fingerdone && getusage(parser, 0) == HID_USAGE_FINGER)
+            if ((parser->application == HID_USAGE_TOUCHPAD || parser->application == HID_USAGE_TOUCHSCREEN) && !parser->fingerdepth && !parser->fingerdone && getusage(parser, 0) == HID_USAGE_FINGER)
                 parser->fingerdepth = parser->depth;
 
             if (!parser->mousedepth && !mouse->x.found && data == HID_COLLECTION_APPLICATION && getusage(parser, 0) == HID_USAGE_MOUSE)
@@ -572,7 +580,7 @@ static void parsereportdescriptor(struct i2c_transfer *transfer, struct parser *
     }
 
     mouse->found = mouse->x.found && mouse->y.found && mouse->x.relative && mouse->y.relative;
-    hidpad.found = hidpad.modereport && hidpad.tip.found && hidpad.x.found && hidpad.y.found && !hidpad.x.relative && hidpad.xmax && hidpad.ymax;
+    hidpad.found = (hidpad.application == HID_USAGE_TOUCHSCREEN || hidpad.modereport) && hidpad.tip.found && hidpad.x.found && hidpad.y.found && !hidpad.x.relative && hidpad.xmax && hidpad.ymax;
     mouse->length = 2 + mouse->usesids + (parser->offsets[mouse->reportid] + 7) / 8;
 
     /* reading just the mouse report keeps each poll short; the length word says what the device had */
@@ -685,13 +693,13 @@ static void listcollections(struct i2c_transfer *transfer)
 
 }
 
-static int getbits(struct i2c_transfer *transfer, unsigned int start, struct field *field, unsigned int index)
+static unsigned int getunsigned(struct i2c_transfer *transfer, unsigned int start, struct field *field, unsigned int index)
 {
 
     unsigned int value = 0;
     unsigned int i;
 
-    for (i = 0; i < field->size; i++)
+    for (i = 0; i < field->size && i < 32; i++)
     {
 
         unsigned int bit = start * 8 + field->offset + index * field->size + i;
@@ -700,6 +708,15 @@ static int getbits(struct i2c_transfer *transfer, unsigned int start, struct fie
             value |= 1 << i;
 
     }
+
+    return value;
+
+}
+
+static int getbits(struct i2c_transfer *transfer, unsigned int start, struct field *field, unsigned int index)
+{
+
+    unsigned int value = getunsigned(transfer, start, field, index);
 
     if (field->size > 1 && field->size < 32 && (value & (1 << (field->size - 1))))
         return (int)value - (1 << field->size);
@@ -828,8 +845,8 @@ static void handlepadreport(struct i2c_transfer *transfer, unsigned int start)
     unsigned int button = (hidpad.button.found) ? getbits(transfer, start, &hidpad.button, 0) & 1 : 0;
     unsigned int tip = getbits(transfer, start, &hidpad.tip, 0) & 1;
     unsigned int id = (hidpad.contactid.found) ? getbits(transfer, start, &hidpad.contactid, 0) & 0xFF : 0;
-    int x = getbits(transfer, start, &hidpad.x, 0) & 0xFFFF;
-    int y = getbits(transfer, start, &hidpad.y, 0) & 0xFFFF;
+    int x = getunsigned(transfer, start, &hidpad.x, 0);
+    int y = getunsigned(transfer, start, &hidpad.y, 0);
 
     if (button != touch.button)
     {
@@ -906,6 +923,24 @@ static void handlepadreport(struct i2c_transfer *transfer, unsigned int start)
 
 }
 
+/* for now only the first finger going down and up is logged, at its position in the panel's own units */
+static void handlescreenreport(struct i2c_transfer *transfer, unsigned int start)
+{
+
+    unsigned int tip = getbits(transfer, start, &hidpad.tip, 0) & 1;
+    unsigned int x = getunsigned(transfer, start, &hidpad.x, 0);
+    unsigned int y = getunsigned(transfer, start, &hidpad.y, 0);
+
+    if (tip && !touch.active)
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: touch down at %u %u", &x, &y);
+
+    if (!tip && touch.active)
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: touch up at %u %u", &x, &y);
+
+    touch.active = tip;
+
+}
+
 static unsigned int poll(unsigned int force)
 {
 
@@ -936,10 +971,13 @@ static unsigned int poll(unsigned int force)
         if (!ok || getinword(&transfer, 0) < start + 1)
             break;
 
-        if (padmode && transfer.in[2] == hidpad.reportid)
+        if ((padmode || screenmode) && transfer.in[2] == hidpad.reportid)
         {
 
-            handlepadreport(&transfer, start);
+            if (padmode)
+                handlepadreport(&transfer, start);
+            else
+                handlescreenreport(&transfer, start);
 
             count++;
 
@@ -947,7 +985,7 @@ static unsigned int poll(unsigned int force)
 
         }
 
-        if (padmode || (hidmouse.usesids && transfer.in[2] != hidmouse.reportid))
+        if (padmode || screenmode || (hidmouse.usesids && transfer.in[2] != hidmouse.reportid))
             continue;
 
         handlereport(&transfer, start);
@@ -1015,6 +1053,18 @@ static void setupmouse(void)
     readlength = hidmouse.length;
 
     /* like Linux, put a Precision Touchpad into touchpad mode and do pointer motion and taps ourselves; its mouse emulation recognises taps poorly */
+    if (hidpad.found && hidpad.application == HID_USAGE_TOUCHSCREEN)
+    {
+
+        screenmode = 1;
+        readlength = (hid.inputlength < I2C_TRANSFER_IN) ? hid.inputlength : I2C_TRANSFER_IN;
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: touchscreen mode, report %u, x max %u (%u bits) y max %u (%u bits)", &hidpad.reportid, &hidpad.xmax, &hidpad.x.size, &hidpad.ymax, &hidpad.y.size);
+
+        return;
+
+    }
+
     if (hidpad.found && setfeature(&transfer, hidpad.modereport, HID_INPUTMODE_TOUCHPAD))
     {
 
@@ -1108,10 +1158,11 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    if (hidmouse.found || padmode)
+    if (hidmouse.found || padmode || screenmode)
     {
 
         struct i2c_pad interrupt = i2c_getpad(id);
+        unsigned int address = i2c_getaddress(id);
 
         mouse_registerinterface(&mouseinterface);
         pic_setroutine(TIMERIRQ, handleirq);
@@ -1124,9 +1175,9 @@ static void driver_attach(unsigned int id)
             padinterrupt = gpio_setinterrupt(&pad, handlepad);
 
         if (padinterrupt)
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: touchpad interrupt on");
+            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: hid 0x%H2u interrupt on", &address);
         else
-            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c-hid: no touchpad interrupt, polling");
+            debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c-hid: hid 0x%H2u has no interrupt, polling", &address);
 
     }
 
@@ -1135,7 +1186,7 @@ static void driver_attach(unsigned int id)
 static void driver_detach(unsigned int id)
 {
 
-    if (hidmouse.found || padmode)
+    if (hidmouse.found || padmode || screenmode)
     {
 
         if (padinterrupt)
