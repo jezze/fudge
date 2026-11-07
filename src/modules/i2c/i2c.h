@@ -15,7 +15,18 @@ struct i2c_transfer
 
 };
 
+struct i2c_pad
+{
+
+    unsigned int found;
+    unsigned int group;
+    unsigned int pad;
+
+};
+
 unsigned int i2c_getaddress(unsigned int id);
+unsigned int i2c_gethidregister(unsigned int id);
+struct i2c_pad i2c_getpad(unsigned int id);
 unsigned int i2c_ishid(unsigned int id);
 unsigned int i2c_runtransfer(struct i2c_transfer *transfer);
 void i2c_wait(unsigned int count);

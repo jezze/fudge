@@ -165,6 +165,24 @@ struct client
     unsigned int controller;
     unsigned int speed;
     unsigned int hid;
+    unsigned int hidregister;
+    unsigned int haspad;
+    unsigned int padgroup;
+    unsigned int padnumber;
+
+};
+
+struct setting
+{
+
+    unsigned int controller;
+    char *enable;
+    unsigned int enablebit;
+    char *type;
+    char *address;
+    char *speed;
+    char *hid;
+    char *pad;
 
 };
 
@@ -172,6 +190,12 @@ static struct base_bus bus;
 static struct client clients[DEVICES];
 static unsigned int nclients;
 static struct mode mode;
+
+/* Intel's reference firmware has a touchpad (TPD0) under I2C1 and a touch panel (TPL0) under I2C0 whose _INI fills their templates from these; the touchpad comes first so it stays the device the bus drives */
+static struct setting settings[] = {
+    {1, "SDS1", 0x01, "TPDT", "TPDB", "TPDS", "TPDH", "GPDI"},
+    {0, "SDS0", 0x02, "TPLT", "TPLB", "TPLS", "TPLH", "GPLI"}
+};
 static struct spinlock buslock;
 static unsigned long mmio;
 static unsigned short devicestgllp[CONTROLLERS] = {0xA0E8, 0xA0E9, 0xA0EA, 0xA0EB, 0xA0C5, 0xA0C6};
@@ -328,27 +352,94 @@ static unsigned int getcontroller(struct scan *scan, unsigned int source)
 
 }
 
-static void addclient(unsigned int address, unsigned int index, unsigned int speed, unsigned int hid)
+static struct client *addclient(unsigned int address, unsigned int index, unsigned int speed, unsigned int hid)
 {
 
+    struct client *client;
     unsigned int i;
 
     for (i = 0; i < nclients; i++)
     {
 
         if (clients[i].address == address && clients[i].controller == index)
-            return;
+            return 0;
 
     }
 
     if (nclients == DEVICES)
-        return;
+        return 0;
 
-    clients[nclients].address = address;
-    clients[nclients].controller = index;
-    clients[nclients].speed = speed;
-    clients[nclients].hid = hid;
+    client = &clients[nclients];
+    client->address = address;
+    client->controller = index;
+    client->speed = speed;
+    client->hid = hid;
+    client->hidregister = 0;
+    client->haspad = 0;
+    client->padgroup = 0;
+    client->padnumber = 0;
     nclients++;
+
+    return client;
+
+}
+
+static unsigned int getsettingspeed(unsigned int value)
+{
+
+    switch (value)
+    {
+
+    case 0:
+        return 100000;
+
+    case 2:
+        return 1000000;
+
+    }
+
+    return 400000;
+
+}
+
+static unsigned int readsettings(void)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    for (i = 0; i < sizeof (settings) / sizeof (struct setting); i++)
+    {
+
+        struct setting *setting = &settings[i];
+        unsigned int type = acpi_readfield(setting->type).value;
+        unsigned int enable = acpi_readfield(setting->enable).value;
+        unsigned int address = acpi_readfield(setting->address).value;
+        unsigned int speed = getsettingspeed(acpi_readfield(setting->speed).value);
+        unsigned int hidregister = acpi_readfield(setting->hid).value;
+        struct acpi_field pad = acpi_readfield(setting->pad);
+        struct client *client;
+
+        /* what the device's _STA checks */
+        if (!type || !(enable & setting->enablebit) || !address)
+            continue;
+
+        client = addclient(address, setting->controller, speed, 1);
+
+        if (!client)
+            continue;
+
+        client->hidregister = hidregister;
+        client->haspad = pad.found;
+        client->padgroup = (pad.value >> 16) & 0xFF;
+        client->padnumber = pad.value & 0xFFFF;
+        count++;
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: firmware %s device on controller %u address 0x%H2u speed %u hid register 0x%H4u pad group %u pad %u", setting->type, &client->controller, &client->address, &client->speed, &client->hidregister, &client->padgroup, &client->padnumber);
+
+    }
+
+    return count;
 
 }
 
@@ -1215,6 +1306,26 @@ unsigned int i2c_getaddress(unsigned int id)
 
 }
 
+unsigned int i2c_gethidregister(unsigned int id)
+{
+
+    return (id && id <= nclients) ? clients[id - 1].hidregister : 0;
+
+}
+
+struct i2c_pad i2c_getpad(unsigned int id)
+{
+
+    struct i2c_pad pad;
+
+    pad.found = id && id <= nclients && clients[id - 1].haspad;
+    pad.group = (pad.found) ? clients[id - 1].padgroup : 0;
+    pad.pad = (pad.found) ? clients[id - 1].padnumber : 0;
+
+    return pad;
+
+}
+
 unsigned int i2c_ishid(unsigned int id)
 {
 
@@ -1405,41 +1516,12 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-/* Intel's reference firmware fills its touch panel (TPL) and touchpad (TPD) templates from these in _INI; SDSn enables the devices on I2Cn, speed 0 1 2 is 100 kHz 400 kHz 1 MHz, mode 0 a GpioInt and else an apic Interrupt, pad the group in bits 16-23 and the pad below */
-static void logdevice(char *device, char *enable, char *type, char *address, char *speed, char *mode, char *hid, char *pad)
-{
-
-    unsigned int e = acpi_readfield(enable).value;
-    unsigned int t = acpi_readfield(type).value;
-    unsigned int a = acpi_readfield(address).value;
-    unsigned int s = acpi_readfield(speed).value;
-    unsigned int m = acpi_readfield(mode).value;
-    unsigned int h = acpi_readfield(hid).value;
-    unsigned int p = acpi_readfield(pad).value;
-    unsigned int group = (p >> 16) & 0xFF;
-    unsigned int number = p & 0xFFFF;
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s %s 0x%H2u type %u address 0x%H2u speed %u mode %u hid 0x%H4u group %u pad %u", device, enable, &e, &t, &a, &s, &m, &h, &group, &number);
-
-}
-
-static void logsettings(void)
-{
-
-    if (!acpi_readfield("TPLT").found && !acpi_readfield("TPDT").found)
-        return;
-
-    logdevice("panel", "SDS0", "TPLT", "TPLB", "TPLS", "TPLM", "TPLH", "GPLI");
-    logdevice("pad", "SDS1", "TPDT", "TPDB", "TPDS", "TPDM", "TPDH", "GPDI");
-
-}
-
 void module_init(void)
 {
 
     spinlock_init(&buslock);
 
-    if (!scantables(1))
+    if (!readsettings() && !scantables(1))
     {
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no PNP0C50 device in the ACPI tables, all I2C devices:");
@@ -1469,7 +1551,6 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
-    logsettings();
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: done");
 
 }

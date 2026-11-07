@@ -12,10 +12,6 @@
 #define POLLTIMEOUT                     50000
 #define DRAINS                          4
 #define RETRIES                         2
-#define GPIO_PORT                       0x6A
-#define GPIO_PAD                        62
-#define GPIO_GROUP                      3
-#define GPIO_GROUPBIT                   7
 #define RESETDELAY                      200000
 #define TIMERIRQ                        0
 #define USAGES                          16
@@ -973,7 +969,7 @@ static void setupmouse(void)
 
 }
 
-static void probe(unsigned int address)
+static void probe(unsigned int address, unsigned int known)
 {
 
     unsigned int i;
@@ -981,7 +977,7 @@ static void probe(unsigned int address)
     for (i = 0; i < HIDREGISTERS; i++)
     {
 
-        unsigned int reg = hidregisters[i];
+        unsigned int reg = (known) ? known : hidregisters[i];
 
         if (readhiddescriptor(&transfer, address, reg))
         {
@@ -1007,6 +1003,9 @@ static void probe(unsigned int address)
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c-hid: hid 0x%H2u descriptor at 0x%H4u failed, abort 0x%H8u", &address, &reg, &transfer.abort);
 
+        if (known)
+            return;
+
     }
 
 }
@@ -1026,7 +1025,7 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    probe(i2c_getaddress(id));
+    probe(i2c_getaddress(id), i2c_gethidregister(id));
 
 }
 
@@ -1036,10 +1035,14 @@ static void driver_attach(unsigned int id)
     if (hidmouse.found || padmode)
     {
 
+        struct i2c_pad interrupt = i2c_getpad(id);
+
         mouse_registerinterface(&mouseinterface);
         pic_setroutine(TIMERIRQ, handleirq);
         apic_setroutine(TIMERIRQ, handleirq);
-        pad = gpio_findpad(GPIO_PORT, GPIO_PAD, GPIO_GROUP, GPIO_GROUPBIT);
+
+        if (interrupt.found)
+            pad = gpio_findpad(interrupt.group, interrupt.pad);
 
         if (pad.dw0)
             padinterrupt = gpio_setinterrupt(&pad, handlepad);
