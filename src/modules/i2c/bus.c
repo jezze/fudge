@@ -1405,6 +1405,35 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
+/* Intel's reference firmware fills its touch panel (TPL) and touchpad (TPD) templates from these in _INI; SDSn enables the devices on I2Cn, speed 0 1 2 is 100 kHz 400 kHz 1 MHz, mode 0 a GpioInt and else an apic Interrupt, pad the group in bits 16-23 and the pad below */
+static void logdevice(char *device, char *enable, char *type, char *address, char *speed, char *mode, char *hid, char *pad)
+{
+
+    unsigned int e = acpi_readfield(enable).value;
+    unsigned int t = acpi_readfield(type).value;
+    unsigned int a = acpi_readfield(address).value;
+    unsigned int s = acpi_readfield(speed).value;
+    unsigned int m = acpi_readfield(mode).value;
+    unsigned int h = acpi_readfield(hid).value;
+    unsigned int p = acpi_readfield(pad).value;
+    unsigned int group = (p >> 16) & 0xFF;
+    unsigned int number = p & 0xFFFF;
+
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s %s 0x%H2u type %u address 0x%H2u speed %u mode %u hid 0x%H4u group %u pad %u", device, enable, &e, &t, &a, &s, &m, &h, &group, &number);
+
+}
+
+static void logsettings(void)
+{
+
+    if (!acpi_readfield("TPLT").found && !acpi_readfield("TPDT").found)
+        return;
+
+    logdevice("panel", "SDS0", "TPLT", "TPLB", "TPLS", "TPLM", "TPLH", "GPLI");
+    logdevice("pad", "SDS1", "TPDT", "TPDB", "TPDS", "TPDM", "TPDH", "GPDI");
+
+}
+
 void module_init(void)
 {
 
@@ -1440,6 +1469,7 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
+    logsettings();
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: done");
 
 }
