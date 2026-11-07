@@ -31,6 +31,7 @@
 #define ROOTRECORDS         2
 #define DISPLAYS            4
 #define ANYDISPLAY          DISPLAYS
+#define UNITS               8
 #define LINEBUFFER          3840
 
 struct listing
@@ -2964,11 +2965,44 @@ static void onwalkrequest(struct message *message)
 
 }
 
+/* a service named without a unit, like "mouse", means every unit it has */
+static void sendunits(char *name, unsigned int event)
+{
+
+    char unit[32];
+    unsigned int i;
+
+    if (buffer_eachbyte(name, cstring_length(name), ':', 0))
+    {
+
+        channel_send(0, channel_lookup(name), event, 0, 0);
+
+        return;
+
+    }
+
+    for (i = 0; i < UNITS; i++)
+    {
+
+        unsigned int target;
+
+        cstring_write_fmt(unit, 32, 0, "%s:%u\\0", name, &i);
+
+        target = channel_lookup(unit);
+
+        if (!target)
+            break;
+
+        channel_send(0, target, event, 0, 0);
+
+    }
+
+}
+
 static void onmain(struct message *message)
 {
 
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
-    unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
     unsigned int video = channel_lookup(option_getstring("video-service"));
 
     state.displays[0].video = video;
@@ -2985,7 +3019,7 @@ static void onmain(struct message *message)
     }
 
     channel_send(0, keyboard, MESSAGE_TYPE_LINK, 0, 0);
-    channel_send(0, mouse, MESSAGE_TYPE_LINK, 0, 0);
+    sendunits(option_getstring("mouse-service"), MESSAGE_TYPE_LINK);
     setupvideo(video);
     setupdisplays();
 
@@ -3002,7 +3036,7 @@ static void onmain(struct message *message)
     if (state.clock && state.timer)
         requestclock(0);
 
-    channel_send(0, mouse, MESSAGE_TYPE_UNLINK, 0, 0);
+    sendunits(option_getstring("mouse-service"), MESSAGE_TYPE_UNLINK);
     channel_send(0, keyboard, MESSAGE_TYPE_UNLINK, 0, 0);
 
 }
@@ -3070,6 +3104,106 @@ static void releasebutton(unsigned int button)
 
 }
 
+static void movemouse(int x, int y, unsigned int buttons)
+{
+
+    unsigned int display = finddisplayat(x, y);
+    unsigned int relayout;
+
+    if (display == DISPLAYS)
+    {
+
+        struct util_region region = getactiveregion();
+
+        x = util_clamp(x, region.position.x, region.position.x + (int)region.size.w - 1);
+        y = util_clamp(y, region.position.y, region.position.y + (int)region.size.h - 1);
+
+    }
+
+    else
+    {
+
+        state.active = display;
+
+    }
+
+    /* a release dropped by a full mailbox shows up as a cleared bit */
+    if (state.mousebuttonleft && !(buttons & 1))
+        releasebutton(1);
+
+    if (state.mousebuttonright && !(buttons & 2))
+        releasebutton(2);
+
+    relayout = state.mousebuttonleft || state.mousebuttonright;
+    state.mousemovement.x = x - state.mouseposition.x;
+    state.mousemovement.y = y - state.mouseposition.y;
+    state.mouseposition.x = x;
+    state.mouseposition.y = y;
+
+    sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
+    render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
+
+    if (state.mousebuttonleft)
+    {
+
+        if (state.draggedthumb)
+            dragthumb(state.draggedthumb);
+        else if (state.focusedwidget)
+        {
+
+            if (state.focusedwidget->type == WIDGET_TYPE_SLIDER)
+                dragslider(state.focusedwidget);
+
+            if (state.focusedwidget->type == WIDGET_TYPE_BOX)
+                setmark(state.focusedwidget, state.focusedwidget->markstart, getmarkindex(state.focusedwidget, state.mouseposition.x, state.mouseposition.y));
+
+            if (widget_iseditable(state.focusedwidget))
+                movecursor(state.focusedwidget);
+            else if (widget_isscrollable(state.focusedwidget))
+            {
+
+                struct util_region point = util_region(state.mouseposition.x, state.mouseposition.y, 0, 0);
+
+                scrollto(state.focusedwidget, &point);
+
+            }
+
+        }
+
+        if (!state.draggedthumb && !state.focusedwidget && state.focusedwindow)
+        {
+
+            if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow))
+                translatewindow(state.focusedwindow, state.mousemovement.x, state.mousemovement.y);
+
+        }
+
+    }
+
+    if (state.mousebuttonright)
+    {
+
+        if (state.focusedwindow)
+        {
+
+            if (state.layout == LAYOUT_DEFAULT && widget_isresizable(state.focusedwindow))
+            {
+
+                struct util_region region = getactiveregion();
+                struct util_size minimum = render_getwindowminsize(state.focusedwindow, &region.size);
+
+                scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->placement.size.w) + state.mousemovement.x, minimum.w), util_max((int)(state.focusedwindow->placement.size.h) + state.mousemovement.y, minimum.h));
+
+            }
+
+        }
+
+    }
+
+    redraw(relayout);
+
+}
+
 static void onmousemove(struct message *message)
 {
 
@@ -3086,103 +3220,32 @@ static void onmousemove(struct message *message)
         struct util_region area = getarea();
         int x = util_clamp(state.mouseposition.x + pixelsx, 0, (int)area.size.w - 1);
         int y = util_clamp(state.mouseposition.y + pixelsy, 0, (int)area.size.h - 1);
-        unsigned int display = finddisplayat(x, y);
-        unsigned int relayout;
-
-        if (display == DISPLAYS)
-        {
-
-            struct util_region region = getactiveregion();
-
-            x = util_clamp(x, region.position.x, region.position.x + (int)region.size.w - 1);
-            y = util_clamp(y, region.position.y, region.position.y + (int)region.size.h - 1);
-
-        }
-
-        else
-        {
-
-            state.active = display;
-
-        }
-
         state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
         state.mouseremainder.y = totaly - pixelsy * MOUSE_NORMAL;
 
-        /* a release dropped by a full mailbox shows up as a cleared bit */
-        if (state.mousebuttonleft && !(mousemove->buttons & 1))
-            releasebutton(1);
+        movemouse(x, y, mousemove->buttons);
 
-        if (state.mousebuttonright && !(mousemove->buttons & 2))
-            releasebutton(2);
+    }
 
-        relayout = state.mousebuttonleft || state.mousebuttonright;
-        state.mousemovement.x = x - state.mouseposition.x;
-        state.mousemovement.y = y - state.mouseposition.y;
-        state.mouseposition.x = x;
-        state.mouseposition.y = y;
+}
 
-        sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
-        render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
+/* an absolute position covers the first display, the built-in screen a touchscreen sits on */
+static void onmouseposition(struct message *message)
+{
 
-        if (state.mousebuttonleft)
-        {
+    struct message_mouseposition *mouseposition = message_validate(MESSAGE_TYPE_MOUSEPOSITION, message->data, message->length);
 
-            if (state.draggedthumb)
-                dragthumb(state.draggedthumb);
-            else if (state.focusedwidget)
-            {
+    if (mouseposition)
+    {
 
-                if (state.focusedwidget->type == WIDGET_TYPE_SLIDER)
-                    dragslider(state.focusedwidget);
+        struct util_region region = (state.displays[0].blit.framebuffer) ? state.displays[0].blit.region : getarea();
+        int x = region.position.x + (int)((unsigned int)mouseposition->x * (region.size.w - 1) / 65535);
+        int y = region.position.y + (int)((unsigned int)mouseposition->y * (region.size.h - 1) / 65535);
 
-                if (state.focusedwidget->type == WIDGET_TYPE_BOX)
-                    setmark(state.focusedwidget, state.focusedwidget->markstart, getmarkindex(state.focusedwidget, state.mouseposition.x, state.mouseposition.y));
+        state.mouseremainder.x = 0;
+        state.mouseremainder.y = 0;
 
-                if (widget_iseditable(state.focusedwidget))
-                    movecursor(state.focusedwidget);
-                else if (widget_isscrollable(state.focusedwidget))
-                {
-
-                    struct util_region point = util_region(state.mouseposition.x, state.mouseposition.y, 0, 0);
-
-                    scrollto(state.focusedwidget, &point);
-
-                }
-
-            }
-
-            if (!state.draggedthumb && !state.focusedwidget && state.focusedwindow)
-            {
-
-                if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow))
-                    translatewindow(state.focusedwindow, state.mousemovement.x, state.mousemovement.y);
-
-            }
-
-        }
-
-        if (state.mousebuttonright)
-        {
-
-            if (state.focusedwindow)
-            {
-
-                if (state.layout == LAYOUT_DEFAULT && widget_isresizable(state.focusedwindow))
-                {
-
-                    struct util_region region = getactiveregion();
-                    struct util_size minimum = render_getwindowminsize(state.focusedwindow, &region.size);
-
-                    scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->placement.size.w) + state.mousemovement.x, minimum.w), util_max((int)(state.focusedwindow->placement.size.h) + state.mousemovement.y, minimum.h));
-
-                }
-
-            }
-
-        }
-
-        redraw(relayout);
+        movemouse(x, y, mouseposition->buttons);
 
     }
 
@@ -3460,6 +3523,7 @@ static void bindinput(unsigned int on)
     channel_bind(MESSAGE_TYPE_KEYPRESS, (on) ? onkeypress : 0);
     channel_bind(MESSAGE_TYPE_KEYRELEASE, (on) ? onkeyrelease : 0);
     channel_bind(MESSAGE_TYPE_MOUSEMOVE, (on) ? onmousemove : 0);
+    channel_bind(MESSAGE_TYPE_MOUSEPOSITION, (on) ? onmouseposition : 0);
     channel_bind(MESSAGE_TYPE_MOUSEPRESS, (on) ? onmousepress : 0);
     channel_bind(MESSAGE_TYPE_MOUSESCROLL, (on) ? onmousescroll : 0);
     channel_bind(MESSAGE_TYPE_MOUSERELEASE, (on) ? onmouserelease : 0);
@@ -3656,7 +3720,7 @@ void init(void)
     option_add("service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
     option_add("keyboard-service", "keyboard:0");
-    option_add("mouse-service", "mouse:0");
+    option_add("mouse-service", "mouse");
     option_add("video-service", "video:0");
     option_add("clock-service", "clock:0");
     option_add("timer-service", "timer:0");

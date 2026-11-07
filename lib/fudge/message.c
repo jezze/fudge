@@ -54,6 +54,9 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     case MESSAGE_TYPE_MOUSEMOVE:
         return checksize(data, count, sizeof (struct message_mousemove));
 
+    case MESSAGE_TYPE_MOUSEPOSITION:
+        return checksize(data, count, sizeof (struct message_mouseposition));
+
     case MESSAGE_TYPE_MOUSESCROLL:
         return checksize(data, count, sizeof (struct message_mousescroll));
 

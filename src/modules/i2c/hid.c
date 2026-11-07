@@ -923,7 +923,14 @@ static void handlepadreport(struct i2c_transfer *transfer, unsigned int start)
 
 }
 
-/* for now only the first finger going down and up is logged, at its position in the panel's own units */
+static unsigned short scaleposition(unsigned int value, unsigned int max)
+{
+
+    return ((value < max) ? value : max) * 65535 / max;
+
+}
+
+/* the first finger is the pointer: its position while down, button 1 for touching */
 static void handlescreenreport(struct i2c_transfer *transfer, unsigned int start)
 {
 
@@ -931,11 +938,21 @@ static void handlescreenreport(struct i2c_transfer *transfer, unsigned int start
     unsigned int x = getunsigned(transfer, start, &hidpad.x, 0);
     unsigned int y = getunsigned(transfer, start, &hidpad.y, 0);
 
+    if (tip && (!touch.active || x != (unsigned int)touch.lastx || y != (unsigned int)touch.lasty))
+    {
+
+        mouse_notifyposition(&mouseinterface, scaleposition(x, hidpad.xmax), scaleposition(y, hidpad.ymax));
+
+        touch.lastx = x;
+        touch.lasty = y;
+
+    }
+
     if (tip && !touch.active)
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: touch down at %u %u", &x, &y);
+        mouse_notifypress(&mouseinterface, 1);
 
     if (!tip && touch.active)
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: touch up at %u %u", &x, &y);
+        mouse_notifyrelease(&mouseinterface, 1);
 
     touch.active = tip;
 

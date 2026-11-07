@@ -46,6 +46,7 @@
 #define MESSAGE_TYPE_TIMERREQUEST       0x36
 #define MESSAGE_TYPE_TIMEREXPIRE        0x37
 #define MESSAGE_TYPE_TIMERINFO          0x38
+#define MESSAGE_TYPE_MOUSEPOSITION      0x39
 #define MESSAGE_TYPE_WALKREQUEST        0x40
 #define MESSAGE_TYPE_WALKRESPONSE       0x41
 #define MESSAGE_TYPE_READREQUEST        0x42
@@ -144,6 +145,15 @@ struct message_mousemove
 
     char relx;
     char rely;
+    unsigned char buttons;
+
+};
+
+struct message_mouseposition
+{
+
+    unsigned short x;
+    unsigned short y;
     unsigned char buttons;
 
 };

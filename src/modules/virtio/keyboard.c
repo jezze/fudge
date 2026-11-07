@@ -11,6 +11,7 @@
 #define EVENTS                          64
 #define EV_KEY                          0x01
 #define EV_REL                          0x02
+#define EV_ABS                          0x03
 #define KEYS                            128
 #define EXTENDED                        0x100
 
@@ -133,7 +134,7 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
     if (!virtio_match(type, id, VIRTIO_TYPE_INPUT) || !virtio_setup(&probe, id))
         return 0;
 
-    return !hasevents(&probe, EV_REL);
+    return !hasevents(&probe, EV_REL) && !hasevents(&probe, EV_ABS);
 
 }
 

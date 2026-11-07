@@ -45,6 +45,20 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 
 }
 
+/* an absolute position, 0 to 65535 across each axis of whatever the device covers */
+void mouse_notifyposition(struct mouse_interface *interface, unsigned short x, unsigned short y)
+{
+
+    struct message_mouseposition mouseposition;
+
+    mouseposition.x = x;
+    mouseposition.y = y;
+    mouseposition.buttons = interface->buttons;
+
+    kernel_notify(&interface->resource, MESSAGE_TYPE_MOUSEPOSITION, sizeof (struct message_mouseposition), &mouseposition);
+
+}
+
 void mouse_notifyscroll(struct mouse_interface *interface, char relz)
 {
 

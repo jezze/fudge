@@ -8,10 +8,15 @@
 #define CONFIG_SUBSELECT                0x01
 #define CONFIG_SIZE                     0x02
 #define CONFIG_EVBITS                   0x11
+#define CONFIG_ABSINFO                  0x12
+#define CONFIG_ABSMAX                   0x0C
 #define EVENTS                          64
 #define EV_SYN                          0x00
 #define EV_KEY                          0x01
 #define EV_REL                          0x02
+#define EV_ABS                          0x03
+#define ABS_X                           0x00
+#define ABS_Y                           0x01
 #define REL_X                           0x00
 #define REL_Y                           0x01
 #define REL_WHEEL                       0x08
@@ -38,11 +43,23 @@ static unsigned int msi;
 static int relx;
 static int rely;
 static int relz;
+static unsigned int absx;
+static unsigned int absy;
+static unsigned int absmaxx;
+static unsigned int absmaxy;
+static unsigned int absmoved;
 
 static char clamp(int value)
 {
 
     return (value > 127) ? 127 : (value < -127) ? -127 : value;
+
+}
+
+static unsigned short scaleposition(unsigned int value, unsigned int max)
+{
+
+    return (max) ? ((value < max) ? value : max) * 65535 / max : 0;
 
 }
 
@@ -61,6 +78,11 @@ static void report(void)
         rely -= y;
 
     }
+
+    if (absmoved)
+        mouse_notifyposition(&mouseinterface, scaleposition(absx, absmaxx), scaleposition(absy, absmaxy));
+
+    absmoved = 0;
 
     if (relz)
         mouse_notifyscroll(&mouseinterface, clamp(-relz));
@@ -90,11 +112,24 @@ static void handleevent(struct input_event *event)
 
         break;
 
+    case EV_ABS:
+        if (event->code == ABS_X)
+            absx = event->value;
+        else if (event->code == ABS_Y)
+            absy = event->value;
+
+        absmoved = 1;
+
+        break;
+
     case EV_KEY:
         if (event->code >= BTN_LEFT && event->code <= BTN_MIDDLE)
         {
 
             unsigned int button = (event->code == BTN_LEFT) ? 1 : (event->code == BTN_RIGHT) ? 2 : 3;
+
+            /* a tap is position, button, sync: the button goes where the pointer is meant to be */
+            report();
 
             if (event->value)
                 mouse_notifypress(&mouseinterface, button);
@@ -146,6 +181,16 @@ static unsigned int hasevents(struct virtio_device *device, unsigned int type)
 
 }
 
+static unsigned int getabsmax(struct virtio_device *device, unsigned int axis)
+{
+
+    virtio_setconfig(device, CONFIG_SELECT, CONFIG_ABSINFO);
+    virtio_setconfig(device, CONFIG_SUBSELECT, axis);
+
+    return virtio_getconfig(device, CONFIG_ABSMAX) | (virtio_getconfig(device, CONFIG_ABSMAX + 1) << 8) | (virtio_getconfig(device, CONFIG_ABSMAX + 2) << 16) | ((unsigned int)virtio_getconfig(device, CONFIG_ABSMAX + 3) << 24);
+
+}
+
 static void driver_init(unsigned int id)
 {
 
@@ -161,7 +206,7 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
     if (!virtio_match(type, id, VIRTIO_TYPE_INPUT) || !virtio_setup(&probe, id))
         return 0;
 
-    return hasevents(&probe, EV_REL);
+    return hasevents(&probe, EV_REL) || hasevents(&probe, EV_ABS);
 
 }
 
@@ -172,6 +217,9 @@ static void driver_reset(unsigned int id)
         return;
 
     virtio_negotiate(&device, 0);
+
+    absmaxx = getabsmax(&device, ABS_X);
+    absmaxy = getabsmax(&device, ABS_Y);
 
     if (virtio_setqueue(&queue, &device, 0, memory))
     {
