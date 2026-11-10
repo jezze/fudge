@@ -636,20 +636,17 @@ static unsigned int getindirect(unsigned int sector, unsigned int index)
 
 }
 
-static struct extentroot getextentroot(struct ext2_node *node)
+static void getextentroot(struct ext2_node *node, struct extentroot *root)
 {
 
-    struct extentroot root;
     unsigned int i;
 
     for (i = 0; i < 12; i++)
-        ext2_write32(root.data + i * 4, node->pointer[i]);
+        ext2_write32(root->data + i * 4, node->pointer[i]);
 
-    ext2_write32(root.data + 48, node->singlyIndirectPointer);
-    ext2_write32(root.data + 52, node->doublyIndirectPointer);
-    ext2_write32(root.data + 56, node->tripplyIndirectPointer);
-
-    return root;
+    ext2_write32(root->data + 48, node->singlyIndirectPointer);
+    ext2_write32(root->data + 52, node->doublyIndirectPointer);
+    ext2_write32(root->data + 56, node->tripplyIndirectPointer);
 
 }
 
@@ -706,9 +703,13 @@ static struct extentleaf findextentleaf(struct ext2_extentheader *header, unsign
 static struct run getextentrun(struct ext2_node *node, unsigned int index, unsigned int max)
 {
 
-    struct extentroot root = getextentroot(node);
-    struct ext2_extentheader *header = findextentleaf((struct ext2_extentheader *)root.data, index).header;
+    struct extentroot root;
+    struct ext2_extentheader *header;
     struct run run;
+
+    getextentroot(node, &root);
+
+    header = findextentleaf((struct ext2_extentheader *)root.data, index).header;
 
     run.sector = 0;
     run.blocks = 1;
@@ -853,10 +854,14 @@ static void setextentchecksum(char *block, struct ext2_node *node, unsigned int 
 static unsigned int allocextent(struct ext2_node *node, unsigned int index, unsigned int id)
 {
 
-    struct extentroot root = getextentroot(node);
-    struct extentleaf leaf = findextentleaf((struct ext2_extentheader *)root.data, index);
+    struct extentroot root;
+    struct extentleaf leaf;
     char data[EXT2_MAXBLOCKSIZE];
     unsigned int sector;
+
+    getextentroot(node, &root);
+
+    leaf = findextentleaf((struct ext2_extentheader *)root.data, index);
 
     if (!leaf.header || ext2_read16(&leaf.header->depth) || index < leaf.first)
         return 0;
@@ -1956,8 +1961,9 @@ static unsigned int removenode(unsigned int parentid, unsigned int id)
     if (node.flags & EXT2_NODE_EXTENTS)
     {
 
-        struct extentroot root = getextentroot(&node);
+        struct extentroot root;
 
+        getextentroot(&node, &root);
         freeextents((struct ext2_extentheader *)root.data, EXTENTROOTSIZE, 0);
 
     }
