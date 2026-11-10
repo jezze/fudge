@@ -308,7 +308,7 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"wmack", MESSAGE_TYPE_WMACK},
     {"wmread", MESSAGE_TYPE_WMREAD},
     {"wmtext", MESSAGE_TYPE_WMTEXT},
-    {"wmconfig", MESSAGE_TYPE_WMCONFIG},
+    {"config", MESSAGE_TYPE_CONFIG},
     {"p9p", MESSAGE_TYPE_P9P}
 };
 

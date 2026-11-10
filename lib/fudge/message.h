@@ -83,7 +83,7 @@
 #define MESSAGE_TYPE_WMACK              0x5F
 #define MESSAGE_TYPE_WMREAD             0x60
 #define MESSAGE_TYPE_WMTEXT             0x61
-#define MESSAGE_TYPE_WMCONFIG           0x62
+#define MESSAGE_TYPE_CONFIG             0x62
 #define MESSAGE_TYPE_P9P                0x70
 #define PIPE_ROUTES                     10
 #define READ_FLAG_BUFFER                0x01

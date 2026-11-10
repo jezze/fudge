@@ -4011,7 +4011,7 @@ static void onwmrenderdata(struct message *message)
 
 }
 
-static void onwmconfig(struct message *message)
+static void onconfig(struct message *message)
 {
 
     struct message_videoconf videoconf = state.displays[0].videoconf;
@@ -4182,7 +4182,7 @@ void init(void)
     channel_bind(MESSAGE_TYPE_STATREQUEST, onstatrequest);
     channel_bind(MESSAGE_TYPE_TIMEREXPIRE, ontimerexpire);
     channel_bind(MESSAGE_TYPE_WALKREQUEST, onwalkrequest);
-    channel_bind(MESSAGE_TYPE_WMCONFIG, onwmconfig);
+    channel_bind(MESSAGE_TYPE_CONFIG, onconfig);
     channel_bind(MESSAGE_TYPE_WMFLUSH, onwmflush);
     channel_bind(MESSAGE_TYPE_WMGRAB, onwmgrab);
     channel_bind(MESSAGE_TYPE_WMREAD, onwmread);

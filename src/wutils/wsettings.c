@@ -1569,7 +1569,7 @@ static void onwmevent(struct message *message)
 
             static char data[0x8000];
 
-            sendlines(message->source, MESSAGE_TYPE_WMCONFIG, data, writelines(data, 0x8000));
+            sendlines(message->source, MESSAGE_TYPE_CONFIG, data, writelines(data, 0x8000));
 
         }
 
