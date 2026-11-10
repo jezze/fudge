@@ -79,6 +79,15 @@ void ext2_convertsuperblock(struct ext2_superblock *superblock)
     superblock->journalNode = ext2_read32(&superblock->journalNode);
     superblock->journalDevice = ext2_read32(&superblock->journalDevice);
     superblock->firstOrphan = ext2_read32(&superblock->firstOrphan);
+    superblock->descSize = ext2_read16(&superblock->descSize);
+    superblock->mountOptions = ext2_read32(&superblock->mountOptions);
+    superblock->firstMetaGroup = ext2_read32(&superblock->firstMetaGroup);
+    superblock->creationTime = ext2_read32(&superblock->creationTime);
+    superblock->blockCountHigh = ext2_read32(&superblock->blockCountHigh);
+    superblock->blockCountSuperHigh = ext2_read32(&superblock->blockCountSuperHigh);
+    superblock->blockCountUnallocHigh = ext2_read32(&superblock->blockCountUnallocHigh);
+    superblock->minExtraSize = ext2_read16(&superblock->minExtraSize);
+    superblock->wantExtraSize = ext2_read16(&superblock->wantExtraSize);
 
 }
 
@@ -91,6 +100,23 @@ void ext2_convertblockgroup(struct ext2_blockgroup *blockgroup)
     blockgroup->blockCountUnalloc = ext2_read16(&blockgroup->blockCountUnalloc);
     blockgroup->nodeCountUnalloc = ext2_read16(&blockgroup->nodeCountUnalloc);
     blockgroup->directoryCount = ext2_read16(&blockgroup->directoryCount);
+    blockgroup->flags = ext2_read16(&blockgroup->flags);
+    blockgroup->excludeAddress = ext2_read32(&blockgroup->excludeAddress);
+    blockgroup->blockUsageChecksum = ext2_read16(&blockgroup->blockUsageChecksum);
+    blockgroup->nodeUsageChecksum = ext2_read16(&blockgroup->nodeUsageChecksum);
+    blockgroup->nodeCountUnused = ext2_read16(&blockgroup->nodeCountUnused);
+    blockgroup->checksum = ext2_read16(&blockgroup->checksum);
+    blockgroup->blockUsageAddressHigh = ext2_read32(&blockgroup->blockUsageAddressHigh);
+    blockgroup->nodeUsageAddressHigh = ext2_read32(&blockgroup->nodeUsageAddressHigh);
+    blockgroup->blockTableAddressHigh = ext2_read32(&blockgroup->blockTableAddressHigh);
+    blockgroup->blockCountUnallocHigh = ext2_read16(&blockgroup->blockCountUnallocHigh);
+    blockgroup->nodeCountUnallocHigh = ext2_read16(&blockgroup->nodeCountUnallocHigh);
+    blockgroup->directoryCountHigh = ext2_read16(&blockgroup->directoryCountHigh);
+    blockgroup->nodeCountUnusedHigh = ext2_read16(&blockgroup->nodeCountUnusedHigh);
+    blockgroup->excludeAddressHigh = ext2_read32(&blockgroup->excludeAddressHigh);
+    blockgroup->blockUsageChecksumHigh = ext2_read16(&blockgroup->blockUsageChecksumHigh);
+    blockgroup->nodeUsageChecksumHigh = ext2_read16(&blockgroup->nodeUsageChecksumHigh);
+    blockgroup->reserved = ext2_read32(&blockgroup->reserved);
 
 }
 
@@ -129,6 +155,7 @@ unsigned int ext2_validate(struct ext2_superblock *superblock)
 {
 
     unsigned int incompat = ext2_read32(&superblock->requiredFeatures);
+    unsigned int descsize = ext2_read16(&superblock->descSize);
 
     if (ext2_read16(&superblock->signature) != 0xEF53)
         return 0;
@@ -136,10 +163,16 @@ unsigned int ext2_validate(struct ext2_superblock *superblock)
     if (ext2_read32(&superblock->blockSize) > 2)
         return 0;
 
-    if ((incompat & ~EXT2_INCOMPAT_RECOVER) != EXT2_INCOMPAT_FILETYPE)
+    if (!(incompat & EXT2_INCOMPAT_FILETYPE))
         return 0;
 
-    if (incompat & EXT2_INCOMPAT_RECOVER)
+    if (incompat & ~(EXT2_INCOMPAT_FILETYPE | EXT2_INCOMPAT_RECOVER | EXT2_INCOMPAT_EXTENTS | EXT2_INCOMPAT_64BIT | EXT2_INCOMPAT_FLEXBG | EXT2_INCOMPAT_EAINODE | EXT2_INCOMPAT_CSUMSEED | EXT2_INCOMPAT_LARGEDIR))
+        return 0;
+
+    if ((incompat & EXT2_INCOMPAT_64BIT) && descsize != 32 && descsize != 64)
+        return 0;
+
+    if (incompat & ~EXT2_INCOMPAT_FILETYPE)
         return EXT2_MOUNT_READ;
 
     if (ext2_read32(&superblock->unsupportedFeatures) & ~(EXT2_ROCOMPAT_SPARSESUPER | EXT2_ROCOMPAT_LARGEFILE))

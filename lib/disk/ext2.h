@@ -1,9 +1,19 @@
 #define EXT2_MAXBLOCKSIZE               4096
 #define EXT2_INCOMPAT_FILETYPE          0x0002
 #define EXT2_INCOMPAT_RECOVER           0x0004
+#define EXT2_INCOMPAT_EXTENTS           0x0040
+#define EXT2_INCOMPAT_64BIT             0x0080
+#define EXT2_INCOMPAT_FLEXBG            0x0200
+#define EXT2_INCOMPAT_EAINODE           0x0400
+#define EXT2_INCOMPAT_CSUMSEED          0x2000
+#define EXT2_INCOMPAT_LARGEDIR          0x4000
 #define EXT2_ROCOMPAT_SPARSESUPER       0x0001
 #define EXT2_ROCOMPAT_LARGEFILE         0x0002
 #define EXT2_NODE_INDEX                 0x1000
+#define EXT2_NODE_EXTENTS               0x80000
+#define EXT2_EXTENTMAGIC                0xF30A
+#define EXT2_EXTENTMAXDEPTH             5
+#define EXT2_EXTENTMAXLENGTH            32768
 #define EXT2_MOUNT_READ                 1
 #define EXT2_MOUNT_WRITE                2
 
@@ -52,6 +62,19 @@ struct ext2_superblock
     unsigned int journalNode;
     unsigned int journalDevice;
     unsigned int firstOrphan;
+    unsigned char hashSeed[16];
+    unsigned char hashVersion;
+    unsigned char journalBackup;
+    unsigned short descSize;
+    unsigned int mountOptions;
+    unsigned int firstMetaGroup;
+    unsigned int creationTime;
+    unsigned char journalBlocks[68];
+    unsigned int blockCountHigh;
+    unsigned int blockCountSuperHigh;
+    unsigned int blockCountUnallocHigh;
+    unsigned short minExtraSize;
+    unsigned short wantExtraSize;
 
 } __attribute__((packed));
 
@@ -64,7 +87,23 @@ struct ext2_blockgroup
     unsigned short blockCountUnalloc;
     unsigned short nodeCountUnalloc;
     unsigned short directoryCount;
-    unsigned char unused[14];
+    unsigned short flags;
+    unsigned int excludeAddress;
+    unsigned short blockUsageChecksum;
+    unsigned short nodeUsageChecksum;
+    unsigned short nodeCountUnused;
+    unsigned short checksum;
+    unsigned int blockUsageAddressHigh;
+    unsigned int nodeUsageAddressHigh;
+    unsigned int blockTableAddressHigh;
+    unsigned short blockCountUnallocHigh;
+    unsigned short nodeCountUnallocHigh;
+    unsigned short directoryCountHigh;
+    unsigned short nodeCountUnusedHigh;
+    unsigned int excludeAddressHigh;
+    unsigned short blockUsageChecksumHigh;
+    unsigned short nodeUsageChecksumHigh;
+    unsigned int reserved;
 
 } __attribute__((packed));
 
@@ -91,6 +130,37 @@ struct ext2_node
     unsigned int extendedAttributes;
     unsigned int sizeHigh;
     unsigned int fragmentBlockAddress;
+
+} __attribute__((packed));
+
+struct ext2_extentheader
+{
+
+    unsigned short magic;
+    unsigned short entries;
+    unsigned short max;
+    unsigned short depth;
+    unsigned int generation;
+
+} __attribute__((packed));
+
+struct ext2_extentindex
+{
+
+    unsigned int block;
+    unsigned int leaf;
+    unsigned short leafHigh;
+    unsigned short unused;
+
+} __attribute__((packed));
+
+struct ext2_extent
+{
+
+    unsigned int block;
+    unsigned short length;
+    unsigned short startHigh;
+    unsigned int start;
 
 } __attribute__((packed));
 

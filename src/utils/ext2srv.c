@@ -9,6 +9,7 @@ static unsigned int partoffset;
 static unsigned int mode;
 
 #define CACHESLOTS 4
+#define EXTENTROOTSIZE 60
 
 struct cacheslot
 {
@@ -16,6 +17,21 @@ struct cacheslot
     unsigned int offset;
     unsigned int count;
     char data[EXT2_MAXBLOCKSIZE];
+
+};
+
+struct run
+{
+
+    unsigned int sector;
+    unsigned int blocks;
+
+};
+
+struct extentroot
+{
+
+    unsigned char data[EXTENTROOTSIZE];
 
 };
 
@@ -95,6 +111,7 @@ static unsigned int sendblockwriterequest(unsigned int count, unsigned int secto
 
 static struct ext2_superblock sb;
 static unsigned int blocksize;
+static unsigned int descsize;
 
 static char *readmeta(unsigned int sector)
 {
@@ -136,6 +153,7 @@ static void readsuperblock(void)
     ext2_convertsuperblock(&sb);
 
     blocksize = (1024 << sb.blockSize);
+    descsize = (sb.requiredFeatures & EXT2_INCOMPAT_64BIT) ? sb.descSize : 32;
 
 }
 
@@ -152,11 +170,12 @@ static void writesuperblock(void)
 static void readblockgroup(struct ext2_blockgroup *bg, unsigned int index)
 {
 
-    unsigned int slots = blocksize / sizeof (struct ext2_blockgroup);
+    unsigned int slots = blocksize / descsize;
     unsigned int sector = sb.superblockIndex + 1 + index / slots;
-    unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
+    unsigned int offset = (index % slots) * descsize;
 
-    buffer_copy(bg, readmeta(sector) + offset, sizeof (struct ext2_blockgroup));
+    buffer_clear(bg, sizeof (struct ext2_blockgroup));
+    buffer_copy(bg, readmeta(sector) + offset, descsize);
     ext2_convertblockgroup(bg);
 
 }
@@ -164,13 +183,15 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int index)
 static void writeblockgroup(struct ext2_blockgroup *bg, unsigned int index)
 {
 
-    unsigned int slots = blocksize / sizeof (struct ext2_blockgroup);
+    unsigned int slots = blocksize / descsize;
     unsigned int sector = sb.superblockIndex + 1 + index / slots;
-    unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
+    unsigned int offset = (index % slots) * descsize;
+    struct ext2_blockgroup raw;
 
+    buffer_copy(&raw, bg, sizeof (struct ext2_blockgroup));
+    ext2_convertblockgroup(&raw);
     sendblockreadrequest(blocksize, sector, blocksize);
-    buffer_copy((char *)blockinfo.buffer + offset, bg, sizeof (struct ext2_blockgroup));
-    ext2_convertblockgroup((struct ext2_blockgroup *)((char *)blockinfo.buffer + offset));
+    buffer_copy((char *)blockinfo.buffer + offset, &raw, descsize);
     sendblockwriterequest(blocksize, sector, blocksize);
 
 }
@@ -437,7 +458,123 @@ static unsigned int getindirect(unsigned int sector, unsigned int index)
 
 }
 
-static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned int max, unsigned int *count)
+static struct extentroot getextentroot(struct ext2_node *node)
+{
+
+    struct extentroot root;
+    unsigned int i;
+
+    for (i = 0; i < 12; i++)
+        ext2_write32(root.data + i * 4, node->pointer[i]);
+
+    ext2_write32(root.data + 48, node->singlyIndirectPointer);
+    ext2_write32(root.data + 52, node->doublyIndirectPointer);
+    ext2_write32(root.data + 56, node->tripplyIndirectPointer);
+
+    return root;
+
+}
+
+static unsigned int isextentheader(struct ext2_extentheader *header, unsigned int size)
+{
+
+    unsigned int max = ext2_read16(&header->max);
+
+    return ext2_read16(&header->magic) == EXT2_EXTENTMAGIC && ext2_read16(&header->entries) <= max && max <= (size - sizeof (struct ext2_extentheader)) / sizeof (struct ext2_extent) && ext2_read16(&header->depth) <= EXT2_EXTENTMAXDEPTH;
+
+}
+
+static struct ext2_extentheader *findextentleaf(struct ext2_extentheader *header, unsigned int index)
+{
+
+    unsigned int size = EXTENTROOTSIZE;
+    unsigned int level;
+
+    for (level = 0; isextentheader(header, size) && ext2_read16(&header->depth); level++)
+    {
+
+        struct ext2_extentindex *entry = (struct ext2_extentindex *)(header + 1);
+        unsigned int entries = ext2_read16(&header->entries);
+        unsigned int i;
+
+        if (!entries)
+            return 0;
+
+        for (i = 1; i < entries && ext2_read32(&(entry + 1)->block) <= index; i++)
+            entry++;
+
+        if (level == EXT2_EXTENTMAXDEPTH || ext2_read16(&entry->leafHigh))
+            return 0;
+
+        header = (struct ext2_extentheader *)readmeta(ext2_read32(&entry->leaf));
+        size = blocksize;
+
+    }
+
+    return (isextentheader(header, size)) ? header : 0;
+
+}
+
+static struct run getextentrun(struct ext2_node *node, unsigned int index, unsigned int max)
+{
+
+    struct extentroot root = getextentroot(node);
+    struct ext2_extentheader *header = findextentleaf((struct ext2_extentheader *)root.data, index);
+    struct run run;
+
+    run.sector = 0;
+    run.blocks = 1;
+
+    if (header && !ext2_read16(&header->depth))
+    {
+
+        struct ext2_extent *extent = (struct ext2_extent *)(header + 1);
+        unsigned int entries = ext2_read16(&header->entries);
+        unsigned int i;
+
+        for (i = 0; i < entries; i++, extent++)
+        {
+
+            unsigned int block = ext2_read32(&extent->block);
+            unsigned int length = ext2_read16(&extent->length);
+            unsigned int initialized = length <= EXT2_EXTENTMAXLENGTH;
+
+            if (!initialized)
+                length -= EXT2_EXTENTMAXLENGTH;
+
+            if (index < block)
+            {
+
+                run.blocks = block - index;
+
+                break;
+
+            }
+
+            if (index - block < length)
+            {
+
+                if (initialized && !ext2_read16(&extent->startHigh))
+                    run.sector = ext2_read32(&extent->start) + index - block;
+
+                run.blocks = length - (index - block);
+
+                break;
+
+            }
+
+        }
+
+    }
+
+    if (run.blocks > max)
+        run.blocks = max;
+
+    return run;
+
+}
+
+static struct run getrun(struct ext2_node *node, unsigned int offset, unsigned int max)
 {
 
     unsigned int index = offset / blocksize;
@@ -446,6 +583,13 @@ static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned
     unsigned int *entries;
     unsigned int available;
     unsigned int first;
+    struct run run;
+
+    if (node->flags & EXT2_NODE_EXTENTS)
+        return getextentrun(node, index, max);
+
+    run.sector = 0;
+    run.blocks = 1;
 
     if (direct)
     {
@@ -485,10 +629,8 @@ static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned
 
         }
 
-        *count = 1;
-
         if (!table)
-            return 0;
+            return run;
 
         entries = (unsigned int *)readmeta(table) + index % slots;
         available = slots - index % slots;
@@ -500,26 +642,26 @@ static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned
 
     first = (direct) ? entries[0] : ext2_read32(entries);
 
-    for (*count = 1; *count < available; (*count)++)
+    for (run.blocks = 1; run.blocks < available; run.blocks++)
     {
 
-        unsigned int next = (direct) ? entries[*count] : ext2_read32(&entries[*count]);
+        unsigned int next = (direct) ? entries[run.blocks] : ext2_read32(&entries[run.blocks]);
 
-        if (next != ((first) ? first + *count : 0))
+        if (next != ((first) ? first + run.blocks : 0))
             break;
 
     }
 
-    return first;
+    run.sector = first;
+
+    return run;
 
 }
 
 static unsigned int getsector(struct ext2_node *node, unsigned int offset)
 {
 
-    unsigned int count;
-
-    return getrun(node, offset, 1, &count);
+    return getrun(node, offset, 1).sector;
 
 }
 
@@ -953,6 +1095,7 @@ static struct span getspan(struct ext2_node *node, unsigned int roffset, unsigne
     unsigned int remaining = node->sizeLow - roffset;
     unsigned int blockoffset = roffset % blocksize;
     struct span span;
+    struct run run;
 
     span.count = capacity;
 
@@ -965,7 +1108,9 @@ static struct span getspan(struct ext2_node *node, unsigned int roffset, unsigne
     if (span.count > blockinfo.buffersize - blockoffset)
         span.count = blockinfo.buffersize - blockoffset;
 
-    span.sector = getrun(node, roffset, (blockoffset + span.count + blocksize - 1) / blocksize, &span.blocks);
+    run = getrun(node, roffset, (blockoffset + span.count + blocksize - 1) / blocksize);
+    span.sector = run.sector;
+    span.blocks = run.blocks;
 
     if (span.count > span.blocks * blocksize - blockoffset)
         span.count = span.blocks * blocksize - blockoffset;
@@ -1489,7 +1634,7 @@ static void onmain(struct message *message)
         if (mode)
         {
 
-            if (sb.blockCount > (0xFFFFFFFF - partoffset) / blocksize)
+            if (sb.blockCount > (0xFFFFFFFF - partoffset) / blocksize || ((sb.requiredFeatures & EXT2_INCOMPAT_64BIT) && sb.blockCountHigh))
             {
 
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Volume reaches beyond 4 GB: %s\n", option_getstring("service"));
