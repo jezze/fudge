@@ -13,7 +13,7 @@ static char request[128];
 static void sendresponse(unsigned int ethernet, unsigned int source, struct socket *remote)
 {
 
-    unsigned int target = fs_auth("initrd:");
+    unsigned int target = fs_auth("root:");
     unsigned int root = fs_walk(1, target, 0, "data/html");
     unsigned int id;
     struct record record;
