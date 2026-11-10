@@ -7,6 +7,7 @@
 #define MESSAGE_FULL                    0x04
 #define MESSAGE_FLAG_BLOCK              0x01
 #define MESSAGE_ROOT                    0x01
+#define MESSAGE_SECTORSIZE              512
 #define MESSAGE_TYPE_MAIN               0x01
 #define MESSAGE_TYPE_TERM               0x02
 #define MESSAGE_TYPE_INTERRUPT          0x03
@@ -294,7 +295,7 @@ struct message_blockrequest
 {
 
     unsigned int count;
-    unsigned int offset;
+    unsigned int sector;
     unsigned int target;
 
 };

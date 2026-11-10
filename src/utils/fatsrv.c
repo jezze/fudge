@@ -8,7 +8,7 @@
 
 static struct message_blockinfo blockinfo;
 static unsigned int block;
-static unsigned int partoffset;
+static unsigned int partsector;
 static unsigned int sectorsize;
 static unsigned int clustersize;
 static unsigned int fatstart;
@@ -33,7 +33,7 @@ static void sendblockrequest(unsigned int event, unsigned int reply, unsigned in
     struct message_blockrequest request;
     struct message_blockresponse response;
 
-    request.offset = partoffset + sector * sectorsize;
+    request.sector = partsector + sector * (sectorsize / MESSAGE_SECTORSIZE);
     request.count = count * sectorsize;
     request.target = 0;
 
@@ -1545,7 +1545,7 @@ static void onmain(struct message *message)
 
     block = channel_lookup(option_getstring("block-service"));
     clock = channel_lookup(option_getstring("clock-service"));
-    partoffset = option_getdecimal("partoffset");
+    partsector = option_getdecimal("partsector");
 
     if (block)
     {
@@ -1582,10 +1582,10 @@ static void onmain(struct message *message)
             rootcluster = (fattype == 32) ? fat_read32(&fat32->root_cluster) : 0;
             fsinfo = (fattype == 32) ? fat_read16(&fat32->fat_info) : 0;
 
-            if (total > (0xFFFFFFFF - partoffset) / sectorsize)
+            if (total > (0xFFFFFFFF - partsector) / (sectorsize / MESSAGE_SECTORSIZE))
             {
 
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Volume reaches beyond 4 GB: %s\n", option_getstring("service"));
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Volume too large: %s\n", option_getstring("service"));
 
                 return;
 
@@ -1614,7 +1614,7 @@ void init(void)
     option_add("service", "fat");
     option_add("block-service", "block:0");
     option_add("clock-service", "clock:0");
-    option_add("partoffset", "0");
+    option_add("partsector", "0");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
     channel_bind(MESSAGE_TYPE_CREATEREQUEST, oncreaterequest);
     channel_bind(MESSAGE_TYPE_READREQUEST, onreadrequest);

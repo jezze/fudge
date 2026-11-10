@@ -9,13 +9,13 @@ static unsigned char gptefi[16] = {0x28, 0x73, 0x2A, 0xC1, 0x1F, 0xF8, 0xD2, 0x1
 static unsigned char gptbasic[16] = {0xA2, 0xA0, 0xD0, 0xEB, 0xE5, 0xB9, 0x33, 0x44, 0x87, 0xC0, 0x68, 0xB6, 0xB7, 0x26, 0x99, 0xC7};
 static unsigned char gptlinux[16] = {0xAF, 0x3D, 0xC6, 0x0F, 0x83, 0x84, 0x72, 0x47, 0x8E, 0x79, 0x3D, 0x69, 0xD8, 0x47, 0x7D, 0xE4};
 
-static unsigned int sendblockreadrequest(unsigned int target, unsigned int offset, unsigned int count)
+static unsigned int sendblockreadrequest(unsigned int target, unsigned int sector, unsigned int count)
 {
 
     struct message_blockrequest request;
     struct message_blockresponse response;
 
-    request.offset = offset;
+    request.sector = sector;
     request.count = count;
     request.target = 0;
 
@@ -24,39 +24,46 @@ static unsigned int sendblockreadrequest(unsigned int target, unsigned int offse
 
 }
 
+static unsigned int getsectors(void)
+{
+
+    return blockinfo.blocksize / MESSAGE_SECTORSIZE;
+
+}
+
 static unsigned int reachable(unsigned int lba, unsigned int count)
 {
 
-    unsigned int limit = 0xFFFFFFFF / blockinfo.blocksize;
+    unsigned int limit = 0xFFFFFFFF / getsectors();
 
     return lba <= limit && count <= limit - lba;
 
 }
 
-static void mountfat(unsigned int source, unsigned int target, unsigned int offset, char *name, char *service, unsigned int index)
+static void mountfat(unsigned int source, unsigned int target, unsigned int sector, char *name, char *service, unsigned int index)
 {
 
-    sendblockreadrequest(target, offset, 512);
+    sendblockreadrequest(target, sector, 512);
 
     if (fat_validate((struct fat *)blockinfo.buffer))
-        system_run(source, "initrd:bin/fatsrv -service %s -block-service %s:%u -partoffset %u &", name, service, &index, &offset);
+        system_run(source, "initrd:bin/fatsrv -service %s -block-service %s:%u -partsector %u &", name, service, &index, &sector);
 
 }
 
-static void mountext2(unsigned int source, unsigned int target, unsigned int offset, char *name, char *service, unsigned int index)
+static void mountext2(unsigned int source, unsigned int target, unsigned int sector, char *name, char *service, unsigned int index)
 {
 
-    sendblockreadrequest(target, offset + 1024, 1024);
+    sendblockreadrequest(target, sector + 1024 / MESSAGE_SECTORSIZE, 1024);
 
     if (ext2_validate((struct ext2_superblock *)blockinfo.buffer))
-        system_run(source, "initrd:bin/ext2srv -service %s -block-service %s:%u -partoffset %u &", name, service, &index, &offset);
+        system_run(source, "initrd:bin/ext2srv -service %s -block-service %s:%u -partsector %u &", name, service, &index, &sector);
 
 }
 
 static unsigned int mountcdfs(unsigned int source, unsigned int target, char *name, char *service, unsigned int index)
 {
 
-    if (sendblockreadrequest(target, CDFS_DESCRIPTORSECTOR * CDFS_SECTORSIZE, CDFS_SECTORSIZE) == CDFS_SECTORSIZE && cdfs_validate((struct cdfs_descriptor *)blockinfo.buffer))
+    if (sendblockreadrequest(target, CDFS_DESCRIPTORSECTOR * (CDFS_SECTORSIZE / MESSAGE_SECTORSIZE), CDFS_SECTORSIZE) == CDFS_SECTORSIZE && cdfs_validate((struct cdfs_descriptor *)blockinfo.buffer))
         return system_run(source, "initrd:bin/cdfssrv -service %s -block-service %s:%u &", name, service, &index);
 
     return 0;
@@ -68,7 +75,7 @@ static void mountmbr(unsigned int source, unsigned int target, struct mbr_partit
 
     unsigned int lba = (partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0]);
     unsigned int total = (partition->sectortotal[3] << 24) | (partition->sectortotal[2] << 16) | (partition->sectortotal[1] << 8) | (partition->sectortotal[0]);
-    unsigned int offset = lba * blockinfo.blocksize;
+    unsigned int sector = lba * getsectors();
 
     if (!reachable(lba, total))
         return;
@@ -77,8 +84,8 @@ static void mountmbr(unsigned int source, unsigned int target, struct mbr_partit
     {
 
     case 0x83:
-        mountfat(source, target, offset, name, service, index);
-        mountext2(source, target, offset, name, service, index);
+        mountfat(source, target, sector, name, service, index);
+        mountext2(source, target, sector, name, service, index);
 
         break;
 
@@ -89,7 +96,7 @@ static void mountmbr(unsigned int source, unsigned int target, struct mbr_partit
     case 0x0C:
     case 0x0E:
     case 0xEF:
-        mountfat(source, target, offset, name, service, index);
+        mountfat(source, target, sector, name, service, index);
 
         break;
 
@@ -100,13 +107,13 @@ static void mountmbr(unsigned int source, unsigned int target, struct mbr_partit
 static void mountgpt(unsigned int source, unsigned int target, unsigned int ipartition, char *name, char *service, unsigned int index)
 {
 
-    if (sendblockreadrequest(target, blockinfo.blocksize, blockinfo.blocksize) == blockinfo.blocksize)
+    if (sendblockreadrequest(target, getsectors(), blockinfo.blocksize) == blockinfo.blocksize)
     {
 
         struct gpt_header header;
         struct gpt_entry entry;
         unsigned int entryoffset;
-        unsigned int offset;
+        unsigned int sector;
         unsigned int first;
         unsigned int last;
 
@@ -115,25 +122,25 @@ static void mountgpt(unsigned int source, unsigned int target, unsigned int ipar
         if (!gpt_validate(&header) || ipartition >= gpt_read32(header.entrycount))
             return;
 
-        entryoffset = gpt_read32(header.entrylba) * blockinfo.blocksize + ipartition * gpt_read32(header.entrysize);
+        entryoffset = ipartition * gpt_read32(header.entrysize);
 
-        if (sendblockreadrequest(target, entryoffset - entryoffset % blockinfo.blocksize, blockinfo.blocksize) != blockinfo.blocksize)
+        if (sendblockreadrequest(target, (gpt_read32(header.entrylba) + entryoffset / blockinfo.blocksize) * getsectors(), blockinfo.blocksize) != blockinfo.blocksize)
             return;
 
         buffer_copy(&entry, (void *)(blockinfo.buffer + entryoffset % blockinfo.blocksize), sizeof (struct gpt_entry));
 
         first = gpt_read32(entry.firstlba);
         last = gpt_read32(entry.lastlba);
-        offset = first * blockinfo.blocksize;
+        sector = first * getsectors();
 
         if (gpt_read32(entry.firstlba + 4) || gpt_read32(entry.lastlba + 4) || last < first || !reachable(last, 1))
             return;
 
         if (buffer_match(entry.type, gptlinux, 16) || buffer_match(entry.type, gptefi, 16) || buffer_match(entry.type, gptbasic, 16))
-            mountfat(source, target, offset, name, service, index);
+            mountfat(source, target, sector, name, service, index);
 
         if (buffer_match(entry.type, gptlinux, 16))
-            mountext2(source, target, offset, name, service, index);
+            mountext2(source, target, sector, name, service, index);
 
     }
 
@@ -155,7 +162,7 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
 
     channel_send(1, target, MESSAGE_TYPE_INFO, 0, 0);
 
-    if (!channel_wait(1, target, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
+    if (!channel_wait(1, target, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo) || blockinfo.blocksize < MESSAGE_SECTORSIZE)
         return;
 
     /* a disc (also a hybrid one with an MBR) is one filesystem, mounted as partition 0 */

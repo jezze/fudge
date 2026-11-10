@@ -5,7 +5,7 @@
 static struct message_blockinfo blockinfo;
 
 static unsigned int block;
-static unsigned int partoffset;
+static unsigned int partsector;
 static unsigned int mode;
 
 #define CACHESLOTS 4
@@ -14,7 +14,7 @@ static unsigned int mode;
 struct cacheslot
 {
 
-    unsigned int offset;
+    unsigned int sector;
     unsigned int count;
     char data[EXT2_MAXBLOCKSIZE];
 
@@ -56,25 +56,34 @@ struct span
 static struct cacheslot cache[CACHESLOTS];
 static unsigned int cachenext;
 
-static void updatecache(unsigned int offset, unsigned int count)
+static void updatecache(unsigned int sector, unsigned int count)
 {
 
+    unsigned int sectors = count / MESSAGE_SECTORSIZE;
     unsigned int i;
 
     for (i = 0; i < CACHESLOTS; i++)
     {
 
         struct cacheslot *slot = &cache[i];
+        unsigned int slotsectors = slot->count / MESSAGE_SECTORSIZE;
 
-        if (slot->offset + slot->count <= offset || slot->offset >= offset + count)
+        if (slot->sector + slotsectors <= sector || slot->sector >= sector + sectors)
             continue;
 
-        if (slot->offset >= offset && slot->offset + slot->count <= offset + count)
-            buffer_copy(slot->data, (char *)blockinfo.buffer + (slot->offset - offset), slot->count);
+        if (slot->sector >= sector && slot->sector + slotsectors <= sector + sectors)
+            buffer_copy(slot->data, (char *)blockinfo.buffer + (slot->sector - sector) * MESSAGE_SECTORSIZE, slot->count);
         else
             slot->count = 0;
 
     }
+
+}
+
+static unsigned int getdisksector(unsigned int sector, unsigned int blocksize)
+{
+
+    return sector * (blocksize / MESSAGE_SECTORSIZE);
 
 }
 
@@ -83,7 +92,7 @@ static unsigned int sendblockrequest(unsigned int event, unsigned int reply, uns
 
     struct message_blockrequest request;
 
-    request.offset = partoffset + sector * blocksize;
+    request.sector = partsector + getdisksector(sector, blocksize);
     request.count = count;
     request.target = target;
 
@@ -112,7 +121,7 @@ static unsigned int sendblockwriterequest(unsigned int count, unsigned int secto
 
     unsigned int written = sendblockrequest(MESSAGE_TYPE_BLOCKWRITEREQUEST, MESSAGE_TYPE_BLOCKWRITERESPONSE, count, sector, blocksize, 0);
 
-    updatecache(sector * blocksize, written);
+    updatecache(getdisksector(sector, blocksize), written);
 
     return written;
 
@@ -126,7 +135,7 @@ static unsigned int csumseed;
 static char *readmeta(unsigned int sector)
 {
 
-    unsigned int offset = sector * blocksize;
+    unsigned int first = getdisksector(sector, blocksize);
     struct cacheslot *slot;
     unsigned int i;
 
@@ -135,7 +144,7 @@ static char *readmeta(unsigned int sector)
 
         slot = &cache[i];
 
-        if (slot->count == blocksize && slot->offset == offset)
+        if (slot->count == blocksize && slot->sector == first)
             return slot->data;
 
     }
@@ -148,7 +157,7 @@ static char *readmeta(unsigned int sector)
 
     buffer_copy(slot->data, (void *)blockinfo.buffer, blocksize);
 
-    slot->offset = offset;
+    slot->sector = first;
     slot->count = blocksize;
 
     return slot->data;
@@ -2074,7 +2083,7 @@ static void onmain(struct message *message)
 {
 
     block = channel_lookup(option_getstring("block-service"));
-    partoffset = option_getdecimal("partoffset");
+    partsector = option_getdecimal("partsector");
 
     if (block)
     {
@@ -2091,10 +2100,10 @@ static void onmain(struct message *message)
         if (mode)
         {
 
-            if (sb.blockCount > (0xFFFFFFFF - partoffset) / blocksize || ((sb.requiredFeatures & EXT2_INCOMPAT_64BIT) && sb.blockCountHigh))
+            if (sb.blockCount > (0xFFFFFFFF - partsector) / (blocksize / MESSAGE_SECTORSIZE) || ((sb.requiredFeatures & EXT2_INCOMPAT_64BIT) && sb.blockCountHigh))
             {
 
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Volume reaches beyond 4 GB: %s\n", option_getstring("service"));
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Volume too large: %s\n", option_getstring("service"));
 
                 return;
 
@@ -2122,7 +2131,7 @@ void init(void)
 
     option_add("service", "ext2");
     option_add("block-service", "block:0");
-    option_add("partoffset", "0");
+    option_add("partsector", "0");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
     channel_bind(MESSAGE_TYPE_CREATEREQUEST, oncreaterequest);
     channel_bind(MESSAGE_TYPE_READREQUEST, onreadrequest);

@@ -392,7 +392,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
     spinlock_acquire(&spinlock);
 
-    session->count = issue(disk, buffer, session->type == BLOCK_TYPE_WRITE, session->start / disk->blockinterface.blocksize, count);
+    session->count = issue(disk, buffer, session->type == BLOCK_TYPE_WRITE, session->sector / (disk->blockinterface.blocksize / MESSAGE_SECTORSIZE), count);
 
     if (!session->count)
         block_session_done(&disk->blockinterface, session);

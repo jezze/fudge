@@ -155,7 +155,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
     void *buffer = (void *)kernel_getbuffer(session->target);
-    unsigned int lba = session->start / BLOCKSIZE;
+    unsigned int lba = session->sector / (BLOCKSIZE / MESSAGE_SECTORSIZE);
 
     if (session->count > TASK_BUFFERSIZE)
         session->count = TASK_BUFFERSIZE;
@@ -181,7 +181,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
         active = 1;
         blockbuffer = buffer;
-        skip = session->start % BLOCKSIZE;
+        skip = session->sector % (BLOCKSIZE / MESSAGE_SECTORSIZE) * MESSAGE_SECTORSIZE;
         sectors = (skip + session->count + BLOCKSIZE - 1) / BLOCKSIZE;
 
         buffer_clear(packet, IDE_PACKETSIZE);

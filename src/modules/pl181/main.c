@@ -188,13 +188,13 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
     count -= count % BLOCKSIZE;
 
-    if (!buffer || !rca || session->start % BLOCKSIZE)
+    if (!buffer || !rca)
         count = 0;
 
     for (i = 0; i < count; i += BLOCKSIZE)
     {
 
-        unsigned int block = (session->start + i) / BLOCKSIZE;
+        unsigned int block = session->sector + i / BLOCKSIZE;
         unsigned int done = (session->type == BLOCK_TYPE_WRITE) ? writeblock(block, buffer + i / 4) : readblock(block, buffer + i / 4);
 
         if (!done)

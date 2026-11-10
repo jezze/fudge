@@ -156,7 +156,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
         unsigned int length = (count - offset > TRANSFERSIZE) ? TRANSFERSIZE : count - offset;
 
-        if (!transfer(driver.id, session->type == BLOCK_TYPE_WRITE, (session->start + offset) / blocksize, buffer + offset, length))
+        if (!transfer(driver.id, session->type == BLOCK_TYPE_WRITE, session->sector / (blocksize / MESSAGE_SECTORSIZE) + offset / blocksize, buffer + offset, length))
             break;
 
     }
@@ -192,7 +192,7 @@ static void driver_reset(unsigned int id)
     if (ready)
         blockinterface.blocksize = readcapacity(id);
 
-    ready = ready && blockinterface.blocksize;
+    ready = ready && blockinterface.blocksize >= MESSAGE_SECTORSIZE;
 
 }
 

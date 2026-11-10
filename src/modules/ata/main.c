@@ -178,9 +178,9 @@ static unsigned int blockinterface_startsession(struct block_session *session)
         {
 
             if (session->type == BLOCK_TYPE_READ)
-                ide_rdma48(device, sectors, session->start / BLOCKSIZE);
+                ide_rdma48(device, sectors, session->sector);
             else
-                ide_wdma48(device, sectors, session->start / BLOCKSIZE);
+                ide_wdma48(device, sectors, session->sector);
 
             ide_startdma(device);
 
@@ -205,12 +205,12 @@ static unsigned int blockinterface_startsession(struct block_session *session)
     {
 
     case BLOCK_TYPE_READ:
-        ide_rpio48(device, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
+        ide_rpio48(device, session->count / BLOCKSIZE, session->sector);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        ide_wpio48(device, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
+        ide_wpio48(device, session->count / BLOCKSIZE, session->sector);
 
         if (ide_wait(device))
         {

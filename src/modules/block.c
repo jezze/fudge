@@ -47,7 +47,7 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
             session->type = BLOCK_TYPE_READ;
             session->source = source;
             session->target = (request->target) ? request->target : source;
-            session->start = request->offset;
+            session->sector = request->sector;
             session->count = request->count;
             session->offset = 0;
 
@@ -86,7 +86,7 @@ static unsigned int onblockwriterequest(struct block_interface *interface, unsig
             session->type = BLOCK_TYPE_WRITE;
             session->source = source;
             session->target = source;
-            session->start = request->offset;
+            session->sector = request->sector;
             session->count = request->count;
             session->offset = 0;
 

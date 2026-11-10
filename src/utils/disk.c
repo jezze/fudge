@@ -27,13 +27,13 @@ static void printpartition(unsigned int source, struct mbr_partition *partition)
 
 }
 
-static unsigned int readblock(unsigned int block, unsigned int offset)
+static unsigned int readblock(unsigned int block, unsigned int lba)
 {
 
     struct message_blockrequest request;
     struct message_blockresponse response;
 
-    request.offset = offset;
+    request.sector = lba * (blockinfo.blocksize / MESSAGE_SECTORSIZE);
     request.count = blockinfo.blocksize;
     request.target = 0;
 
@@ -71,11 +71,11 @@ static void printentry(unsigned int source, unsigned int i, struct gpt_entry *en
 static void printgpt(unsigned int source, unsigned int block)
 {
 
-    if (readblock(block, blockinfo.blocksize))
+    if (readblock(block, 1))
     {
 
         struct gpt_header header;
-        unsigned int offset;
+        unsigned int lba;
         unsigned int entrysize;
         unsigned int entrycount;
         unsigned int i;
@@ -85,7 +85,7 @@ static void printgpt(unsigned int source, unsigned int block)
         if (!gpt_validate(&header))
             return;
 
-        offset = gpt_read32(header.entrylba) * blockinfo.blocksize;
+        lba = gpt_read32(header.entrylba);
         entrysize = gpt_read32(header.entrysize);
         entrycount = gpt_read32(header.entrycount);
 
@@ -95,10 +95,10 @@ static void printgpt(unsigned int source, unsigned int block)
         for (i = 0; i < entrycount; i++)
         {
 
-            unsigned int entryoffset = offset + i * entrysize;
+            unsigned int entryoffset = i * entrysize;
             struct gpt_entry *entry;
 
-            if (entryoffset % blockinfo.blocksize == 0 && !readblock(block, entryoffset))
+            if (entryoffset % blockinfo.blocksize == 0 && !readblock(block, lba + entryoffset / blockinfo.blocksize))
                 break;
 
             entry = (struct gpt_entry *)(blockinfo.buffer + entryoffset % blockinfo.blocksize);
@@ -148,7 +148,7 @@ static void onmain(struct message *message)
 
     unsigned int block = channel_lookup(option_getstring("block-service"));
 
-    if (block && channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0) && channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
+    if (block && channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0) && channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo) && blockinfo.blocksize >= MESSAGE_SECTORSIZE)
     {
 
         struct mbr mbr;

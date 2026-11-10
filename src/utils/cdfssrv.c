@@ -41,7 +41,7 @@ struct span
 
 static struct message_blockinfo blockinfo;
 static unsigned int block;
-static unsigned int partoffset;
+static unsigned int partsector;
 static unsigned int root;
 static unsigned int names;
 static unsigned int suspskip;
@@ -53,7 +53,7 @@ static unsigned int sendblockrequest(unsigned int sector, unsigned int count, un
 
     struct message_blockrequest request;
 
-    request.offset = partoffset + sector * CDFS_SECTORSIZE;
+    request.sector = partsector + sector * (CDFS_SECTORSIZE / MESSAGE_SECTORSIZE);
     request.count = count;
     request.target = target;
 
@@ -598,7 +598,7 @@ static void onmain(struct message *message)
 {
 
     block = channel_lookup(option_getstring("block-service"));
-    partoffset = option_getdecimal("partoffset");
+    partsector = option_getdecimal("partsector");
 
     if (block)
     {
@@ -633,7 +633,7 @@ void init(void)
 
     option_add("service", "cdfs");
     option_add("block-service", "block:0");
-    option_add("partoffset", "0");
+    option_add("partsector", "0");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
     channel_bind(MESSAGE_TYPE_READREQUEST, onreadrequest);
     channel_bind(MESSAGE_TYPE_STATREQUEST, onstatrequest);

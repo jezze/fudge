@@ -85,7 +85,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
     session->count = count;
     request.type = virtio_le32((session->type == BLOCK_TYPE_WRITE) ? REQUEST_WRITE : REQUEST_READ);
-    request.sectorlow = virtio_le32(session->start / BLOCKSIZE);
+    request.sectorlow = virtio_le32(session->sector);
     request.sectorhigh = 0;
     status = 0xFF;
 
