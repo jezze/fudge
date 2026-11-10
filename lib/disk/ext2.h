@@ -9,6 +9,25 @@
 #define EXT2_INCOMPAT_LARGEDIR          0x4000
 #define EXT2_ROCOMPAT_SPARSESUPER       0x0001
 #define EXT2_ROCOMPAT_LARGEFILE         0x0002
+#define EXT2_ROCOMPAT_HUGEFILE          0x0008
+#define EXT2_ROCOMPAT_GROUPCSUM         0x0010
+#define EXT2_ROCOMPAT_DIRNLINK          0x0020
+#define EXT2_ROCOMPAT_EXTRASIZE         0x0040
+#define EXT2_ROCOMPAT_METADATACSUM      0x0400
+#define EXT2_CHECKSUMTYPE_CRC32C        1
+#define EXT2_SUPERBLOCK_SEED            0x0270
+#define EXT2_SUPERBLOCK_CHECKSUM        0x03FC
+#define EXT2_GROUP_NODEUNINIT           0x0001
+#define EXT2_GROUP_BLOCKUNINIT          0x0002
+#define EXT2_GROUP_CHECKSUM             0x001E
+#define EXT2_NODE_GENERATION            0x0064
+#define EXT2_NODE_CHECKSUMLOW           0x007C
+#define EXT2_NODE_EXTRASIZE             0x0080
+#define EXT2_NODE_CHECKSUMHIGH          0x0082
+#define EXT2_NODE_BASESIZE              128
+#define EXT2_NODE_EXTRADEFAULT          32
+#define EXT2_ENTRY_TAILSIZE             12
+#define EXT2_ENTRY_TAILTYPE             0xDE
 #define EXT2_NODE_INDEX                 0x1000
 #define EXT2_NODE_EXTENTS               0x80000
 #define EXT2_EXTENTMAGIC                0xF30A
@@ -75,6 +94,13 @@ struct ext2_superblock
     unsigned int blockCountUnallocHigh;
     unsigned short minExtraSize;
     unsigned short wantExtraSize;
+    unsigned int flags;
+    unsigned short raidStride;
+    unsigned short mmpInterval;
+    unsigned char mmpBlock[8];
+    unsigned int raidWidth;
+    unsigned char flexGroups;
+    unsigned char checksumType;
 
 } __attribute__((packed));
 
@@ -181,4 +207,6 @@ void ext2_write32(void *data, unsigned int value);
 void ext2_convertsuperblock(struct ext2_superblock *superblock);
 void ext2_convertblockgroup(struct ext2_blockgroup *blockgroup);
 void ext2_convertnode(struct ext2_node *node);
+unsigned int ext2_crc16(unsigned int crc, void *data, unsigned int count);
+unsigned int ext2_crc32c(unsigned int crc, void *data, unsigned int count);
 unsigned int ext2_validate(struct ext2_superblock *superblock);

@@ -35,6 +35,15 @@ struct extentroot
 
 };
 
+struct extentleaf
+{
+
+    struct ext2_extentheader *header;
+    unsigned int block;
+    unsigned int first;
+
+};
+
 struct span
 {
 
@@ -112,6 +121,7 @@ static unsigned int sendblockwriterequest(unsigned int count, unsigned int secto
 static struct ext2_superblock sb;
 static unsigned int blocksize;
 static unsigned int descsize;
+static unsigned int csumseed;
 
 static char *readmeta(unsigned int sector)
 {
@@ -154,6 +164,37 @@ static void readsuperblock(void)
 
     blocksize = (1024 << sb.blockSize);
     descsize = (sb.requiredFeatures & EXT2_INCOMPAT_64BIT) ? sb.descSize : 32;
+    csumseed = (sb.requiredFeatures & EXT2_INCOMPAT_CSUMSEED) ? ext2_read32((char *)blockinfo.buffer + EXT2_SUPERBLOCK_SEED) : ext2_crc32c(0xFFFFFFFF, sb.system, 16);
+
+}
+
+static unsigned int hasmetadatachecksums(void)
+{
+
+    return sb.unsupportedFeatures & EXT2_ROCOMPAT_METADATACSUM;
+
+}
+
+static unsigned int hasgroupchecksums(void)
+{
+
+    return sb.unsupportedFeatures & (EXT2_ROCOMPAT_GROUPCSUM | EXT2_ROCOMPAT_METADATACSUM);
+
+}
+
+static unsigned int getnodeseed(unsigned int id, unsigned int generation)
+{
+
+    unsigned char number[4];
+    unsigned int crc;
+
+    ext2_write32(number, id);
+
+    crc = ext2_crc32c(csumseed, number, 4);
+
+    ext2_write32(number, generation);
+
+    return ext2_crc32c(crc, number, 4);
 
 }
 
@@ -163,6 +204,10 @@ static void writesuperblock(void)
     sendblockreadrequest(1024, 1, 1024);
     buffer_copy((void *)blockinfo.buffer, &sb, sizeof (struct ext2_superblock));
     ext2_convertsuperblock((struct ext2_superblock *)blockinfo.buffer);
+
+    if (hasmetadatachecksums())
+        ext2_write32((char *)blockinfo.buffer + EXT2_SUPERBLOCK_CHECKSUM, ext2_crc32c(0xFFFFFFFF, (void *)blockinfo.buffer, EXT2_SUPERBLOCK_CHECKSUM));
+
     sendblockwriterequest(1024, 1, 1024);
 
 }
@@ -186,12 +231,43 @@ static void writeblockgroup(struct ext2_blockgroup *bg, unsigned int index)
     unsigned int slots = blocksize / descsize;
     unsigned int sector = sb.superblockIndex + 1 + index / slots;
     unsigned int offset = (index % slots) * descsize;
+    char *descriptor = (char *)blockinfo.buffer + offset;
     struct ext2_blockgroup raw;
 
     buffer_copy(&raw, bg, sizeof (struct ext2_blockgroup));
     ext2_convertblockgroup(&raw);
     sendblockreadrequest(blocksize, sector, blocksize);
-    buffer_copy((char *)blockinfo.buffer + offset, &raw, descsize);
+    buffer_copy(descriptor, &raw, descsize);
+
+    if (hasgroupchecksums())
+    {
+
+        unsigned char number[4];
+        unsigned int crc;
+
+        ext2_write32(number, index);
+
+        if (hasmetadatachecksums())
+        {
+
+            ext2_write16(descriptor + EXT2_GROUP_CHECKSUM, 0);
+
+            crc = ext2_crc32c(ext2_crc32c(csumseed, number, 4), descriptor, descsize);
+
+        }
+
+        else
+        {
+
+            crc = ext2_crc16(ext2_crc16(ext2_crc16(0xFFFF, sb.system, 16), number, 4), descriptor, EXT2_GROUP_CHECKSUM);
+            crc = ext2_crc16(crc, descriptor + EXT2_GROUP_CHECKSUM + 2, descsize - EXT2_GROUP_CHECKSUM - 2);
+
+        }
+
+        ext2_write16(descriptor + EXT2_GROUP_CHECKSUM, crc);
+
+    }
+
     sendblockwriterequest(blocksize, sector, blocksize);
 
 }
@@ -208,16 +284,63 @@ static void readnode(struct ext2_node *node, unsigned int start, unsigned int in
 
 }
 
-static void writenode(struct ext2_node *node, unsigned int start, unsigned int index)
+static unsigned int getextrasize(void)
+{
+
+    unsigned int size = (sb.wantExtraSize) ? sb.wantExtraSize : EXT2_NODE_EXTRADEFAULT;
+
+    if (sb.nodeSize <= EXT2_NODE_BASESIZE || !(sb.unsupportedFeatures & (EXT2_ROCOMPAT_EXTRASIZE | EXT2_ROCOMPAT_METADATACSUM)))
+        return 0;
+
+    return (size > sb.nodeSize - EXT2_NODE_BASESIZE) ? sb.nodeSize - EXT2_NODE_BASESIZE : size;
+
+}
+
+static void setnodechecksum(char *raw, unsigned int id)
+{
+
+    unsigned int high = sb.nodeSize > EXT2_NODE_BASESIZE && ext2_read16(raw + EXT2_NODE_EXTRASIZE) >= EXT2_NODE_CHECKSUMHIGH + 2 - EXT2_NODE_BASESIZE;
+    unsigned int crc;
+
+    ext2_write16(raw + EXT2_NODE_CHECKSUMLOW, 0);
+
+    if (high)
+        ext2_write16(raw + EXT2_NODE_CHECKSUMHIGH, 0);
+
+    crc = ext2_crc32c(getnodeseed(id, ext2_read32(raw + EXT2_NODE_GENERATION)), raw, sb.nodeSize);
+
+    ext2_write16(raw + EXT2_NODE_CHECKSUMLOW, crc);
+
+    if (high)
+        ext2_write16(raw + EXT2_NODE_CHECKSUMHIGH, crc >> 16);
+
+}
+
+static void writenode(struct ext2_node *node, unsigned int start, unsigned int index, unsigned int id, unsigned int fresh)
 {
 
     unsigned int slots = blocksize / sb.nodeSize;
     unsigned int sector = start + index / slots;
-    unsigned int offset = (index % slots) * sb.nodeSize;
+    char *raw = (char *)blockinfo.buffer + (index % slots) * sb.nodeSize;
 
     sendblockreadrequest(blocksize, sector, blocksize);
-    buffer_copy((char *)blockinfo.buffer + offset, node, sizeof (struct ext2_node));
-    ext2_convertnode((struct ext2_node *)((char *)blockinfo.buffer + offset));
+
+    if (fresh)
+    {
+
+        buffer_clear(raw, sb.nodeSize);
+
+        if (getextrasize())
+            ext2_write16(raw + EXT2_NODE_EXTRASIZE, getextrasize());
+
+    }
+
+    buffer_copy(raw, node, sizeof (struct ext2_node));
+    ext2_convertnode((struct ext2_node *)raw);
+
+    if (hasmetadatachecksums())
+        setnodechecksum(raw, id);
+
     sendblockwriterequest(blocksize, sector, blocksize);
 
 }
@@ -242,7 +365,49 @@ static void simplewrite(struct ext2_node *node, unsigned int id)
     struct ext2_blockgroup bg;
 
     readblockgroup(&bg, igroup);
-    writenode(node, bg.blockTableAddress, inode);
+    writenode(node, bg.blockTableAddress, inode, id, 0);
+
+}
+
+static void simplecreate(struct ext2_node *node, unsigned int id)
+{
+
+    unsigned int igroup = (id - 1) / sb.nodeCountGroup;
+    unsigned int inode = (id - 1) % sb.nodeCountGroup;
+    struct ext2_blockgroup bg;
+
+    readblockgroup(&bg, igroup);
+    writenode(node, bg.blockTableAddress, inode, id, 1);
+
+}
+
+static void setblockusagechecksum(struct ext2_blockgroup *bg, unsigned char *bitmap)
+{
+
+    if (hasmetadatachecksums())
+    {
+
+        unsigned int crc = ext2_crc32c(csumseed, bitmap, sb.blockCountGroup / 8);
+
+        bg->blockUsageChecksum = crc & 0xFFFF;
+        bg->blockUsageChecksumHigh = crc >> 16;
+
+    }
+
+}
+
+static void setnodeusagechecksum(struct ext2_blockgroup *bg, unsigned char *bitmap)
+{
+
+    if (hasmetadatachecksums())
+    {
+
+        unsigned int crc = ext2_crc32c(csumseed, bitmap, sb.nodeCountGroup / 8);
+
+        bg->nodeUsageChecksum = crc & 0xFFFF;
+        bg->nodeUsageChecksumHigh = crc >> 16;
+
+    }
 
 }
 
@@ -252,6 +417,9 @@ static unsigned int allocblockgroup(unsigned int blockgroup)
     struct ext2_blockgroup bg;
 
     readblockgroup(&bg, blockgroup);
+
+    if (hasgroupchecksums() && (bg.flags & EXT2_GROUP_BLOCKUNINIT))
+        return 0;
 
     if (bg.blockCountUnalloc)
     {
@@ -273,6 +441,7 @@ static unsigned int allocblockgroup(unsigned int blockgroup)
                 bitmap[index] |= bit;
 
                 sendblockwriterequest(blocksize, bg.blockUsageAddress, blocksize);
+                setblockusagechecksum(&bg, bitmap);
 
                 bg.blockCountUnalloc--;
 
@@ -301,6 +470,9 @@ static unsigned int allocnodegroup(unsigned int igroup)
 
     readblockgroup(&bg, igroup);
 
+    if (hasgroupchecksums() && (bg.flags & EXT2_GROUP_NODEUNINIT))
+        return 0;
+
     if (bg.nodeCountUnalloc)
     {
 
@@ -321,8 +493,12 @@ static unsigned int allocnodegroup(unsigned int igroup)
                 bitmap[index] |= bit;
 
                 sendblockwriterequest(blocksize, bg.nodeUsageAddress, blocksize);
+                setnodeusagechecksum(&bg, bitmap);
 
                 bg.nodeCountUnalloc--;
+
+                if (hasgroupchecksums() && i >= sb.nodeCountGroup - bg.nodeCountUnused)
+                    bg.nodeCountUnused = sb.nodeCountGroup - i - 1;
 
                 writeblockgroup(&bg, igroup);
 
@@ -403,6 +579,7 @@ static void freeblock(unsigned int block)
     bitmap[i / 8] &= ~(1 << (i % 8));
 
     sendblockwriterequest(blocksize, bg.blockUsageAddress, blocksize);
+    setblockusagechecksum(&bg, bitmap);
 
     bg.blockCountUnalloc++;
 
@@ -428,6 +605,7 @@ static void freenode(unsigned int id, unsigned int directory)
     bitmap[i / 8] &= ~(1 << (i % 8));
 
     sendblockwriterequest(blocksize, bg.nodeUsageAddress, blocksize);
+    setnodeusagechecksum(&bg, bitmap);
 
     bg.nodeCountUnalloc++;
 
@@ -484,11 +662,16 @@ static unsigned int isextentheader(struct ext2_extentheader *header, unsigned in
 
 }
 
-static struct ext2_extentheader *findextentleaf(struct ext2_extentheader *header, unsigned int index)
+static struct extentleaf findextentleaf(struct ext2_extentheader *header, unsigned int index)
 {
 
     unsigned int size = EXTENTROOTSIZE;
+    struct extentleaf leaf;
     unsigned int level;
+
+    leaf.header = 0;
+    leaf.block = 0;
+    leaf.first = 0;
 
     for (level = 0; isextentheader(header, size) && ext2_read16(&header->depth); level++)
     {
@@ -498,20 +681,25 @@ static struct ext2_extentheader *findextentleaf(struct ext2_extentheader *header
         unsigned int i;
 
         if (!entries)
-            return 0;
+            return leaf;
 
         for (i = 1; i < entries && ext2_read32(&(entry + 1)->block) <= index; i++)
             entry++;
 
         if (level == EXT2_EXTENTMAXDEPTH || ext2_read16(&entry->leafHigh))
-            return 0;
+            return leaf;
 
-        header = (struct ext2_extentheader *)readmeta(ext2_read32(&entry->leaf));
+        leaf.block = ext2_read32(&entry->leaf);
+        leaf.first = ext2_read32(&entry->block);
+        header = (struct ext2_extentheader *)readmeta(leaf.block);
         size = blocksize;
 
     }
 
-    return (isextentheader(header, size)) ? header : 0;
+    if (isextentheader(header, size))
+        leaf.header = header;
+
+    return leaf;
 
 }
 
@@ -519,7 +707,7 @@ static struct run getextentrun(struct ext2_node *node, unsigned int index, unsig
 {
 
     struct extentroot root = getextentroot(node);
-    struct ext2_extentheader *header = findextentleaf((struct ext2_extentheader *)root.data, index);
+    struct ext2_extentheader *header = findextentleaf((struct ext2_extentheader *)root.data, index).header;
     struct run run;
 
     run.sector = 0;
@@ -571,6 +759,144 @@ static struct run getextentrun(struct ext2_node *node, unsigned int index, unsig
         run.blocks = max;
 
     return run;
+
+}
+
+static void setextentroot(struct ext2_node *node, struct extentroot *root)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 12; i++)
+        node->pointer[i] = ext2_read32(root->data + i * 4);
+
+    node->singlyIndirectPointer = ext2_read32(root->data + 48);
+    node->doublyIndirectPointer = ext2_read32(root->data + 52);
+    node->tripplyIndirectPointer = ext2_read32(root->data + 56);
+
+}
+
+static unsigned int getextentlength(struct ext2_extent *extent)
+{
+
+    unsigned int length = ext2_read16(&extent->length);
+
+    return (length > EXT2_EXTENTMAXLENGTH) ? length - EXT2_EXTENTMAXLENGTH : length;
+
+}
+
+static unsigned int insertextent(struct ext2_extentheader *header, unsigned int index, unsigned int sector)
+{
+
+    struct ext2_extent *first = (struct ext2_extent *)(header + 1);
+    struct ext2_extent *extent = first;
+    unsigned int entries = ext2_read16(&header->entries);
+    unsigned int position = 0;
+    unsigned int i;
+
+    while (position < entries && ext2_read32(&extent->block) <= index)
+    {
+
+        position++;
+        extent++;
+
+    }
+
+    if (position)
+    {
+
+        struct ext2_extent *previous = extent - 1;
+        unsigned int block = ext2_read32(&previous->block);
+        unsigned int length = ext2_read16(&previous->length);
+
+        if (index - block < getextentlength(previous))
+            return 0;
+
+        if (length < EXT2_EXTENTMAXLENGTH && block + length == index && !ext2_read16(&previous->startHigh) && ext2_read32(&previous->start) + length == sector)
+        {
+
+            ext2_write16(&previous->length, length + 1);
+
+            return 1;
+
+        }
+
+    }
+
+    if (entries == ext2_read16(&header->max))
+        return 0;
+
+    for (i = entries; i > position; i--)
+        buffer_copy(first + i, first + i - 1, sizeof (struct ext2_extent));
+
+    ext2_write32(&extent->block, index);
+    ext2_write16(&extent->length, 1);
+    ext2_write16(&extent->startHigh, 0);
+    ext2_write32(&extent->start, sector);
+    ext2_write16(&header->entries, entries + 1);
+
+    return 1;
+
+}
+
+static void setextentchecksum(char *block, struct ext2_node *node, unsigned int id)
+{
+
+    struct ext2_extentheader *header = (struct ext2_extentheader *)block;
+    unsigned int size = sizeof (struct ext2_extentheader) + ext2_read16(&header->max) * sizeof (struct ext2_extent);
+
+    if (hasmetadatachecksums() && size + 4 <= blocksize)
+        ext2_write32(block + size, ext2_crc32c(getnodeseed(id, node->generation), block, size));
+
+}
+
+static unsigned int allocextent(struct ext2_node *node, unsigned int index, unsigned int id)
+{
+
+    struct extentroot root = getextentroot(node);
+    struct extentleaf leaf = findextentleaf((struct ext2_extentheader *)root.data, index);
+    char data[EXT2_MAXBLOCKSIZE];
+    unsigned int sector;
+
+    if (!leaf.header || ext2_read16(&leaf.header->depth) || index < leaf.first)
+        return 0;
+
+    if (leaf.block)
+        buffer_copy(data, leaf.header, blocksize);
+
+    sector = allocblock((id - 1) / sb.nodeCountGroup);
+
+    if (!sector)
+        return 0;
+
+    if (!insertextent((leaf.block) ? (struct ext2_extentheader *)data : (struct ext2_extentheader *)root.data, index, sector))
+    {
+
+        freeblock(sector);
+
+        return 0;
+
+    }
+
+    if (leaf.block)
+    {
+
+        buffer_copy((void *)blockinfo.buffer, data, blocksize);
+        setextentchecksum((char *)blockinfo.buffer, node, id);
+        sendblockwriterequest(blocksize, leaf.block, blocksize);
+
+    }
+
+    else
+    {
+
+        setextentroot(node, &root);
+
+    }
+
+    node->sectorCount += blocksize / 512;
+
+    return sector;
 
 }
 
@@ -732,13 +1058,17 @@ static unsigned int allocentry(struct ext2_node *node, unsigned int table, unsig
 
 }
 
-static unsigned int allocsector(struct ext2_node *node, unsigned int offset, unsigned int igroup)
+static unsigned int allocsector(struct ext2_node *node, unsigned int offset, unsigned int id)
 {
 
+    unsigned int igroup = (id - 1) / sb.nodeCountGroup;
     unsigned int index = offset / blocksize;
     unsigned int slots = blocksize / 4;
     unsigned int depth;
     unsigned int table;
+
+    if (node->flags & EXT2_NODE_EXTENTS)
+        return allocextent(node, index, id);
 
     if (index < 12)
     {
@@ -897,7 +1227,29 @@ static unsigned int entrysize(unsigned int namelength)
 
 }
 
-static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigned int length, unsigned int type, char *name)
+static unsigned int istail(struct ext2_entry *entry)
+{
+
+    return !ext2_read32(&entry->node) && ext2_read16(&entry->size) == EXT2_ENTRY_TAILSIZE && !entry->length && entry->type == EXT2_ENTRY_TAILTYPE;
+
+}
+
+static unsigned int hastail(char *block)
+{
+
+    return !hasmetadatachecksums() || istail((struct ext2_entry *)(block + blocksize - EXT2_ENTRY_TAILSIZE));
+
+}
+
+static void setentrychecksum(char *block, struct ext2_node *node, unsigned int id)
+{
+
+    if (hasmetadatachecksums())
+        ext2_write32(block + blocksize - 4, ext2_crc32c(getnodeseed(id, node->generation), block, blocksize - EXT2_ENTRY_TAILSIZE));
+
+}
+
+static unsigned int spliceentry(struct ext2_node *node, unsigned int parentid, unsigned int id, unsigned int length, unsigned int type, char *name)
 {
 
     unsigned int realsize = entrysize(length);
@@ -906,6 +1258,7 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
     while (offset < node->sizeLow)
     {
 
+        unsigned int sector = getsector(node, offset);
         struct ext2_entry *entry = getentry(node, offset);
         unsigned int used;
         unsigned int size;
@@ -916,15 +1269,14 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
         used = ext2_read32(&entry->node) ? entrysize(entry->length) : 0;
         size = ext2_read16(&entry->size) - used;
 
-        if (size >= realsize)
+        if (size >= realsize && !(hasmetadatachecksums() && istail(entry)) && hastail((char *)blockinfo.buffer))
         {
-
-            unsigned int sector = getsector(node, offset);
 
             if (used)
                 ext2_write16(&entry->size, used);
 
             writeentry((struct ext2_entry *)((char *)entry + used), id, size, length, type, name);
+            setentrychecksum((char *)blockinfo.buffer, node, parentid);
             sendblockwriterequest(blocksize, sector, blocksize);
 
             return 1;
@@ -939,16 +1291,34 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
 
 }
 
-static unsigned int growentry(struct ext2_node *node, unsigned int igroup, unsigned int id, unsigned int length, unsigned int type, char *name)
+static unsigned int growentry(struct ext2_node *node, unsigned int parentid, unsigned int id, unsigned int length, unsigned int type, char *name)
 {
 
-    unsigned int sector = allocsector(node, node->sizeLow, igroup);
+    unsigned int sector = allocsector(node, node->sizeLow, parentid);
 
     if (sector)
     {
 
-        buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
-        writeentry((struct ext2_entry *)blockinfo.buffer, id, blocksize, length, type, name);
+        char *block = (char *)blockinfo.buffer;
+
+        buffer_clear(block, EXT2_MAXBLOCKSIZE);
+
+        if (hasmetadatachecksums())
+        {
+
+            writeentry((struct ext2_entry *)block, id, blocksize - EXT2_ENTRY_TAILSIZE, length, type, name);
+            writeentry((struct ext2_entry *)(block + blocksize - EXT2_ENTRY_TAILSIZE), 0, EXT2_ENTRY_TAILSIZE, 0, EXT2_ENTRY_TAILTYPE, "");
+            setentrychecksum(block, node, parentid);
+
+        }
+
+        else
+        {
+
+            writeentry((struct ext2_entry *)block, id, blocksize, length, type, name);
+
+        }
+
         sendblockwriterequest(blocksize, sector, blocksize);
 
         node->sizeLow += blocksize;
@@ -961,17 +1331,17 @@ static unsigned int growentry(struct ext2_node *node, unsigned int igroup, unsig
 
 }
 
-static unsigned int addentry(struct ext2_node *node, unsigned int igroup, unsigned int id, unsigned int length, unsigned int type, char *name)
+static unsigned int addentry(struct ext2_node *node, unsigned int parentid, unsigned int id, unsigned int length, unsigned int type, char *name)
 {
 
-    if (spliceentry(node, id, length, type, name))
+    if (spliceentry(node, parentid, id, length, type, name))
         return 1;
 
-    return growentry(node, igroup, id, length, type, name);
+    return growentry(node, parentid, id, length, type, name);
 
 }
 
-static unsigned int removeentry(struct ext2_node *parent, unsigned int id)
+static unsigned int removeentry(struct ext2_node *parent, unsigned int parentid, unsigned int id)
 {
 
     unsigned int offset;
@@ -1002,11 +1372,15 @@ static unsigned int removeentry(struct ext2_node *parent, unsigned int id)
 
                 struct ext2_entry *before = (struct ext2_entry *)(block + previous);
 
+                if (!hastail(block))
+                    return 0;
+
                 if (previous == blocksize)
                     ext2_write32(&entry->node, 0);
                 else
                     ext2_write16(&before->size, ext2_read16(&before->size) + ext2_read16(&entry->size));
 
+                setentrychecksum(block, parent, parentid);
                 sendblockwriterequest(blocksize, sector, blocksize);
 
                 return 1;
@@ -1186,7 +1560,6 @@ static void cleartail(struct ext2_node *node, unsigned int roffset)
 static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int rid, void *data)
 {
 
-    unsigned int igroup = (rid - 1) / sb.nodeCountGroup;
     unsigned int changed = 0;
     unsigned int total = 0;
 
@@ -1215,7 +1588,7 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
         else
         {
 
-            sector = allocsector(node, offset, igroup);
+            sector = allocsector(node, offset, rid);
             changed = 1;
 
             if (!sector)
@@ -1359,9 +1732,9 @@ static void oncreaterequest(struct message *message)
                     node.type = 0x81A4;
                     node.hardCount = 1;
 
-                    simplewrite(&node, id);
+                    simplecreate(&node, id);
 
-                    if (addentry(&parent, igroup, id, request->count, 1, (char *)(request + 1)))
+                    if (addentry(&parent, request->parent, id, request->count, 1, (char *)(request + 1)))
                     {
 
                         simplewrite(&parent, request->parent);
@@ -1455,6 +1828,61 @@ static void freeindirect(unsigned int block, unsigned int depth)
 
 }
 
+static void freeextents(struct ext2_extentheader *header, unsigned int size, unsigned int level)
+{
+
+    unsigned int entries = ext2_read16(&header->entries);
+    unsigned int i;
+
+    if (!isextentheader(header, size) || level > EXT2_EXTENTMAXDEPTH)
+        return;
+
+    if (ext2_read16(&header->depth))
+    {
+
+        struct ext2_extentindex *entry = (struct ext2_extentindex *)(header + 1);
+
+        for (i = 0; i < entries; i++, entry++)
+        {
+
+            unsigned int leaf = ext2_read32(&entry->leaf);
+            char data[EXT2_MAXBLOCKSIZE];
+
+            if (ext2_read16(&entry->leafHigh) || sendblockreadrequest(blocksize, leaf, blocksize) != blocksize)
+                continue;
+
+            buffer_copy(data, (void *)blockinfo.buffer, blocksize);
+            freeextents((struct ext2_extentheader *)data, blocksize, level + 1);
+            freeblock(leaf);
+
+        }
+
+    }
+
+    else
+    {
+
+        struct ext2_extent *extent = (struct ext2_extent *)(header + 1);
+
+        for (i = 0; i < entries; i++, extent++)
+        {
+
+            unsigned int start = ext2_read32(&extent->start);
+            unsigned int length = getextentlength(extent);
+            unsigned int j;
+
+            if (ext2_read16(&extent->startHigh))
+                continue;
+
+            for (j = 0; j < length; j++)
+                freeblock(start + j);
+
+        }
+
+    }
+
+}
+
 static unsigned int removenode(unsigned int parentid, unsigned int id)
 {
 
@@ -1493,7 +1921,7 @@ static unsigned int removenode(unsigned int parentid, unsigned int id)
 
     }
 
-    if (!removeentry(&parent, id))
+    if (!removeentry(&parent, parentid, id))
         return 0;
 
     if (directory)
@@ -1516,22 +1944,36 @@ static unsigned int removenode(unsigned int parentid, unsigned int id)
 
     }
 
-    for (i = 0; i < 12; i++)
+    if (node.flags & EXT2_NODE_EXTENTS)
     {
 
-        if (node.pointer[i])
-            freeblock(node.pointer[i]);
+        struct extentroot root = getextentroot(&node);
+
+        freeextents((struct ext2_extentheader *)root.data, EXTENTROOTSIZE, 0);
 
     }
 
-    if (node.singlyIndirectPointer)
-        freeindirect(node.singlyIndirectPointer, 1);
+    else
+    {
 
-    if (node.doublyIndirectPointer)
-        freeindirect(node.doublyIndirectPointer, 2);
+        for (i = 0; i < 12; i++)
+        {
 
-    if (node.tripplyIndirectPointer)
-        freeindirect(node.tripplyIndirectPointer, 3);
+            if (node.pointer[i])
+                freeblock(node.pointer[i]);
+
+        }
+
+        if (node.singlyIndirectPointer)
+            freeindirect(node.singlyIndirectPointer, 1);
+
+        if (node.doublyIndirectPointer)
+            freeindirect(node.doublyIndirectPointer, 2);
+
+        if (node.tripplyIndirectPointer)
+            freeindirect(node.tripplyIndirectPointer, 3);
+
+    }
 
     buffer_clear(&node, sizeof (struct ext2_node));
     simplewrite(&node, id);

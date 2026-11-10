@@ -88,6 +88,10 @@ void ext2_convertsuperblock(struct ext2_superblock *superblock)
     superblock->blockCountUnallocHigh = ext2_read32(&superblock->blockCountUnallocHigh);
     superblock->minExtraSize = ext2_read16(&superblock->minExtraSize);
     superblock->wantExtraSize = ext2_read16(&superblock->wantExtraSize);
+    superblock->flags = ext2_read32(&superblock->flags);
+    superblock->raidStride = ext2_read16(&superblock->raidStride);
+    superblock->mmpInterval = ext2_read16(&superblock->mmpInterval);
+    superblock->raidWidth = ext2_read32(&superblock->raidWidth);
 
 }
 
@@ -151,10 +155,55 @@ void ext2_convertnode(struct ext2_node *node)
 
 }
 
+unsigned int ext2_crc16(unsigned int crc, void *data, unsigned int count)
+{
+
+    unsigned char *bytes = data;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int bit;
+
+        crc ^= bytes[i];
+
+        for (bit = 0; bit < 8; bit++)
+            crc = (crc >> 1) ^ ((crc & 1) ? 0xA001 : 0);
+
+    }
+
+    return crc;
+
+}
+
+unsigned int ext2_crc32c(unsigned int crc, void *data, unsigned int count)
+{
+
+    unsigned char *bytes = data;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int bit;
+
+        crc ^= bytes[i];
+
+        for (bit = 0; bit < 8; bit++)
+            crc = (crc >> 1) ^ ((crc & 1) ? 0x82F63B78 : 0);
+
+    }
+
+    return crc;
+
+}
+
 unsigned int ext2_validate(struct ext2_superblock *superblock)
 {
 
     unsigned int incompat = ext2_read32(&superblock->requiredFeatures);
+    unsigned int rocompat = ext2_read32(&superblock->unsupportedFeatures);
     unsigned int descsize = ext2_read16(&superblock->descSize);
 
     if (ext2_read16(&superblock->signature) != 0xEF53)
@@ -172,10 +221,13 @@ unsigned int ext2_validate(struct ext2_superblock *superblock)
     if ((incompat & EXT2_INCOMPAT_64BIT) && descsize != 32 && descsize != 64)
         return 0;
 
-    if (incompat & ~EXT2_INCOMPAT_FILETYPE)
+    if (incompat & ~(EXT2_INCOMPAT_FILETYPE | EXT2_INCOMPAT_EXTENTS | EXT2_INCOMPAT_64BIT | EXT2_INCOMPAT_FLEXBG | EXT2_INCOMPAT_CSUMSEED))
         return EXT2_MOUNT_READ;
 
-    if (ext2_read32(&superblock->unsupportedFeatures) & ~(EXT2_ROCOMPAT_SPARSESUPER | EXT2_ROCOMPAT_LARGEFILE))
+    if (rocompat & ~(EXT2_ROCOMPAT_SPARSESUPER | EXT2_ROCOMPAT_LARGEFILE | EXT2_ROCOMPAT_HUGEFILE | EXT2_ROCOMPAT_GROUPCSUM | EXT2_ROCOMPAT_DIRNLINK | EXT2_ROCOMPAT_EXTRASIZE | EXT2_ROCOMPAT_METADATACSUM))
+        return EXT2_MOUNT_READ;
+
+    if ((rocompat & EXT2_ROCOMPAT_METADATACSUM) && superblock->checksumType != EXT2_CHECKSUMTYPE_CRC32C)
         return EXT2_MOUNT_READ;
 
     return EXT2_MOUNT_WRITE;
