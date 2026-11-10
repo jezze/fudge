@@ -1582,7 +1582,7 @@ static void onmain(struct message *message)
             rootcluster = (fattype == 32) ? fat_read32(&fat32->root_cluster) : 0;
             fsinfo = (fattype == 32) ? fat_read16(&fat32->fat_info) : 0;
 
-            if (total > (0xFFFFFFFF - partsector) / (sectorsize / MESSAGE_SECTORSIZE))
+            if (total > (0xFFFFFFFF - partsector) / (sectorsize / MESSAGE_SECTORSIZE) || total > 0xFFFFFFFF / (sectorsize / sizeof (struct fat_entry)))
             {
 
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Volume too large: %s\n", option_getstring("service"));
