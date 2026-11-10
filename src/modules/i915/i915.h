@@ -7,14 +7,11 @@
 #define I915_PIPESTRIDE                 0x1000
 #define I915_SCALERSTRIDE               0x800
 
-#define I915_AUX_SIZE                   20
-#define I915_AUX_RETRIES                32
 #define I915_EDIDSIZE                   128
 #define I915_EDIDBUFFER                 256
 #define I915_EDIDDESCRIPTORS            4
 #define I915_EDIDDESCRIPTOR             18
 #define I915_EDIDCTA                    0x02
-#define I915_EDIDCHUNK                  16
 #define I915_EDIDADDRESS                0x50
 
 #define I915_ASLS                       0xFC
@@ -146,8 +143,6 @@
 #define I915_DISPLAY_INT_CTL            0x44200
 #define I915_GFX_MSTR_IRQ               0x190010
 #define I915_GFX_FLSH_CNTL              0x101008
-#define I915_AUX_CTL_A                  0x64010
-#define I915_AUX_DATA_A                 0x64014
 #define I915_PS_WIN_POS_1_A             0x68170
 #define I915_PS_WIN_SZ_1_A              0x68174
 #define I915_PS_CTRL_1_A                0x68180
@@ -159,20 +154,6 @@
 #define I915_PLANE_SURF_1_A             0x7019C
 
 #define I915_PIPEDSL_LINE               0xFFFFFu
-#define I915_AUX_CTL_BUSY               (0x01u << 31)
-#define I915_AUX_CTL_DONE               (0x01u << 30)
-#define I915_AUX_CTL_TIMEOUT            (0x01u << 28)
-#define I915_AUX_CTL_TIMEOUTMAX         (0x03u << 26)
-#define I915_AUX_CTL_RECEIVEERROR       (0x01u << 25)
-#define I915_AUX_CTL_SIZESHIFT          20
-#define I915_AUX_CTL_SIZE               0x1Fu
-#define I915_AUX_CTL_SYNC               ((31u << 5) | 31u)
-#define I915_AUX_I2CWRITE               0x0
-#define I915_AUX_I2CREAD                0x1
-#define I915_AUX_I2CMOT                 0x4
-#define I915_AUX_NATIVEREAD             0x9
-#define I915_AUX_REPLYNACK              0x50
-#define I915_AUX_REPLYDEFER             0xA0
 #define I915_CHILD_TYPE_INTERNAL        (0x01u << 12)
 #define I915_CHILD_TYPE_NOTHDMI         (0x01u << 11)
 #define I915_CHILD_TYPE_TMDS            (0x01u << 4)

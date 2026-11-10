@@ -50,18 +50,6 @@ struct pipe
 
 };
 
-struct aux
-{
-
-    unsigned int command;
-    unsigned int address;
-    unsigned int length;
-    unsigned int value;
-    unsigned char data[I915_AUX_SIZE];
-    unsigned int count;
-
-};
-
 static struct base_driver driver;
 static struct video_interface videointerface;
 static struct video_interface secondinterface;
@@ -904,137 +892,6 @@ static void enablehotplug(unsigned int id)
 
 }
 
-static unsigned int auxtransfer(struct aux *aux)
-{
-
-    unsigned int status = I915_AUX_CTL_BUSY;
-    unsigned int i;
-
-    for (i = 0; i < I915_AUX_SIZE; i += 4)
-        writereg(I915_AUX_DATA_A + i, ((unsigned int)aux->data[i] << 24) | ((unsigned int)aux->data[i + 1] << 16) | ((unsigned int)aux->data[i + 2] << 8) | aux->data[i + 3]);
-
-    writereg(I915_AUX_CTL_A, I915_AUX_CTL_BUSY | I915_AUX_CTL_DONE | I915_AUX_CTL_TIMEOUT | I915_AUX_CTL_TIMEOUTMAX | I915_AUX_CTL_RECEIVEERROR | (aux->count << I915_AUX_CTL_SIZESHIFT) | I915_AUX_CTL_SYNC);
-
-    for (i = 0; i < I915_TIMEOUT && (status & I915_AUX_CTL_BUSY); i++)
-        status = readreg(I915_AUX_CTL_A);
-
-    if (status & I915_AUX_CTL_BUSY)
-        return 0;
-
-    writereg(I915_AUX_CTL_A, status | I915_AUX_CTL_DONE | I915_AUX_CTL_TIMEOUT | I915_AUX_CTL_RECEIVEERROR);
-
-    if (!(status & I915_AUX_CTL_DONE) || (status & (I915_AUX_CTL_TIMEOUT | I915_AUX_CTL_RECEIVEERROR)))
-        return 0;
-
-    aux->count = (status >> I915_AUX_CTL_SIZESHIFT) & I915_AUX_CTL_SIZE;
-
-    if (!aux->count || aux->count > I915_AUX_SIZE)
-        return 0;
-
-    for (i = 0; i < I915_AUX_SIZE; i += 4)
-    {
-
-        unsigned int value = readreg(I915_AUX_DATA_A + i);
-
-        aux->data[i] = value >> 24;
-        aux->data[i + 1] = value >> 16;
-        aux->data[i + 2] = value >> 8;
-        aux->data[i + 3] = value;
-
-    }
-
-    return aux->count;
-
-}
-
-static unsigned int auxrequest(struct aux *aux)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < I915_AUX_RETRIES; i++)
-    {
-
-        aux->data[0] = (aux->command << 4) | ((aux->address >> 16) & 0x0F);
-        aux->data[1] = aux->address >> 8;
-        aux->data[2] = aux->address;
-        aux->data[3] = aux->length - 1;
-        aux->data[4] = aux->value;
-        aux->count = (!aux->length) ? 3 : (aux->command & I915_AUX_I2CREAD) ? 4 : 5;
-
-        if (!auxtransfer(aux) || (aux->data[0] & I915_AUX_REPLYDEFER))
-            continue;
-
-        if (aux->data[0] & I915_AUX_REPLYNACK)
-            return 0;
-
-        return aux->count;
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int auxread(struct aux *aux, unsigned int command, unsigned int address, unsigned int length)
-{
-
-    aux->command = command;
-    aux->address = address;
-    aux->length = length;
-    aux->value = 0;
-
-    return auxrequest(aux) == length + 1;
-
-}
-
-static unsigned int readedid(struct aux *aux)
-{
-
-    unsigned int status;
-    unsigned int offset;
-
-    aux->command = I915_AUX_I2CWRITE | I915_AUX_I2CMOT;
-    aux->address = I915_EDIDADDRESS;
-    aux->length = 1;
-    aux->value = 0;
-    status = auxrequest(aux) != 0;
-
-    for (offset = 0; status && offset < I915_EDIDSIZE; offset += I915_EDIDCHUNK)
-    {
-
-        status = auxread(aux, I915_AUX_I2CREAD | I915_AUX_I2CMOT, I915_EDIDADDRESS, I915_EDIDCHUNK);
-
-        if (status)
-            buffer_copy(edid + offset, aux->data + 1, I915_EDIDCHUNK);
-
-    }
-
-    auxread(aux, I915_AUX_I2CREAD, I915_EDIDADDRESS, 0);
-
-    return status && edid[0] == 0x00 && edid[1] == 0xFF && edid[7] == 0x00;
-
-}
-
-static void probepanel(void)
-{
-
-    struct aux aux;
-
-    if (!auxread(&aux, I915_AUX_NATIVEREAD, 0x000, 3))
-    {
-
-        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no DPCD on AUX A");
-
-        return;
-
-    }
-
-    if (!readedid(&aux))
-        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no EDID on AUX A");
-
-}
-
 static unsigned int checkfirmware(void)
 {
 
@@ -1223,7 +1080,6 @@ static void driver_reset(unsigned int id)
 
         probevbt(id);
         probehdmi();
-        probepanel();
 
         if (hdmi.found && hdmi.port < I915_COMBOPORTS)
             allocatesecond(id);
