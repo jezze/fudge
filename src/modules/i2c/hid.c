@@ -589,110 +589,6 @@ static void parsereportdescriptor(struct i2c_transfer *transfer, struct parser *
 
 }
 
-/* one line per top-level collection, its usage and the report ids inside, which fits on a screen where a dump would not */
-static void listcollections(struct i2c_transfer *transfer)
-{
-
-    unsigned int offset = 0;
-    unsigned int page = 0;
-    unsigned int usage = 0;
-    unsigned int depth = 0;
-    unsigned int application = 0;
-    unsigned int reports = 0;
-    unsigned int first = 0;
-    unsigned int last = 0;
-
-    while (offset < transfer->incount)
-    {
-
-        unsigned int prefix = transfer->in[offset];
-        unsigned int size = ((prefix & 3) == 3) ? 4 : prefix & 3;
-        unsigned int data = 0;
-        unsigned int i;
-
-        if (prefix == 0xFE)
-        {
-
-            offset += (offset + 1 < transfer->incount) ? 3 + transfer->in[offset + 1] : 1;
-
-            continue;
-
-        }
-
-        for (i = 0; i < size && offset + 1 + i < transfer->incount; i++)
-            data |= transfer->in[offset + 1 + i] << (i * 8);
-
-        offset += 1 + size;
-
-        switch (prefix & 0xFC)
-        {
-
-        case 0x04:
-            page = data;
-
-            break;
-
-        case 0x08:
-            if (!usage)
-                usage = (size == 4) ? data : (page << 16) | data;
-
-            break;
-
-        case 0x84:
-            if (depth)
-            {
-
-                if (!reports)
-                    first = data;
-
-                last = data;
-                reports++;
-
-            }
-
-            break;
-
-        case 0xA0:
-            if (!depth)
-                application = usage;
-
-            depth++;
-            usage = 0;
-
-            break;
-
-        case 0xC0:
-            if (depth)
-                depth--;
-
-            if (!depth)
-            {
-
-                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: collection 0x%H8u, %u report ids, %u to %u", &application, &reports, &first, &last);
-
-                reports = 0;
-                first = 0;
-                last = 0;
-
-            }
-
-            usage = 0;
-
-            break;
-
-        case 0x80:
-        case 0x90:
-        case 0xB0:
-            usage = 0;
-
-            break;
-
-        }
-
-    }
-
-}
-
 static unsigned int getunsigned(struct i2c_transfer *transfer, unsigned int start, struct field *field, unsigned int index)
 {
 
@@ -985,8 +881,6 @@ static void setupmouse(void)
         screenmode = 1;
         readlength = (hid.inputlength < I2C_TRANSFER_IN) ? hid.inputlength : I2C_TRANSFER_IN;
 
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: touchscreen mode, report %u, x max %u (%u bits) y max %u (%u bits)", &hidpad.reportid, &hidpad.xmax, &hidpad.x.size, &hidpad.ymax, &hidpad.y.size);
-
         return;
 
     }
@@ -1000,8 +894,6 @@ static void setupmouse(void)
         padmode = 1;
         readlength = (hid.inputlength < I2C_TRANSFER_IN) ? hid.inputlength : I2C_TRANSFER_IN;
 
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: touchpad mode, report %u, x max %u y max %u", &hidpad.reportid, &hidpad.xmax, &hidpad.ymax);
-
         return;
 
     }
@@ -1009,14 +901,11 @@ static void setupmouse(void)
     if (!hidmouse.found)
     {
 
-        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c-hid: no mouse or touchpad in the report descriptor, its collections:");
-        listcollections(&transfer);
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c-hid: no mouse, touchpad or touchscreen in the report descriptor");
 
         return;
 
     }
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: mouse report %u length %u buttons %u at bit %u x %u bits at %u y %u bits at %u wheel %u", &hidmouse.reportid, &hidmouse.length, &hidmouse.buttoncount, &hidmouse.buttons.offset, &hidmouse.x.size, &hidmouse.x.offset, &hidmouse.y.size, &hidmouse.y.offset, &hidmouse.wheel.found);
 
 }
 
@@ -1034,9 +923,6 @@ static void probe(unsigned int id, unsigned int known)
         if (readhiddescriptor(&transfer, id, reg))
         {
 
-            unsigned int vendor = getinword(&transfer, 20);
-            unsigned int product = getinword(&transfer, 22);
-
             hid.id = id;
             hid.reportlength = getinword(&transfer, 4);
             hid.reportregister = getinword(&transfer, 6);
@@ -1045,8 +931,6 @@ static void probe(unsigned int id, unsigned int known)
             hid.commandregister = getinword(&transfer, 16);
             hid.dataregister = getinword(&transfer, 18);
 
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: hid 0x%H2u descriptor at 0x%H4u vendor 0x%H4u product 0x%H4u", &address, &reg, &vendor, &product);
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: report descriptor %u bytes at 0x%H4u input 0x%H4u max %u command 0x%H4u", &hid.reportlength, &hid.reportregister, &hid.inputregister, &hid.inputlength, &hid.commandregister);
             setupmouse();
 
             return;
@@ -1104,9 +988,7 @@ static void driver_attach(unsigned int id)
         if (pad.dw0)
             padinterrupt = gpio_setinterrupt(&pad, handlepad);
 
-        if (padinterrupt)
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c-hid: hid 0x%H2u interrupt on", &address);
-        else
+        if (!padinterrupt)
             debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c-hid: hid 0x%H2u has no interrupt, polling", &address);
 
     }
