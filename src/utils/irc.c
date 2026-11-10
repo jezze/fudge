@@ -110,11 +110,11 @@ static void onmain(struct message *message)
         struct mtwist_state state;
 
         mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
-        socket_bind_ipv4s(&local, system_address("local-address", "address", address, 32));
+        socket_bind_ipv4s(&local, system_address(option_getstring("ethernet-service"), "local-address", "address", address, 32));
         socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
         socket_bind_ipv4s(&remote, option_getstring("remote-address"));
         socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
-        socket_bind_ipv4s(&router, system_address("router-address", "route", address, 32));
+        socket_bind_ipv4s(&router, system_address(option_getstring("ethernet-service"), "router-address", "route", address, 32));
         socket_resolvelocal(0, ethernet, &local);
 
         if (cstring_length(option_getstring("domain")))

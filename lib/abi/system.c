@@ -116,7 +116,8 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
 
 }
 
-char *system_address(char *option, char *key, char *out, unsigned int size)
+/* the networks entry whose device is this one, else the option's value */
+char *system_address(char *device, char *option, char *key, char *out, unsigned int size)
 {
 
     char *value = option_getstring(option);
@@ -124,14 +125,32 @@ char *system_address(char *option, char *key, char *out, unsigned int size)
     if (!value || !cstring_length(value))
     {
 
-        unsigned int count;
+        static char data[0x1000];
+        unsigned int count = system_feed(0, 0, data, 0x1000, "mq -query .networks -format \"{device} {%s}\" initrd:data/config/network.mq", key);
+        unsigned int devicelength = cstring_length(device);
+        unsigned int length;
+        char *line;
 
-        count = system_feed(0, 0, out, size - 1, "mq -query .networks[0].%s initrd:data/config/network.mq", key);
+        out[0] = '\0';
 
-        while (count && out[count - 1] == '\n')
-            count--;
+        for (line = data; line < data + count; line += length + 1)
+        {
 
-        out[count] = '\0';
+            length = buffer_findbyte(line, data + count - line, '\n');
+
+            if (length > devicelength + 1 && line[devicelength] == ' ' && buffer_match(line, device, devicelength))
+            {
+
+                unsigned int valuelength = length - devicelength - 1;
+
+                if (valuelength < size)
+                    cstring_write_fmt(out, size, 0, "%w\\0", line + devicelength + 1, &valuelength);
+
+                break;
+
+            }
+
+        }
 
         return out;
 

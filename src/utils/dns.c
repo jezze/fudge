@@ -73,11 +73,11 @@ static void onmain(struct message *message)
         struct mtwist_state state;
 
         mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
-        socket_bind_ipv4s(&local, system_address("local-address", "address", address, 32));
+        socket_bind_ipv4s(&local, system_address(option_getstring("ethernet-service"), "local-address", "address", address, 32));
         socket_bind_udpv(&local, mtwist_rand(&state));
-        socket_bind_ipv4s(&remote, system_address("remote-address", "dns", address, 32));
+        socket_bind_ipv4s(&remote, system_address(option_getstring("ethernet-service"), "remote-address", "dns", address, 32));
         socket_bind_udpv(&remote, option_getdecimal("remote-port"));
-        socket_bind_ipv4s(&router, system_address("router-address", "route", address, 32));
+        socket_bind_ipv4s(&router, system_address(option_getstring("ethernet-service"), "router-address", "route", address, 32));
         socket_resolvelocal(0, ethernet, &local);
         channel_send(0, ethernet, MESSAGE_TYPE_LINK, 0, 0);
         socket_resolveremote(0, ethernet, &local, &router);
