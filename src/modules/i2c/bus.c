@@ -39,7 +39,6 @@
 #define LPSS_RESETS_DONE                0x07
 #define LPSS_REMAPLOW                   0x240
 #define LPSS_REMAPHIGH                  0x244
-#define LPSS_CAPS                       0x2FC
 #define REG_CON                         0x00
 #define REG_CON_MASTER                  (1 << 0)
 #define REG_CON_STANDARD                (1 << 1)
@@ -72,7 +71,6 @@
 #define REG_SDAHOLD_RXSHIFT             16
 #define REG_TXABRTSOURCE                0x80
 #define REG_ENABLESTATUS                0x9C
-#define REG_COMPPARAM1                  0xF4
 #define REG_COMPTYPE                    0xFC
 #define COMPTYPE_DESIGNWARE             0x44570140
 #define CLOCKKHZ                        120000
@@ -97,15 +95,12 @@
 #define AML_DUALNAME                    0x2E
 #define AML_STRING                      0x0D
 #define RES_I2C                         0x8E
-#define RES_GPIO                        0x8C
-#define RES_IRQ                         0x89
 
 struct scan
 {
 
     unsigned char *aml;
     unsigned int length;
-    char signature[5];
 
 };
 
@@ -114,7 +109,6 @@ struct device
 
     unsigned int start;
     unsigned int end;
-    char name[5];
 
 };
 
@@ -259,13 +253,6 @@ static unsigned int isstring(struct scan *scan, unsigned int start, unsigned int
 
 }
 
-static char *getstring(struct scan *scan, unsigned int offset)
-{
-
-    return (char *)(scan->aml + offset);
-
-}
-
 static unsigned int ishid(struct scan *scan, unsigned int offset)
 {
 
@@ -299,8 +286,6 @@ static struct device getdevice(struct scan *scan, unsigned int offset)
     device.start = 0;
     device.end = scan->length;
 
-    buffer_copy(device.name, "????", 5);
-
     for (i = offset; i > 0; i--)
     {
 
@@ -312,17 +297,6 @@ static struct device getdevice(struct scan *scan, unsigned int offset)
 
             if (end > offset && end <= scan->length)
             {
-
-                unsigned int name = i + 1 + pkglength.bytes;
-
-                while (getbyte(scan, name) == '\\' || getbyte(scan, name) == '^')
-                    name++;
-
-                if (getbyte(scan, name) == AML_DUALNAME)
-                    name += 5;
-
-                if (name + 4 <= scan->length)
-                    buffer_copy(device.name, scan->aml + name, 4);
 
                 device.start = i - 1;
                 device.end = end;
@@ -443,15 +417,13 @@ static unsigned int readsettings(void)
         client->padnumber = pad.value & 0xFFFF;
         count++;
 
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: firmware %s device on controller %u address 0x%H2u speed %u hid register 0x%H4u pad group %u pad %u", setting->type, &client->controller, &client->address, &client->speed, &client->hidregister, &client->padgroup, &client->padnumber);
-
     }
 
     return count;
 
 }
 
-static unsigned int scani2c(struct scan *scan, struct device *device, unsigned int offset, unsigned int hid)
+static void scani2c(struct scan *scan, struct device *device, unsigned int offset)
 {
 
     unsigned int length = getword(scan, offset + 1);
@@ -462,62 +434,18 @@ static unsigned int scani2c(struct scan *scan, struct device *device, unsigned i
     unsigned int speed;
 
     if (getbyte(scan, offset + 5) != 1 || getbyte(scan, offset + 3) < 1 || getbyte(scan, offset + 3) > 2 || typelength < 6 || end > device->end || source >= end || !isstring(scan, source, end))
-        return 0;
+        return;
 
     address = getword(scan, offset + 16);
     speed = getdword(scan, offset + 12);
 
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s %s address 0x%H2u speed %u on %s", scan->signature, device->name, &address, &speed, getstring(scan, source));
-
     /* firmware templates leave address 0 (general call) until their methods fill it in */
-    if (hid && address)
-        addclient(address, getcontroller(scan, source), speed, hid);
-
-    return 1;
+    if (address)
+        addclient(address, getcontroller(scan, source), speed, 1);
 
 }
 
-static unsigned int scangpio(struct scan *scan, struct device *device, unsigned int offset)
-{
-
-    unsigned int length = getword(scan, offset + 1);
-    unsigned int end = offset + 3 + length;
-    unsigned int pins = offset + getword(scan, offset + 14);
-    unsigned int source = offset + getword(scan, offset + 17);
-    unsigned int flags = getword(scan, offset + 7);
-    unsigned int pin;
-
-    if (getbyte(scan, offset + 4) > 1 || end > device->end || pins < offset + 23 || pins >= source || source >= end || !isstring(scan, source, end))
-        return 0;
-
-    pin = getword(scan, pins);
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s %s gpio %s pin %u flags 0x%H4u on %s", scan->signature, device->name, getbyte(scan, offset + 4) ? "io" : "interrupt", &pin, &flags, getstring(scan, source));
-
-    return 1;
-
-}
-
-static unsigned int scanirq(struct scan *scan, struct device *device, unsigned int offset)
-{
-
-    unsigned int length = getword(scan, offset + 1);
-    unsigned int count = getbyte(scan, offset + 4);
-    unsigned int flags = getbyte(scan, offset + 3);
-    unsigned int irq;
-
-    if (count < 1 || length < 2 + 4 * count || offset + 3 + length > device->end || (flags & 0xE0))
-        return 0;
-
-    irq = getdword(scan, offset + 5);
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s %s irq %u flags 0x%H2u", scan->signature, device->name, &irq, &flags);
-
-    return 1;
-
-}
-
-static void scanresources(struct scan *scan, struct device *device, unsigned int hid)
+static void scanresources(struct scan *scan, struct device *device)
 {
 
     unsigned int i;
@@ -525,54 +453,14 @@ static void scanresources(struct scan *scan, struct device *device, unsigned int
     for (i = device->start; i < device->end; i++)
     {
 
-        switch (getbyte(scan, i))
-        {
-
-        case RES_I2C:
-            scani2c(scan, device, i, hid);
-
-            break;
-
-        case RES_GPIO:
-            if (hid)
-                scangpio(scan, device, i);
-
-            break;
-
-        case RES_IRQ:
-            if (hid)
-                scanirq(scan, device, i);
-
-            break;
-
-        }
+        if (getbyte(scan, i) == RES_I2C)
+            scani2c(scan, device, i);
 
     }
 
 }
 
-static void scanhid(struct scan *scan, struct device *device)
-{
-
-    unsigned int i;
-
-    for (i = device->start; i < device->end; i++)
-    {
-
-        if (matches(scan, i, "_HID", 4) && getbyte(scan, i + 4) == AML_STRING && isstring(scan, i + 5, device->end))
-        {
-
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s %s hid %s", scan->signature, device->name, getstring(scan, i + 5));
-
-            return;
-
-        }
-
-    }
-
-}
-
-static unsigned int scantable(struct acpi_sdth *header, unsigned int hidonly)
+static unsigned int scantable(struct acpi_sdth *header)
 {
 
     struct scan scan;
@@ -582,32 +470,18 @@ static unsigned int scantable(struct acpi_sdth *header, unsigned int hidonly)
     scan.aml = (unsigned char *)(header + 1);
     scan.length = header->length - sizeof (struct acpi_sdth);
 
-    buffer_copy(scan.signature, header->signature, 4);
-
-    scan.signature[4] = '\0';
-
     for (i = 0; i < scan.length; i++)
     {
 
-        if (hidonly && ishid(&scan, i))
+        if (ishid(&scan, i))
         {
 
             struct device device = getdevice(&scan, i);
 
-            scanhid(&scan, &device);
-            scanresources(&scan, &device, 1);
+            scanresources(&scan, &device);
 
             hits++;
             i = device.end;
-
-        }
-
-        if (!hidonly && getbyte(&scan, i) == RES_I2C)
-        {
-
-            struct device device = getdevice(&scan, i);
-
-            hits += scani2c(&scan, &device, i, 0);
 
         }
 
@@ -617,7 +491,7 @@ static unsigned int scantable(struct acpi_sdth *header, unsigned int hidonly)
 
 }
 
-static unsigned int scantables(unsigned int hidonly)
+static unsigned int scantables(void)
 {
 
     struct acpi_sdth *dsdt = acpi_findheader("DSDT", 0);
@@ -625,7 +499,7 @@ static unsigned int scantables(unsigned int hidonly)
     unsigned int i;
 
     if (dsdt)
-        hits += scantable(dsdt, hidonly);
+        hits += scantable(dsdt);
 
     for (i = 0; i < TABLES; i++)
     {
@@ -635,7 +509,7 @@ static unsigned int scantables(unsigned int hidonly)
         if (!ssdt)
             break;
 
-        hits += scantable(ssdt, hidonly);
+        hits += scantable(ssdt);
 
     }
 
@@ -650,10 +524,6 @@ static struct scan getscan(struct acpi_sdth *header)
 
     scan.aml = (unsigned char *)(header + 1);
     scan.length = header->length - sizeof (struct acpi_sdth);
-
-    buffer_copy(scan.signature, header->signature, 4);
-
-    scan.signature[4] = '\0';
 
     return scan;
 
@@ -797,8 +667,6 @@ static unsigned int gettokenvalue(struct scan *scan, struct tokens *tokens, unsi
     name[4] = '\0';
     field = acpi_readfield(name);
 
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s.%s %s 0x%H4u", scan->signature, name, field.found ? "is" : "not found, taking", &field.value);
-
     return field.value;
 
 }
@@ -892,9 +760,6 @@ static struct timing findtiming(unsigned int controller, char *method)
         timing = findtimingtable(&scan, device, method);
 
     }
-
-    if (timing.found)
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: %s.%s high %u low %u hold %u", device, method, &timing.high, &timing.low, &timing.hold);
 
     return timing;
 
@@ -1084,8 +949,6 @@ static unsigned int assignregisters(unsigned int id)
     upper = inuse + 2;
     limit = getupperlimit();
 
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: highest address in use 0x%H2u00000000, assigning 0x%H2u00000000, limit 0x%H2u00000000", &inuse, &upper, &limit);
-
     if (upper >= limit)
         return 0;
 
@@ -1154,28 +1017,15 @@ static void choosemode(struct controller *controller, unsigned int index, unsign
     standard = findtiming(index, "SSCN");
 
     if (speed >= 400000 && fast.found && fast.high && fast.low)
-    {
-
         setmode(controller, REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &fast);
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: fast mode from FMCN");
-
-    }
-
     else if (standard.found && standard.high && standard.low)
-    {
-
         setmode(controller, REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &standard);
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: standard mode from SSCN");
-
-    }
-
     else if (speed >= 400000)
     {
 
         struct timing computed = computetiming(TFAST_HIGH, TFAST_LOW);
 
         setmode(controller, REG_CON_FAST, REG_FSHCNT, REG_FSLCNT, &computed);
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, fast mode computed for 120 MHz");
 
     }
 
@@ -1185,7 +1035,6 @@ static void choosemode(struct controller *controller, unsigned int index, unsign
         struct timing computed = computetiming(TSTANDARD_HIGH, TSTANDARD_LOW);
 
         setmode(controller, REG_CON_STANDARD, REG_SSHCNT, REG_SSLCNT, &computed);
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: no timing from the firmware, standard mode computed for 120 MHz");
 
     }
 
@@ -1444,19 +1293,6 @@ static unsigned int ismatch(unsigned int id)
 
     unsigned int index = getindex(id);
 
-    if (pci_inw(id, PCI_CONFIG_VENDOR) == VENDOR_INTEL && pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_SERIAL && pci_inb(id, PCI_CONFIG_SUBCLASS) == SUBCLASS_SERIALOTHER)
-    {
-
-        unsigned int device = pci_inw(id, PCI_CONFIG_DEVICE);
-        unsigned int bar = pci_ind(id, PCI_CONFIG_BAR0);
-        unsigned int number = (id >> 16) & 0xFF;
-        unsigned int slot = (id >> 11) & 0x1F;
-        unsigned int function = (id >> 8) & 0x07;
-
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: serial io %H2u:%H2u.%u device 0x%H4u bar 0x%H8u index %u", &number, &slot, &function, &device, &bar, &index);
-
-    }
-
     /* without any device the first controller is still set up, for its log */
     return index < CONTROLLERS && !controllers[index].mmio && ((!nclients && !countcontrollers()) || isused(index));
 
@@ -1468,12 +1304,8 @@ static void reset(unsigned int id)
     unsigned long address = pci_getbar(id, 0);
     unsigned int index = getindex(id);
     struct controller *controller = &controllers[index];
-    unsigned int device = pci_inw(id, PCI_CONFIG_DEVICE);
     unsigned int low;
     unsigned int high;
-    unsigned int comptype;
-    unsigned int param;
-    unsigned int caps;
 
     if (!address && assignregisters(id))
         address = pci_getbar(id, 0);
@@ -1490,7 +1322,6 @@ static void reset(unsigned int id)
     low = address;
     high = high32(address);
 
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: controller %u device 0x%H4u at 0x%H8u%H8u", &index, &device, &high, &low);
     poweron(id);
 
     controller->mmio = mapregisters(address, index);
@@ -1500,13 +1331,7 @@ static void reset(unsigned int id)
     write32(controller, LPSS_REMAPLOW, low);
     write32(controller, LPSS_REMAPHIGH, high);
 
-    comptype = read32(controller, REG_COMPTYPE);
-    param = read32(controller, REG_COMPPARAM1);
-    caps = read32(controller, LPSS_CAPS);
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: type 0x%H8u param 0x%H8u caps 0x%H8u", &comptype, &param, &caps);
-
-    if (comptype != COMPTYPE_DESIGNWARE)
+    if (read32(controller, REG_COMPTYPE) != COMPTYPE_DESIGNWARE)
     {
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: not a DesignWare controller");
@@ -1600,9 +1425,7 @@ static void bus_setup(void)
         check.abort = 0;
         check.timeout = TIMEOUT;
 
-        if (runtransfer(controller, clients[i].address, &check))
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: device 0x%H2u on controller %u answers", &clients[i].address, &clients[i].controller);
-        else
+        if (!runtransfer(controller, clients[i].address, &check))
             debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: device 0x%H2u on controller %u does not answer, abort 0x%H8u", &clients[i].address, &clients[i].controller, &check.abort);
 
     }
@@ -1634,27 +1457,10 @@ void module_init(void)
     for (i = 0; i < CONTROLLERS; i++)
         spinlock_init(&controllers[i].lock);
 
-    if (!readsettings() && !scantables(1))
-    {
-
-        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no PNP0C50 device in the ACPI tables, all I2C devices:");
-        scantables(0);
-
-    }
-
+    if (!readsettings() && !scantables())
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no PNP0C50 device in the ACPI tables");
     else if (!nclients)
-    {
-
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: PNP0C50 device without a static I2C address");
-
-    }
-
-    else
-    {
-
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: using address 0x%H2u on controller %u", &clients[0].address, &clients[0].controller);
-
-    }
 
     base_initbus(&bus, I2C_BUS, "i2c", bus_setup, bus_next);
 
@@ -1664,7 +1470,6 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i2c: done");
 
 }
 
