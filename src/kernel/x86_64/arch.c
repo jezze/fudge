@@ -10,10 +10,6 @@
 #include <kernel/x86/pic.h>
 #include "arch.h"
 
-typedef char arch_fixedbelowuser[(ARCH_FIXED <= ARCH_USER_BASE) ? 1 : -1];
-typedef char arch_chunkfits[(ARCH_END - ARCH_CHUNK_BASE <= POOL_CHUNK) ? 1 : -1];
-typedef char arch_endbelowvirtual[(ARCH_END <= KERNEL_VMAILBOX) ? 1 : -1];
-
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
 static struct tss_pointer *tss = (struct tss_pointer *)ARCH_TSS_BASE;
@@ -662,6 +658,14 @@ static void setupmmap(void)
 
 }
 
+static void stop(char *message)
+{
+
+    debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "%s", message);
+    cpu_halt();
+
+}
+
 void arch_setup1(unsigned int ramkb)
 {
 
@@ -669,6 +673,18 @@ void arch_setup1(unsigned int ramkb)
 
     resource_setup();
     udebug_setup();
+
+    if (POOL_TASKS < 8)
+        stop("POOL_CHUNK holds fewer than 8 tasks");
+
+    if (ARCH_FIXED > ARCH_USER_BASE)
+        stop("The fixed part overlaps the user window");
+
+    if (ARCH_END - ARCH_CHUNK_BASE > POOL_CHUNK)
+        stop("The chunk layout is larger than POOL_CHUNK");
+
+    if (ARCH_END > KERNEL_VMAILBOX)
+        stop("The chunk overlaps the task virtual addresses");
 
     if (ramkb && ramkb < needkb)
     {

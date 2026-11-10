@@ -7,8 +7,6 @@
 #include "mmap.h"
 #include "pool.h"
 
-typedef char pool_chunkholdstasks[(POOL_TASKS >= 8) ? 1 : -1];
-
 static struct corerow {struct list_item item; struct core core;} corerows[POOL_CORES];
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
