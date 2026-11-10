@@ -1477,10 +1477,17 @@ static unsigned int writedirectory(struct ext2_node *node, unsigned int roffset,
 
 }
 
+static unsigned int getfilesize(struct ext2_node *node)
+{
+
+    return (node->sizeHigh) ? 0xFFFFFFFF : node->sizeLow;
+
+}
+
 static struct span getspan(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity)
 {
 
-    unsigned int remaining = node->sizeLow - roffset;
+    unsigned int remaining = getfilesize(node) - roffset;
     unsigned int blockoffset = roffset % blocksize;
     struct span span;
     struct run run;
@@ -1510,7 +1517,7 @@ static struct span getspan(struct ext2_node *node, unsigned int roffset, unsigne
 static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity, void *data)
 {
 
-    if (roffset < node->sizeLow)
+    if (roffset < getfilesize(node))
     {
 
         struct span span = getspan(node, roffset, rcount, capacity);
@@ -1537,7 +1544,7 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
 static unsigned int sendfile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int target)
 {
 
-    if (roffset < node->sizeLow)
+    if (roffset < getfilesize(node))
     {
 
         struct span span = getspan(node, roffset, rcount, rcount);
@@ -1576,6 +1583,9 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
 
     unsigned int changed = 0;
     unsigned int total = 0;
+
+    if (node->sizeHigh)
+        return 0;
 
     if (roffset > node->sizeLow)
         cleartail(node, roffset);
@@ -1643,7 +1653,7 @@ static unsigned int stat(unsigned int id, struct record *record)
         struct ext2_node node;
 
         simpleread(&node, id);
-        record_init(record, id, ((node.type & 0xF000) == 0x4000) ? RECORD_TYPE_DIRECTORY : RECORD_TYPE_NORMAL, node.sizeLow, 0, 0, "");
+        record_init(record, id, ((node.type & 0xF000) == 0x4000) ? RECORD_TYPE_DIRECTORY : RECORD_TYPE_NORMAL, ((node.type & 0xF000) == 0x8000) ? getfilesize(&node) : node.sizeLow, 0, 0, "");
 
         return sizeof (struct record);
 
