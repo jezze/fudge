@@ -9,6 +9,9 @@
 #define CUSHION                         3
 #define ROOT                            1
 #define ROOTRECORDS                     2
+#define DEVICES                         4
+#define DEVICENAME                      32
+#define VOLUME_FULL                     100
 
 struct listing
 {
@@ -53,16 +56,34 @@ struct resampler
 
 };
 
+struct device
+{
+
+    char name[DEVICENAME];
+    unsigned int target;
+    unsigned int volume;
+    unsigned int rate;
+    unsigned int pending;
+    struct resampler resampler;
+    unsigned char output[MESSAGE_SIZE];
+
+};
+
+struct devices
+{
+
+    struct device list[DEVICES];
+    unsigned int count;
+
+};
+
 static struct client clients[CLIENTS];
 static char buffers[CLIENTS][RINGSIZE];
 static int sums[FRAMEMAX * 2];
 static unsigned char samples[MESSAGE_SIZE];
-static unsigned char output[MESSAGE_SIZE];
 static struct pace pace;
-static struct resampler resampler;
-static unsigned int audio;
-static unsigned int pending;
-static unsigned int rate;
+static struct devices devices;
+static struct devices configured;
 static unsigned int hz;
 
 static struct client *getclient(unsigned int source)
@@ -148,7 +169,7 @@ static void sendinfo(unsigned int target)
 
 }
 
-static void putframe(unsigned int frame, int left, int right)
+static void putframe(unsigned char *output, unsigned int frame, int left, int right)
 {
 
     output[frame * FRAMESIZE] = left;
@@ -158,37 +179,65 @@ static void putframe(unsigned int frame, int left, int right)
 
 }
 
-static unsigned int resample(unsigned int frames)
+static int scale(int sample, unsigned int volume)
 {
 
+    sample = sample * (int)volume / VOLUME_FULL;
+
+    if (sample > 32767)
+        return 32767;
+
+    if (sample < -32768)
+        return -32768;
+
+    return sample;
+
+}
+
+static unsigned int render(struct device *device, unsigned int frames)
+{
+
+    struct resampler *resampler = &device->resampler;
     unsigned int count = 0;
     unsigned int i;
 
     for (i = 0; i < frames; i++)
     {
 
-        while (resampler.phase < rate)
+        int left = scale(sums[i * 2], device->volume);
+        int right = scale(sums[i * 2 + 1], device->volume);
+
+        if (device->rate == RATE)
         {
 
-            int fraction = resampler.phase * 32768 / rate;
+            putframe(device->output, count++, left, right);
 
-            putframe(count++, resampler.previous[0] + (sums[i * 2] - resampler.previous[0]) * fraction / 32768, resampler.previous[1] + (sums[i * 2 + 1] - resampler.previous[1]) * fraction / 32768);
-
-            resampler.phase += RATE;
+            continue;
 
         }
 
-        resampler.phase -= rate;
-        resampler.previous[0] = sums[i * 2];
-        resampler.previous[1] = sums[i * 2 + 1];
+        while (resampler->phase < device->rate)
+        {
+
+            int fraction = resampler->phase * 32768 / device->rate;
+
+            putframe(device->output, count++, resampler->previous[0] + (left - resampler->previous[0]) * fraction / 32768, resampler->previous[1] + (right - resampler->previous[1]) * fraction / 32768);
+
+            resampler->phase += RATE;
+
+        }
+
+        resampler->phase -= device->rate;
+        resampler->previous[0] = left;
+        resampler->previous[1] = right;
 
     }
 
-    return count;
+    return count * FRAMESIZE;
 
 }
 
-static unsigned int mix(unsigned int frames)
+static void mix(unsigned int frames)
 {
 
     unsigned int i;
@@ -225,40 +274,31 @@ static unsigned int mix(unsigned int frames)
 
     }
 
-    for (j = 0; j < frames * 2; j++)
-    {
-
-        if (sums[j] > 32767)
-            sums[j] = 32767;
-
-        if (sums[j] < -32768)
-            sums[j] = -32768;
-
-    }
-
-    if (rate == RATE)
-    {
-
-        for (j = 0; j < frames; j++)
-            putframe(j, sums[j * 2], sums[j * 2 + 1]);
-
-        return frames * FRAMESIZE;
-
-    }
-
-    return resample(frames) * FRAMESIZE;
+    for (i = 0; i < devices.count; i++)
+        devices.list[i].pending = render(&devices.list[i], frames);
 
 }
 
+/* every device gets each mixed block before the next is mixed, so the slowest one paces all */
 static unsigned int flush(void)
 {
 
-    if (pending && call_place(0, audio, MESSAGE_TYPE_DATA, pending, output) == MESSAGE_RETRY)
-        return 0;
+    unsigned int done = 1;
+    unsigned int i;
 
-    pending = 0;
+    for (i = 0; i < devices.count; i++)
+    {
 
-    return 1;
+        struct device *device = &devices.list[i];
+
+        if (device->pending && call_place(0, device->target, MESSAGE_TYPE_DATA, device->pending, device->output) == MESSAGE_RETRY)
+            done = 0;
+        else
+            device->pending = 0;
+
+    }
+
+    return done;
 
 }
 
@@ -323,7 +363,8 @@ static void ontimertick(struct message *message)
             if (frames > FRAMEMAX)
                 frames = FRAMEMAX;
 
-            pending = mix(frames);
+            mix(frames);
+
             pace.ahead += frames;
 
             if (!flush())
@@ -335,7 +376,7 @@ static void ontimertick(struct message *message)
 
 }
 
-static unsigned int setformat(unsigned int value)
+static unsigned int setformat(unsigned int target, unsigned int value)
 {
 
     struct message_audioconf audioconf;
@@ -344,7 +385,141 @@ static unsigned int setformat(unsigned int value)
     audioconf.channels = 2;
     audioconf.bits = 16;
 
-    return channel_send(0, audio, MESSAGE_TYPE_AUDIOCONF, sizeof (struct message_audioconf), &audioconf);
+    return channel_send(0, target, MESSAGE_TYPE_AUDIOCONF, sizeof (struct message_audioconf), &audioconf);
+
+}
+
+static struct device *finddevice(unsigned int target)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < devices.count; i++)
+    {
+
+        if (devices.list[i].target == target)
+            return &devices.list[i];
+
+    }
+
+    return 0;
+
+}
+
+static void configline(char *line, unsigned int length)
+{
+
+    unsigned int namelength = buffer_findbyte(line, length, ' ');
+
+    if (namelength == 7 && length == 7 && buffer_match(line, "devices", 7))
+    {
+
+        configured.count = 0;
+
+    }
+
+    else if (namelength == 6 && buffer_match(line, "device", 6) && configured.count < DEVICES)
+    {
+
+        struct device *device = &configured.list[configured.count];
+        char *rest = line + 7;
+        unsigned int restlength = (length > 7) ? length - 7 : 0;
+        unsigned int nameend = buffer_findbyte(rest, restlength, ' ');
+
+        if (!nameend || nameend >= DEVICENAME)
+            return;
+
+        buffer_clear(device, sizeof (struct device));
+        cstring_write_fmt(device->name, DEVICENAME, 0, "%w\\0", rest, &nameend);
+
+        device->volume = (nameend < restlength) ? cstring_read_value(rest + nameend + 1, restlength - nameend - 1, 10) : VOLUME_FULL;
+
+        if (device->volume > VOLUME_FULL)
+            device->volume = VOLUME_FULL;
+
+        configured.count++;
+
+    }
+
+}
+
+static void configlines(char *data, unsigned int count)
+{
+
+    unsigned int length;
+    char *line;
+
+    for (line = data; line < data + count; line += length + 1)
+    {
+
+        length = buffer_findbyte(line, data + count - line, '\n');
+
+        if (length)
+            configline(line, length);
+
+    }
+
+}
+
+/* devices already playing keep their format and position; new ones are configured once */
+static void applyconfig(void)
+{
+
+    struct devices next;
+    unsigned int i;
+
+    next.count = 0;
+
+    for (i = 0; i < configured.count; i++)
+    {
+
+        unsigned int target = channel_lookup(configured.list[i].name);
+        struct device *old = (target) ? finddevice(target) : 0;
+        struct device *device = &next.list[next.count];
+
+        if (!target)
+            continue;
+
+        if (old)
+        {
+
+            buffer_copy(device, old, sizeof (struct device));
+
+        }
+
+        else
+        {
+
+            buffer_clear(device, sizeof (struct device));
+
+            device->target = target;
+
+            if (setformat(target, RATE))
+                device->rate = RATE;
+            else if (setformat(target, 44100))
+                device->rate = 44100;
+
+            if (!device->rate)
+                continue;
+
+        }
+
+        buffer_copy(device->name, configured.list[i].name, DEVICENAME);
+
+        device->volume = configured.list[i].volume;
+        next.count++;
+
+    }
+
+    buffer_copy(&devices, &next, sizeof (struct devices));
+
+}
+
+static void onconfig(struct message *message)
+{
+
+    configlines(message->data, message->length);
+    applyconfig();
 
 }
 
@@ -440,32 +615,21 @@ static void onwalkrequest(struct message *message)
 static void onmain(struct message *message)
 {
 
+    static char data[0x1000];
     unsigned int timer = channel_lookup(option_getstring("timer-service"));
     struct message_timerinfo timerinfo;
 
-    audio = channel_lookup(option_getstring("audio-service"));
+    configlines("devices", 7);
+    configlines(data, system_feed(0, 0, data, 0x1000, "mq -query .devices -format \"device {device} {volume}\" %s", option_getstring("config")));
+    applyconfig();
 
-    if (!audio)
+    if (!devices.count)
         return;
 
     if (!timer)
     {
 
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Timer service not found: %s\n", option_getstring("timer-service"));
-
-        return;
-
-    }
-
-    if (setformat(RATE))
-        rate = RATE;
-    else if (setformat(44100))
-        rate = 44100;
-
-    if (!rate)
-    {
-
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Audio device takes neither 48000 nor 44100 Hz 16-bit stereo\n");
 
         return;
 
@@ -502,8 +666,9 @@ void init(void)
         ring_init(&clients[i].ring, RINGSIZE, buffers[i]);
 
     option_add("service", "mixer");
-    option_add("audio-service", "audio:0");
+    option_add("config", "initrd:data/config/audio.mq");
     option_add("timer-service", "timer:0");
+    channel_bind(MESSAGE_TYPE_CONFIG, onconfig);
     channel_bind(MESSAGE_TYPE_DATA, ondata);
     channel_bind(MESSAGE_TYPE_INFO, oninfo);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
