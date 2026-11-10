@@ -42,7 +42,6 @@ struct chip
     unsigned long sbreg;
     unsigned int irq;
     unsigned int padsize;
-    unsigned int padcfglock;
     unsigned int hostswown;
     unsigned int gpiis;
     unsigned int gpiie;
@@ -80,8 +79,8 @@ static struct group groupstglh[] = {
 
 /* a chip is recognised by its SMBus controller, visible at 00:1F.4 on Intel PCHs; sbreg (0 for none known) and irq are used when neither the firmware (SBRG, SGIR) nor P2SB says; register offsets as Linux's pinctrl driver for the chip; Tiger Lake H is untested */
 static struct chip chips[] = {
-    {"Tiger Lake LP", 0xA0A3, 0xFD000000, 14, 16, 0x80, 0xB0, 0x100, 0x120, groupstgllp, sizeof (groupstgllp) / sizeof (struct group)},
-    {"Tiger Lake H", 0x43A3, 0, 14, 16, 0x90, 0xC0, 0x100, 0x120, groupstglh, sizeof (groupstglh) / sizeof (struct group)}
+    {"Tiger Lake LP", 0xA0A3, 0xFD000000, 14, 16, 0xB0, 0x100, 0x120, groupstgllp, sizeof (groupstgllp) / sizeof (struct group)},
+    {"Tiger Lake H", 0x43A3, 0, 14, 16, 0xC0, 0x100, 0x120, groupstglh, sizeof (groupstglh) / sizeof (struct group)}
 };
 
 static struct interrupt interrupts[PADS];
@@ -264,8 +263,6 @@ struct gpio_pad gpio_findpad(unsigned int group, unsigned int pad)
     unsigned int index;
     unsigned int padbar;
     unsigned int value;
-    unsigned int lock;
-    unsigned int owner;
 
     gpiopad.community = 0;
     gpiopad.dw0 = 0;
@@ -291,10 +288,6 @@ struct gpio_pad gpio_findpad(unsigned int group, unsigned int pad)
 
     dw0 = community + padbar + index * chip->padsize;
     value = readpad(dw0);
-    lock = readpad(community + chip->padcfglock + gpiopad.reg * 8);
-    owner = readpad(community + chip->hostswown + gpiopad.reg * 4);
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "gpio: group %u pad %u is port 0x%H2u pad %u dw0 0x%H8u lock 0x%H8u owner 0x%H8u", &group, &pad, &g->port, &index, &value, &lock, &owner);
 
     /* only a GPIO input will do */
     if ((value & DW0_PMODE) || (value & DW0_RXDIS) || !(value & DW0_TXDIS))
@@ -374,7 +367,6 @@ unsigned int gpio_setinterrupt(struct gpio_pad *pad, unsigned int (*routine)(voi
     interrupts[i].routine = routine;
 
     writepad(ie, readpad(ie) | (1 << pad->bit));
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "gpio: interrupt on, pad dw0 0x%H8u", &dw0);
 
     return 1;
 
@@ -396,13 +388,7 @@ void module_init(void)
     chip = findchip();
 
     if (!chip)
-    {
-
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "gpio: no known chipset, no pads");
-
         return;
-
-    }
 
     /* Intel's reference firmware keeps the sideband base and the GPIO controller's interrupt in SBRG and SGIR, 0 when it has none */
     firmwaresbreg = acpi_readfield("SBRG").value;
@@ -420,8 +406,6 @@ void module_init(void)
         return;
 
     }
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "gpio: %s sbreg 0x%H8u irq %u, firmware sbreg 0x%H8u irq %u", chip->name, &sbreg, &irq, &firmwaresbreg, &firmwareirq);
 
 }
 
