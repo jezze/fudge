@@ -128,14 +128,16 @@ void ext2_convertnode(struct ext2_node *node)
 unsigned int ext2_validate(struct ext2_superblock *superblock)
 {
 
+    unsigned int incompat = ext2_read32(&superblock->requiredFeatures);
+
     if (ext2_read16(&superblock->signature) != 0xEF53)
         return 0;
 
-    if (ext2_read32(&superblock->optionalAttributes) & EXT2_COMPAT_JOURNAL)
+    if ((incompat & ~EXT2_INCOMPAT_RECOVER) != EXT2_INCOMPAT_FILETYPE)
         return 0;
 
-    if (ext2_read32(&superblock->requiredFeatures) != EXT2_INCOMPAT_FILETYPE)
-        return 0;
+    if (incompat & EXT2_INCOMPAT_RECOVER)
+        return EXT2_MOUNT_READ;
 
     if (ext2_read32(&superblock->unsupportedFeatures) & ~(EXT2_ROCOMPAT_SPARSESUPER | EXT2_ROCOMPAT_LARGEFILE))
         return EXT2_MOUNT_READ;
