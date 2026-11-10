@@ -430,8 +430,8 @@ disk_setup() {
 
     echo -n "Creating filesystems... "
     mkfs.fat -F 32 "${partuefi}"
-    mkfs.ext2 -q "${partboot}"
-    mkfs.ext2 -q "${partroot}"
+    mkfs.ext4 -q "${partboot}"
+    mkfs.ext4 -q "${partroot}"
     echo "done"
 
     rootdir=$(mktemp -d)
