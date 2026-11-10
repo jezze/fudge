@@ -1,5 +1,7 @@
 #include <fudge.h>
 #include "resource.h"
+#include "task.h"
+#include "mmap.h"
 #include "pool.h"
 #include "server.h"
 #include "service.h"

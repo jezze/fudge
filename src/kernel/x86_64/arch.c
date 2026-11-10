@@ -10,6 +10,10 @@
 #include <kernel/x86/pic.h>
 #include "arch.h"
 
+typedef char arch_fixedbelowuser[(ARCH_FIXED <= ARCH_USER_BASE) ? 1 : -1];
+typedef char arch_chunkfits[(ARCH_END - ARCH_CHUNK_BASE <= POOL_CHUNK) ? 1 : -1];
+typedef char arch_endbelowvirtual[(ARCH_END <= KERNEL_VMAILBOX) ? 1 : -1];
+
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
 static struct tss_pointer *tss = (struct tss_pointer *)ARCH_TSS_BASE;

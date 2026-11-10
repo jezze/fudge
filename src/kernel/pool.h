@@ -1,11 +1,12 @@
 #define POOL_CORES                      256
-#define POOL_NODES                      512
 #define POOL_TASKMAILBOXES              2
 #define POOL_TASKMMUSIZE                0x20000
 #define POOL_PERTASK                    (TASK_CODESIZE + TASK_STACKSIZE + TASK_BUFFERSIZE + MMAP_SIZE + POOL_TASKMMUSIZE + MESSAGE_CAPACITY * POOL_TASKMAILBOXES)
 #define POOL_CHUNK                      0x04880000
 #define POOL_TASKS                      (POOL_CHUNK / POOL_PERTASK)
 #define POOL_MAILBOXES                  (POOL_TASKS * POOL_TASKMAILBOXES)
+#define POOL_TASKNODES                  8
+#define POOL_NODES                      (256 + POOL_TASKS * POOL_TASKNODES)
 
 struct core *pool_getcore(unsigned int icore);
 struct mailbox *pool_getmailbox(unsigned int imailbox);
