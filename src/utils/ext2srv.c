@@ -1743,6 +1743,15 @@ static void oncreaterequest(struct message *message)
 
                     }
 
+                    else
+                    {
+
+                        buffer_clear(&node, sizeof (struct ext2_node));
+                        simplewrite(&node, id);
+                        freenode(id, 0);
+
+                    }
+
                 }
 
             }
