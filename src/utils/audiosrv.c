@@ -446,13 +446,7 @@ static void onmain(struct message *message)
     audio = channel_lookup(option_getstring("audio-service"));
 
     if (!audio)
-    {
-
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
-
         return;
-
-    }
 
     if (!timer)
     {
