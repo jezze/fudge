@@ -669,7 +669,7 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
 
 }
 
-static void getrecord(struct ext2_entry *entry, struct record *record, unsigned int offset)
+static unsigned int getrecord(struct ext2_entry *entry, struct record *record, unsigned int offset)
 {
 
     switch (entry->type)
@@ -678,14 +678,16 @@ static void getrecord(struct ext2_entry *entry, struct record *record, unsigned 
     case 1:
         record_init(record, ext2_read32(&entry->node), RECORD_TYPE_NORMAL, 0, offset + ext2_read16(&entry->size), entry->length, (char *)(entry + 1));
 
-        break;
+        return 1;
 
     case 2:
         record_init(record, ext2_read32(&entry->node), RECORD_TYPE_DIRECTORY, 0, offset + ext2_read16(&entry->size), entry->length, (char *)(entry + 1));
 
-        break;
+        return 1;
 
     }
+
+    return 0;
 
 }
 
@@ -922,10 +924,8 @@ static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, 
         if (!entry)
             break;
 
-        if (ext2_read32(&entry->node))
+        if (ext2_read32(&entry->node) && getrecord(entry, &records[i], roffset))
         {
-
-            getrecord(entry, &records[i], roffset);
 
             i++;
             count += sizeof (struct record);
