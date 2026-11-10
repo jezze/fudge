@@ -133,6 +133,9 @@ unsigned int ext2_validate(struct ext2_superblock *superblock)
     if (ext2_read16(&superblock->signature) != 0xEF53)
         return 0;
 
+    if (ext2_read32(&superblock->blockSize) > 2)
+        return 0;
+
     if ((incompat & ~EXT2_INCOMPAT_RECOVER) != EXT2_INCOMPAT_FILETYPE)
         return 0;
 
