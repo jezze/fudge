@@ -32,6 +32,8 @@
 #define DISPLAYS            4
 #define ANYDISPLAY          DISPLAYS
 #define UNITS               8
+#define INPUTS              16
+#define DEVICENAME          32
 #define TOUCH_PADCOUNTS     1600
 #define TOUCH_WHEELCOUNTS   24
 #define TOUCH_TAPTICKS      12
@@ -60,6 +62,17 @@ struct display
     struct message_videoconf videoconf;
     struct blit_display blit;
     unsigned int video;
+    char device[DEVICENAME];
+
+};
+
+struct inputs
+{
+
+    char names[INPUTS][DEVICENAME];
+    unsigned int nnames;
+    unsigned int targets[INPUTS];
+    unsigned int ntargets;
 
 };
 
@@ -83,6 +96,7 @@ struct state
     struct display displays[DISPLAYS];
     struct widget *roots[DISPLAYS];
     unsigned int ndisplays;
+    struct inputs inputs;
     unsigned int active;
     unsigned int opaque;
     struct widget *draggedthumb;
@@ -132,12 +146,7 @@ static void setupdisplays(void)
     for (i = 1; i < state.ndisplays; i++)
     {
 
-        char name[16];
-        unsigned int video;
-
-        cstring_write_fmt(name, 16, 0, "video:%u\\0", &i);
-
-        video = channel_lookup(name);
+        unsigned int video = channel_lookup(state.displays[i].device);
 
         state.displays[i].video = video;
 
@@ -350,14 +359,37 @@ static void configline(char *line, unsigned int length)
         if (state.ndisplays < DISPLAYS)
         {
 
-            struct message_videoconf *videoconf = &state.displays[state.ndisplays].videoconf;
+            struct display *display = &state.displays[state.ndisplays];
+            unsigned int deviceoffset = findword(rest, length, 3);
+            unsigned int devicelength = measureword(rest, length, deviceoffset);
 
-            videoconf->width = getnumber(rest, length, 0, 10, videoconf->width);
-            videoconf->height = getnumber(rest, length, 1, 10, videoconf->height);
-            videoconf->bpp = getnumber(rest, length, 2, 10, videoconf->bpp);
+            display->videoconf.width = getnumber(rest, length, 0, 10, display->videoconf.width);
+            display->videoconf.height = getnumber(rest, length, 1, 10, display->videoconf.height);
+            display->videoconf.bpp = getnumber(rest, length, 2, 10, display->videoconf.bpp);
+
+            if (devicelength && devicelength < DEVICENAME)
+                cstring_write_fmt(display->device, DEVICENAME, 0, "%w\\0", rest + deviceoffset, &devicelength);
+            else
+                cstring_write_fmt(display->device, DEVICENAME, 0, "video:%u\\0", &state.ndisplays);
+
             state.ndisplays++;
 
         }
+
+    }
+
+    else if (count == 6 && buffer_match(word, "inputs", 6))
+    {
+
+        state.inputs.nnames = 0;
+
+    }
+
+    else if (count == 5 && buffer_match(word, "input", 5))
+    {
+
+        if (state.inputs.nnames < INPUTS && length && length < DEVICENAME)
+            cstring_write_fmt(state.inputs.names[state.inputs.nnames++], DEVICENAME, 0, "%w\\0", rest, &length);
 
     }
 
@@ -457,11 +489,71 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {map}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
     configlines("displays", 8);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .displays -format \"display {width} {height} {bpp}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .displays -format \"display {width} {height} {bpp} {device}\" %s", config));
+    configlines("inputs", 6);
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboards -format \"input {device}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mice -format \"input {device}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));
     loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
     loadreference(data, config, ".bindings", ".bindings", "binding {key} {mod} {action} {command}");
+
+}
+
+static unsigned int hasinput(struct inputs *inputs, unsigned int target)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < inputs->ntargets; i++)
+    {
+
+        if (inputs->targets[i] == target)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static void applyinputs(void)
+{
+
+    struct inputs linked;
+    unsigned int i;
+
+    linked.ntargets = 0;
+
+    for (i = 0; i < state.inputs.nnames; i++)
+    {
+
+        unsigned int target = channel_lookup(state.inputs.names[i]);
+
+        if (target && !hasinput(&linked, target))
+            linked.targets[linked.ntargets++] = target;
+
+    }
+
+    for (i = 0; i < state.inputs.ntargets; i++)
+    {
+
+        if (!hasinput(&linked, state.inputs.targets[i]))
+            channel_send(0, state.inputs.targets[i], MESSAGE_TYPE_UNLINK, 0, 0);
+
+    }
+
+    for (i = 0; i < linked.ntargets; i++)
+    {
+
+        if (!hasinput(&state.inputs, linked.targets[i]))
+            channel_send(0, linked.targets[i], MESSAGE_TYPE_LINK, 0, 0);
+
+    }
+
+    buffer_copy(state.inputs.targets, linked.targets, linked.ntargets * sizeof (unsigned int));
+
+    state.inputs.ntargets = linked.ntargets;
 
 }
 
@@ -2799,30 +2891,6 @@ static void onkeyrelease(struct message *message)
 
 }
 
-static void applyconfig(struct message_videoconf *videoconf)
-{
-
-    setupdisplays();
-
-    if (videoconf->width != state.displays[0].videoconf.width || videoconf->height != state.displays[0].videoconf.height || videoconf->bpp != state.displays[0].videoconf.bpp)
-    {
-
-        setupvideo(state.displays[0].video);
-
-    }
-
-    else
-    {
-
-        struct util_region area = getarea();
-
-        render_damage(0, 0, area.size.w, area.size.h);
-        redraw(1);
-
-    }
-
-}
-
 static void requestclock(unsigned int ms)
 {
 
@@ -3007,12 +3075,12 @@ static void sendunits(char *name, unsigned int event)
 static void onmain(struct message *message)
 {
 
-    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
-    unsigned int video = channel_lookup(option_getstring("video-service"));
-
-    state.displays[0].video = video;
-
     loadconfig(option_getstring("config"));
+
+    if (!state.ndisplays)
+        state.ndisplays = 1;
+
+    state.displays[0].video = channel_lookup(state.displays[0].device);
 
     if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
     {
@@ -3023,10 +3091,9 @@ static void onmain(struct message *message)
 
     }
 
-    channel_send(0, keyboard, MESSAGE_TYPE_LINK, 0, 0);
-    sendunits(option_getstring("mouse-service"), MESSAGE_TYPE_LINK);
+    applyinputs();
     sendunits(option_getstring("touch-service"), MESSAGE_TYPE_LINK);
-    setupvideo(video);
+    setupvideo(state.displays[0].video);
     setupdisplays();
 
     state.clock = channel_lookup(option_getstring("clock-service"));
@@ -3043,8 +3110,10 @@ static void onmain(struct message *message)
         requestclock(0);
 
     sendunits(option_getstring("touch-service"), MESSAGE_TYPE_UNLINK);
-    sendunits(option_getstring("mouse-service"), MESSAGE_TYPE_UNLINK);
-    channel_send(0, keyboard, MESSAGE_TYPE_UNLINK, 0, 0);
+
+    state.inputs.nnames = 0;
+
+    applyinputs();
 
 }
 
@@ -3667,6 +3736,71 @@ static void setupdisplay(unsigned int index, struct message_videoinfo *videoinfo
 
 }
 
+static void removedisplay(unsigned int index)
+{
+
+    struct display *display = &state.displays[index];
+
+    if (display->blit.framebuffer)
+    {
+
+        struct util_region from = display->blit.region;
+
+        movewindows(&from, -from.position.x, -from.position.y);
+
+        display->blit.framebuffer = 0;
+
+        if (state.active == index)
+            state.active = 0;
+
+    }
+
+    display->video = 0;
+
+}
+
+static void applyconfig(struct message_videoconf *videoconf, unsigned int video)
+{
+
+    unsigned int i;
+
+    if (!state.ndisplays)
+        state.ndisplays = 1;
+
+    state.displays[0].video = channel_lookup(state.displays[0].device);
+
+    applyinputs();
+    setupdisplays();
+
+    for (i = 1; i < DISPLAYS; i++)
+    {
+
+        if (i >= state.ndisplays || !state.displays[i].video)
+            removedisplay(i);
+
+    }
+
+    arrangedisplays();
+
+    if (state.displays[0].video != video || videoconf->width != state.displays[0].videoconf.width || videoconf->height != state.displays[0].videoconf.height || videoconf->bpp != state.displays[0].videoconf.bpp)
+    {
+
+        setupvideo(state.displays[0].video);
+
+    }
+
+    else
+    {
+
+        struct util_region area = getarea();
+
+        render_damage(0, 0, area.size.w, area.size.h);
+        redraw(1);
+
+    }
+
+}
+
 static void onvideoinfo(struct message *message)
 {
 
@@ -3777,11 +3911,12 @@ static void onwmconfig(struct message *message)
 {
 
     struct message_videoconf videoconf = state.displays[0].videoconf;
+    unsigned int video = state.displays[0].video;
 
     configlines(message->data, message->length);
 
-    if (state.displays[0].video)
-        applyconfig(&videoconf);
+    if (video)
+        applyconfig(&videoconf, video);
 
 }
 
@@ -3867,7 +4002,7 @@ static void onwmungrab(struct message *message)
 
     bindinput(1);
     channel_send(0, message->source, MESSAGE_TYPE_WMACK, 0, 0);
-    setupvideo(channel_lookup(option_getstring("video-service")));
+    setupvideo(state.displays[0].video);
 
 }
 
@@ -3926,6 +4061,7 @@ void init(void)
     state.displays[0].videoconf.width = 1920;
     state.displays[0].videoconf.height = 1080;
     state.displays[0].videoconf.bpp = 4;
+    cstring_write_fmt(state.displays[0].device, DEVICENAME, 0, "video:0\\0");
     state.ndisplays = 1;
     state.mousespeed = MOUSE_NORMAL;
     pool_setup();
@@ -3933,10 +4069,7 @@ void init(void)
     render_init();
     option_add("service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
-    option_add("keyboard-service", "keyboard:0");
-    option_add("mouse-service", "mouse");
     option_add("touch-service", "touch");
-    option_add("video-service", "video:0");
     option_add("clock-service", "clock:0");
     option_add("timer-service", "timer:0");
     option_add("clipboard", "mem:clipboard");

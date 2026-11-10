@@ -13,8 +13,17 @@
   }
   displays:
   [
-    { width: 1920 height: 1080 bpp: 4 }
-    { width: 1920 height: 1080 bpp: 4 }
+    { device: video:0 width: 1920 height: 1080 bpp: 4 }
+    { device: video:1 width: 1920 height: 1080 bpp: 4 }
+  ]
+  keyboards:
+  [
+    { device: keyboard:0 }
+  ]
+  mice:
+  [
+    { device: mouse:0 }
+    { device: mouse:1 }
   ]
   keyboard:
   {
