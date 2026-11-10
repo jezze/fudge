@@ -1293,8 +1293,6 @@ static void driver_reset(unsigned int id)
         return;
 
     arch_kmap(mmio, mmio, I915_MMIOSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    probevbt(id);
-    probehdmi();
 
     pipea.activewidth = (readreg(I915_TRANS_HTOTAL_A) & 0xFFFF) + 1;
     pipea.activeheight = (readreg(I915_TRANS_VTOTAL_A) & 0xFFFF) + 1;
@@ -1302,6 +1300,8 @@ static void driver_reset(unsigned int id)
     if (checkfirmware())
     {
 
+        probevbt(id);
+        probehdmi();
         probepanel();
 
         if (hdmi.found && hdmi.port < I915_COMBOPORTS)
