@@ -1916,6 +1916,43 @@ static void freeextents(struct ext2_extentheader *header, unsigned int size, uns
 
 }
 
+static void freeattributes(unsigned int block)
+{
+
+    char *data = readmeta(block);
+    unsigned int refcount = ext2_read32(data + EXT2_ATTRIBUTE_REFCOUNT);
+
+    if (ext2_read32(data) != EXT2_ATTRIBUTEMAGIC)
+        return;
+
+    if (refcount <= 1)
+    {
+
+        freeblock(block);
+
+        return;
+
+    }
+
+    buffer_copy((void *)blockinfo.buffer, data, blocksize);
+    ext2_write32((char *)blockinfo.buffer + EXT2_ATTRIBUTE_REFCOUNT, refcount - 1);
+
+    if (hasmetadatachecksums())
+    {
+
+        unsigned char number[8];
+
+        ext2_write32(number, block);
+        ext2_write32(number + 4, 0);
+        ext2_write32((char *)blockinfo.buffer + EXT2_ATTRIBUTE_CHECKSUM, 0);
+        ext2_write32((char *)blockinfo.buffer + EXT2_ATTRIBUTE_CHECKSUM, ext2_crc32c(ext2_crc32c(csumseed, number, 8), (void *)blockinfo.buffer, blocksize));
+
+    }
+
+    sendblockwriterequest(blocksize, block, blocksize);
+
+}
+
 static unsigned int removenode(unsigned int parentid, unsigned int id)
 {
 
@@ -2008,6 +2045,9 @@ static unsigned int removenode(unsigned int parentid, unsigned int id)
             freeindirect(node.tripplyIndirectPointer, 3);
 
     }
+
+    if (node.extendedAttributes)
+        freeattributes(node.extendedAttributes);
 
     buffer_clear(&node, sizeof (struct ext2_node));
     simplewrite(&node, id);

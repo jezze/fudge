@@ -33,6 +33,9 @@
 #define EXT2_EXTENTMAGIC                0xF30A
 #define EXT2_EXTENTMAXDEPTH             5
 #define EXT2_EXTENTMAXLENGTH            32768
+#define EXT2_ATTRIBUTEMAGIC             0xEA020000
+#define EXT2_ATTRIBUTE_REFCOUNT         0x0004
+#define EXT2_ATTRIBUTE_CHECKSUM         0x0010
 #define EXT2_MOUNT_READ                 1
 #define EXT2_MOUNT_WRITE                2
 
