@@ -131,10 +131,16 @@ unsigned int ext2_validate(struct ext2_superblock *superblock)
     if (ext2_read16(&superblock->signature) != 0xEF53)
         return 0;
 
-    if (ext2_read32(&superblock->optionalAttributes) & EXT2_FEATURE_JOURNAL)
+    if (ext2_read32(&superblock->optionalAttributes) & EXT2_COMPAT_JOURNAL)
         return 0;
 
-    return ext2_read32(&superblock->requiredFeatures) == EXT2_FEATURE_FILETYPE;
+    if (ext2_read32(&superblock->requiredFeatures) != EXT2_INCOMPAT_FILETYPE)
+        return 0;
+
+    if (ext2_read32(&superblock->unsupportedFeatures) & ~(EXT2_ROCOMPAT_SPARSESUPER | EXT2_ROCOMPAT_LARGEFILE))
+        return EXT2_MOUNT_READ;
+
+    return EXT2_MOUNT_WRITE;
 
 }
 

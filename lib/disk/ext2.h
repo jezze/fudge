@@ -1,6 +1,10 @@
 #define EXT2_MAXBLOCKSIZE               4096
-#define EXT2_FEATURE_JOURNAL            0x0004
-#define EXT2_FEATURE_FILETYPE           0x0002
+#define EXT2_COMPAT_JOURNAL             0x0004
+#define EXT2_INCOMPAT_FILETYPE          0x0002
+#define EXT2_ROCOMPAT_SPARSESUPER       0x0001
+#define EXT2_ROCOMPAT_LARGEFILE         0x0002
+#define EXT2_MOUNT_READ                 1
+#define EXT2_MOUNT_WRITE                2
 
 struct ext2_superblock
 {

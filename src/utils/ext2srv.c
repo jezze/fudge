@@ -6,6 +6,7 @@ static struct message_blockinfo blockinfo;
 
 static unsigned int block;
 static unsigned int partoffset;
+static unsigned int mode;
 
 #define CACHESLOTS 4
 
@@ -1175,7 +1176,7 @@ static void oncreaterequest(struct message *message)
 
     response.id = 0;
 
-    if (request)
+    if (request && mode == EXT2_MOUNT_WRITE)
     {
 
         simpleread(&parent, request->parent);
@@ -1398,7 +1399,7 @@ static void onremoverequest(struct message *message)
     struct message_removerequest *request = message_validate(MESSAGE_TYPE_REMOVEREQUEST, message->data, message->length);
     struct message_removeresponse response;
 
-    response.status = (request) ? removenode(request->parent, request->id) : 0;
+    response.status = (request && mode == EXT2_MOUNT_WRITE) ? removenode(request->parent, request->id) : 0;
 
     channel_send(0, message->source, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
@@ -1438,7 +1439,7 @@ static void onwriterequest(struct message *message)
 
     response.count = 0;
 
-    if (request)
+    if (request && mode == EXT2_MOUNT_WRITE)
     {
 
         simpleread(&node, request->id);
@@ -1480,7 +1481,9 @@ static void onmain(struct message *message)
 
         readsuperblock();
 
-        if (ext2_validate((struct ext2_superblock *)blockinfo.buffer))
+        mode = ext2_validate((struct ext2_superblock *)blockinfo.buffer);
+
+        if (mode)
         {
 
             if (sb.blockCount > (0xFFFFFFFF - partoffset) / blocksize)
