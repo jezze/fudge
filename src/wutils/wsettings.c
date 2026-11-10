@@ -26,6 +26,7 @@
 #define NUM_TIMEZONES                   8
 #define NUM_RESOLUTIONS                 11
 #define NUM_TRANSPARENCIES              2
+#define NUM_DOUBLETAPS                  2
 #define NUM_DISPLAYS                    4
 #define NUM_DEVICES                     8
 #define DEVICENAME                      32
@@ -88,6 +89,11 @@ static struct entry keyboards[NUM_KEYBOARDS] = {
     {"initrd:data/keys/es_419.mq", "Spanish (Latin America)"},
     {"initrd:data/keys/sv_SE.mq", "Swedish"},
     {"initrd:data/keys/tr_TR.mq", "Turkish"}
+};
+
+static struct entry doubletaps[NUM_DOUBLETAPS] = {
+    {"drag", "Drag"},
+    {"right", "Right click"}
 };
 
 static struct entry resolutions[NUM_RESOLUTIONS] = {
@@ -173,6 +179,9 @@ struct device
 
     char name[DEVICENAME];
     unsigned int enabled;
+    char map[256];
+    char speed[16];
+    char doubletap[16];
 
 };
 
@@ -181,6 +190,7 @@ struct devices
 
     struct device list[NUM_DEVICES];
     unsigned int count;
+    unsigned int selected;
 
 };
 
@@ -201,11 +211,11 @@ static struct
     char timezone[32];
     struct display displays[NUM_DISPLAYS];
     unsigned int ndisplays;
+    unsigned int selecteddisplay;
     struct devices keyboards;
     struct devices mice;
+    struct devices touchpads;
     char transparency[8];
-    char keyboard[256];
-    char speed[16];
     char bindingspath[256];
     char themepath[256];
     struct binding bindings[NUM_BINDINGS];
@@ -452,7 +462,7 @@ static unsigned int finddevice(struct devices *devices, char *name)
 
 }
 
-static void adddevice(struct devices *devices, char *name, unsigned int enabled)
+static struct device *adddevice(struct devices *devices, char *name, unsigned int enabled)
 {
 
     if (devices->count < NUM_DEVICES && cstring_length(name) && finddevice(devices, name) == devices->count)
@@ -461,11 +471,25 @@ static void adddevice(struct devices *devices, char *name, unsigned int enabled)
         struct device *device = &devices->list[devices->count];
 
         copystring(device->name, DEVICENAME, name, cstring_length(name));
+        copystring(device->map, 256, keyboards[0].value, cstring_length(keyboards[0].value));
+        copystring(device->speed, 16, "4", 1);
+        copystring(device->doubletap, 16, doubletaps[0].value, cstring_length(doubletaps[0].value));
 
         device->enabled = enabled;
         devices->count++;
 
+        return device;
+
     }
+
+    return 0;
+
+}
+
+static struct device *getselected(struct devices *devices)
+{
+
+    return (devices->selected < devices->count) ? &devices->list[devices->selected] : 0;
 
 }
 
@@ -473,8 +497,11 @@ static void loadkeyboard(char *line, unsigned int length)
 {
 
     char name[DEVICENAME];
+    char map[256];
+    struct device *device = adddevice(&config.keyboards, getword(line, length, 0, name, DEVICENAME), 1);
 
-    adddevice(&config.keyboards, getword(line, length, 0, name, DEVICENAME), 1);
+    if (device && cstring_length(getword(line, length, 1, map, 256)))
+        copystring(device->map, 256, map, cstring_length(map));
 
 }
 
@@ -482,8 +509,23 @@ static void loadmouse(char *line, unsigned int length)
 {
 
     char name[DEVICENAME];
+    char speed[16];
+    struct device *device = adddevice(&config.mice, getword(line, length, 0, name, DEVICENAME), 1);
 
-    adddevice(&config.mice, getword(line, length, 0, name, DEVICENAME), 1);
+    if (device && cstring_length(getword(line, length, 1, speed, 16)))
+        copystring(device->speed, 16, speed, cstring_length(speed));
+
+}
+
+static void loadtouchpad(char *line, unsigned int length)
+{
+
+    char name[DEVICENAME];
+    char doubletap[16];
+    struct device *device = adddevice(&config.touchpads, getword(line, length, 0, name, DEVICENAME), 1);
+
+    if (device && cstring_length(getword(line, length, 1, doubletap, 16)))
+        copystring(device->doubletap, 16, doubletap, cstring_length(doubletap));
 
 }
 
@@ -665,14 +707,6 @@ static void loadconfig(void)
     if (!cstring_match(config.transparency, "off"))
         copystring(config.transparency, 8, "on", 2);
 
-    count = query(data, 256, option_getstring("config"), ".keyboard.map", 0);
-
-    getword(data, count, 0, config.keyboard, 256);
-
-    count = query(data, 256, option_getstring("config"), ".mouse.speed", 0);
-
-    getword(data, count, 0, config.speed, 16);
-
     count = query(data, 256, option_getstring("config"), ".bindings", 0);
 
     getword(data, count, 0, config.bindingspath, 256);
@@ -684,15 +718,22 @@ static void loadconfig(void)
     config.nbindings = 0;
     config.ncolors = 0;
     config.ndisplays = 0;
+    config.selecteddisplay = 0;
     config.keyboards.count = 0;
+    config.keyboards.selected = 0;
     config.mice.count = 0;
+    config.mice.selected = 0;
+    config.touchpads.count = 0;
+    config.touchpads.selected = 0;
 
     loadlines(option_getstring("config"), ".displays", "{width} {height} {bpp} {device}", loaddisplay);
-    loadlines(option_getstring("config"), ".keyboards", "{device}", loadkeyboard);
-    loadlines(option_getstring("config"), ".mice", "{device}", loadmouse);
+    loadlines(option_getstring("config"), ".keyboards", "{device} {map}", loadkeyboard);
+    loadlines(option_getstring("config"), ".mice", "{device} {speed}", loadmouse);
+    loadlines(option_getstring("config"), ".touchpads", "{device} {doubletap}", loadtouchpad);
     finddisplays();
     finddevices(&config.keyboards, "keyboard");
     finddevices(&config.mice, "mouse");
+    finddevices(&config.touchpads, "touch");
 
     loadlines(config.bindingspath, ".bindings", "{key} {mod} {action} {command}", loadbinding);
     loadlines(config.themepath, ".colors", "{name} {value}", loadcolor);
@@ -725,7 +766,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
     {
 
         if (config.keyboards.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s }\n", config.keyboards.list[i].name);
+            count += cstring_write_fmt(data, size, count, "    { device: %s map: \"%s\" }\n", config.keyboards.list[i].name, config.keyboards.list[i].map);
 
     }
 
@@ -735,13 +776,21 @@ static unsigned int writeconfig(char *data, unsigned int size)
     {
 
         if (config.mice.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s }\n", config.mice.list[i].name);
+            count += cstring_write_fmt(data, size, count, "    { device: %s speed: %s }\n", config.mice.list[i].name, config.mice.list[i].speed);
+
+    }
+
+    count += cstring_write_fmt(data, size, count, "  ]\n  touchpads:\n  [\n");
+
+    for (i = 0; i < config.touchpads.count; i++)
+    {
+
+        if (config.touchpads.list[i].enabled)
+            count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s }\n", config.touchpads.list[i].name, config.touchpads.list[i].doubletap);
 
     }
 
     count += cstring_write_fmt(data, size, count, "  ]\n");
-    count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    map: \"%s\"\n  }\n", config.keyboard);
-    count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n  }\n", config.speed);
     count += cstring_write_fmt(data, size, count, "  bindings: \"%s\"\n}\n", config.bindingspath);
 
     return count;
@@ -812,7 +861,7 @@ static unsigned int writelines(char *data, unsigned int size)
     unsigned int count = 0;
     unsigned int i;
 
-    count += cstring_write_fmt(data, size, count, "layout %s\nbackground %s\nkeyboard %s\nmouse %s\n", config.layout, config.background, config.keyboard, config.speed);
+    count += cstring_write_fmt(data, size, count, "layout %s\nbackground %s\n", config.layout, config.background);
     count += cstring_write_fmt(data, size, count, "transparency %s\ndisplays\n", config.transparency);
 
     for (i = 0; i < config.ndisplays; i++)
@@ -831,7 +880,7 @@ static unsigned int writelines(char *data, unsigned int size)
     {
 
         if (config.keyboards.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "input %s\n", config.keyboards.list[i].name);
+            count += cstring_write_fmt(data, size, count, "keyboard %s %s\n", config.keyboards.list[i].name, config.keyboards.list[i].map);
 
     }
 
@@ -839,7 +888,15 @@ static unsigned int writelines(char *data, unsigned int size)
     {
 
         if (config.mice.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "input %s\n", config.mice.list[i].name);
+            count += cstring_write_fmt(data, size, count, "mouse %s %s\n", config.mice.list[i].name, config.mice.list[i].speed);
+
+    }
+
+    for (i = 0; i < config.touchpads.count; i++)
+    {
+
+        if (config.touchpads.list[i].enabled)
+            count += cstring_write_fmt(data, size, count, "touchpad %s %s\n", config.touchpads.list[i].name, config.touchpads.list[i].doubletap);
 
     }
 
@@ -937,10 +994,12 @@ static void setchoice(char *id, char *value)
         copystring(config.language, 32, value, cstring_length(value));
     else if (cstring_match(id, "localization-timezone"))
         copystring(config.timezone, 32, value, cstring_length(value));
-    else if (cstring_match(id, "keyboard-layout"))
-        copystring(config.keyboard, 256, value, cstring_length(value));
-    else if (cstring_length(id) > 19 && buffer_match(id, "display-resolution-", 19) && cstring_read_value(id + 19, cstring_length(id + 19), 10) < config.ndisplays)
-        setresolution(&config.displays[cstring_read_value(id + 19, cstring_length(id + 19), 10)], value);
+    else if (cstring_match(id, "keyboard-layout") && getselected(&config.keyboards))
+        copystring(getselected(&config.keyboards)->map, 256, value, cstring_length(value));
+    else if (cstring_match(id, "touchpad-doubletap") && getselected(&config.touchpads))
+        copystring(getselected(&config.touchpads)->doubletap, 16, value, cstring_length(value));
+    else if (cstring_match(id, "display-resolution") && config.selecteddisplay < config.ndisplays)
+        setresolution(&config.displays[config.selecteddisplay], value);
     else if (cstring_match(id, "general-transparency"))
         copystring(config.transparency, 8, value, cstring_length(value));
 
@@ -954,7 +1013,8 @@ static void setfield(char *id, char *value)
     if (cstring_match(id, "mouse-speed-box"))
     {
 
-        copystring(config.speed, 16, value, length);
+        if (getselected(&config.mice))
+            copystring(getselected(&config.mice)->speed, 16, value, length);
 
     }
 
@@ -1005,9 +1065,60 @@ static void rendergeneral(void)
 
 }
 
+static void devicechoice(char *id, char *value, struct entry *options, unsigned int count)
+{
+
+    if (count)
+        choice(id, "Device", value, options, count);
+    else
+        choice(id, "Device", "None found", options, 0);
+
+}
+
+static void enabledfield(char *kind, unsigned int enabled)
+{
+
+    char id[32];
+    char checkbox[32];
+    char onclick[64];
+
+    cstring_write_fmt(id, 32, 0, "%s-enabled\\0", kind);
+    cstring_write_fmt(checkbox, 32, 0, "%s-enabled-box\\0", kind);
+    cstring_write_fmt(onclick, 64, 0, "q=enable&kind=%s&value=\\0", kind);
+    beginrow(id);
+    addlabel(id, "Enabled");
+    addcheckbox(id, checkbox, enabled, onclick);
+
+}
+
+static void renderdevicechoice(struct devices *devices, char *kind)
+{
+
+    struct entry options[NUM_DEVICES];
+    struct device *device = getselected(devices);
+    char id[32];
+    unsigned int i;
+
+    for (i = 0; i < devices->count; i++)
+    {
+
+        options[i].value = devices->list[i].name;
+        options[i].label = devices->list[i].name;
+
+    }
+
+    cstring_write_fmt(id, 32, 0, "%s-device\\0", kind);
+    devicechoice(id, (device) ? device->name : "", options, devices->count);
+
+    if (device)
+        enabledfield(kind, device->enabled);
+
+}
+
 static void renderdisplays(void)
 {
 
+    struct entry options[NUM_DISPLAYS];
     unsigned int i;
 
     beginarea("Displays");
@@ -1015,45 +1126,23 @@ static void renderdisplays(void)
     for (i = 0; i < config.ndisplays; i++)
     {
 
-        struct display *display = &config.displays[i];
-        char id[32];
-        char checkbox[32];
-        char onclick[64];
-        char resolution[64];
-        unsigned int bits = display->bpp * 8;
-
-        cstring_write_fmt(id, 32, 0, "display-resolution-%u\\0", &i);
-        cstring_write_fmt(checkbox, 32, 0, "display-enabled-%u\\0", &i);
-        cstring_write_fmt(onclick, 64, 0, "q=enable&kind=display&index=%u&value=\\0", &i);
-        cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &display->width, &display->height, &bits);
-        beginrow(id);
-        addcheckbox(id, checkbox, display->enabled, onclick);
-        addlabel(id, display->device);
-        addselect(id, resolution, resolutions, NUM_RESOLUTIONS);
+        options[i].value = config.displays[i].device;
+        options[i].label = config.displays[i].device;
 
     }
 
-}
+    devicechoice("display-device", (config.selecteddisplay < config.ndisplays) ? config.displays[config.selecteddisplay].device : "", options, config.ndisplays);
 
-static void renderdevices(struct devices *devices, char *kind)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < devices->count; i++)
+    if (config.selecteddisplay < config.ndisplays)
     {
 
-        struct device *device = &devices->list[i];
-        char row[32];
-        char checkbox[32];
-        char onclick[64];
+        struct display *display = &config.displays[config.selecteddisplay];
+        char resolution[64];
+        unsigned int bits = display->bpp * 8;
 
-        cstring_write_fmt(row, 32, 0, "%s-device-%u\\0", kind, &i);
-        cstring_write_fmt(checkbox, 32, 0, "%s-enabled-%u\\0", kind, &i);
-        cstring_write_fmt(onclick, 64, 0, "q=enable&kind=%s&index=%u&value=\\0", kind, &i);
-        beginrow(row);
-        addcheckbox(row, checkbox, device->enabled, onclick);
-        addlabel(row, device->name);
+        cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &display->width, &display->height, &bits);
+        enabledfield("display", display->enabled);
+        choice("display-resolution", "Resolution", resolution, resolutions, NUM_RESOLUTIONS);
 
     }
 
@@ -1062,16 +1151,21 @@ static void renderdevices(struct devices *devices, char *kind)
 static void renderkeyboard(void)
 {
 
+    struct device *device = getselected(&config.keyboards);
+
     beginarea("Keyboard");
-    renderdevices(&config.keyboards, "keyboard");
-    choice("keyboard-layout", "Keyboard layout", config.keyboard, keyboards, NUM_KEYBOARDS);
+    renderdevicechoice(&config.keyboards, "keyboard");
+
+    if (device)
+        choice("keyboard-layout", "Keyboard layout", device->map, keyboards, NUM_KEYBOARDS);
 
 }
 
 static unsigned int getspeedvalue(void)
 {
 
-    unsigned int speed = cstring_read_value(config.speed, cstring_length(config.speed), 10);
+    struct device *device = getselected(&config.mice);
+    unsigned int speed = (device) ? cstring_read_value(device->speed, cstring_length(device->speed), 10) : 1;
 
     if (speed < 1)
         speed = 1;
@@ -1086,14 +1180,32 @@ static unsigned int getspeedvalue(void)
 static void rendermouse(void)
 {
 
+    struct device *device = getselected(&config.mice);
     unsigned int value = getspeedvalue();
 
     beginarea("Mouse");
-    renderdevices(&config.mice, "mouse");
+    renderdevicechoice(&config.mice, "mouse");
+
+    if (!device)
+        return;
+
     beginrow("mouse-speed");
 
     outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"mouse-speed-row\" valign \"middle\" span \"4\" label \"Speed\"\n+ slider id \"mouse-speed\" in \"mouse-speed-row\" span \"3\" value \"%u\" onchange \"q=speed&value=\"\n", &value);
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"mouse-speed-box\" in \"mouse-speed-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=mouse-speed-box&value=\"\n+ text id \"mouse-speed-text\" in \"mouse-speed-box\" halign \"right\" label \"%s\"\n", config.speed);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"mouse-speed-box\" in \"mouse-speed-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=mouse-speed-box&value=\"\n+ text id \"mouse-speed-text\" in \"mouse-speed-box\" halign \"right\" label \"%s\"\n", device->speed);
+
+}
+
+static void rendertouchpad(void)
+{
+
+    struct device *device = getselected(&config.touchpads);
+
+    beginarea("Touchpad");
+    renderdevicechoice(&config.touchpads, "touchpad");
+
+    if (device)
+        choice("touchpad-doubletap", "Double click", device->doubletap, doubletaps, NUM_DOUBLETAPS);
 
 }
 
@@ -1193,6 +1305,8 @@ static void renderarea(char *name)
         renderkeyboard();
     else if (cstring_match(name, "mouse"))
         rendermouse();
+    else if (cstring_match(name, "touchpad"))
+        rendertouchpad();
     else if (cstring_match(name, "bindings"))
         renderbindings();
     else if (cstring_match(name, "colors"))
@@ -1259,6 +1373,67 @@ static void onpath(struct message *message)
 
 }
 
+static struct devices *getdevices(char *kind)
+{
+
+    if (cstring_match(kind, "keyboard"))
+        return &config.keyboards;
+
+    if (cstring_match(kind, "mouse"))
+        return &config.mice;
+
+    if (cstring_match(kind, "touchpad"))
+        return &config.touchpads;
+
+    return 0;
+
+}
+
+static unsigned int selectdevice(char *id, char *name)
+{
+
+    unsigned int i;
+
+    if (cstring_match(id, "display-device"))
+    {
+
+        for (i = 0; i < config.ndisplays; i++)
+        {
+
+            if (cstring_match(config.displays[i].device, name))
+                config.selecteddisplay = i;
+
+        }
+
+        renderarea("displays");
+
+        return 1;
+
+    }
+
+    if (cstring_match(id, "keyboard-device") || cstring_match(id, "mouse-device") || cstring_match(id, "touchpad-device"))
+    {
+
+        char kind[16];
+        struct devices *devices;
+
+        copystring(kind, 16, id, buffer_findbyte(id, cstring_length(id), '-'));
+
+        devices = getdevices(kind);
+
+        if (finddevice(devices, name) < devices->count)
+            devices->selected = finddevice(devices, name);
+
+        renderarea(kind);
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 static void onwmevent(struct message *message)
 {
 
@@ -1284,7 +1459,7 @@ static void onwmevent(struct message *message)
 
         }
 
-        else if (kv_match(event, "q=choose"))
+        else if (kv_match(event, "q=choose") && !selectdevice(kv_getstring(event, "id="), kv_getstring(event, "value=")))
         {
 
             setchoice(kv_getstring(event, "id="), kv_getstring(event, "value="));
@@ -1316,15 +1491,13 @@ static void onwmevent(struct message *message)
         {
 
             char *kind = kv_getstring(event, "kind=");
-            unsigned int index = kv_getvalue(event, "index=", 10);
             unsigned int enabled = kv_getvalue(event, "value=", 10);
+            struct devices *devices = getdevices(kind);
 
-            if (cstring_match(kind, "display") && index < config.ndisplays)
-                config.displays[index].enabled = enabled;
-            else if (cstring_match(kind, "keyboard") && index < config.keyboards.count)
-                config.keyboards.list[index].enabled = enabled;
-            else if (cstring_match(kind, "mouse") && index < config.mice.count)
-                config.mice.list[index].enabled = enabled;
+            if (cstring_match(kind, "display") && config.selecteddisplay < config.ndisplays)
+                config.displays[config.selecteddisplay].enabled = enabled;
+            else if (devices && getselected(devices))
+                getselected(devices)->enabled = enabled;
 
             channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"normal\"\n");
 
@@ -1334,9 +1507,15 @@ static void onwmevent(struct message *message)
         {
 
             unsigned int speed = 1 + kv_getvalue(event, "value=", 10) * (MOUSE_FASTEST - 1) / 0xFFFF;
+            struct device *device = getselected(&config.mice);
 
-            cstring_write_fmt(config.speed, 16, 0, "%u\\0", &speed);
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= mouse-speed-text label \"%s\"\n= save mode \"normal\"\n", config.speed);
+            if (device)
+            {
+
+                cstring_write_fmt(device->speed, 16, 0, "%u\\0", &speed);
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= mouse-speed-text label \"%s\"\n= save mode \"normal\"\n", device->speed);
+
+            }
 
         }
 

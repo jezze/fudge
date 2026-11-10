@@ -31,13 +31,17 @@
 #define ROOTRECORDS         2
 #define DISPLAYS            4
 #define ANYDISPLAY          DISPLAYS
-#define UNITS               8
 #define INPUTS              16
+#define KEYMAPS             4
+#define INPUT_KEYBOARD      1
+#define INPUT_MOUSE         2
+#define INPUT_TOUCH         3
+#define DOUBLETAP_DRAG      0
+#define DOUBLETAP_RIGHT     1
 #define DEVICENAME          32
 #define TOUCH_PADCOUNTS     1600
 #define TOUCH_WHEELCOUNTS   24
 #define TOUCH_TAPTICKS      12
-#define TOUCH_TAPDRAG       1
 #define LINEBUFFER          3840
 
 struct listing
@@ -66,13 +70,41 @@ struct display
 
 };
 
+struct input
+{
+
+    char name[DEVICENAME];
+    unsigned int type;
+    unsigned int target;
+    unsigned int speed;
+    unsigned int doubletap;
+    unsigned int keymap;
+
+};
+
 struct inputs
 {
 
-    char names[INPUTS][DEVICENAME];
-    unsigned int nnames;
+    struct input list[INPUTS];
+    unsigned int count;
+
+};
+
+struct linked
+{
+
     unsigned int targets[INPUTS];
-    unsigned int ntargets;
+    unsigned int count;
+
+};
+
+struct keymap
+{
+
+    char path[256];
+    struct keys_map map[KEYS_MAPSIZE];
+    unsigned int count;
+    struct keys keys;
 
 };
 
@@ -83,7 +115,6 @@ struct state
     struct util_position mouseposition;
     struct util_position mousemovement;
     struct util_position mouseremainder;
-    unsigned int mousespeed;
     unsigned int mousebuttonleft;
     unsigned int mousebuttonright;
     struct widget *rootwidget;
@@ -97,6 +128,9 @@ struct state
     struct widget *roots[DISPLAYS];
     unsigned int ndisplays;
     struct inputs inputs;
+    struct linked linked;
+    struct keymap keymaps[KEYMAPS];
+    struct keys plainkeys;
     unsigned int active;
     unsigned int opaque;
     struct widget *draggedthumb;
@@ -108,9 +142,7 @@ struct state
 };
 
 static struct state state;
-static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
-static struct keys_map keymap[KEYS_MAPSIZE];
-static unsigned int keymapcount;
+static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; unsigned int secondtap; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
 static unsigned int linebuffer[LINEBUFFER];
 static char *fontn[FONTS] = {
     "initrd:data/font/ter-112n.pcf",
@@ -251,7 +283,7 @@ static void loadbackground(char *path, unsigned int length)
 
 }
 
-static void setkey(char *line, unsigned int length)
+static void setkey(struct keymap *keymap, char *line, unsigned int length)
 {
 
     unsigned int scancode = getnumber(line, length, 0, 16, KEYS_MAPSIZE);
@@ -264,19 +296,19 @@ static void setkey(char *line, unsigned int length)
         for (i = 0; i < 4; i++)
         {
 
-            struct keys_code *code = &keymap[scancode].code[i];
+            struct keys_code *code = &keymap->map[scancode].code[i];
 
             code->length = utf8_write((char *)code->value, 4, getnumber(line, length, i + 1, 16, 0));
 
         }
 
-        keymapcount++;
+        keymap->count++;
 
     }
 
 }
 
-static void loadkeymap(char *path, unsigned int length)
+static void loadkeymap(struct keymap *keymap, char *path)
 {
 
     static char data[0x2000];
@@ -284,21 +316,13 @@ static void loadkeymap(char *path, unsigned int length)
     unsigned int linelength;
     char *line;
 
-    buffer_clear(keymap, KEYS_MAPSIZE * sizeof (struct keys_map));
+    buffer_clear(keymap->map, KEYS_MAPSIZE * sizeof (struct keys_map));
+    cstring_write_fmt(keymap->path, 256, 0, "%s\\0", path);
 
-    keymapcount = 0;
+    keymap->count = 0;
 
-    if (length && length < 256)
-    {
-
-        char name[256];
-
-        buffer_copy(name, path, length);
-
-        name[length] = 0;
-        count = system_feed(0, 0, data, 0x2000, "mq -query .keys -format \"{scancode} {levels}\" %s", name);
-
-    }
+    if (cstring_length(path))
+        count = system_feed(0, 0, data, 0x2000, "mq -query .keys -format \"{scancode} {levels}\" %s", path);
 
     for (line = data; line < data + count; line += linelength + 1)
     {
@@ -306,11 +330,88 @@ static void loadkeymap(char *path, unsigned int length)
         linelength = buffer_findbyte(line, data + count - line, '\n');
 
         if (linelength)
-            setkey(line, linelength);
+            setkey(keymap, line, linelength);
 
     }
 
-    keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (keymapcount) ? keymap : (void *)0);
+    keys_init(&keymap->keys, KEYS_LAYOUT_QWERTY_US, (keymap->count) ? keymap->map : (void *)0);
+
+}
+
+/* the nth keyboard keeps its map in the nth slot, reloaded only when its path changes */
+static unsigned int getkeymap(char *path)
+{
+
+    unsigned int slot = 0;
+    unsigned int i;
+
+    for (i = 0; i + 1 < state.inputs.count; i++)
+    {
+
+        if (state.inputs.list[i].type == INPUT_KEYBOARD)
+            slot++;
+
+    }
+
+    if (slot >= KEYMAPS)
+        return KEYMAPS;
+
+    if (!cstring_match(state.keymaps[slot].path, path) || !state.keymaps[slot].keys.map)
+        loadkeymap(&state.keymaps[slot], path);
+
+    return slot;
+
+}
+
+static void addinput(unsigned int type, char *rest, unsigned int length)
+{
+
+    unsigned int nameoffset = findword(rest, length, 0);
+    unsigned int namelength = measureword(rest, length, nameoffset);
+    unsigned int valueoffset = findword(rest, length, 1);
+    unsigned int valuelength = measureword(rest, length, valueoffset);
+
+    if (state.inputs.count < INPUTS && namelength && namelength < DEVICENAME)
+    {
+
+        struct input *input = &state.inputs.list[state.inputs.count++];
+
+        buffer_clear(input, sizeof (struct input));
+        cstring_write_fmt(input->name, DEVICENAME, 0, "%w\\0", rest + nameoffset, &namelength);
+
+        input->type = type;
+        input->speed = MOUSE_NORMAL;
+        input->keymap = KEYMAPS;
+
+        switch (type)
+        {
+
+        case INPUT_KEYBOARD:
+            if (valuelength && valuelength < 256)
+            {
+
+                char path[256];
+
+                cstring_write_fmt(path, 256, 0, "%w\\0", rest + valueoffset, &valuelength);
+                input->keymap = getkeymap(path);
+
+            }
+
+            break;
+
+        case INPUT_MOUSE:
+            input->speed = util_clamp(getnumber(rest, length, 1, 10, MOUSE_NORMAL), 1, MOUSE_FASTEST);
+
+            break;
+
+        case INPUT_TOUCH:
+            input->doubletap = (valuelength == 5 && buffer_match(rest + valueoffset, "right", 5)) ? DOUBLETAP_RIGHT : DOUBLETAP_DRAG;
+
+            break;
+
+        }
+
+    }
 
 }
 
@@ -336,13 +437,6 @@ static void configline(char *line, unsigned int length)
     {
 
         loadbackground(rest, length);
-
-    }
-
-    else if (count == 8 && buffer_match(word, "keyboard", 8))
-    {
-
-        loadkeymap(rest, length);
 
     }
 
@@ -381,15 +475,28 @@ static void configline(char *line, unsigned int length)
     else if (count == 6 && buffer_match(word, "inputs", 6))
     {
 
-        state.inputs.nnames = 0;
+        state.inputs.count = 0;
 
     }
 
-    else if (count == 5 && buffer_match(word, "input", 5))
+    else if (count == 8 && buffer_match(word, "keyboard", 8))
     {
 
-        if (state.inputs.nnames < INPUTS && length && length < DEVICENAME)
-            cstring_write_fmt(state.inputs.names[state.inputs.nnames++], DEVICENAME, 0, "%w\\0", rest, &length);
+        addinput(INPUT_KEYBOARD, rest, length);
+
+    }
+
+    else if (count == 5 && buffer_match(word, "mouse", 5))
+    {
+
+        addinput(INPUT_MOUSE, rest, length);
+
+    }
+
+    else if (count == 8 && buffer_match(word, "touchpad", 8))
+    {
+
+        addinput(INPUT_TOUCH, rest, length);
 
     }
 
@@ -402,13 +509,6 @@ static void configline(char *line, unsigned int length)
 
         for (i = 0; i < DISPLAYS; i++)
             state.displays[i].blit.opaque = state.opaque;
-
-    }
-
-    else if (count == 5 && buffer_match(word, "mouse", 5))
-    {
-
-        state.mousespeed = util_clamp(getnumber(rest, length, 0, 10, MOUSE_NORMAL), 1, MOUSE_FASTEST);
 
     }
 
@@ -486,30 +586,46 @@ static void loadconfig(char *config)
 
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"layout {layout}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"background {background}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {map}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
     configlines("displays", 8);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .displays -format \"display {width} {height} {bpp} {device}\" %s", config));
     configlines("inputs", 6);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboards -format \"input {device}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mice -format \"input {device}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboards -format \"keyboard {device} {map}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mice -format \"mouse {device} {speed}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .touchpads -format \"touchpad {device} {doubletap}\" %s", config));
     loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
     loadreference(data, config, ".bindings", ".bindings", "binding {key} {mod} {action} {command}");
 
 }
 
-static unsigned int hasinput(struct inputs *inputs, unsigned int target)
+static unsigned int islinked(struct linked *linked, unsigned int target)
 {
 
     unsigned int i;
 
-    for (i = 0; i < inputs->ntargets; i++)
+    for (i = 0; i < linked->count; i++)
     {
 
-        if (inputs->targets[i] == target)
+        if (linked->targets[i] == target)
             return 1;
+
+    }
+
+    return 0;
+
+}
+
+static struct input *findinput(unsigned int source)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < state.inputs.count; i++)
+    {
+
+        if (state.inputs.list[i].target == source)
+            return &state.inputs.list[i];
 
     }
 
@@ -520,40 +636,42 @@ static unsigned int hasinput(struct inputs *inputs, unsigned int target)
 static void applyinputs(void)
 {
 
-    struct inputs linked;
+    struct linked linked;
     unsigned int i;
 
-    linked.ntargets = 0;
+    linked.count = 0;
 
-    for (i = 0; i < state.inputs.nnames; i++)
+    for (i = 0; i < state.inputs.count; i++)
     {
 
-        unsigned int target = channel_lookup(state.inputs.names[i]);
+        struct input *input = &state.inputs.list[i];
 
-        if (target && !hasinput(&linked, target))
-            linked.targets[linked.ntargets++] = target;
+        input->target = channel_lookup(input->name);
+
+        if (input->target && !islinked(&linked, input->target))
+            linked.targets[linked.count++] = input->target;
 
     }
 
-    for (i = 0; i < state.inputs.ntargets; i++)
+    for (i = 0; i < state.linked.count; i++)
     {
 
-        if (!hasinput(&linked, state.inputs.targets[i]))
-            channel_send(0, state.inputs.targets[i], MESSAGE_TYPE_UNLINK, 0, 0);
+        if (!islinked(&linked, state.linked.targets[i]))
+            channel_send(0, state.linked.targets[i], MESSAGE_TYPE_UNLINK, 0, 0);
 
     }
 
-    for (i = 0; i < linked.ntargets; i++)
+    for (i = 0; i < linked.count; i++)
     {
 
-        if (!hasinput(&state.inputs, linked.targets[i]))
+        if (!islinked(&state.linked, linked.targets[i]))
             channel_send(0, linked.targets[i], MESSAGE_TYPE_LINK, 0, 0);
 
     }
 
-    buffer_copy(state.inputs.targets, linked.targets, linked.ntargets * sizeof (unsigned int));
+    buffer_copy(state.linked.targets, linked.targets, linked.count * sizeof (unsigned int));
 
-    state.inputs.ntargets = linked.ntargets;
+    state.linked.count = linked.count;
 
 }
 
@@ -2761,6 +2879,19 @@ static void slide(struct widget *widget, unsigned int id)
 
 }
 
+static struct keys *usekeymap(unsigned int source)
+{
+
+    struct input *input = findinput(source);
+    struct keys *keys = (input && input->keymap < KEYMAPS) ? &state.keymaps[input->keymap].keys : &state.plainkeys;
+
+    state.keys.map = keys->map;
+    state.keys.altgr = keys->altgr;
+
+    return &state.keys;
+
+}
+
 static void onkeypress(struct message *message)
 {
 
@@ -2769,7 +2900,7 @@ static void onkeypress(struct message *message)
     if (keypress)
     {
 
-        unsigned int id = keys_getcode(&state.keys, keypress->scancode);
+        unsigned int id = keys_getcode(usekeymap(message->source), keypress->scancode);
         struct widget *selecteditem = (state.focusedwidget) ? getselecteditem(state.focusedwidget) : 0;
         struct bind_binding *binding = bind_find(id, state.keys.mod);
 
@@ -2870,7 +3001,7 @@ static void onkeyrelease(struct message *message)
     if (keyrelease)
     {
 
-        unsigned int id = keys_getcode(&state.keys, keyrelease->scancode);
+        unsigned int id = keys_getcode(usekeymap(message->source), keyrelease->scancode);
 
         if (id && state.focusedwindow)
         {
@@ -3038,40 +3169,6 @@ static void onwalkrequest(struct message *message)
 
 }
 
-/* a service named without a unit, like "mouse", means every unit it has */
-static void sendunits(char *name, unsigned int event)
-{
-
-    char unit[32];
-    unsigned int i;
-
-    if (buffer_eachbyte(name, cstring_length(name), ':', 0))
-    {
-
-        channel_send(0, channel_lookup(name), event, 0, 0);
-
-        return;
-
-    }
-
-    for (i = 0; i < UNITS; i++)
-    {
-
-        unsigned int target;
-
-        cstring_write_fmt(unit, 32, 0, "%s:%u\\0", name, &i);
-
-        target = channel_lookup(unit);
-
-        if (!target)
-            break;
-
-        channel_send(0, target, event, 0, 0);
-
-    }
-
-}
-
 static void onmain(struct message *message)
 {
 
@@ -3092,7 +3189,6 @@ static void onmain(struct message *message)
     }
 
     applyinputs();
-    sendunits(option_getstring("touch-service"), MESSAGE_TYPE_LINK);
     setupvideo(state.displays[0].video);
     setupdisplays();
 
@@ -3109,9 +3205,7 @@ static void onmain(struct message *message)
     if (state.clock && state.timer)
         requestclock(0);
 
-    sendunits(option_getstring("touch-service"), MESSAGE_TYPE_UNLINK);
-
-    state.inputs.nnames = 0;
+    state.inputs.count = 0;
 
     applyinputs();
 
@@ -3143,19 +3237,19 @@ static int scalemove(int total)
 
 }
 
-static int getquarters(int relx, int rely)
+static int getquarters(int relx, int rely, unsigned int speed)
 {
 
-    if (state.mousespeed > MOUSE_NORMAL)
+    if (speed > MOUSE_NORMAL)
     {
 
         int size = util_max((relx < 0) ? -relx : relx, (rely < 0) ? -rely : rely);
 
-        return MOUSE_NORMAL + (int)(state.mousespeed - MOUSE_NORMAL) * util_min(size - 1, MOUSE_RAMP) / MOUSE_RAMP;
+        return MOUSE_NORMAL + (int)(speed - MOUSE_NORMAL) * util_min(size - 1, MOUSE_RAMP) / MOUSE_RAMP;
 
     }
 
-    return state.mousespeed;
+    return speed;
 
 }
 
@@ -3280,10 +3374,10 @@ static void movemouse(int x, int y, unsigned int buttons)
 
 }
 
-static void moverelative(int relx, int rely, unsigned int buttons)
+static void moverelative(int relx, int rely, unsigned int buttons, unsigned int speed)
 {
 
-    int quarters = getquarters(relx, rely);
+    int quarters = getquarters(relx, rely, speed);
     int totalx = state.mouseremainder.x + relx * quarters;
     int totaly = state.mouseremainder.y + rely * quarters;
     int pixelsx = scalemove(totalx);
@@ -3304,7 +3398,13 @@ static void onmousemove(struct message *message)
     struct message_mousemove *mousemove = message_validate(MESSAGE_TYPE_MOUSEMOVE, message->data, message->length);
 
     if (mousemove)
-        moverelative(mousemove->relx, mousemove->rely, mousemove->buttons);
+    {
+
+        struct input *input = findinput(message->source);
+
+        moverelative(mousemove->relx, mousemove->rely, mousemove->buttons, (input) ? input->speed : MOUSE_NORMAL);
+
+    }
 
 }
 
@@ -3489,7 +3589,7 @@ static void flushtouch(void)
         int x = util_clamp(touch.motionx, -127, 127);
         int y = util_clamp(touch.motiony, -127, 127);
 
-        moverelative(x, y, getbuttons());
+        moverelative(x, y, getbuttons(), MOUSE_NORMAL);
 
         touch.motionx -= x;
         touch.motiony -= y;
@@ -3513,11 +3613,12 @@ static void clicktouch(unsigned int button)
 
 }
 
-/* one finger moves the pointer, two scroll; a short touch that barely moves is a tap, one finger a left click and two a right click; a touch soon after a one-finger tap holds the left button until it lifts (tap and drag, a quick second tap being a double click); the surface's own button is the left button */
+/* one finger moves the pointer, two scroll; a short touch that barely moves is a tap, one finger a left click and two a right click; a touch soon after a one-finger tap either holds the left button until it lifts (drag, a quick second tap being a double click) or, set to right, makes that second tap a right click; the surface's own button is the left button */
 static void ontouchcontact(struct message *message)
 {
 
     struct message_touchcontact *contact = message_validate(MESSAGE_TYPE_TOUCHCONTACT, message->data, message->length);
+    struct input *input = findinput(message->source);
 
     if (!contact)
         return;
@@ -3560,10 +3661,13 @@ static void ontouchcontact(struct message *message)
             touch.accy = 0;
             touch.accw = 0;
 
-            if (TOUCH_TAPDRAG && touch.tapped && contact->time - touch.taptime <= TOUCH_TAPTICKS && !touch.button)
+            touch.secondtap = touch.tapped && contact->time - touch.taptime <= TOUCH_TAPTICKS && !touch.button;
+
+            if (touch.secondtap && !(input && input->doubletap == DOUBLETAP_RIGHT))
             {
 
                 touch.dragging = 1;
+                touch.secondtap = 0;
 
                 pressbutton(1);
                 redraw(1);
@@ -3632,9 +3736,9 @@ static void ontouchcontact(struct message *message)
     if (contact->time - touch.downtime <= TOUCH_TAPTICKS && touch.travel <= contact->xmax / 50u && !touch.button)
     {
 
-        clicktouch((touch.fingers >= 2) ? 2 : 1);
+        clicktouch((touch.fingers >= 2 || touch.secondtap) ? 2 : 1);
 
-        touch.tapped = touch.fingers < 2;
+        touch.tapped = touch.fingers < 2 && !touch.secondtap;
         touch.taptime = contact->time;
 
     }
@@ -4058,18 +4162,17 @@ void init(void)
 {
 
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
+    keys_init(&state.plainkeys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     state.displays[0].videoconf.width = 1920;
     state.displays[0].videoconf.height = 1080;
     state.displays[0].videoconf.bpp = 4;
     cstring_write_fmt(state.displays[0].device, DEVICENAME, 0, "video:0\\0");
     state.ndisplays = 1;
-    state.mousespeed = MOUSE_NORMAL;
     pool_setup();
     setupwidgets();
     render_init();
     option_add("service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
-    option_add("touch-service", "touch");
     option_add("clock-service", "clock:0");
     option_add("timer-service", "timer:0");
     option_add("clipboard", "mem:clipboard");

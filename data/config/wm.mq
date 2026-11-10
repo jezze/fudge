@@ -18,20 +18,16 @@
   ]
   keyboards:
   [
-    { device: keyboard:0 }
+    { device: keyboard:0 map: "initrd:data/keys/en_US.mq" }
   ]
   mice:
   [
-    { device: mouse:0 }
-    { device: mouse:1 }
+    { device: mouse:0 speed: 4 }
+    { device: mouse:1 speed: 4 }
   ]
-  keyboard:
-  {
-    map: "initrd:data/keys/en_US.mq"
-  }
-  mouse:
-  {
-    speed: 4
-  }
+  touchpads:
+  [
+    { device: touch:0 doubletap: drag }
+  ]
   bindings: "initrd:data/config/wm-bindings.mq"
 }

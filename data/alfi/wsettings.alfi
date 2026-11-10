@@ -13,6 +13,8 @@
 + text in "area-keyboard" label "Keyboard"
 + item id "area-mouse" in "area-list" padding "4" onclick "q=area&name=mouse"
 + text in "area-mouse" label "Mouse"
++ item id "area-touchpad" in "area-list" padding "4" onclick "q=area&name=touchpad"
++ text in "area-touchpad" label "Touchpad"
 + item id "area-bindings" in "area-list" padding "4" onclick "q=area&name=bindings"
 + text in "area-bindings" label "Bindings"
 + item id "area-colors" in "area-list" padding "4" onclick "q=area&name=colors"
