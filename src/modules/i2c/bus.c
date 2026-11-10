@@ -1293,8 +1293,7 @@ static unsigned int ismatch(unsigned int id)
 
     unsigned int index = getindex(id);
 
-    /* without any device the first controller is still set up, for its log */
-    return index < CONTROLLERS && !controllers[index].mmio && ((!nclients && !countcontrollers()) || isused(index));
+    return index < CONTROLLERS && !controllers[index].mmio && isused(index);
 
 }
 
