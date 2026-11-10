@@ -14,6 +14,8 @@ extern void smp_begin16(void);
 extern void smp_end16(void);
 extern void smp_begin32(void);
 extern void smp_end32(void);
+extern void smp_directory(void);
+extern void smp_stackbase(void);
 
 static struct list usedcores;
 
@@ -60,6 +62,8 @@ void module_init(void)
     if (acpi_findheader("APIC", 0))
     {
 
+        unsigned int directory = ARCH_MMU_KERNELBASE;
+        unsigned int stackbase = ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE;
         unsigned int icore;
         unsigned int i;
 
@@ -71,6 +75,8 @@ void module_init(void)
         arch_kmap(SMP_BASE16, SMP_BASE16, 0x00001000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
         buffer_copy((void *)SMP_BASE16, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
         buffer_copy((void *)SMP_BASE32, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
+        buffer_copy((void *)(SMP_BASE32 + ((unsigned long)smp_directory - (unsigned long)smp_begin32)), &directory, sizeof (unsigned int));
+        buffer_copy((void *)(SMP_BASE32 + ((unsigned long)smp_stackbase - (unsigned long)smp_begin32)), &stackbase, sizeof (unsigned int));
         pic_disable();
         apic_setupisrs();
         pool_placecore(icore, &usedcores);

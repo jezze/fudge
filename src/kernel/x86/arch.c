@@ -10,6 +10,10 @@
 #include "pic.h"
 #include "arch.h"
 
+typedef char arch_fixedbelowuser[(ARCH_FIXED <= ARCH_USER_BASE) ? 1 : -1];
+typedef char arch_chunkfits[(ARCH_END - ARCH_CHUNK_BASE <= POOL_CHUNK) ? 1 : -1];
+typedef char arch_endbelowvirtual[(ARCH_END <= KERNEL_VMAILBOX) ? 1 : -1];
+
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
 static struct tss_pointer *tss = (struct tss_pointer *)ARCH_TSS_BASE;
@@ -645,11 +649,22 @@ static void setupmmap(void)
 
 }
 
-void arch_setup1(void)
+void arch_setup1(unsigned int ramkb)
 {
+
+    unsigned int needkb = ARCH_END / 1024;
 
     resource_setup();
     udebug_setup();
+
+    if (ramkb && ramkb < needkb)
+    {
+
+        debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "Not enough memory: %uKB found, %uKB needed", &ramkb, &needkb);
+        cpu_halt();
+
+    }
+
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
     buffer_clear((void *)ARCH_FIRMWARE_BASE, ARCH_FIRMWARE_SIZE);
     setupmmap();

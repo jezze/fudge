@@ -16,12 +16,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     buffer_clear(&ramdisk, sizeof (struct mboot_module));
     buffer_clear(&init, sizeof (struct mboot_module));
-    arch_setup1();
-
-    if (header->flags & MBOOT_FLAG_MEMORY)
-    {
-
-    }
+    arch_setup1((header->flags & MBOOT_FLAG_MEMORY) ? header->himem + 1024 : 0);
 
     if (header->flags & MBOOT_FLAG_DEVICE)
     {

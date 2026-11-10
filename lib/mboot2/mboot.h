@@ -54,6 +54,14 @@ struct mboot_tag_framebuffer_rgb
 
 };
 
+struct mboot_tag_basicmeminfo
+{
+
+    unsigned int lower;
+    unsigned int upper;
+
+};
+
 struct mboot_tag_module
 {
 

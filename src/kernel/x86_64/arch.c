@@ -658,11 +658,22 @@ static void setupmmap(void)
 
 }
 
-void arch_setup1(void)
+void arch_setup1(unsigned int ramkb)
 {
+
+    unsigned int needkb = ARCH_END / 1024;
 
     resource_setup();
     udebug_setup();
+
+    if (ramkb && ramkb < needkb)
+    {
+
+        debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "Not enough memory: %uKB found, %uKB needed", &ramkb, &needkb);
+        cpu_halt();
+
+    }
+
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_TABLESIZE);
     buffer_clear((void *)ARCH_FIRMWARE_BASE, ARCH_FIRMWARE_SIZE);
     setupmmap();

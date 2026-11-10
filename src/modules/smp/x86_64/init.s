@@ -5,8 +5,6 @@
 .set SMP_CODE32,                        0x08
 .set SMP_DATA,                          0x10
 .set SMP_CODE64,                        0x18
-.set SMP_DIRECTORY,                     0x00C00000
-.set SMP_STACKBASE,                     0x00802000
 
 .section .text
 
@@ -16,7 +14,7 @@ setup:
     shrl $24, %ebx
     movl %ebx, %edi
     shll $13, %ebx
-    movl $SMP_STACKBASE, %esp
+    movl SMP_BASE32 + (smp_stackbase - smp_begin32), %esp
     addl %ebx, %esp
     call smp_setupap
 
@@ -64,7 +62,7 @@ smp_begin32:
     movl %cr4, %eax
     orl $0x20, %eax
     movl %eax, %cr4
-    movl $SMP_DIRECTORY, %eax
+    movl SMP_BASE32 + (smp_directory - smp_begin32), %eax
     movl %eax, %cr3
     movl $0xC0000080, %ecx
     rdmsr
@@ -74,6 +72,12 @@ smp_begin32:
     orl $0x80000000, %eax
     movl %eax, %cr0
     ljmp $SMP_CODE64, $setup
+.global smp_directory
+smp_directory:
+    .long 0
+.global smp_stackbase
+smp_stackbase:
+    .long 0
 .global smp_end32
 smp_end32:
 

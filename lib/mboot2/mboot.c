@@ -17,11 +17,27 @@ void mboot_setup(unsigned long address, unsigned long magic)
     struct arch_framebuffer *firmware = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
     struct mboot_tag_framebuffer *framebuffer = 0;
     unsigned int efi = 0;
+    unsigned int ramkb = 0;
     struct mboot_tag *tag;
 
     buffer_clear(&ramdisk, sizeof (struct mboot_tag_module));
     buffer_clear(&init, sizeof (struct mboot_tag_module));
-    arch_setup1();
+
+    for (tag = (struct mboot_tag *)(address + 8); tag->type != MBOOT_TAG_END; tag = (struct mboot_tag *)((unsigned char *)tag + ((tag->size + 7) & ~7)))
+    {
+
+        if (tag->type == MBOOT_TAG_BASIC_MEMINFO)
+        {
+
+            struct mboot_tag_basicmeminfo *meminfo = (struct mboot_tag_basicmeminfo *)(tag + 1);
+
+            ramkb = meminfo->upper + 1024;
+
+        }
+
+    }
+
+    arch_setup1(ramkb);
 
     for (tag = (struct mboot_tag *)(address + 8); tag->type != MBOOT_TAG_END; tag = (struct mboot_tag *)((unsigned char *)tag + ((tag->size + 7) & ~7)))
     {

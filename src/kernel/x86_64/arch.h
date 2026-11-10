@@ -31,6 +31,7 @@
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_CODEBASE + ARCH_TASK_CODESIZE)
 #define ARCH_MEM_BASE                   0x0A000000
 #define ARCH_MEM_SIZE                   (MEMSRV_PAGES * MEMSRV_PAGESIZE)
+#define ARCH_END                        (ARCH_MEM_BASE + ARCH_MEM_SIZE)
 #define ARCH_KCODE                      0x01
 #define ARCH_KDATA                      0x02
 #define ARCH_UCODE                      0x03
@@ -52,6 +53,6 @@ struct arch_framebuffer
 void arch_kmap(unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(void);
-void arch_setup1(void);
+void arch_setup1(unsigned int ramkb);
 void arch_setup2(void);
 void arch_runinit(unsigned long address);
