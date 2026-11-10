@@ -27,6 +27,7 @@
 #define NUM_RESOLUTIONS                 11
 #define NUM_TRANSPARENCIES              2
 #define NUM_DOUBLETAPS                  2
+#define NUM_NETWORKTYPES                2
 #define NUM_DISPLAYS                    4
 #define NUM_DEVICES                     8
 #define DEVICENAME                      32
@@ -95,6 +96,11 @@ static struct entry keyboards[NUM_KEYBOARDS] = {
 static struct entry doubletaps[NUM_DOUBLETAPS] = {
     {"drag", "Drag"},
     {"right", "Right click"}
+};
+
+static struct entry networktypes[NUM_NETWORKTYPES] = {
+    {"static", "Static"},
+    {"dynamic", "Dynamic"}
 };
 
 static struct entry resolutions[NUM_RESOLUTIONS] = {
@@ -188,6 +194,7 @@ struct device
     char route[32];
     char netmask[32];
     char dns[32];
+    char type[16];
 
 };
 
@@ -483,6 +490,7 @@ static struct device *adddevice(struct devices *devices, char *name, unsigned in
         copystring(device->speed, 16, "4", 1);
         copystring(device->doubletap, 16, doubletaps[0].value, cstring_length(doubletaps[0].value));
         copystring(device->volume, 16, "100", 3);
+        copystring(device->type, 16, networktypes[0].value, cstring_length(networktypes[0].value));
 
         device->enabled = enabled;
         devices->count++;
@@ -538,19 +546,56 @@ static void loadaudio(char *line, unsigned int length)
 
 }
 
+static char *getfield(char *data, unsigned int count, unsigned int index, char *field, unsigned int size)
+{
+
+    unsigned int start = 0;
+    unsigned int i;
+
+    field[0] = '\0';
+
+    for (i = 0; i <= count; i++)
+    {
+
+        if (i == count || data[i] == '|')
+        {
+
+            if (!index--)
+            {
+
+                copystring(field, size, data + start, i - start);
+
+                break;
+
+            }
+
+            start = i + 1;
+
+        }
+
+    }
+
+    return field;
+
+}
+
 static void loadnetwork(char *line, unsigned int length)
 {
 
     char name[DEVICENAME];
-    struct device *device = adddevice(&config.networks, getword(line, length, 0, name, DEVICENAME), 1);
+    char type[16];
+    struct device *device = adddevice(&config.networks, getfield(line, length, 0, name, DEVICENAME), 1);
 
     if (device)
     {
 
-        getword(line, length, 1, device->address, 32);
-        getword(line, length, 2, device->route, 32);
-        getword(line, length, 3, device->netmask, 32);
-        getword(line, length, 4, device->dns, 32);
+        if (cstring_length(getfield(line, length, 1, type, 16)))
+            copystring(device->type, 16, type, cstring_length(type));
+
+        getfield(line, length, 2, device->address, 32);
+        getfield(line, length, 3, device->route, 32);
+        getfield(line, length, 4, device->netmask, 32);
+        getfield(line, length, 5, device->dns, 32);
 
     }
 
@@ -779,7 +824,7 @@ static void loadconfig(void)
     finddevices(&config.touchpads, "touch");
     loadlines(option_getstring("audio-config"), ".devices", "{device} {volume}", loadaudio);
     finddevices(&config.audios, "audio");
-    loadlines(option_getstring("network-config"), ".networks", "{device} {address} {route} {netmask} {dns}", loadnetwork);
+    loadlines(option_getstring("network-config"), ".networks", "{device}|{type}|{address}|{route}|{netmask}|{dns}", loadnetwork);
     finddevices(&config.networks, "ethernet");
 
     loadlines(config.bindingspath, ".bindings", "{key} {mod} {action} {command}", loadbinding);
@@ -879,8 +924,10 @@ static unsigned int writenetwork(char *data, unsigned int size)
 
         struct device *device = &config.networks.list[i];
 
-        if (cstring_length(device->address))
-            count += cstring_write_fmt(data, size, count, "    {\n      device: %s\n      address: %s\n      route: %s\n      netmask: %s\n      dns: %s\n    }\n", device->name, device->address, device->route, device->netmask, device->dns);
+        if (cstring_match(device->type, "dynamic"))
+            count += cstring_write_fmt(data, size, count, "    {\n      device: %s\n      type: %s\n    }\n", device->name, device->type);
+        else if (cstring_length(device->address))
+            count += cstring_write_fmt(data, size, count, "    {\n      device: %s\n      type: %s\n      address: %s\n      route: %s\n      netmask: %s\n      dns: %s\n    }\n", device->name, device->type, device->address, device->route, device->netmask, device->dns);
 
     }
 
@@ -1109,6 +1156,8 @@ static void setchoice(char *id, char *value)
         copystring(config.timezone, 32, value, cstring_length(value));
     else if (cstring_match(id, "keyboard-layout") && getselected(&config.keyboards))
         copystring(getselected(&config.keyboards)->map, 256, value, cstring_length(value));
+    else if (cstring_match(id, "network-type") && getselected(&config.networks))
+        copystring(getselected(&config.networks)->type, 16, value, cstring_length(value));
     else if (cstring_match(id, "touchpad-doubletap") && getselected(&config.touchpads))
         copystring(getselected(&config.touchpads)->doubletap, 16, value, cstring_length(value));
     else if (cstring_match(id, "display-resolution") && config.selecteddisplay < config.ndisplays)
@@ -1405,6 +1454,11 @@ static void rendernetwork(void)
     if (!device)
         return;
 
+    choice("network-type", "Type", device->type, networktypes, NUM_NETWORKTYPES);
+
+    if (cstring_match(device->type, "dynamic"))
+        return;
+
     networkfield("network-address", "Address", device->address);
     networkfield("network-route", "Router", device->route);
     networkfield("network-netmask", "Netmask", device->netmask);
@@ -1676,6 +1730,10 @@ static void onwmevent(struct message *message)
         {
 
             setchoice(kv_getstring(event, "id="), kv_getstring(event, "value="));
+
+            if (cstring_match(kv_getstring(event, "id="), "network-type"))
+                renderarea("network");
+
             channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
 
         }

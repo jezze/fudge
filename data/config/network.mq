@@ -2,6 +2,7 @@
   networks: [
     {
       device: ethernet:0
+      type: static
       address: 10.0.5.1
       route: 10.0.5.80
       netmask: 255.255.255.0
