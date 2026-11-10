@@ -16,7 +16,6 @@
 #define I915_EDIDCTA                    0x02
 #define I915_EDIDCHUNK                  16
 #define I915_EDIDADDRESS                0x50
-#define I915_EDIDTIMING                 54
 
 #define I915_ASLS                       0xFC
 #define I915_OPREGIONMAP                0xB0000000
@@ -28,7 +27,6 @@
 #define I915_OPREGION_RVDA              0x3BA
 #define I915_OPREGION_RVDS              0x3C2
 #define I915_VBT_BDB                    0x1C
-#define I915_BDB_VERSION                0x10
 #define I915_BDB_HEADERSIZE             0x12
 #define I915_BDB_SIZE                   0x14
 #define I915_BDB_GENERAL                2
@@ -37,7 +35,6 @@
 #define I915_CHILD_TYPE                 2
 #define I915_CHILD_PORT                 16
 #define I915_CHILD_DDC                  19
-#define I915_CHILD_AUX                  25
 #define I915_CHILD_FLAGS                33
 #define I915_CHILD_MINSIZE              34
 #define I915_PORTS                      22
@@ -179,7 +176,6 @@
 #define I915_CHILD_TYPE_INTERNAL        (0x01u << 12)
 #define I915_CHILD_TYPE_NOTHDMI         (0x01u << 11)
 #define I915_CHILD_TYPE_TMDS            (0x01u << 4)
-#define I915_CHILD_TYPE_DP              (0x01u << 2)
 #define I915_CHILD_FLAGS_TYPEC          (0x01u << 0)
 #define I915_CHILD_FLAGS_TBT            (0x01u << 1)
 #define I915_SDEISR_COMBO               16

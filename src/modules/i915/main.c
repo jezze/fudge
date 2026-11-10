@@ -189,41 +189,21 @@ static unsigned int findvbt(void)
 
 }
 
-static char *kindof(unsigned int type)
-{
-
-    unsigned int hdmi = (type & I915_CHILD_TYPE_TMDS) && !(type & I915_CHILD_TYPE_NOTHDMI);
-
-    if (type & I915_CHILD_TYPE_DP)
-        return (type & I915_CHILD_TYPE_INTERNAL) ? "eDP" : (hdmi) ? "DP+HDMI" : "DP";
-
-    return (hdmi) ? "HDMI" : "other";
-
-}
-
-static void logchild(unsigned int child, unsigned int size)
+static void checkchild(unsigned int child, unsigned int size)
 {
 
     unsigned int type = read16(child + I915_CHILD_TYPE);
     unsigned int dvo = read8(child + I915_CHILD_PORT);
     unsigned int ddc = read8(child + I915_CHILD_DDC);
-    unsigned int aux = read8(child + I915_CHILD_AUX);
     unsigned int flags = (size >= I915_CHILD_MINSIZE) ? read8(child + I915_CHILD_FLAGS) : 0;
-    char *kind = kindof(type);
-    char *link = (flags & I915_CHILD_FLAGS_TBT) ? " Type-C/TBT" : (flags & I915_CHILD_FLAGS_TYPEC) ? " Type-C" : "";
-    char port[2];
-
-    port[0] = (dvo < I915_PORTS - 1) ? ports[dvo] : '?';
-    port[1] = '\0';
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: VBT port %s %s%s, type 0x%H4u, ddc %u, aux 0x%H2u", port, kind, link, &type, &ddc, &aux);
+    char port = (dvo < I915_PORTS - 1) ? ports[dvo] : '?';
 
     /* the first HDMI-capable connector, but a plain HDMI socket over a Type-C one */
-    if ((!hdmi.found || (hdmi.typec && !(flags & (I915_CHILD_FLAGS_TYPEC | I915_CHILD_FLAGS_TBT)))) && port[0] != '?' && ddc && (type & I915_CHILD_TYPE_TMDS) && !(type & (I915_CHILD_TYPE_NOTHDMI | I915_CHILD_TYPE_INTERNAL)))
+    if ((!hdmi.found || (hdmi.typec && !(flags & (I915_CHILD_FLAGS_TYPEC | I915_CHILD_FLAGS_TBT)))) && port != '?' && ddc && (type & I915_CHILD_TYPE_TMDS) && !(type & (I915_CHILD_TYPE_NOTHDMI | I915_CHILD_TYPE_INTERNAL)))
     {
 
         hdmi.found = 1;
-        hdmi.port = port[0] - 'A';
+        hdmi.port = port - 'A';
         hdmi.ddc = ddc;
         hdmi.typec = flags & (I915_CHILD_FLAGS_TYPEC | I915_CHILD_FLAGS_TBT);
 
@@ -279,10 +259,7 @@ static void probevbt(unsigned int id)
             unsigned int block = index + 3;
             unsigned int size = read8(block + I915_GENERAL_CHILDSIZE);
             unsigned int last = block + read16(index + 1);
-            unsigned int version = read16(bdb + I915_BDB_VERSION);
             unsigned int child;
-
-            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: VBT version %u, child devices of %u bytes", &version, &size);
 
             if (!size || last > end)
                 return;
@@ -291,7 +268,7 @@ static void probevbt(unsigned int id)
             {
 
                 if (read16(child + I915_CHILD_TYPE))
-                    logchild(child, size);
+                    checkchild(child, size);
 
             }
 
@@ -510,18 +487,6 @@ static void choosemode(unsigned int blocks)
 
     if (!hdmi.mode.clock)
         buffer_copy(&hdmi.mode, &cea1080, sizeof (struct mode));
-
-}
-
-static void logedid(char *name)
-{
-
-    unsigned int clock = (edid[I915_EDIDTIMING] | (edid[I915_EDIDTIMING + 1] << 8)) * 10;
-    unsigned int width = edid[I915_EDIDTIMING + 2] | ((edid[I915_EDIDTIMING + 4] & 0xF0) << 4);
-    unsigned int height = edid[I915_EDIDTIMING + 5] | ((edid[I915_EDIDTIMING + 7] & 0xF0) << 4);
-    unsigned int extensions = edid[126];
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: %s %ux%u at %u kHz, %u extension blocks", name, &width, &height, &clock, &extensions);
 
 }
 
@@ -780,7 +745,6 @@ static unsigned int enablehdmi(void)
     pipeb.activewidth = hdmi.mode.hactive;
     pipeb.activeheight = hdmi.mode.vactive;
     setplane();
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on, showing video:1");
 
     return 1;
 
@@ -821,8 +785,6 @@ static void disablehdmi(void)
     if (!waitreg(enable, I915_DPLL_POWERSTATE, 0))
         fail("DPLL power off");
 
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI off");
-
 }
 
 static void probehdmi(void)
@@ -830,8 +792,6 @@ static void probehdmi(void)
 
     unsigned int i;
     unsigned int pin;
-    unsigned int connected;
-    char port[2];
 
     if (!hdmi.found)
     {
@@ -843,12 +803,7 @@ static void probehdmi(void)
     }
 
     pin = (hdmi.ddc <= I915_DDCCOMBOPINS) ? hdmi.ddc : hdmi.ddc + I915_DDCTCPIN;
-    connected = isconnected(hdmi.port);
-    hdmi.connected = connected;
-    port[0] = 'A' + hdmi.port;
-    port[1] = '\0';
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI on port %s, GMBUS pin %u, %s", port, &pin, (connected) ? "connected" : "not connected");
+    hdmi.connected = isconnected(hdmi.port);
 
     for (i = 0; i < I915_EDIDTRIES; i++)
     {
@@ -861,7 +816,6 @@ static void probehdmi(void)
     if (i < I915_EDIDTRIES)
     {
 
-        logedid("monitor");
         choosemode((edid[126] && readgmbusedid(pin, 1)) ? 2 : 1);
 
     }
@@ -873,8 +827,6 @@ static void probehdmi(void)
         choosemode(0);
 
     }
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: HDMI mode %ux%u at %u kHz", &hdmi.mode.hactive, &hdmi.mode.vactive, &hdmi.mode.clock);
 
 }
 
@@ -1069,18 +1021,7 @@ static void probepanel(void)
 
     struct aux aux;
 
-    if (auxread(&aux, I915_AUX_NATIVEREAD, 0x000, 3))
-    {
-
-        unsigned int revision = aux.data[1];
-        unsigned int rate = aux.data[2] * 270;
-        unsigned int lanes = aux.data[3] & 0x1F;
-
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: DPCD 0x%H2u, %u Mbps, %u lanes", &revision, &rate, &lanes);
-
-    }
-
-    else
+    if (!auxread(&aux, I915_AUX_NATIVEREAD, 0x000, 3))
     {
 
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no DPCD on AUX A");
@@ -1089,20 +1030,8 @@ static void probepanel(void)
 
     }
 
-    if (readedid(&aux))
-    {
-
-        logedid("panel");
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: firmware %ux%u", &pipea.activewidth, &pipea.activeheight);
-
-    }
-
-    else
-    {
-
+    if (!readedid(&aux))
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i915: no EDID on AUX A");
-
-    }
 
 }
 
@@ -1246,14 +1175,6 @@ static void allocatesecond(unsigned int id)
     writereg(I915_GFX_FLSH_CNTL, 1);
     arch_kmap(pci_getbar(id, 2) + secondsurface, I915_SECONDMAP, secondsize, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
     buffer_clear((void *)I915_SECONDMAP, secondsize);
-
-    {
-
-        unsigned int megabytes = secondsize >> 20;
-
-        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "i915: video:1 framebuffer at GGTT 0x%H8u, %u MB", &secondsurface, &megabytes);
-
-    }
 
 }
 
