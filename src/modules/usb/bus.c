@@ -14,9 +14,15 @@
 #define DEVICES                         8
 #define SCRATCHPADS                     16
 #define INTERFACES                      3
-#define DEVICEPAGES                     (6 + BULKPAGES + INTERFACES)
+#define DEVICEPAGES                     (7 + BULKPAGES + INTERFACES)
 #define REPORTSIZE                      512
 #define BULKPAGES                       4
+#define RECEIVES                        2
+#define RECEIVESIZE                     (PAGESIZE / RECEIVES)
+#define CONFIGURATIONS                  4
+#define CONFIGURATIONSIZE               256
+#define CLASS_VENDOR                    0xFF
+#define PROTOCOL_VENDOR                 0xFF
 #define PAGES                           (4 + SCRATCHPADS + DEVICES * DEVICEPAGES)
 #define LIMIT_POLL                      1000000
 #define CAP_LENGTH                      0x00
@@ -153,6 +159,13 @@ struct device
     struct trbring bulkoutring;
     struct interface interfaces[INTERFACES];
     unsigned int ninterfaces;
+    unsigned char *receivebuffer;
+    void (*receive)(unsigned int id, void *data, unsigned int count);
+    unsigned int receiveid;
+    unsigned int receiving;
+    unsigned int receivenext;
+    unsigned int receivecount[RECEIVES];
+    unsigned int receivedone[RECEIVES];
 
 };
 
@@ -311,6 +324,18 @@ static void queueinterrupt(struct device *device, unsigned int index)
 
 }
 
+static void queuereceive(struct device *device, unsigned int index)
+{
+
+    unsigned char *buffer = device->receivebuffer + index * RECEIVESIZE;
+
+    /* the event data trb carries the slot back in its event, also after a short packet */
+    enqueue(&device->bulkinring, (unsigned long)buffer, gethigh(buffer), RECEIVESIZE, TRB_TYPE(TRB_NORMAL) | TRB_CHAIN);
+    enqueue(&device->bulkinring, index, 0, 0, TRB_TYPE(TRB_EVENTDATA) | TRB_IOC);
+    ringdoorbell(device->slot, device->bulkin);
+
+}
+
 static void handletransfer(volatile struct trb *trb)
 {
 
@@ -320,6 +345,23 @@ static void handletransfer(volatile struct trb *trb)
     unsigned int remaining = trb->status & 0xFFFFFF;
     struct device *device = finddevice(slot);
     unsigned int i;
+
+    if (device && device->receiving && endpoint == device->bulkin)
+    {
+
+        unsigned int index = trb->parameter0 % RECEIVES;
+
+        if ((trb->control & TRB_ED) && (code == COMPLETION_SUCCESS || code == COMPLETION_SHORTPACKET))
+        {
+
+            device->receivecount[index] = (remaining > RECEIVESIZE) ? RECEIVESIZE : remaining;
+            device->receivedone[index] = 1;
+
+        }
+
+        return;
+
+    }
 
     for (i = 0; device && i < device->ninterfaces; i++)
     {
@@ -421,6 +463,58 @@ static void process(void)
 
 static void hotplug(void);
 
+static void deliverreceives(struct device *device)
+{
+
+    while (device->receiving)
+    {
+
+        void (*callback)(unsigned int id, void *data, unsigned int count) = 0;
+        unsigned int index;
+        unsigned int count;
+        unsigned int id;
+
+        spinlock_acquire(&spinlock);
+
+        index = device->receivenext;
+
+        if (!device->slot || !device->receiving || !device->receivedone[index])
+        {
+
+            spinlock_release(&spinlock);
+
+            return;
+
+        }
+
+        callback = device->receive;
+        count = device->receivecount[index];
+        id = device->receiveid;
+
+        spinlock_release(&spinlock);
+
+        /* the slot isn't queued again until its data has been handed over, frames that arrive while nobody listens are dropped */
+        if (callback && count)
+            callback(id, device->receivebuffer + index * RECEIVESIZE, count);
+
+        spinlock_acquire(&spinlock);
+
+        if (device->slot && device->receiving)
+        {
+
+            device->receivedone[index] = 0;
+            device->receivenext = (index + 1) % RECEIVES;
+
+            queuereceive(device, index);
+
+        }
+
+        spinlock_release(&spinlock);
+
+    }
+
+}
+
 static void deliver(void)
 {
 
@@ -461,6 +555,8 @@ static void deliver(void)
                 callback(id, report, count);
 
         }
+
+        deliverreceives(&devices[i]);
 
     }
 
@@ -674,7 +770,7 @@ static void parseconfiguration(struct device *device, unsigned char *data, unsig
 
         }
 
-        else if (descriptor[1] == DESCRIPTOR_ENDPOINT && interface)
+        else if (descriptor[1] == DESCRIPTOR_ENDPOINT)
         {
 
             unsigned int in = descriptor[2] & 0x80;
@@ -684,6 +780,7 @@ static void parseconfiguration(struct device *device, unsigned char *data, unsig
             switch (descriptor[3] & 0x03)
             {
 
+            /* bulk endpoints may sit in an alternate setting, as with cdc data interfaces */
             case 2:
                 if (in && !device->bulkin)
                 {
@@ -704,7 +801,7 @@ static void parseconfiguration(struct device *device, unsigned char *data, unsig
                 break;
 
             case 3:
-                if (in && !interface->endpoint)
+                if (interface && in && !interface->endpoint)
                 {
 
                     interface->endpoint = dci;
@@ -793,6 +890,47 @@ static unsigned int configureendpoints(struct device *device)
 
 }
 
+static unsigned int readconfiguration(struct device *device, unsigned int index, unsigned char *configuration, unsigned int size)
+{
+
+    unsigned int length;
+
+    if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, (DESCRIPTOR_CONFIGURATION << 8) | index, 0, 9, configuration))
+        return 0;
+
+    length = configuration[2] | (configuration[3] << 8);
+
+    if (length > size)
+        length = size;
+
+    if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, (DESCRIPTOR_CONFIGURATION << 8) | index, 0, length, configuration))
+        return 0;
+
+    return length;
+
+}
+
+static unsigned int isvendor(unsigned char *configuration, unsigned int length)
+{
+
+    unsigned int offset = 0;
+
+    while (offset + 9 <= length && configuration[offset])
+    {
+
+        unsigned char *descriptor = configuration + offset;
+
+        if (descriptor[1] == DESCRIPTOR_INTERFACE)
+            return descriptor[5] == CLASS_VENDOR || descriptor[7] == PROTOCOL_VENDOR;
+
+        offset += descriptor[0];
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int setupdevice(struct device *device)
 {
 
@@ -800,8 +938,10 @@ static unsigned int setupdevice(struct device *device)
     {
 
         unsigned char descriptor[18];
-        unsigned char configuration[256];
-        unsigned int length;
+        unsigned char configuration[CONFIGURATIONSIZE];
+        unsigned int length = 0;
+        unsigned int count;
+        unsigned int i;
 
         if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_DEVICE << 8, 0, 8, descriptor))
             return 0;
@@ -814,15 +954,26 @@ static unsigned int setupdevice(struct device *device)
 
         }
 
-        if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_CONFIGURATION << 8, 0, 9, configuration))
+        if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_DEVICE << 8, 0, 18, descriptor))
             return 0;
 
-        length = configuration[2] | (configuration[3] << 8);
+        count = (descriptor[17] > CONFIGURATIONS) ? CONFIGURATIONS : descriptor[17];
 
-        if (length > sizeof (configuration))
-            length = sizeof (configuration);
+        /* network adapters and qemu list a vendor or rndis configuration before the cdc one */
+        for (i = 0; i < count; i++)
+        {
 
-        if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_CONFIGURATION << 8, 0, length, configuration))
+            length = readconfiguration(device, i, configuration, CONFIGURATIONSIZE);
+
+            if (length && !isvendor(configuration, length))
+                break;
+
+        }
+
+        if (i == count || !length)
+            length = readconfiguration(device, 0, configuration, CONFIGURATIONSIZE);
+
+        if (!length)
             return 0;
 
         parseconfiguration(device, configuration, length);
@@ -923,6 +1074,7 @@ static struct device *enumerateport(unsigned int port)
             device->output = getpage(page + 1);
             device->buffer = getpage(page + 3);
             device->bulkbuffer = getpage(page + 6);
+            device->receivebuffer = getpage(page + 6 + BULKPAGES + INTERFACES);
 
             for (i = 1; i < BULKPAGES; i++)
                 getpage(page + 6 + i);
@@ -1345,7 +1497,7 @@ unsigned int usb_bulk(unsigned int id, unsigned int in, void *data, unsigned int
         dci = (in) ? device->bulkin : device->bulkout;
         ring = (in) ? &device->bulkinring : &device->bulkoutring;
 
-        if (!dci)
+        if (!dci || (in && device->receiving))
             return 0;
 
         spinlock_acquire(&spinlock);
@@ -1391,6 +1543,46 @@ unsigned int usb_bulk(unsigned int id, unsigned int in, void *data, unsigned int
     }
 
     return 0;
+
+}
+
+unsigned int usb_listenbulk(unsigned int id, void (*callback)(unsigned int id, void *data, unsigned int count))
+{
+
+    struct device *device = getdevice(id);
+    unsigned int i;
+
+    if (!device || !device->bulkin)
+        return 0;
+
+    spinlock_acquire(&spinlock);
+
+    device->receive = callback;
+    device->receiveid = id;
+
+    if (!device->receiving)
+    {
+
+        device->receiving = 1;
+
+        for (i = 0; i < RECEIVES; i++)
+            queuereceive(device, i);
+
+    }
+
+    spinlock_release(&spinlock);
+
+    return 1;
+
+}
+
+void usb_unlistenbulk(unsigned int id)
+{
+
+    struct device *device = getdevice(id);
+
+    if (device)
+        device->receive = 0;
 
 }
 

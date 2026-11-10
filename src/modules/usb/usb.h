@@ -13,4 +13,6 @@ unsigned int usb_getinterface(unsigned int id);
 unsigned int usb_control(unsigned int id, unsigned char type, unsigned char request, unsigned short value, unsigned short index, unsigned short length, void *data);
 unsigned int usb_listen(unsigned int id, void (*callback)(unsigned int id, void *data, unsigned int count));
 unsigned int usb_bulk(unsigned int id, unsigned int in, void *data, unsigned int count);
+unsigned int usb_listenbulk(unsigned int id, void (*callback)(unsigned int id, void *data, unsigned int count));
 void usb_unlisten(unsigned int id);
+void usb_unlistenbulk(unsigned int id);
