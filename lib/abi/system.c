@@ -116,7 +116,48 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
 
 }
 
-/* the networks entry whose device is this one, else the option's value */
+static unsigned int readentry(char *path, char *device, char *key, char *out, unsigned int size)
+{
+
+    static char data[0x1000];
+    unsigned int count = system_feed(0, 0, data, 0x1000, "mq -query .networks -format \"{device} {type} {%s}\" %s", key, path);
+    unsigned int devicelength = cstring_length(device);
+    unsigned int length;
+    char *line;
+
+    for (line = data; line < data + count; line += length + 1)
+    {
+
+        length = buffer_findbyte(line, data + count - line, '\n');
+
+        if (length > devicelength + 1 && line[devicelength] == ' ' && buffer_match(line, device, devicelength))
+        {
+
+            char *type = line + devicelength + 1;
+            unsigned int typelength = buffer_findbyte(type, line + length - type, ' ');
+
+            if (type + typelength < line + length)
+            {
+
+                char *value = type + typelength + 1;
+                unsigned int valuelength = line + length - value;
+
+                if (valuelength < size)
+                    cstring_write_fmt(out, size, 0, "%w\\0", value, &valuelength);
+
+            }
+
+            return (typelength == 7 && buffer_match(type, "dynamic", 7)) ? ENTRY_DYNAMIC : ENTRY_STATIC;
+
+        }
+
+    }
+
+    return ENTRY_NONE;
+
+}
+
+/* the option's value, else the networks entry whose device is this one; a dynamic entry takes its lease when there is one */
 char *system_address(char *device, char *option, char *key, char *out, unsigned int size)
 {
 
@@ -125,32 +166,10 @@ char *system_address(char *device, char *option, char *key, char *out, unsigned 
     if (!value || !cstring_length(value))
     {
 
-        static char data[0x1000];
-        unsigned int count = system_feed(0, 0, data, 0x1000, "mq -query .networks -format \"{device} {%s}\" initrd:data/config/network.mq", key);
-        unsigned int devicelength = cstring_length(device);
-        unsigned int length;
-        char *line;
-
         out[0] = '\0';
 
-        for (line = data; line < data + count; line += length + 1)
-        {
-
-            length = buffer_findbyte(line, data + count - line, '\n');
-
-            if (length > devicelength + 1 && line[devicelength] == ' ' && buffer_match(line, device, devicelength))
-            {
-
-                unsigned int valuelength = length - devicelength - 1;
-
-                if (valuelength < size)
-                    cstring_write_fmt(out, size, 0, "%w\\0", line + devicelength + 1, &valuelength);
-
-                break;
-
-            }
-
-        }
+        if (readentry("initrd:data/config/network.mq", device, key, out, size) == ENTRY_DYNAMIC)
+            readentry(SYSTEM_LEASE, device, key, out, size);
 
         return out;
 
