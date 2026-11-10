@@ -18,7 +18,7 @@ struct file
 
     unsigned int used;
     unsigned int linked;
-    unsigned int tasks;
+    unsigned int ntasks;
     unsigned int size;
     unsigned int first;
     unsigned int last;
@@ -256,7 +256,7 @@ static unsigned long findgap(struct mmap_header *header, unsigned int size)
 static void release(struct file *file)
 {
 
-    if (file->used && !file->linked && !file->tasks)
+    if (file->used && !file->linked && !file->ntasks)
     {
 
         if (file->size)
@@ -405,7 +405,7 @@ static unsigned int create(unsigned int parent, char *name, unsigned int length)
 
                 file->used = 1;
                 file->linked = 1;
-                file->tasks = 0;
+                file->ntasks = 0;
                 file->size = 0;
                 file->cachepage = NONE;
                 file->length = length;
@@ -473,7 +473,7 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
         if (!vaddress || !mmap_allocate(header, MMAP_TYPE_MEM, id, vaddress, size, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE))
             return 0;
 
-        file->tasks |= 1 << itask;
+        file->ntasks++;
 
         return vaddress;
 
@@ -490,22 +490,15 @@ static unsigned int unmap(unsigned int source, unsigned int id)
     struct mailbox *mailbox = mailbox_get(source);
     unsigned int itask = (mailbox) ? mailbox->itask : 0;
     struct task *task = pool_gettask(itask);
+    struct mmap_entry *entry = (file && task) ? findmapping((struct mmap_header *)task->mmap, id) : 0;
 
-    if (file && task && (file->tasks & (1 << itask)))
+    if (entry)
     {
 
-        struct mmap_header *header = (struct mmap_header *)task->mmap;
-        struct mmap_entry *entry = findmapping(header, id);
+        unmapcallback(entry->vaddress, entry->size);
+        mmap_remove((struct mmap_header *)task->mmap, entry);
 
-        if (entry)
-        {
-
-            unmapcallback(entry->vaddress, entry->size);
-            mmap_remove(header, entry);
-
-        }
-
-        file->tasks &= ~(1 << itask);
+        file->ntasks--;
 
         release(file);
 
@@ -802,19 +795,27 @@ unsigned int memsrv_read(unsigned int id, void *buffer, unsigned int count, unsi
 void memsrv_untask(unsigned int itask)
 {
 
+    struct task *task = pool_gettask(itask);
+    struct mmap_header *header = (task) ? (struct mmap_header *)task->mmap : 0;
     unsigned int i;
+
+    if (!header)
+        return;
 
     spinlock_acquire(&spinlock);
 
-    for (i = 0; i < MEMSRV_FILES; i++)
+    for (i = 0; i < header->nentries; i++)
     {
 
-        if (files[i].used && (files[i].tasks & (1 << itask)))
+        struct mmap_entry *entry = &header->entries[i];
+        struct file *file = (entry->type == MMAP_TYPE_MEM) ? getused(entry->paddress) : 0;
+
+        if (file && file->ntasks)
         {
 
-            files[i].tasks &= ~(1 << itask);
+            file->ntasks--;
 
-            release(&files[i]);
+            release(file);
 
         }
 
