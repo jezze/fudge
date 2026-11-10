@@ -72,7 +72,6 @@
 #define VERB_SETEAPD                    0x70C00
 #define VERB_SETFORMAT                  0x20000
 #define VERB_SETAMP                     0x30000
-#define PARAM_VENDOR                    0x00
 #define PARAM_SUBNODES                  0x04
 #define PARAM_FUNCTION                  0x05
 #define PARAM_WIDGETCAPS                0x09
@@ -468,14 +467,12 @@ static void setuppin(unsigned int nid)
         command(codec.address, nid, VERB_SETEAPD | EAPD_ENABLE);
 
     adddac(dac);
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "hda: codec %u pin 0x%H2u device %u through dac 0x%H2u", &codec.address, &nid, &device, &dac);
 
 }
 
 static unsigned int setupcodec(unsigned int address)
 {
 
-    unsigned int vendor;
     unsigned int subnodes;
     unsigned int nid;
 
@@ -484,10 +481,7 @@ static unsigned int setupcodec(unsigned int address)
     codec.ndacs = 0;
     codec.pcmcaps = 0xFFFFFFFF;
 
-    vendor = getparameter(0, PARAM_VENDOR);
     subnodes = getparameter(0, PARAM_SUBNODES);
-
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "hda: codec %u vendor 0x%H8u", &address, &vendor);
 
     for (nid = (subnodes >> 16) & 0xFF; nid < ((subnodes >> 16) & 0xFF) + (subnodes & 0xFF); nid++)
     {
