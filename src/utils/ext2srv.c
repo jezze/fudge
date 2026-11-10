@@ -1199,6 +1199,9 @@ static void oncreaterequest(struct message *message)
 
                 }
 
+                if (parent.flags & EXT2_NODE_INDEX)
+                    break;
+
                 id = allocnode(igroup);
 
                 if (id)

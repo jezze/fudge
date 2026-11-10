@@ -3,6 +3,7 @@
 #define EXT2_INCOMPAT_FILETYPE          0x0002
 #define EXT2_ROCOMPAT_SPARSESUPER       0x0001
 #define EXT2_ROCOMPAT_LARGEFILE         0x0002
+#define EXT2_NODE_INDEX                 0x1000
 #define EXT2_MOUNT_READ                 1
 #define EXT2_MOUNT_WRITE                2
 
