@@ -38,6 +38,7 @@ src/utils/complete
 src/utils/cp
 src/utils/crc
 src/utils/date
+src/utils/dhcpsrv
 src/utils/disk
 src/utils/dns
 src/utils/dump
