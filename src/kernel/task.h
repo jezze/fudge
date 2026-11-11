@@ -43,6 +43,7 @@ struct task
     unsigned long buffer;
     unsigned int waitingfor;
     unsigned int aborted;
+    unsigned int started;
     unsigned int imailbox[TASK_MAILBOXES];
 
 };

@@ -109,6 +109,11 @@ static void transition(unsigned int itask, unsigned int state)
 
                 break;
 
+            case TASK_STATE_RUNNING:
+                task->started = 1;
+
+                break;
+
             case TASK_STATE_ASSIGNED:
                 assigncorecallback(itask);
 
@@ -324,10 +329,19 @@ void kernel_schedule(struct core *core)
 
     unblocktasks();
 
-    core->itask = pool_picktaskfrom(&core->tasks);
+    while ((core->itask = pool_picktaskfrom(&core->tasks)))
+    {
 
-    if (core->itask)
+        struct task *task = pool_gettask(core->itask);
+
         transition(core->itask, TASK_STATE_RUNNING);
+
+        if (!task->signals.kill)
+            break;
+
+        transition(core->itask, TASK_STATE_DEAD);
+
+    }
 
 }
 
@@ -342,7 +356,7 @@ unsigned int kernel_kill(unsigned int itask)
 
         spinlock_acquire(&task->spinlock);
 
-        if (task->aborted)
+        if (task->aborted || !task->started)
         {
 
             task_signal(task, TASK_SIGNAL_KILL);

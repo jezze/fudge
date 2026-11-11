@@ -139,6 +139,7 @@ void task_reset(struct task *task)
     task->state = TASK_STATE_DEAD;
     task->waitingfor = 0;
     task->aborted = 0;
+    task->started = 0;
     task->mmap = 0;
     task->buffer = 0;
     task->signals.kill = 0;
