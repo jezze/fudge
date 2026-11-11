@@ -709,7 +709,7 @@ static void onconsoledata(struct message *message)
             job_sendfirst(&job, 0, MESSAGE_TYPE_CONSOLEDATA, i - start, data + start);
 
         if (interrupts++)
-            job_kill(&job);
+            job_kill(&job, 0, output);
         else
             job_sendall(&job, 0, MESSAGE_TYPE_INTERRUPT, 0, 0);
 

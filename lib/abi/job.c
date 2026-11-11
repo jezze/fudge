@@ -280,7 +280,7 @@ unsigned int job_exit(struct job *job, unsigned int target)
 
 }
 
-void job_kill(struct job *job)
+void job_kill(struct job *job, unsigned int ichannel, unsigned int target)
 {
 
     unsigned int i;
@@ -291,7 +291,13 @@ void job_kill(struct job *job)
         struct job_command *command = &job->commands[i];
 
         if (command->target && call_kill(command->target) != MESSAGE_OK)
+        {
+
+            channel_send_fmt(ichannel, target, MESSAGE_TYPE_ERROR, "Killed: %s\n", command->program);
+
             command->target = 0;
+
+        }
 
     }
 
