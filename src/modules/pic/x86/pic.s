@@ -33,6 +33,7 @@ pic_isr0:
 .align 16
 pic_common0:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     movw %ax, %es
@@ -84,6 +85,7 @@ pic_isr1:
 .align 16
 pic_common1:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     movw %ax, %es

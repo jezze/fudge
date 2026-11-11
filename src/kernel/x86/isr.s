@@ -5,6 +5,7 @@
 .global isr_zero
 isr_zero:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_zero
@@ -15,6 +16,7 @@ isr_zero:
 .global isr_debug
 isr_debug:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_debug
@@ -25,6 +27,7 @@ isr_debug:
 .global isr_nmi
 isr_nmi:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_nmi
@@ -35,6 +38,7 @@ isr_nmi:
 .global isr_breakpoint
 isr_breakpoint:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_breakpoint
@@ -45,6 +49,7 @@ isr_breakpoint:
 .global isr_overflow
 isr_overflow:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_overflow
@@ -55,6 +60,7 @@ isr_overflow:
 .global isr_bound
 isr_bound:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_bound
@@ -65,6 +71,7 @@ isr_bound:
 .global isr_opcode
 isr_opcode:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_opcode
@@ -75,6 +82,7 @@ isr_opcode:
 .global isr_device
 isr_device:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_device
@@ -85,6 +93,7 @@ isr_device:
 .global isr_doublefault
 isr_doublefault:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_doublefault
@@ -96,6 +105,7 @@ isr_doublefault:
 .global isr_tss
 isr_tss:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_tss
@@ -107,6 +117,7 @@ isr_tss:
 .global isr_segment
 isr_segment:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_segment
@@ -118,6 +129,7 @@ isr_segment:
 .global isr_stack
 isr_stack:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_stack
@@ -129,6 +141,7 @@ isr_stack:
 .global isr_generalfault
 isr_generalfault:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_generalfault
@@ -140,6 +153,7 @@ isr_generalfault:
 .global isr_pagefault
 isr_pagefault:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_pagefault
@@ -151,6 +165,7 @@ isr_pagefault:
 .global isr_syscall
 isr_syscall:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     call arch_syscall

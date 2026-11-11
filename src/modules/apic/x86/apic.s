@@ -106,6 +106,7 @@ apic_isr:
 .global apic_test
 apic_test:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     movw %ax, %es
@@ -132,6 +133,7 @@ apic_spurious:
 .align 16
 apic_common:
     pusha
+    cld
     movw %ss, %ax
     movw %ax, %ds
     movw %ax, %es
