@@ -696,20 +696,29 @@ static void onconsoledata(struct message *message)
 {
 
     char *data = message->data;
+    unsigned int start = 0;
+    unsigned int i;
 
-    if (message->length == 1 && data[0] == 0x03)
+    for (i = 0; i < message->length; i++)
     {
+
+        if (data[i] != 0x03)
+            continue;
+
+        if (i > start)
+            job_sendfirst(&job, 0, MESSAGE_TYPE_CONSOLEDATA, i - start, data + start);
 
         if (interrupts++)
             job_kill(&job);
         else
             job_sendall(&job, 0, MESSAGE_TYPE_INTERRUPT, 0, 0);
 
-        return;
+        start = i + 1;
 
     }
 
-    job_sendfirst(&job, 0, MESSAGE_TYPE_CONSOLEDATA, message->length, message->data);
+    if (i > start)
+        job_sendfirst(&job, 0, MESSAGE_TYPE_CONSOLEDATA, i - start, data + start);
 
 }
 
