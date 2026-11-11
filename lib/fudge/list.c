@@ -27,6 +27,40 @@ void list_add(struct list *list, struct list_item *item)
 
 }
 
+void list_insert_unsafe(struct list *list, struct list_item *item, struct list_item *next)
+{
+
+    if (!next)
+    {
+
+        list_add_unsafe(list, item);
+
+        return;
+
+    }
+
+    item->next = next;
+    item->prev = next->prev;
+
+    if (next->prev)
+        next->prev->next = item;
+    else
+        list->head = item;
+
+    next->prev = item;
+    list->count++;
+
+}
+
+void list_insert(struct list *list, struct list_item *item, struct list_item *next)
+{
+
+    spinlock_acquire(&list->spinlock);
+    list_insert_unsafe(list, item, next);
+    spinlock_release(&list->spinlock);
+
+}
+
 void list_remove_unsafe(struct list *list, struct list_item *item)
 {
 

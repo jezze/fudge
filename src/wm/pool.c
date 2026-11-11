@@ -107,6 +107,25 @@ static struct widget *findparent(struct widget *widget, unsigned int source)
 
 }
 
+static struct list_item *findnextsibling(struct widget *widget)
+{
+
+    struct list_item *current = &items[widget - entries];
+
+    while ((current = current->next))
+    {
+
+        struct widget *sibling = current->data;
+
+        if (sibling->parent == widget->parent)
+            return &siblings[sibling - entries];
+
+    }
+
+    return 0;
+
+}
+
 void pool_setparent(struct widget *widget)
 {
 
@@ -124,7 +143,7 @@ void pool_setparent(struct widget *widget)
         widget->parent = findparent(widget, 0);
 
     if (widget->parent)
-        list_add(&children[widget->parent - entries], &siblings[widget - entries]);
+        list_insert(&children[widget->parent - entries], &siblings[widget - entries], findnextsibling(widget));
 
 }
 
