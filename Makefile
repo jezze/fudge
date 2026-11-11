@@ -119,9 +119,8 @@ include $(DIR_MK)/$(ARCH)-$(LOADER).mk
 MODULES_ARCH:=$(firstword $(wildcard data/config/modules-$(ARCH)-$(LOADER).mq) data/config/modules-$(ARCH).mq)
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
+-include $(DEP)
 endif
-
-deps: $(DEP)
 
 $(DIR_BUILD):
 	@echo BUILD $@
@@ -129,6 +128,7 @@ $(DIR_BUILD):
 
 $(DIR_BUILDBOOT): $(KERNEL) $(RAMDISK) | $(DIR_BUILD)
 	@echo BUILD BOOT $@
+	@rm -rf $@
 	@mkdir -p $@
 	@cp $(KERNEL) $@
 	@cp $(RAMDISK) $@
@@ -136,8 +136,9 @@ $(DIR_BUILDBOOT): $(KERNEL) $(RAMDISK) | $(DIR_BUILD)
 	@mkdir -p $@/grub
 	$(if $(wildcard grub/$(LOADER).cfg),@cp -f grub/$(LOADER).cfg $@/grub/grub.cfg)
 
-$(DIR_BUILDINITRD): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
+$(DIR_BUILDINITRD): $(LIB) $(BIN) $(KMAP) $(KMOD) $(MODULES_ARCH) $(shell find $(addprefix data/,$(RAMDISK_DATA))) | $(DIR_BUILD)
 	@echo BUILD INITRD $@
+	@rm -rf $@
 	@mkdir -p $@
 	@mkdir -p $@/boot
 	@mkdir -p $@/lib
@@ -151,8 +152,9 @@ $(DIR_BUILDINITRD): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@cp $(KMAP) $@/kernel
 	@cp $(KMOD) $@/kernel
 
-$(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
+$(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) $(shell find data) | $(DIR_BUILD)
 	@echo BUILD ROOT $@
+	@rm -rf $@
 	@mkdir -p $@
 	@mkdir -p $@/boot
 	@mkdir -p $@/lib
