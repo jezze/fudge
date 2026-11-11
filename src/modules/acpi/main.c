@@ -5,6 +5,7 @@
 #include <modules/acpi/acpi.h>
 
 #define TABLES                          32
+#define FADT_XDSDT                      140
 #define AML_EXTPREFIX                   0x5B
 #define AML_OPREGION                    0x80
 #define AML_FIELD                       0x81
@@ -86,6 +87,19 @@ static unsigned int high32(unsigned long address)
 
 }
 
+static unsigned long readaddress(unsigned char *data, unsigned int size)
+{
+
+    unsigned long low = data[0] | (data[1] << 8) | (data[2] << 16) | ((unsigned long)data[3] << 24);
+    unsigned long high = (size == 8) ? data[4] | (data[5] << 8) | (data[6] << 16) | ((unsigned long)data[7] << 24) : 0;
+
+    if (!high)
+        return low;
+
+    return (sizeof (unsigned long) > 4) ? low | ((high << 16) << 16) : 0;
+
+}
+
 static unsigned int validate(void *address, unsigned int length)
 {
 
@@ -145,7 +159,7 @@ static unsigned long getentry(unsigned int index)
 
     unsigned char *entries = (unsigned char *)((struct acpi_sdth *)sdt + 1);
 
-    return *(unsigned int *)(entries + index * sdtentrysize);
+    return readaddress(entries + index * sdtentrysize, sdtentrysize);
 
 }
 
@@ -177,7 +191,7 @@ struct acpi_sdth *acpi_findheader(char *name, unsigned int index)
 
             struct acpi_sdth *entry = (struct acpi_sdth *)getentry(i);
 
-            if (buffer_match(entry->signature, name, 4))
+            if (entry && buffer_match(entry->signature, name, 4))
             {
 
                 if (!index)
@@ -685,12 +699,13 @@ void module_init(void)
             if (validate(rsdp, sizeof (struct acpi_rsdp)) && validate(xsdp, sizeof (struct acpi_xsdp)))
             {
 
-                unsigned long address = (xsdp->xsdt[0] << 0) | (xsdp->xsdt[1] << 8) | (xsdp->xsdt[2] << 16) | (xsdp->xsdt[3] << 24);
+                unsigned long address = readaddress(xsdp->xsdt, 8);
                 struct acpi_xsdt *xsdt = (struct acpi_xsdt *)address;
 
-                arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL);
+                if (address)
+                    arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL);
 
-                if (validate(xsdt, xsdt->base.length))
+                if (address && validate(xsdt, xsdt->base.length))
                 {
 
                     sdt = address;
@@ -711,16 +726,31 @@ void module_init(void)
         unsigned int i;
 
         for (i = 0; i < getcount(); i++)
-            maptable(getentry(i));
+        {
+
+            if (getentry(i))
+                maptable(getentry(i));
+
+        }
 
         fadt = (struct acpi_fadt *)acpi_findheader("FACP", 0);
 
-        if (fadt && fadt->dsdt)
+        if (fadt)
         {
 
-            maptable(fadt->dsdt);
+            unsigned long address = (fadt->base.length >= FADT_XDSDT + 8) ? readaddress((unsigned char *)fadt + FADT_XDSDT, 8) : 0;
 
-            dsdt = (struct acpi_sdth *)(unsigned long)fadt->dsdt;
+            if (!address)
+                address = fadt->dsdt;
+
+            if (address)
+            {
+
+                maptable(address);
+
+                dsdt = (struct acpi_sdth *)address;
+
+            }
 
         }
 
