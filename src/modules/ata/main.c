@@ -252,7 +252,25 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    return type == IDE_BUS && ide_identify(id, identity);
+    unsigned int found;
+
+    if (type != IDE_BUS)
+        return 0;
+
+    if (!ide_lock(id))
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "ata: channel busy, drive not probed");
+
+        return 0;
+
+    }
+
+    found = ide_identify(id, identity);
+
+    ide_unlock(id);
+
+    return found;
 
 }
 

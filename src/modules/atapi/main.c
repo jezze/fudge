@@ -285,7 +285,25 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    return type == IDE_BUS && ide_identifypacket(id, identity) && ((identity[0] >> 8) & 0x1F) == TYPE_CDROM;
+    unsigned int found;
+
+    if (type != IDE_BUS)
+        return 0;
+
+    if (!ide_lock(id))
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "atapi: channel busy, drive not probed");
+
+        return 0;
+
+    }
+
+    found = ide_identifypacket(id, identity) && ((identity[0] >> 8) & 0x1F) == TYPE_CDROM;
+
+    ide_unlock(id);
+
+    return found;
 
 }
 
@@ -294,7 +312,19 @@ static void driver_reset(unsigned int id)
 
     device = id;
     dma = ide_hasdma(id) && (identity[ID_CAPABILITIES] & ID_CAPABILITIES_DMA);
+
+    if (!ide_lock(id))
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "atapi: channel busy, capacity not read");
+
+        return;
+
+    }
+
     blockinterface.blockcount = readcapacity();
+
+    ide_unlock(id);
 
 }
 
