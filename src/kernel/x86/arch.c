@@ -171,6 +171,16 @@ static void resetfpustate(unsigned int itask)
 
 }
 
+static void resettask(unsigned int itask)
+{
+
+    buffer_clear(&registers[itask], sizeof (struct cpu_general));
+    resetfpustate(itask);
+
+    flags[itask] = CPU_FLAGS_IF;
+
+}
+
 static unsigned int createtask(unsigned long base, unsigned int id)
 {
 
@@ -187,8 +197,7 @@ static unsigned int createtask(unsigned long base, unsigned int id)
 
             buffer_copy((void *)(unsigned long)(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask), (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
             mapentry(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask, ARCH_MMAP_BASE + MMAP_SIZE * ntask, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE + MMAP_SIZE * ntask, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
-            resetfpustate(ntask);
-            flags[ntask] = CPU_FLAGS_IF;
+            resettask(ntask);
             kernel_starttask(ntask);
 
             return inode;
@@ -244,6 +253,9 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         struct task *task = pool_gettask(core->itask);
+
+        if (task->thread.ip == task->start.ip && task->thread.sp == task->start.sp)
+            resettask(core->itask);
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
         cpu_setcr0(cpu_getcr0() | CPU_CR0_TS);
