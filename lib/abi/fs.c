@@ -278,6 +278,7 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
     unsigned int target = fs_auth(path);
     unsigned int id = (target) ? fs_walk(ichannel, target, 0, path) : 0;
     struct readreply reply;
+    struct record record;
     unsigned int offset = 0;
 
     if (!target)
@@ -293,6 +294,15 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
     {
 
         channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
+
+        return 0;
+
+    }
+
+    if (fs_stat(ichannel, target, id, &record) && record.type == RECORD_TYPE_DIRECTORY)
+    {
+
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Not a file: %s\n", path);
 
         return 0;
 
