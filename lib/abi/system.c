@@ -120,40 +120,20 @@ static unsigned int readentry(char *path, char *device, char *key, char *out, un
 {
 
     static char data[0x1000];
-    unsigned int count = system_feed(0, 0, data, 0x1000, "mq -query .networks -format \"{device} {type} {%s}\" %s", key, path);
-    unsigned int devicelength = cstring_length(device);
-    unsigned int length;
-    char *line;
+    unsigned int count = system_feed(0, 0, data, 0x1000, "mq -query \".networks[device:%s]\" -format \"{type} {%s}\" %s", device, key, path);
+    unsigned int length = buffer_findbyte(data, count, '\n');
+    unsigned int typelength = buffer_findbyte(data, length, ' ');
+    unsigned int valuelength;
 
-    for (line = data; line < data + count; line += length + 1)
-    {
+    if (typelength == length)
+        return ENTRY_NONE;
 
-        length = buffer_findbyte(line, data + count - line, '\n');
+    valuelength = length - typelength - 1;
 
-        if (length > devicelength + 1 && line[devicelength] == ' ' && buffer_match(line, device, devicelength))
-        {
+    if (valuelength < size)
+        cstring_write_fmt(out, size, 0, "%w\\0", data + typelength + 1, &valuelength);
 
-            char *type = line + devicelength + 1;
-            unsigned int typelength = buffer_findbyte(type, line + length - type, ' ');
-
-            if (type + typelength < line + length)
-            {
-
-                char *value = type + typelength + 1;
-                unsigned int valuelength = line + length - value;
-
-                if (valuelength < size)
-                    cstring_write_fmt(out, size, 0, "%w\\0", value, &valuelength);
-
-            }
-
-            return (typelength == 7 && buffer_match(type, "dynamic", 7)) ? ENTRY_DYNAMIC : ENTRY_STATIC;
-
-        }
-
-    }
-
-    return ENTRY_NONE;
+    return (typelength == 7 && buffer_match(data, "dynamic", 7)) ? ENTRY_DYNAMIC : ENTRY_STATIC;
 
 }
 
