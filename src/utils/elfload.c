@@ -395,7 +395,24 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
 
     }
 
-    return (unresolved) ? 0 : textoffset;
+    if (unresolved)
+        return 0;
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_REL || sectionheaders[i].type == ELF_SECTION_TYPE_RELA)
+        {
+
+            sectionheaders[i].type = ELF_SECTION_TYPE_NULL;
+
+            fs_write_all(1, target, id, &sectionheaders[i], header->shsize, header->shoffset + i * header->shsize);
+
+        }
+
+    }
+
+    return textoffset;
 
 }
 
@@ -531,7 +548,24 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
 
     }
 
-    return (unresolved) ? 0 : textoffset;
+    if (unresolved)
+        return 0;
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_RELA)
+        {
+
+            sectionheaders[i].type = ELF_SECTION_TYPE_NULL;
+
+            fs_write_all(1, target, id, &sectionheaders[i], header->shsize, header->shoffset + i * header->shsize);
+
+        }
+
+    }
+
+    return textoffset;
 
 }
 
