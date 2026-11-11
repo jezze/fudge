@@ -95,10 +95,13 @@ static void addterm(struct message_pipe *pipe, unsigned int target, unsigned int
     for (i = 0; i < pipe->nterms; i++)
     {
 
-        if (pipe->terms[i].target == target)
+        if (pipe->terms[i].target == target && pipe->terms[i].to == to)
             return;
 
     }
+
+    if (target && pipe->nterms >= PIPE_ROUTES - 1)
+        return;
 
     term = &pipe->terms[pipe->nterms++];
     term->event = MESSAGE_TYPE_TERM;
@@ -142,8 +145,8 @@ static void setpipe(struct job *job, unsigned int index, struct message_pipe *pi
 
     if (term)
         addterm(pipe, term->target, term->to);
-    else
-        addterm(pipe, next, MESSAGE_TYPE_TERM);
+
+    addterm(pipe, next, MESSAGE_TYPE_TERM);
 
     for (i = 0; i < command->nroutes; i++)
     {
@@ -153,15 +156,7 @@ static void setpipe(struct job *job, unsigned int index, struct message_pipe *pi
 
     }
 
-    if (pipe->terms[0].target || pipe->terms[0].to != MESSAGE_TYPE_TERM)
-    {
-
-        term = &pipe->terms[pipe->nterms++];
-        term->event = MESSAGE_TYPE_TERM;
-        term->to = MESSAGE_TYPE_TERM;
-        term->target = 0;
-
-    }
+    addterm(pipe, 0, MESSAGE_TYPE_TERM);
 
 }
 
