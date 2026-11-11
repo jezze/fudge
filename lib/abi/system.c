@@ -120,7 +120,7 @@ static unsigned int readentry(char *path, char *device, char *key, char *out, un
 {
 
     static char data[0x1000];
-    unsigned int count = system_feed(0, 0, data, 0x1000, "mq -query \".networks[device:%s]\" -format \"{type} {%s}\" %s", device, key, path);
+    unsigned int count = system_feed(0, 0, data, 0x1000, "mq -query \".networks[device=%s]\" -format \"{type} {%s}\" %s", device, key, path);
     unsigned int length = buffer_findbyte(data, count, '\n');
     unsigned int typelength = buffer_findbyte(data, length, ' ');
     unsigned int valuelength;

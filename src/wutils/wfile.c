@@ -168,7 +168,7 @@ static void showfile(unsigned int wm, struct record *record)
     unsigned int start = buffer_lastbyte(path, length, '/');
     char *suffix = getsuffix();
     char labels[1024];
-    unsigned int nlabels = (suffix) ? system_feed(0, 0, labels, 1024, "mq -query \".filetypes[suffix:%s].label\" %s", suffix, option_getstring("config")) : 0;
+    unsigned int nlabels = (suffix) ? system_feed(0, 0, labels, 1024, "mq -query \".filetypes[suffix=%s].label\" %s", suffix, option_getstring("config")) : 0;
     char label[64];
     unsigned int i;
 
@@ -485,7 +485,7 @@ static void onwmevent(struct message *message)
             char *suffix = getsuffix();
             char commands[64];
             char name[64];
-            unsigned int ncommands = (suffix) ? system_feed(0, 0, commands, 64, "mq -query \".filetypes[suffix:%s][%u].command\" %s", suffix, &index, option_getstring("config")) : 0;
+            unsigned int ncommands = (suffix) ? system_feed(0, 0, commands, 64, "mq -query \".filetypes[suffix=%s][%u].command\" %s", suffix, &index, option_getstring("config")) : 0;
 
             if (getline(commands, ncommands, 0, name, 64))
                 system_run(0, "%s \"%s\" &", name, path);

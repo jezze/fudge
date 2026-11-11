@@ -316,10 +316,10 @@ static void parse_bracket(struct parser *ps, struct piece *piece)
 
     start = ps->pos;
 
-    while (!is_path_end(ps) && *ps->pos != ']' && *ps->pos != ':')
+    while (!is_path_end(ps) && *ps->pos != ']' && *ps->pos != '=')
         next(ps);
 
-    if (*ps->pos == ':')
+    if (*ps->pos == '=')
     {
 
         piece->type = PIECE_FILTER;
