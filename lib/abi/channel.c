@@ -508,28 +508,6 @@ static unsigned int walk(unsigned int target, unsigned int parent, char *path, u
 
 }
 
-static unsigned int create(unsigned int target, unsigned int parent, char *name, unsigned int length)
-{
-
-    char data[MESSAGE_SIZE];
-    struct message_createrequest *request = (struct message_createrequest *)data;
-
-    request->parent = parent;
-    request->count = buffer_write(data, MESSAGE_SIZE, name, length, sizeof (struct message_createrequest));
-
-    if (channel_send(1, target, MESSAGE_TYPE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
-    {
-
-        struct message_createresponse response;
-
-        return (channel_wait(1, target, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response)) ? response.id : 0;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int readvalue(unsigned int target, unsigned int id)
 {
 
@@ -578,9 +556,6 @@ unsigned int channel_lookup(char *name)
             return 0;
 
         file = walk(target, directory, "inode", 5);
-
-        if (!file)
-            file = create(target, directory, "inode", 5);
 
         return (file) ? readvalue(target, file) : 0;
 

@@ -79,7 +79,7 @@ static unsigned int walkchild(struct unitsrv *unitsrv, unsigned int id, char *na
 
         struct resource *device = getdir(unitsrv, id);
 
-        if (device && device->inode && length == 5 && buffer_match(name, "inode", 5))
+        if (device && length == 5 && buffer_match(name, "inode", 5) && pool_attachnode(device))
             return id + POOL_NODES;
 
     }
@@ -256,27 +256,6 @@ static unsigned int onwalkrequest(struct unitsrv *unitsrv, unsigned int source, 
 
 }
 
-static unsigned int oncreaterequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
-{
-
-    struct message_createrequest *request = message_validate(MESSAGE_TYPE_CREATEREQUEST, data, count);
-    struct message_createresponse response;
-
-    if (request)
-    {
-
-        struct resource *device = getdir(unitsrv, request->parent);
-
-        response.id = (device && request->count == 5 && buffer_match(request + 1, "inode", 5) && pool_attachnode(device)) ? request->parent + POOL_NODES : 0;
-
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
-
-    }
-
-    return MESSAGE_FAILED;
-
-}
-
 static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
@@ -313,9 +292,6 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
         switch (event)
         {
-
-        case MESSAGE_TYPE_CREATEREQUEST:
-            return oncreaterequest(unitsrv, source, count, data);
 
         case MESSAGE_TYPE_READREQUEST:
             return onreadrequest(unitsrv, source, count, data);
