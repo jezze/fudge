@@ -4,6 +4,7 @@
 
 #define CHANNEL_EVENTS                  256
 #define CHANNEL_MAILBOXES               8
+#define CHANNEL_ALLSLOTS                ((1 << MESSAGE_SLOTS) - 1)
 #define CHANNEL_COPIES                  16
 #define CHANNEL_QUEUE                   32
 #define CHANNEL_STATE_OPENED            0
@@ -36,7 +37,7 @@ static struct message_route *findroute(unsigned int event)
 
     unsigned int i;
 
-    for (i = 0; i < pipe.nroutes; i++)
+    for (i = 0; i < pipe.nroutes && i < PIPE_ROUTES; i++)
     {
 
         if (pipe.routes[i].event == event)
@@ -614,18 +615,68 @@ void channel_exit(unsigned int ichannel)
 
 }
 
+static void abortdrain(void)
+{
+
+    struct message messages[MESSAGE_SLOTS];
+    unsigned int i;
+
+    for (i = 0; i < CHANNEL_MAILBOXES; i++)
+    {
+
+        call_pick(i, messages, MESSAGE_SLOTS, CHANNEL_ALLSLOTS, 0);
+        call_pick(i, 0, 0, CHANNEL_ALLSLOTS, 0);
+
+    }
+
+}
+
+static void abortplace(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    for (;;)
+    {
+
+        switch (call_place(ichannel, target, event, count, data))
+        {
+
+        case MESSAGE_RETRY:
+            break;
+
+        case MESSAGE_FULL:
+            abortdrain();
+            call_pick(ichannel, 0, 0, 0, MESSAGE_FLAG_BLOCK);
+
+            break;
+
+        default:
+            return;
+
+        }
+
+    }
+
+}
+
 void channel_abort(unsigned int ichannel)
 {
+
+    unsigned int i;
 
     if (owner)
     {
 
         char *error = "Process aborted\n";
+        struct message_route *route = (ichannel) ? 0 : findroute(MESSAGE_TYPE_ERROR);
 
-        channel_send(ichannel, owner, MESSAGE_TYPE_ERROR, cstring_length(error), error);
+        if (route)
+            abortplace(ichannel, resolve(route->target), route->to, cstring_length(error), error);
+        else
+            abortplace(ichannel, owner, MESSAGE_TYPE_ERROR, cstring_length(error), error);
 
     }
 
-    channel_exit(ichannel);
+    for (i = 0; i < pipe.nterms && i < PIPE_ROUTES; i++)
+        abortplace(ichannel, resolve(pipe.terms[i].target), pipe.terms[i].to, 0, 0);
 
 }
