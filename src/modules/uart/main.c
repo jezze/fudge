@@ -94,6 +94,7 @@
 #define BAUDRATE_38400                  0x0003
 #define BAUDRATE_57600                  0x0002
 #define BAUDRATE_115200                 0x0001
+#define BUFFERSIZE                      16
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
@@ -120,9 +121,14 @@ void uart_put(unsigned char c)
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char data = uart_get();
+    unsigned char buffer[BUFFERSIZE];
+    unsigned int count = 0;
 
-    console_notifydata(&consoleinterface, data);
+    while (count < BUFFERSIZE && (io_inb(io + REG_LSR) & REG_LSR_READY))
+        buffer[count++] = io_inb(io);
+
+    if (count)
+        console_notifydata(&consoleinterface, buffer, count);
 
 }
 

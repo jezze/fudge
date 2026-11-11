@@ -51,10 +51,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-void console_notifydata(struct console_interface *interface, unsigned char data)
+void console_notifydata(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->resource, MESSAGE_TYPE_CONSOLEDATA, 1, &data);
+    kernel_notify(&interface->resource, MESSAGE_TYPE_CONSOLEDATA, count, buffer);
 
 }
 

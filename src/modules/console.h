@@ -10,7 +10,7 @@ struct console_interface
 
 };
 
-void console_notifydata(struct console_interface *interface, unsigned char data);
+void console_notifydata(struct console_interface *interface, void *buffer, unsigned int count);
 void console_cursorset(struct console_interface *interface, unsigned int position);
 void console_cursorleft(struct console_interface *interface, unsigned int steps);
 void console_cursorright(struct console_interface *interface, unsigned int steps);

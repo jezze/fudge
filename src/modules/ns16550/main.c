@@ -17,6 +17,7 @@
 #define REG_LSR                         0x05
 #define REG_LSR_RX                      (1 << 0)
 #define REG_LSR_THRE                    (1 << 5)
+#define BUFFERSIZE                      16
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
@@ -25,8 +26,14 @@ static volatile unsigned char *uart;
 static void handleirq(unsigned int irq)
 {
 
-    while (uart[REG_LSR] & REG_LSR_RX)
-        console_notifydata(&consoleinterface, uart[REG_DATA]);
+    unsigned char buffer[BUFFERSIZE];
+    unsigned int count = 0;
+
+    while (count < BUFFERSIZE && (uart[REG_LSR] & REG_LSR_RX))
+        buffer[count++] = uart[REG_DATA];
+
+    if (count)
+        console_notifydata(&consoleinterface, buffer, count);
 
 }
 

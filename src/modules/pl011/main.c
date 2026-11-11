@@ -15,6 +15,7 @@
 #define REG_IMSC_RX                     (1 << 4)
 #define REG_IMSC_RT                     (1 << 6)
 #define REG_ICR                         0x44
+#define BUFFERSIZE                      16
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
@@ -23,8 +24,14 @@ static volatile unsigned int *uart;
 static void handleirq(unsigned int irq)
 {
 
-    while (!(uart[REG_FR / 4] & REG_FR_RXFE))
-        console_notifydata(&consoleinterface, uart[REG_DR / 4]);
+    unsigned char buffer[BUFFERSIZE];
+    unsigned int count = 0;
+
+    while (count < BUFFERSIZE && !(uart[REG_FR / 4] & REG_FR_RXFE))
+        buffer[count++] = uart[REG_DR / 4];
+
+    if (count)
+        console_notifydata(&consoleinterface, buffer, count);
 
     uart[REG_ICR / 4] = REG_IMSC_RX | REG_IMSC_RT;
 

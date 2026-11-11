@@ -29,8 +29,6 @@ static void handleirq(unsigned int irq)
     while ((count = tty[REG_BYTESREADY / 4]))
     {
 
-        unsigned int i;
-
         if (count > BUFFERSIZE)
             count = BUFFERSIZE;
 
@@ -38,8 +36,7 @@ static void handleirq(unsigned int irq)
         tty[REG_DATALEN / 4] = count;
         tty[REG_CMD / 4] = REG_CMD_READBUFFER;
 
-        for (i = 0; i < count; i++)
-            console_notifydata(&consoleinterface, buffer[i]);
+        console_notifydata(&consoleinterface, buffer, count);
 
     }
 

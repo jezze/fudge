@@ -22,7 +22,9 @@ static volatile unsigned short *custom = (volatile unsigned short *)REG_CUSTOM;
 static void handleirq(unsigned int irq)
 {
 
-    console_notifydata(&consoleinterface, custom[REG_SERDATR / 2] & 0xFF);
+    unsigned char data = custom[REG_SERDATR / 2] & 0xFF;
+
+    console_notifydata(&consoleinterface, &data, 1);
 
 }
 
