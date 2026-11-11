@@ -461,6 +461,9 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
         struct mmap_entry *entry;
         unsigned long vaddress;
 
+        if (size > file->size && !grow(file, size))
+            return 0;
+
         size = countpages(size) * MEMSRV_PAGESIZE;
         header = (struct mmap_header *)task->mmap;
         entry = findmapping(header, id);
