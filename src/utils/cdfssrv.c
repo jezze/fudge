@@ -6,6 +6,8 @@
 #define NAMES_PLAIN                     0
 #define NAMES_JOLIET                    1
 #define NAMES_ROCKRIDGE                 2
+#define ENTRIES                         64
+#define SECTORLIMIT                     (0xFFFFFFFF / ENTRIES)
 
 struct node
 {
@@ -113,13 +115,59 @@ static struct node getentrynode(unsigned int offset)
 
 }
 
+static unsigned int makeid(unsigned int sector, unsigned int offset)
+{
+
+    unsigned int current = 0;
+    unsigned int index = 0;
+
+    while (current < offset && checkentry(current))
+    {
+
+        struct cdfs_entry *entry = (struct cdfs_entry *)&cache[current];
+
+        current += entry->length;
+        index++;
+
+    }
+
+    return sector * ENTRIES + index;
+
+}
+
+static unsigned int getentryoffset(unsigned int id)
+{
+
+    unsigned int offset = 0;
+    unsigned int index;
+
+    if (!id || !readsector(id / ENTRIES))
+        return CDFS_SECTORSIZE;
+
+    for (index = id % ENTRIES; index; index--)
+    {
+
+        struct cdfs_entry *entry = (struct cdfs_entry *)&cache[offset];
+
+        if (!checkentry(offset))
+            return CDFS_SECTORSIZE;
+
+        offset += entry->length;
+
+    }
+
+    return offset;
+
+}
+
 static struct node getnode(unsigned int id)
 {
 
+    unsigned int offset = getentryoffset(id);
     struct node node;
 
-    if (id && readsector(id / CDFS_SECTORSIZE) && checkentry(id % CDFS_SECTORSIZE))
-        return getentrynode(id % CDFS_SECTORSIZE);
+    if (checkentry(offset))
+        return getentrynode(offset);
 
     node.found = 0;
     node.extent = 0;
@@ -288,7 +336,7 @@ static unsigned int nextentry(struct cursor *cursor)
         {
 
             cursor->node = getentrynode(offset);
-            cursor->id = (cursor->node.type == RECORD_TYPE_DIRECTORY) ? cursor->node.extent * CDFS_SECTORSIZE : sector * CDFS_SECTORSIZE + offset;
+            cursor->id = (cursor->node.type == RECORD_TYPE_DIRECTORY) ? cursor->node.extent * ENTRIES : makeid(sector, offset);
 
             getname(cursor, offset);
 
@@ -457,7 +505,7 @@ static unsigned int stat(unsigned int id, struct record *record)
 
     /* getnode left the record's sector in the cache */
     if (node.type != RECORD_TYPE_DIRECTORY)
-        getname(&cursor, id % CDFS_SECTORSIZE);
+        getname(&cursor, getentryoffset(id));
 
     record_init(record, id, node.type, node.size, 0, cursor.length, cursor.name);
 
@@ -477,7 +525,7 @@ static unsigned int hassusp(void)
 
     struct cdfs_entry *entry = (struct cdfs_entry *)cache;
 
-    if (readsector(root / CDFS_SECTORSIZE) && checkentry(0) && entry->length >= CDFS_ENTRYSIZE + 8 && cache[CDFS_ENTRYSIZE + 1] == 'S' && cache[CDFS_ENTRYSIZE + 2] == 'P' && cache[CDFS_ENTRYSIZE + 5] == 0xBE && cache[CDFS_ENTRYSIZE + 6] == 0xEF)
+    if (readsector(root / ENTRIES) && checkentry(0) && entry->length >= CDFS_ENTRYSIZE + 8 && cache[CDFS_ENTRYSIZE + 1] == 'S' && cache[CDFS_ENTRYSIZE + 2] == 'P' && cache[CDFS_ENTRYSIZE + 5] == 0xBE && cache[CDFS_ENTRYSIZE + 6] == 0xEF)
     {
 
         suspskip = cache[CDFS_ENTRYSIZE + 7];
@@ -506,11 +554,14 @@ static unsigned int findroot(void)
         if (!checkentry(descriptor->root - cache))
             continue;
 
+        if (descriptor->type == CDFS_TYPE_PRIMARY && cdfs_read32(descriptor->sectorcount) > SECTORLIMIT)
+            return 0;
+
         if (descriptor->type == CDFS_TYPE_PRIMARY && !root)
-            root = getentrynode(descriptor->root - cache).extent * CDFS_SECTORSIZE;
+            root = getentrynode(descriptor->root - cache).extent * ENTRIES;
 
         if (descriptor->type == CDFS_TYPE_SUPPLEMENTARY && !joliet && isjoliet(descriptor))
-            joliet = getentrynode(descriptor->root - cache).extent * CDFS_SECTORSIZE;
+            joliet = getentrynode(descriptor->root - cache).extent * ENTRIES;
 
     }
 
