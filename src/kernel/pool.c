@@ -49,28 +49,28 @@ static struct taskrow *gettaskrow(unsigned int itask)
 static unsigned int encodecorerow(struct corerow *corerow)
 {
 
-    return ((unsigned long)corerow - (unsigned long)corerows) / sizeof (struct corerow);
+    return corerow - corerows;
 
 }
 
 static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
 {
 
-    return ((unsigned long)mailboxrow - (unsigned long)mailboxrows) / sizeof (struct mailboxrow);
+    return mailboxrow - mailboxrows;
 
 }
 
 static unsigned int encodenoderow(struct noderow *noderow)
 {
 
-    return ((unsigned long)noderow - (unsigned long)noderows) / sizeof (struct noderow) + POOL_NODES * noderow->generation;
+    return (noderow - noderows) + POOL_NODES * noderow->generation;
 
 }
 
 static unsigned int encodetaskrow(struct taskrow *taskrow)
 {
 
-    return ((unsigned long)taskrow - (unsigned long)taskrows) / sizeof (struct taskrow);
+    return taskrow - taskrows;
 
 }
 
