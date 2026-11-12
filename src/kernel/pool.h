@@ -13,7 +13,6 @@ struct mailbox *pool_getmailbox(unsigned int imailbox);
 struct resource *pool_getnoderesource(unsigned int inode);
 struct task *pool_gettask(unsigned int itask);
 unsigned int pool_getinodefromitem(struct list_item *item);
-unsigned int pool_getitaskfromitem(struct list_item *item);
 unsigned int pool_pickcorefrom(struct list *list);
 unsigned int pool_pickmailbox(void);
 unsigned int pool_picknode(struct resource *resource);

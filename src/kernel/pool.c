@@ -117,13 +117,6 @@ unsigned int pool_getinodefromitem(struct list_item *item)
 
 }
 
-unsigned int pool_getitaskfromitem(struct list_item *item)
-{
-
-    return encodetaskrow(item->data);
-
-}
-
 unsigned int pool_pickcorefrom(struct list *list)
 {
 

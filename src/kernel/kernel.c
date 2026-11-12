@@ -10,7 +10,6 @@
 #include "pool.h"
 #include "kernel.h"
 
-static struct list blockedtasks;
 static struct core *(*getcorecallback)(void);
 static void (*assigncorecallback)(unsigned int itask);
 
@@ -108,8 +107,6 @@ static unsigned int transition(unsigned int itask, unsigned int from, unsigned i
         case TASK_STATE_BLOCKED:
             task->signals.block = 0;
 
-            pool_placetask(itask, &blockedtasks);
-
             break;
 
         case TASK_STATE_ASSIGNED:
@@ -153,48 +150,27 @@ static void restart(struct task *task)
 static void unblocktasks(void)
 {
 
-    struct list_item *current;
-    struct list_item *next;
+    unsigned int itask;
 
-    spinlock_acquire(&blockedtasks.spinlock);
-
-    for (current = blockedtasks.head; current; current = next)
+    for (itask = 1; itask < POOL_TASKS; itask++)
     {
 
-        unsigned int itask = pool_getitaskfromitem(current);
         struct task *task = pool_gettask(itask);
 
-        next = current->next;
-
-        if (task)
+        if (task->state == TASK_STATE_BLOCKED)
         {
 
             if (task->aborted == TASK_ABORT_PENDING)
                 restart(task);
 
             if (task->signals.kill)
-            {
-
-                list_remove_unsafe(&blockedtasks, current);
                 transition(itask, TASK_STATE_BLOCKED, TASK_STATE_DEAD);
-
-            }
-
-            else if (task->signals.unblock)
-            {
-
-                list_remove_unsafe(&blockedtasks, current);
-
-                if (transition(itask, TASK_STATE_BLOCKED, TASK_STATE_ASSIGNED))
-                    assigncorecallback(itask);
-
-            }
+            else if (task->signals.unblock && transition(itask, TASK_STATE_BLOCKED, TASK_STATE_ASSIGNED))
+                assigncorecallback(itask);
 
         }
 
     }
-
-    spinlock_release(&blockedtasks.spinlock);
 
 }
 
@@ -598,7 +574,6 @@ void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(unsign
 void kernel_setup(void)
 {
 
-    list_init(&blockedtasks);
     kernel_setcallback(getcore0, assign0);
 
 }
