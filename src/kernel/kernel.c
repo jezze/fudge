@@ -139,7 +139,6 @@ static void restart(struct task *task)
     spinlock_acquire(&task->spinlock);
 
     task->aborted = TASK_ABORT_DONE;
-    task->signals.block = 0;
     task->thread.ip = task->start.ip;
     task->thread.sp = task->start.sp;
 
@@ -159,9 +158,6 @@ static void unblocktasks(void)
 
         if (task->state == TASK_STATE_BLOCKED)
         {
-
-            if (task->aborted == TASK_ABORT_PENDING)
-                restart(task);
 
             if (task->signals.kill)
                 transition(itask, TASK_STATE_BLOCKED, TASK_STATE_DEAD);
@@ -284,9 +280,6 @@ void kernel_schedule(struct core *core)
 
         struct task *task = pool_gettask(core->itask);
 
-        if (task->aborted == TASK_ABORT_PENDING)
-            restart(task);
-
         if (task->signals.kill)
             transition(core->itask, TASK_STATE_RUNNING, TASK_STATE_DEAD);
         else if (task->signals.block)
@@ -308,7 +301,14 @@ void kernel_schedule(struct core *core)
         transition(core->itask, TASK_STATE_ASSIGNED, TASK_STATE_RUNNING);
 
         if (!task->signals.kill)
+        {
+
+            if (task->aborted == TASK_ABORT_PENDING)
+                restart(task);
+
             break;
+
+        }
 
         transition(core->itask, TASK_STATE_RUNNING, TASK_STATE_DEAD);
 
