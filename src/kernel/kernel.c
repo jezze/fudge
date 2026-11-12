@@ -78,57 +78,61 @@ static void retiretask(unsigned int itask, struct waking *waking)
 
 }
 
-static void transition(unsigned int itask, unsigned int state)
+static unsigned int transition(unsigned int itask, unsigned int from, unsigned int to)
 {
 
     struct task *task = pool_gettask(itask);
+    struct waking waking;
+    unsigned int changed;
+    unsigned int i;
 
-    if (task)
+    waking.count = 0;
+
+    spinlock_acquire(&task->spinlock);
+
+    changed = task->state == from;
+
+    if (changed)
     {
 
-        struct waking waking;
-        unsigned int i;
+        task->state = to;
 
-        waking.count = 0;
-
-        spinlock_acquire(&task->spinlock);
-
-        if (task_transition(task, state))
+        switch (to)
         {
 
-            switch (task->state)
-            {
+        case TASK_STATE_DEAD:
+            retiretask(itask, &waking);
 
-            case TASK_STATE_DEAD:
-                retiretask(itask, &waking);
+            break;
 
-                break;
+        case TASK_STATE_BLOCKED:
+            task->signals.block = 0;
 
-            case TASK_STATE_BLOCKED:
-                pool_placetask(itask, &blockedtasks);
+            pool_placetask(itask, &blockedtasks);
 
-                break;
+            break;
 
-            case TASK_STATE_RUNNING:
-                task->started = 1;
+        case TASK_STATE_ASSIGNED:
+            if (from == TASK_STATE_BLOCKED)
+                task->signals.unblock = 0;
 
-                break;
+            break;
 
-            case TASK_STATE_ASSIGNED:
-                assigncorecallback(itask);
+        case TASK_STATE_RUNNING:
+            task->started = 1;
 
-                break;
-
-            }
+            break;
 
         }
 
-        spinlock_release(&task->spinlock);
-
-        for (i = 0; i < waking.count; i++)
-            mailbox_wake(waking.inodes[i]);
-
     }
+
+    spinlock_release(&task->spinlock);
+
+    for (i = 0; i < waking.count; i++)
+        mailbox_wake(waking.inodes[i]);
+
+    return changed;
 
 }
 
@@ -172,8 +176,7 @@ static void unblocktasks(void)
             {
 
                 list_remove_unsafe(&blockedtasks, current);
-                transition(itask, TASK_STATE_UNBLOCKED);
-                transition(itask, TASK_STATE_DEAD);
+                transition(itask, TASK_STATE_BLOCKED, TASK_STATE_DEAD);
 
             }
 
@@ -181,8 +184,9 @@ static void unblocktasks(void)
             {
 
                 list_remove_unsafe(&blockedtasks, current);
-                transition(itask, TASK_STATE_UNBLOCKED);
-                transition(itask, TASK_STATE_ASSIGNED);
+
+                if (transition(itask, TASK_STATE_BLOCKED, TASK_STATE_ASSIGNED))
+                    assigncorecallback(itask);
 
             }
 
@@ -308,20 +312,11 @@ void kernel_schedule(struct core *core)
             restart(task);
 
         if (task->signals.kill)
-            transition(core->itask, TASK_STATE_DEAD);
+            transition(core->itask, TASK_STATE_RUNNING, TASK_STATE_DEAD);
         else if (task->signals.block)
-            transition(core->itask, TASK_STATE_BLOCKED);
-        else
-        {
-
-            spinlock_acquire(&task->spinlock);
-
-            if (task_transition(task, TASK_STATE_ASSIGNED))
-                pool_placetask(core->itask, &core->tasks);
-
-            spinlock_release(&task->spinlock);
-
-        }
+            transition(core->itask, TASK_STATE_RUNNING, TASK_STATE_BLOCKED);
+        else if (transition(core->itask, TASK_STATE_RUNNING, TASK_STATE_ASSIGNED))
+            pool_placetask(core->itask, &core->tasks);
 
         core->itask = 0;
 
@@ -334,12 +329,12 @@ void kernel_schedule(struct core *core)
 
         struct task *task = pool_gettask(core->itask);
 
-        transition(core->itask, TASK_STATE_RUNNING);
+        transition(core->itask, TASK_STATE_ASSIGNED, TASK_STATE_RUNNING);
 
         if (!task->signals.kill)
             break;
 
-        transition(core->itask, TASK_STATE_DEAD);
+        transition(core->itask, TASK_STATE_RUNNING, TASK_STATE_DEAD);
 
     }
 
@@ -587,8 +582,8 @@ unsigned long kernel_getbuffer(unsigned int inode)
 void kernel_starttask(unsigned int itask)
 {
 
-    transition(itask, TASK_STATE_NEW);
-    transition(itask, TASK_STATE_ASSIGNED);
+    if (transition(itask, TASK_STATE_DEAD, TASK_STATE_ASSIGNED))
+        assigncorecallback(itask);
 
 }
 

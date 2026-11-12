@@ -60,12 +60,10 @@ static unsigned int writetasks(void)
 
     unsigned int c = 0;
     unsigned int i;
-    char *states[7] = {
+    char *states[5] = {
         "UNKNOWN",
         "DEAD",
-        "NEW",
         "BLOCKED",
-        "UNBLOCKED",
         "ASSIGNED",
         "RUNNING"
     };

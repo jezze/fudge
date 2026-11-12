@@ -3,11 +3,9 @@
 #define TASK_BUFFERSIZE                 0x00008000
 #define TASK_MAILBOXES                  8
 #define TASK_STATE_DEAD                 1
-#define TASK_STATE_NEW                  2
-#define TASK_STATE_BLOCKED              3
-#define TASK_STATE_UNBLOCKED            4
-#define TASK_STATE_ASSIGNED             5
-#define TASK_STATE_RUNNING              6
+#define TASK_STATE_BLOCKED              2
+#define TASK_STATE_ASSIGNED             3
+#define TASK_STATE_RUNNING              4
 #define TASK_SIGNAL_KILL                1
 #define TASK_SIGNAL_BLOCK               2
 #define TASK_SIGNAL_UNBLOCK             3
@@ -49,7 +47,6 @@ struct task
 };
 
 void task_signal(struct task *task, unsigned int signal);
-unsigned int task_transition(struct task *task, unsigned int state);
 void task_register(struct task *task, unsigned long mmap, unsigned long buffer, unsigned long ip, unsigned long sp);
 void task_reset(struct task *task);
 void task_init(struct task *task);
