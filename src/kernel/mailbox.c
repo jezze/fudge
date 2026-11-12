@@ -73,18 +73,12 @@ static unsigned int release(struct mailbox *mailbox, unsigned int slots)
 static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int slots)
 {
 
-    unsigned int wake = 0;
+    unsigned int released;
     unsigned int n = 0;
 
     spinlock_acquire(&mailbox->spinlock);
 
-    if (release(mailbox, slots) && mailbox->waiters)
-    {
-
-        mailbox->waiters = 0;
-        wake = 1;
-
-    }
+    released = release(mailbox, slots);
 
     while (n < count && mailbox->queued.head)
     {
@@ -103,7 +97,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
 
     spinlock_release(&mailbox->spinlock);
 
-    if (wake)
+    if (released)
         mailbox_wake(mailbox->resource.inode);
 
     return n;
@@ -232,7 +226,6 @@ unsigned int mailbox_wait(unsigned int target, unsigned int itask)
             {
 
                 task->waitingfor = target;
-                mailbox->waiters = 1;
                 waiting = 1;
 
             }
@@ -247,13 +240,11 @@ unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 
 }
 
-unsigned int mailbox_reset(struct mailbox *mailbox)
+void mailbox_reset(struct mailbox *mailbox)
 {
 
-    unsigned int waiters = mailbox->waiters;
     unsigned int i;
 
-    mailbox->waiters = 0;
     mailbox->itask = 0;
     mailbox->ichannel = 0;
 
@@ -263,8 +254,6 @@ unsigned int mailbox_reset(struct mailbox *mailbox)
 
     for (i = 0; i < MESSAGE_SLOTS; i++)
         list_add_unsafe(&mailbox->free, &mailbox->items[i]);
-
-    return waiters;
 
 }
 

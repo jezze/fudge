@@ -12,7 +12,6 @@ struct mailbox
     struct list queued;
     struct list picked;
     unsigned long data;
-    unsigned int waiters;
 
 };
 
@@ -20,7 +19,7 @@ struct mailbox *mailbox_get(unsigned int inode);
 unsigned int mailbox_isfull(unsigned int inode);
 unsigned int mailbox_wait(unsigned int target, unsigned int itask);
 void mailbox_wake(unsigned int inode);
-unsigned int mailbox_reset(struct mailbox *mailbox);
+void mailbox_reset(struct mailbox *mailbox);
 void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel);
 void mailbox_init(struct mailbox *mailbox, unsigned long data);
 void mailbox_setup(void);

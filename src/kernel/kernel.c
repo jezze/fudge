@@ -30,50 +30,37 @@ static void assign0(unsigned int itask)
 
 }
 
-struct waking
-{
-
-    unsigned int inodes[TASK_MAILBOXES];
-    unsigned int count;
-
-};
-
-static void retiretask(unsigned int itask, struct waking *waking)
+static void retiretask(unsigned int itask)
 {
 
     struct task *task = pool_gettask(itask);
+    unsigned int i;
 
-    if (task)
+    for (i = 0; i < TASK_MAILBOXES; i++)
     {
 
-        unsigned int i;
+        struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
 
-        for (i = 0; i < TASK_MAILBOXES; i++)
+        if (mailbox)
         {
 
-            struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
+            unsigned int inode = mailbox->resource.inode;
 
-            if (mailbox)
-            {
+            mailbox_reset(mailbox);
+            service_unregister(&mailbox->service);
 
-                if (mailbox_reset(mailbox))
-                    waking->inodes[waking->count++] = mailbox->resource.inode;
+            mailbox->resource.inode = pool_renewnode(inode);
 
-                service_unregister(&mailbox->service);
-
-                mailbox->resource.inode = pool_renewnode(mailbox->resource.inode);
-
-                pool_unpickmailbox(task->imailbox[i]);
-
-            }
+            pool_unpickmailbox(task->imailbox[i]);
+            mailbox_wake(inode);
 
         }
 
-        memsrv_untask(itask);
-        task_reset(task);
-        pool_unpicktask(itask);
-
     }
+
+    memsrv_untask(itask);
+    task_reset(task);
+    pool_unpicktask(itask);
 
 }
 
@@ -81,11 +68,7 @@ static unsigned int transition(unsigned int itask, unsigned int from, unsigned i
 {
 
     struct task *task = pool_gettask(itask);
-    struct waking waking;
     unsigned int changed;
-    unsigned int i;
-
-    waking.count = 0;
 
     spinlock_acquire(&task->spinlock);
 
@@ -98,11 +81,6 @@ static unsigned int transition(unsigned int itask, unsigned int from, unsigned i
 
         switch (to)
         {
-
-        case TASK_STATE_DEAD:
-            retiretask(itask, &waking);
-
-            break;
 
         case TASK_STATE_BLOCKED:
             task->signals.block = 0;
@@ -126,8 +104,8 @@ static unsigned int transition(unsigned int itask, unsigned int from, unsigned i
 
     spinlock_release(&task->spinlock);
 
-    for (i = 0; i < waking.count; i++)
-        mailbox_wake(waking.inodes[i]);
+    if (changed && to == TASK_STATE_DEAD)
+        retiretask(itask);
 
     return changed;
 
