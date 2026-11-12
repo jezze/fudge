@@ -193,18 +193,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 unsigned int kernel_linknode(struct resource *resource, unsigned int source)
 {
 
-    unsigned int inode = pool_picknode(pool_getnoderesource(source));
-
-    if (inode)
-    {
-
-        pool_placenode(inode, &resource->links);
-
-        return MESSAGE_OK;
-
-    }
-
-    return MESSAGE_FAILED;
+    return (pool_getnoderesource(source) && pool_link(&resource->links, source)) ? MESSAGE_OK : MESSAGE_FAILED;
 
 }
 
@@ -212,41 +201,29 @@ unsigned int kernel_unlinknode(struct resource *resource, unsigned int source)
 {
 
     struct list *links = &resource->links;
-    struct resource *sresource = pool_getnoderesource(source);
+    struct list_item *current;
+    struct list_item *next;
 
-    if (sresource)
+    spinlock_acquire(&links->spinlock);
+
+    for (current = links->head; current; current = next)
     {
 
-        struct list_item *current;
-        struct list_item *next;
+        next = current->next;
 
-        spinlock_acquire(&links->spinlock);
-
-        for (current = links->head; current; current = next)
+        if (pool_getlinktarget(current) == source)
         {
 
-            unsigned int inode = pool_getinodefromitem(current);
-            struct resource *linked = pool_getnoderesource(inode);
-
-            next = current->next;
-
-            if (linked == sresource)
-            {
-
-                list_remove_unsafe(links, current);
-                pool_unpicknode(inode);
-
-            }
+            list_remove_unsafe(links, current);
+            pool_unlink(current);
 
         }
 
-        spinlock_release(&links->spinlock);
-
-        return MESSAGE_OK;
-
     }
 
-    return MESSAGE_FAILED;
+    spinlock_release(&links->spinlock);
+
+    return MESSAGE_OK;
 
 }
 
@@ -407,17 +384,32 @@ void kernel_notify(struct resource *resource, unsigned int event, unsigned int c
 {
 
     struct list *links = &resource->links;
-    struct list_item *current = 0;
+    struct list_item *current;
+    struct list_item *next;
 
     spinlock_acquire(&links->spinlock);
 
-    while ((current = list_next_unsafe(links, current)))
+    for (current = links->head; current; current = next)
     {
 
-        unsigned int target = pool_getinodefromitem(current);
+        unsigned int target = pool_getlinktarget(current);
 
-        if (target)
+        next = current->next;
+
+        if (pool_getnoderesource(target))
+        {
+
             kernel_place(resource->inode, target, event, count, data);
+
+        }
+
+        else
+        {
+
+            list_remove_unsafe(links, current);
+            pool_unlink(current);
+
+        }
 
     }
 

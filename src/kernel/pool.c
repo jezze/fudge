@@ -11,9 +11,11 @@ static struct corerow {struct list_item item; struct core core;} corerows[POOL_C
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
 static struct noderow {struct list_item item; struct resource *resource; unsigned int generation;} noderows[POOL_NODES];
+static struct linkrow {struct list_item item; unsigned int target;} linkrows[POOL_LINKS];
 static struct list freetasks;
 static struct list freemailboxes;
 static struct list freenodes;
+static struct list freelinks;
 static struct spinlock attachlock;
 
 static struct corerow *getcorerow(unsigned int icore)
@@ -110,10 +112,12 @@ struct task *pool_gettask(unsigned int itask)
 
 }
 
-unsigned int pool_getinodefromitem(struct list_item *item)
+unsigned int pool_getlinktarget(struct list_item *item)
 {
 
-    return encodenoderow(item->data);
+    struct linkrow *linkrow = item->data;
+
+    return linkrow->target;
 
 }
 
@@ -155,6 +159,33 @@ unsigned int pool_picknode(struct resource *resource)
 
 }
 
+unsigned int pool_link(struct list *links, unsigned int target)
+{
+
+    struct list_item *item = list_pickhead(&freelinks);
+
+    if (item)
+    {
+
+        struct linkrow *linkrow = item->data;
+
+        linkrow->target = target;
+
+        list_add(links, item);
+
+    }
+
+    return item != 0;
+
+}
+
+void pool_unlink(struct list_item *item)
+{
+
+    list_add(&freelinks, item);
+
+}
+
 unsigned int pool_attachnode(struct resource *resource)
 {
 
@@ -187,7 +218,7 @@ void pool_detachnode(struct resource *resource)
     spinlock_release(&attachlock);
 
     while ((item = list_pickhead(&resource->links)))
-        pool_unpicknode(pool_getinodefromitem(item));
+        pool_unlink(item);
 
     pool_unpicknode(inode);
 
@@ -280,16 +311,6 @@ void pool_placecore(unsigned int icore, struct list *list)
 
 }
 
-void pool_placenode(unsigned int inode, struct list *list)
-{
-
-    struct noderow *noderow = getnoderow(inode);
-
-    if (noderow)
-        list_add(list, &noderow->item);
-
-}
-
 void pool_placetask(unsigned int itask, struct list *list)
 {
 
@@ -308,6 +329,7 @@ void pool_setup(unsigned long mbaddress)
     list_init(&freetasks);
     list_init(&freemailboxes);
     list_init(&freenodes);
+    list_init(&freelinks);
     spinlock_init(&attachlock);
 
     for (i = 0; i < POOL_CORES; i++)
@@ -328,6 +350,16 @@ void pool_setup(unsigned long mbaddress)
 
         list_inititem(&noderow->item, noderow);
         list_add(&freenodes, &noderow->item);
+
+    }
+
+    for (i = 0; i < POOL_LINKS; i++)
+    {
+
+        struct linkrow *linkrow = &linkrows[i];
+
+        list_inititem(&linkrow->item, linkrow);
+        list_add(&freelinks, &linkrow->item);
 
     }
 

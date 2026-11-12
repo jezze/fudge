@@ -5,44 +5,39 @@ static struct debug_interface debuginterface;
 static struct server server;
 static struct service service;
 
-static void notify(unsigned int source, unsigned int level, unsigned int count, void *data)
+static unsigned int islinked(unsigned int source)
 {
 
-    struct {struct message_loginfo loginfo; char data[MESSAGE_SIZE - sizeof (struct message_loginfo)];} message;
     struct list *links = &server.resource.links;
-    struct resource *sresource = (source) ? pool_getnoderesource(source) : 0;
-    struct list_item *current = 0;
-
-    message.loginfo.level = level;
-    message.loginfo.count = buffer_write(message.data, sizeof (message.data), data, count, 0);
+    struct list_item *current;
+    unsigned int linked = 0;
 
     spinlock_acquire(&links->spinlock);
 
-    while (sresource && (current = list_next_unsafe(links, current)))
+    for (current = links->head; current; current = current->next)
     {
 
-        if (pool_getnoderesource(pool_getinodefromitem(current)) == sresource)
-        {
-
-            spinlock_release(&links->spinlock);
-
-            return;
-
-        }
-
-    }
-
-    while ((current = list_next_unsafe(links, current)))
-    {
-
-        unsigned int target = pool_getinodefromitem(current);
-
-        if (target)
-            kernel_place(server.resource.inode, target, MESSAGE_TYPE_LOGINFO, sizeof (struct message_loginfo) + message.loginfo.count, &message);
+        if (pool_getlinktarget(current) == source)
+            linked = 1;
 
     }
 
     spinlock_release(&links->spinlock);
+
+    return linked;
+
+}
+
+static void notify(unsigned int source, unsigned int level, unsigned int count, void *data)
+{
+
+    struct {struct message_loginfo loginfo; char data[MESSAGE_SIZE - sizeof (struct message_loginfo)];} message;
+
+    message.loginfo.level = level;
+    message.loginfo.count = buffer_write(message.data, sizeof (message.data), data, count, 0);
+
+    if (!islinked(source))
+        kernel_notify(&server.resource, MESSAGE_TYPE_LOGINFO, sizeof (struct message_loginfo) + message.loginfo.count, &message);
 
 }
 
