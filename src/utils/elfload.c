@@ -249,6 +249,57 @@ static unsigned int relocateriscv(unsigned int target, unsigned int id, unsigned
 
 }
 
+static unsigned int findunresolved32(unsigned int source, unsigned int target, unsigned int id, struct elf_sectionheader *sectionheaders, unsigned int count)
+{
+
+    unsigned int unresolved = 0;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_REL || sectionheaders[i].type == ELF_SECTION_TYPE_RELA)
+        {
+
+            struct elf_sectionheader *relocationheader = &sectionheaders[i];
+            struct elf_sectionheader *symbolheader = &sectionheaders[relocationheader->link];
+            struct elf_sectionheader *stringheader = &sectionheaders[symbolheader->link];
+            char strings[4096];
+            unsigned int j;
+
+            if (stringheader->size > 4096)
+                PANIC(source);
+
+            fs_read_full(1, target, id, strings, stringheader->size, stringheader->offset);
+
+            for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
+            {
+
+                struct elf_relocationa relocation;
+                struct elf_symbol symbol;
+
+                fs_read_full(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                fs_read_full(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+
+                if (!symbol.shindex && !findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name))
+                {
+
+                    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+
+                    unresolved++;
+
+                }
+
+            }
+
+        }
+
+    }
+
+    return unresolved;
+
+}
+
 static unsigned int link32(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, unsigned int base)
 {
 
@@ -261,6 +312,9 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
         return 0;
 
     fs_read_full(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
+
+    if (findunresolved32(source, target, id, sectionheaders, header->shcount))
+        return 0;
 
     for (i = 0; i < header->shcount; i++)
     {
@@ -310,15 +364,6 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
 
                 address = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
                 place = base + dataheader->offset + relocation.offset;
-
-                if (!address)
-                {
-
-                    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
-
-                    unresolved++;
-
-                }
 
                 if (header->machine == ELF_MACHINE_RISCV)
                 {
@@ -416,6 +461,57 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
 
 }
 
+static unsigned int findunresolved64(unsigned int source, unsigned int target, unsigned int id, struct elf64_sectionheader *sectionheaders, unsigned int count)
+{
+
+    unsigned int unresolved = 0;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_RELA)
+        {
+
+            struct elf64_sectionheader *relocationheader = &sectionheaders[i];
+            struct elf64_sectionheader *symbolheader = &sectionheaders[relocationheader->link];
+            struct elf64_sectionheader *stringheader = &sectionheaders[symbolheader->link];
+            char strings[4096];
+            unsigned int j;
+
+            if (stringheader->size > 4096)
+                PANIC(source);
+
+            fs_read_full(1, target, id, strings, stringheader->size, stringheader->offset);
+
+            for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
+            {
+
+                struct elf64_relocation relocation;
+                struct elf64_symbol symbol;
+
+                fs_read_full(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                fs_read_full(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + relocation.symbol * symbolheader->esize);
+
+                if (!symbol.shindex && !findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name))
+                {
+
+                    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+
+                    unresolved++;
+
+                }
+
+            }
+
+        }
+
+    }
+
+    return unresolved;
+
+}
+
 static unsigned int link64(unsigned int source, unsigned int target, unsigned int id, struct elf64_header *header, unsigned int base)
 {
 
@@ -428,6 +524,9 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
         return 0;
 
     fs_read_full(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
+
+    if (findunresolved64(source, target, id, sectionheaders, header->shcount))
+        return 0;
 
     for (i = 0; i < header->shcount; i++)
     {
@@ -468,29 +567,7 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
                 fs_read_full(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_full(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + relocation.symbol * symbolheader->esize);
 
-                if (symbol.shindex)
-                {
-
-                    value = base + sectionheaders[symbol.shindex].offset + symbol.value;
-
-                }
-
-                else
-                {
-
-                    value = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
-
-                    if (!value)
-                    {
-
-                        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
-
-                        unresolved++;
-
-                    }
-
-                }
-
+                value = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
                 value += relocation.addend;
 
                 if (header->machine == ELF_MACHINE_RISCV)
