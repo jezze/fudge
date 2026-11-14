@@ -16,6 +16,7 @@
 #define MMIOSIZE                        0x1000
 #define MMIOMAP                         0xB8008000
 #define TIMEOUT                         1000000
+#define SETTINGS                        2
 #define POWERDELAY                      10000
 #define RXFIFO                          8
 #define PCI_CAPABILITY_PM               0x01
@@ -194,7 +195,7 @@ static struct client clients[DEVICES];
 static unsigned int nclients;
 
 /* Intel's reference firmware has a touchpad (TPD0) under I2C1 and a touch panel (TPL0) under I2C0 whose _INI fills their templates from these; the touchpad comes first so it stays the device the bus drives */
-static struct setting settings[] = {
+static struct setting settings[SETTINGS] = {
     {1, "SDS1", 0x01, "TPDT", "TPDB", "TPDS", "TPDH", "GPDI"},
     {0, "SDS0", 0x02, "TPLT", "TPLB", "TPLS", "TPLH", "GPLI"}
 };
@@ -390,7 +391,7 @@ static unsigned int readsettings(void)
     unsigned int count = 0;
     unsigned int i;
 
-    for (i = 0; i < sizeof (settings) / sizeof (struct setting); i++)
+    for (i = 0; i < SETTINGS; i++)
     {
 
         struct setting *setting = &settings[i];

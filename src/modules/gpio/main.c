@@ -14,6 +14,9 @@
 #define VENDOR_INTEL                    0x8086
 #define PADS                            8
 #define STORM                           10000
+#define CHIPS                           2
+#define GROUPSTGLLP                     18
+#define GROUPSTGLH                      19
 #define PADBAR                          0x0C
 #define DW0_RXSTATE                     (1 << 1)
 #define DW0_TXDIS                       (1 << 8)
@@ -59,7 +62,7 @@ struct interrupt
 };
 
 /* groups in the order Intel's reference firmware numbers them (its GPCL table, the group in bits 16-23 of a pad like GPDI): community port, first pad in the community, pads, first HOSTSW_OWN/GPI_IS/GPI_IE register */
-static struct group groupstgllp[] = {
+static struct group groupstgllp[GROUPSTGLLP] = {
     {0x6E, 0, 26, 0}, {0x6E, 26, 16, 1}, {0x6E, 42, 25, 2},
     {0x69, 0, 8, 0}, {0x69, 8, 9, 1},
     {0x6C, 0, 17, 0},
@@ -68,7 +71,7 @@ static struct group groupstgllp[] = {
     {0x6B, 0, 15, 0}, {0x6B, 15, 91, 1}
 };
 
-static struct group groupstglh[] = {
+static struct group groupstglh[GROUPSTGLH] = {
     {0x6E, 0, 25, 0}, {0x6E, 25, 20, 1}, {0x6E, 45, 24, 2}, {0x6E, 71, 8, 3},
     {0x6D, 0, 24, 0}, {0x6D, 26, 24, 1}, {0x6D, 50, 8, 2}, {0x6D, 58, 16, 3}, {0x6D, 75, 27, 4},
     {0x6C, 0, 13, 0},
@@ -78,9 +81,9 @@ static struct group groupstglh[] = {
 };
 
 /* a chip is recognised by its SMBus controller, visible at 00:1F.4 on Intel PCHs; sbreg (0 for none known) and irq are used when neither the firmware (SBRG, SGIR) nor P2SB says; register offsets as Linux's pinctrl driver for the chip; Tiger Lake H is untested */
-static struct chip chips[] = {
-    {"Tiger Lake LP", 0xA0A3, 0xFD000000, 14, 16, 0xB0, 0x100, 0x120, groupstgllp, sizeof (groupstgllp) / sizeof (struct group)},
-    {"Tiger Lake H", 0x43A3, 0, 14, 16, 0xC0, 0x100, 0x120, groupstglh, sizeof (groupstglh) / sizeof (struct group)}
+static struct chip chips[CHIPS] = {
+    {"Tiger Lake LP", 0xA0A3, 0xFD000000, 14, 16, 0xB0, 0x100, 0x120, groupstgllp, GROUPSTGLLP},
+    {"Tiger Lake H", 0x43A3, 0, 14, 16, 0xC0, 0x100, 0x120, groupstglh, GROUPSTGLH}
 };
 
 static struct interrupt interrupts[PADS];
@@ -237,7 +240,7 @@ static struct chip *findchip(void)
             if (pci_inw(id, PCI_CONFIG_VENDOR) != VENDOR_INTEL)
                 continue;
 
-            for (i = 0; i < sizeof (chips) / sizeof (struct chip); i++)
+            for (i = 0; i < CHIPS; i++)
             {
 
                 if (device == chips[i].smbus)

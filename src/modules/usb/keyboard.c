@@ -21,6 +21,7 @@
 #define IDLE                            25
 #define REPEATDELAY                     5
 #define EXTENDED                        0xE000
+#define SCANCODES                       102
 
 static struct base_driver driver;
 static struct keyboard_interface keyboardinterface;
@@ -29,7 +30,7 @@ static unsigned char repeatkey;
 static unsigned int repeatcount;
 static unsigned char leds;
 
-static unsigned short scancodes[] = {
+static unsigned short scancodes[SCANCODES] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x001E, 0x0030, 0x002E, 0x0020,
     0x0012, 0x0021, 0x0022, 0x0023, 0x0017, 0x0024, 0x0025, 0x0026,
     0x0032, 0x0031, 0x0018, 0x0019, 0x0010, 0x0013, 0x001F, 0x0014,
@@ -80,7 +81,7 @@ static void notify(unsigned short scancode, unsigned int pressed)
 static unsigned short getscancode(unsigned char usage)
 {
 
-    return (usage < sizeof (scancodes) / sizeof (unsigned short)) ? scancodes[usage] : 0;
+    return (usage < SCANCODES) ? scancodes[usage] : 0;
 
 }
 
