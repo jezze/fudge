@@ -138,6 +138,7 @@ struct state
     unsigned int timer;
     int scrollgrab;
     int slidergrab;
+    unsigned int pressedsources[KEYS_MAPSIZE];
 
 };
 
@@ -2981,6 +2982,8 @@ static void onkeypress(struct message *message)
 
                     channel_send(0, state.focusedwindow->source, MESSAGE_TYPE_WMKEYPRESS, sizeof (struct message_wmkeypress), &wmkeypress);
 
+                    state.pressedsources[keypress->scancode & 0x7F] = state.focusedwindow->source;
+
                 }
 
             }
@@ -3002,8 +3005,12 @@ static void onkeyrelease(struct message *message)
     {
 
         unsigned int id = keys_getcode(usekeymap(message->source), keyrelease->scancode);
+        unsigned int offset = keyrelease->scancode & 0x7F;
+        unsigned int target = (state.pressedsources[offset]) ? state.pressedsources[offset] : (state.focusedwindow) ? state.focusedwindow->source : 0;
 
-        if (id && state.focusedwindow)
+        state.pressedsources[offset] = 0;
+
+        if (id && target)
         {
 
             struct message_wmkeyrelease wmkeyrelease;
@@ -3014,7 +3021,7 @@ static void onkeyrelease(struct message *message)
             wmkeyrelease.unicode = 0;
             wmkeyrelease.length = 0;
 
-            channel_send(0, state.focusedwindow->source, MESSAGE_TYPE_WMKEYRELEASE, sizeof (struct message_wmkeyrelease), &wmkeyrelease);
+            channel_send(0, target, MESSAGE_TYPE_WMKEYRELEASE, sizeof (struct message_wmkeyrelease), &wmkeyrelease);
 
         }
 
