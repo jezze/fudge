@@ -3,10 +3,14 @@ O:=\
     $(DIR_LIB)/fudge/arm/cstring.o \
     $(DIR_LIB)/fudge/arm/atomic.o \
     $(DIR_LIB)/fudge/arm/buffer.o \
+    $(DIR_LIB)/fudge/arm/float.o \
+    $(DIR_LIB)/fudge/arm/long.o \
     $(DIR_LIB)/fudge/arm/__aeabi_idiv.o \
     $(DIR_LIB)/fudge/arm/__aeabi_idivmod.o \
+    $(DIR_LIB)/fudge/arm/__aeabi_ldivmod.o \
     $(DIR_LIB)/fudge/arm/__aeabi_uidiv.o \
     $(DIR_LIB)/fudge/arm/__aeabi_uidivmod.o \
+    $(DIR_LIB)/fudge/arm/__aeabi_uldivmod.o \
     $(DIR_LIB)/fudge/arm/__clzsi2.o \
     $(DIR_LIB)/fudge/arm/__divsi3.o \
     $(DIR_LIB)/fudge/arm/__modsi3.o \
