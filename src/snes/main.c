@@ -45,6 +45,7 @@ static unsigned int paused;
 static unsigned int held;
 static unsigned int started;
 static short audiobuffer[AUDIOSIZE];
+static unsigned char audiodata[AUDIOSIZE * 2];
 static unsigned int columns[SCALEDWIDTH];
 static unsigned int scaled[SCALEDWIDTH];
 
@@ -260,10 +261,20 @@ static unsigned int getframerate(void)
 static void sendaudio(unsigned int count)
 {
 
+    unsigned int i;
+
     if (audioahead > (int)(rate / TICKRATE * AUDIOLIMIT))
         return;
 
-    channel_send(1, audio, MESSAGE_TYPE_DATA, count * 4, audiobuffer);
+    for (i = 0; i < count * 2; i++)
+    {
+
+        audiodata[i * 2] = audiobuffer[i];
+        audiodata[i * 2 + 1] = audiobuffer[i] >> 8;
+
+    }
+
+    channel_send(1, audio, MESSAGE_TYPE_DATA, count * 4, audiodata);
 
     audioahead += count;
 

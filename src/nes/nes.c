@@ -39,7 +39,7 @@ static unsigned int counting;
 static unsigned int paused;
 static unsigned int held;
 static unsigned int started;
-static short audiobuffer[AUDIO_BUFF_SIZE * 2];
+static unsigned char audiobuffer[AUDIO_BUFF_SIZE * 4];
 static unsigned int scaled[4096];
 
 static unsigned int getbutton(unsigned int id)
@@ -192,8 +192,12 @@ static void sendaudio(short *samples, unsigned int count)
     for (i = 0; i < count; i++)
     {
 
-        audiobuffer[i * 2] = (samples) ? samples[i] : 0;
-        audiobuffer[i * 2 + 1] = audiobuffer[i * 2];
+        short sample = (samples) ? samples[i] : 0;
+
+        audiobuffer[i * 4] = sample;
+        audiobuffer[i * 4 + 1] = sample >> 8;
+        audiobuffer[i * 4 + 2] = sample;
+        audiobuffer[i * 4 + 3] = sample >> 8;
 
     }
 

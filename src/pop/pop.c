@@ -51,6 +51,7 @@ static char screenname[32];
 static unsigned int audiopaused = 1;
 static SDL_AudioSpec *audiospec;
 static short audiobuffer[AUDIOFRAMES * 2];
+static unsigned char audiodata[AUDIOFRAMES * 4];
 static unsigned int scaled[4096];
 static char *arguments[] = {"pop", 0};
 
@@ -447,13 +448,22 @@ static void sendaudio(void)
 {
 
     unsigned int count = audiospec->freq / TICKRATE * 4;
+    unsigned int i;
 
     buffer_clear(audiobuffer, count);
 
     if (!audiopaused)
         audiospec->callback(audiospec->userdata, (Uint8 *)audiobuffer, count);
 
-    channel_send(1, audio, MESSAGE_TYPE_DATA, count, audiobuffer);
+    for (i = 0; i < count / 2; i++)
+    {
+
+        audiodata[i * 2] = audiobuffer[i];
+        audiodata[i * 2 + 1] = audiobuffer[i] >> 8;
+
+    }
+
+    channel_send(1, audio, MESSAGE_TYPE_DATA, count, audiodata);
 
 }
 
