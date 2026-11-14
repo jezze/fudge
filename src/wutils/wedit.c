@@ -15,6 +15,7 @@ static unsigned int wrap = 0;
 static unsigned int chunks;
 static unsigned int loaded;
 static unsigned int saving;
+static unsigned int choosing;
 static char savedata[SAVESIZE];
 
 static void sendchunk(char *data, unsigned int count)
@@ -212,6 +213,8 @@ static void choose(void)
 
         struct message_pipe pipe;
 
+        choosing = 1;
+
         channel_send_fmt(0, target, MESSAGE_TYPE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
         message_initpipe(&pipe);
         channel_send(0, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
@@ -243,8 +246,10 @@ static void onmain(struct message *message)
 static void onpath(struct message *message)
 {
 
-    if (saving)
+    if (saving || (path[0] && !choosing))
         return;
+
+    choosing = 0;
 
     clearfile();
     cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
