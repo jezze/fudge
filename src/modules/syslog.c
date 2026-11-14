@@ -2,13 +2,13 @@
 #include <kernel.h>
 
 static struct debug_interface debuginterface;
-static struct server server;
+static struct resource server;
 static struct service service;
 
 static unsigned int islinked(unsigned int source)
 {
 
-    struct list *links = &server.resource.links;
+    struct list *links = &server.links;
     struct list_item *current;
     unsigned int linked = 0;
 
@@ -37,7 +37,7 @@ static void notify(unsigned int source, unsigned int level, unsigned int count, 
     message.loginfo.count = buffer_write(message.data, sizeof (message.data), data, count, 0);
 
     if (!islinked(source))
-        kernel_notify(&server.resource, MESSAGE_TYPE_LOGINFO, sizeof (struct message_loginfo) + message.loginfo.count, &message);
+        kernel_notify(&server, MESSAGE_TYPE_LOGINFO, sizeof (struct message_loginfo) + message.loginfo.count, &message);
 
 }
 
@@ -55,10 +55,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
     {
 
     case MESSAGE_TYPE_LINK:
-        return kernel_linknode(&server.resource, source);
+        return kernel_linknode(&server, source);
 
     case MESSAGE_TYPE_UNLINK:
-        return kernel_unlinknode(&server.resource, source);
+        return kernel_unlinknode(&server, source);
 
     case MESSAGE_TYPE_DATA:
         notify(source, DEBUG_INFO, count, data);
@@ -80,7 +80,7 @@ void module_init(void)
 {
 
     debug_initinterface(&debuginterface, debuginterface_write);
-    server_init(&server, 0, operands_place);
+    resource_init(&server, 0, 0, operands_place);
     service_init(&service, "log");
 
 }
@@ -89,7 +89,7 @@ void module_register(void)
 {
 
     debug_registerinterface(&debuginterface);
-    service_register(&service, pool_attachnode(&server.resource));
+    service_register(&service, pool_attachnode(&server));
 
 }
 
@@ -97,7 +97,7 @@ void module_unregister(void)
 {
 
     service_unregister(&service);
-    pool_detachnode(&server.resource);
+    pool_detachnode(&server);
     debug_unregisterinterface(&debuginterface);
 
 }

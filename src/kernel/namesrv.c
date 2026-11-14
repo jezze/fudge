@@ -1,14 +1,13 @@
 #include <fudge.h>
 #include "resource.h"
 #include "pool.h"
-#include "server.h"
 #include "service.h"
 #include "kernel.h"
 #include "namesrv.h"
 
 #define LISTRECORDS                     8
 
-static struct server server;
+static struct resource server;
 static struct service service;
 
 static unsigned int findservice(char *name, unsigned int length)
@@ -178,10 +177,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void namesrv_setup(void)
 {
 
-    server_init(&server, 0, operands_place);
+    resource_init(&server, 0, 0, operands_place);
     service_init(&service, "namesrv");
     service_register(&service, MESSAGE_ROOT);
-    pool_setroot(&server.resource);
+    pool_setroot(&server);
 
 }
 

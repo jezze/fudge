@@ -7,7 +7,7 @@
 #define ROOTRECORDS                     8
 #define OUTPUTSIZE                      0x4000
 
-static struct server server;
+static struct resource server;
 static struct service service;
 static struct record rootrecords[ROOTRECORDS];
 static struct spinlock spinlock;
@@ -405,7 +405,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
         readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse), readresponse + 1);
         readresponse->buffer = 0;
 
-        status = kernel_place(server.resource.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + readresponse->count, response);
+        status = kernel_place(server.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + readresponse->count, response);
 
         spinlock_release(&spinlock);
 
@@ -431,7 +431,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
         spinlock_acquire(&spinlock);
 
         statresponse->count = stat(request->id, statresponse + 1);
-        status = kernel_place(server.resource.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + statresponse->count, response);
+        status = kernel_place(server.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + statresponse->count, response);
 
         spinlock_release(&spinlock);
 
@@ -454,7 +454,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
         response.id = walk(request->parent ? request->parent : ROOT, request->length, (char *)(request + 1));
 
-        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(server.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 
@@ -495,7 +495,7 @@ void module_init(void)
     record_init(&rootrecords[6], 0x1005, RECORD_TYPE_NORMAL, 0, 7, 8, "buses.mq");
     record_init(&rootrecords[7], 0x1006, RECORD_TYPE_NORMAL, 0, 8, 10, "drivers.mq");
     spinlock_init(&spinlock);
-    server_init(&server, 0, operands_place);
+    resource_init(&server, 0, 0, operands_place);
     service_init(&service, "sysinfo");
 
 }
@@ -503,7 +503,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_register(&service, pool_attachnode(&server.resource));
+    service_register(&service, pool_attachnode(&server));
 
 }
 
@@ -511,7 +511,7 @@ void module_unregister(void)
 {
 
     service_unregister(&service);
-    pool_detachnode(&server.resource);
+    pool_detachnode(&server);
 
 }
 

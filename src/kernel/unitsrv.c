@@ -3,7 +3,6 @@
 #include "task.h"
 #include "mmap.h"
 #include "pool.h"
-#include "server.h"
 #include "service.h"
 #include "kernel.h"
 #include "unitsrv.h"
@@ -63,7 +62,7 @@ static struct resource *getfile(struct unitsrv *unitsrv, unsigned int id)
 static unsigned int walkchild(struct unitsrv *unitsrv, unsigned int id, char *name, unsigned int length)
 {
 
-    if (id == unitsrv->server.resource.inode)
+    if (id == unitsrv->server.inode)
     {
 
         char current[TEXTSIZE];
@@ -91,9 +90,9 @@ static unsigned int walkchild(struct unitsrv *unitsrv, unsigned int id, char *na
 static unsigned int walk(struct unitsrv *unitsrv, unsigned int parent, unsigned int length, char *path)
 {
 
-    unsigned int id = (parent) ? parent : unitsrv->server.resource.inode;
+    unsigned int id = (parent) ? parent : unitsrv->server.inode;
 
-    if (id == unitsrv->server.resource.inode || getdir(unitsrv, id) || getfile(unitsrv, id))
+    if (id == unitsrv->server.inode || getdir(unitsrv, id) || getfile(unitsrv, id))
     {
 
         unsigned int offset = 0;
@@ -105,7 +104,7 @@ static unsigned int walk(struct unitsrv *unitsrv, unsigned int parent, unsigned 
             unsigned int cl = buffer_findbyte(cp, length - offset, '/');
 
             if (cl == 2 && buffer_match(cp, "..", 2))
-                id = (getfile(unitsrv, id)) ? id - POOL_NODES : unitsrv->server.resource.inode;
+                id = (getfile(unitsrv, id)) ? id - POOL_NODES : unitsrv->server.inode;
             else if (cl && (cl != 1 || !buffer_match(cp, ".", 1)))
                 id = walkchild(unitsrv, id, cp, cl);
 
@@ -153,7 +152,7 @@ static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, u
     response->count = (request->offset < length) ? buffer_write(response + 1, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
     response->buffer = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+    return kernel_place(unitsrv->server.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
 }
 
@@ -178,7 +177,7 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
             return readfile(unitsrv, file, source, request);
 
         dir = getdir(unitsrv, request->id);
-        root = request->id == unitsrv->server.resource.inode;
+        root = request->id == unitsrv->server.inode;
 
         for (i = request->offset; (root || dir) && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
         {
@@ -197,7 +196,7 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
         response->count = c * sizeof (struct record);
         response->buffer = 0;
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return kernel_place(unitsrv->server.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
@@ -220,7 +219,7 @@ static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, 
 
         response->count = sizeof (struct record);
 
-        if (request->id == unitsrv->server.resource.inode)
+        if (request->id == unitsrv->server.inode)
             record_init(record, request->id, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
         else if (getdir(unitsrv, request->id))
             initdirrecord(record, request->id / POOL_NODES / 2, 0);
@@ -229,7 +228,7 @@ static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, 
         else
             response->count = 0;
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
+        return kernel_place(unitsrv->server.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
 
     }
 
@@ -248,7 +247,7 @@ static unsigned int onwalkrequest(struct unitsrv *unitsrv, unsigned int source, 
 
         response.id = walk(unitsrv, request->parent, request->length, (char *)(request + 1));
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(unitsrv->server.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 
@@ -272,7 +271,7 @@ static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source
         if (response.status)
             pool_detachnode(device);
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+        return kernel_place(unitsrv->server.inode, source, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
     }
 
@@ -316,7 +315,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void unitsrv_register(struct unitsrv *unitsrv)
 {
 
-    service_register(&unitsrv->service, pool_attachnode(&unitsrv->server.resource));
+    service_register(&unitsrv->service, pool_attachnode(&unitsrv->server));
 
 }
 
@@ -324,14 +323,14 @@ void unitsrv_unregister(struct unitsrv *unitsrv)
 {
 
     service_unregister(&unitsrv->service);
-    pool_detachnode(&unitsrv->server.resource);
+    pool_detachnode(&unitsrv->server);
 
 }
 
 void unitsrv_init(struct unitsrv *unitsrv, unsigned int type, char *name)
 {
 
-    server_init(&unitsrv->server, unitsrv, operands_place);
+    resource_init(&unitsrv->server, 0, unitsrv, operands_place);
     service_init(&unitsrv->service, name);
 
     unitsrv->type = type;

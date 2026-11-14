@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include <disk.h>
 
-static struct server server;
+static struct resource server;
 static struct service service;
 static unsigned int address;
 
@@ -176,7 +176,7 @@ static unsigned int map(unsigned int id)
 static unsigned long locate(unsigned int target, unsigned int id)
 {
 
-    return (target == server.resource.inode && isheader(id)) ? map(id) : 0;
+    return (target == server.inode && isheader(id)) ? map(id) : 0;
 
 }
 
@@ -312,7 +312,7 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
 
         response.address = (isheader(request->id)) ? map(request->id) : 0;
 
-        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_MAPRESPONSE, sizeof (struct message_mapresponse), &response);
+        return kernel_place(server.inode, source, MESSAGE_TYPE_MAPRESPONSE, sizeof (struct message_mapresponse), &response);
 
     }
 
@@ -362,7 +362,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
         response->buffer = 0;
 
-        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return kernel_place(server.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
@@ -382,7 +382,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
         response->count = (isheader(request->id)) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
-        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
+        return kernel_place(server.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
 
     }
 
@@ -406,7 +406,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
         else
             response.id = 0;
 
-        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(server.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 
@@ -447,7 +447,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
         }
 
-        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+        return kernel_place(server.inode, source, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
     }
 
@@ -485,11 +485,11 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void cpio_setup(unsigned int addr)
 {
 
-    server_init(&server, 0, operands_place);
+    resource_init(&server, 0, 0, operands_place);
     service_init(&service, "initrd");
 
     address = addr;
-    service_register(&service, pool_attachnode(&server.resource));
+    service_register(&service, pool_attachnode(&server));
     abi_setlocate(locate);
 
 }
@@ -500,7 +500,7 @@ unsigned long cpio_find(char *path)
 
     unsigned int id = walk(getroot(), path, cstring_length(path));
 
-    return (id) ? locate(server.resource.inode, id) : 0;
+    return (id) ? locate(server.inode, id) : 0;
 
 }
 
