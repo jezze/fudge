@@ -1844,6 +1844,7 @@ int sscanf(const char *in, const char *fmt, ...)
 
 }
 
+#if defined(__i386__) || defined(__x86_64__)
 double sqrt(double x)
 {
 
@@ -1899,6 +1900,139 @@ double atan2(double y, double x)
 
 }
 
+#else
+#define PI                              3.14159265358979323846
+#define LN2                             0.69314718055994530942
+
+/* Newton's method on x scaled into [1, 4) */
+double sqrt(double x)
+{
+
+    double scale = 1.0;
+    double result;
+    unsigned int i;
+
+    if (x <= 0)
+        return 0;
+
+    while (x >= 4.0)
+    {
+
+        x *= 0.25;
+        scale *= 2.0;
+
+    }
+
+    while (x < 1.0)
+    {
+
+        x *= 4.0;
+        scale *= 0.5;
+
+    }
+
+    result = (x + 1.0) * 0.5;
+
+    for (i = 0; i < 6; i++)
+        result = (result + x / result) * 0.5;
+
+    return result * scale;
+
+}
+
+/* the series for x within [-PI / 2, PI / 2] */
+static double sinseries(double x)
+{
+
+    double term = x;
+    double sum = x;
+    unsigned int i;
+
+    for (i = 1; i < 10; i++)
+    {
+
+        term *= -x * x / ((2 * i) * (2 * i + 1));
+        sum += term;
+
+    }
+
+    return sum;
+
+}
+
+double sin(double x)
+{
+
+    x -= 2 * PI * floor(x / (2 * PI) + 0.5);
+
+    if (x > PI / 2)
+        x = PI - x;
+    else if (x < -PI / 2)
+        x = -PI - x;
+
+    return sinseries(x);
+
+}
+
+double cos(double x)
+{
+
+    return sin(x + PI / 2);
+
+}
+
+double tan(double x)
+{
+
+    return sin(x) / cos(x);
+
+}
+
+/* atan(x) = 2 atan(x / (1 + sqrt(1 + x * x))), halved twice so the series gets below tan(PI / 8) */
+static double atanseries(double x)
+{
+
+    double term;
+    double sum = 0;
+    unsigned int i;
+
+    x = x / (1.0 + sqrt(1.0 + x * x));
+    x = x / (1.0 + sqrt(1.0 + x * x));
+    term = x;
+
+    for (i = 0; i < 14; i++)
+    {
+
+        sum += term / (2 * i + 1);
+        term *= -x * x;
+
+    }
+
+    return 4 * sum;
+
+}
+
+double atan2(double y, double x)
+{
+
+    if (x > 0)
+        return atanseries(y / x);
+
+    if (x < 0)
+        return (y >= 0) ? atanseries(y / x) + PI : atanseries(y / x) - PI;
+
+    if (y > 0)
+        return PI / 2;
+
+    if (y < 0)
+        return -PI / 2;
+
+    return 0;
+
+}
+
+#endif
+
 double atan(double x)
 {
 
@@ -1929,6 +2063,7 @@ double floor(double x)
 
 }
 
+#if defined(__i386__) || defined(__x86_64__)
 /* x to the power y as 2 to the power y * log2(x), only for a positive x */
 double pow(double x, double y)
 {
@@ -1950,6 +2085,120 @@ double pow(double x, double y)
     return result;
 
 }
+
+#else
+/* the natural logarithm of x scaled into [1, 2), from the series of 2 atanh((x - 1) / (x + 1)) */
+static double logarithm(double x)
+{
+
+    double result = 0;
+    double z;
+    double term;
+    double sum = 0;
+    unsigned int i;
+
+    while (x >= 2.0)
+    {
+
+        x *= 0.5;
+        result += LN2;
+
+    }
+
+    while (x < 1.0)
+    {
+
+        x *= 2.0;
+        result -= LN2;
+
+    }
+
+    z = (x - 1.0) / (x + 1.0);
+    term = z;
+
+    for (i = 0; i < 20; i++)
+    {
+
+        sum += term / (2 * i + 1);
+        term *= z * z;
+
+    }
+
+    return result + 2 * sum;
+
+}
+
+/* x to the power y as 2 to the power y * log2(x), only for a positive x: e to the fraction's power by its series, then whole doublings */
+double pow(double x, double y)
+{
+
+    double exponent;
+    double whole;
+    double fraction;
+    double term = 1.0;
+    double result = 1.0;
+    unsigned int i;
+
+    if (x <= 0)
+        return 0;
+
+    exponent = y * logarithm(x) / LN2;
+    whole = floor(exponent);
+    fraction = (exponent - whole) * LN2;
+
+    for (i = 1; i < 20; i++)
+    {
+
+        term *= fraction / i;
+        result += term;
+
+    }
+
+    for (; whole > 0; whole--)
+        result *= 2.0;
+
+    for (; whole < 0; whole++)
+        result *= 0.5;
+
+    return result;
+
+}
+
+#endif
+
+#if !defined(__i386__) && !defined(__x86_64__)
+/* conversions between 64-bit integers and doubles, which 32-bit FPUs without them leave to these: the two halves each convert exactly */
+double __floatundidf(unsigned long long n)
+{
+
+    return (double)(unsigned int)(n >> 32) * 4294967296.0 + (double)(unsigned int)n;
+
+}
+
+double __floatdidf(long long n)
+{
+
+    return (n < 0) ? -__floatundidf(-(unsigned long long)n) : __floatundidf(n);
+
+}
+
+unsigned long long __fixunsdfdi(double x)
+{
+
+    unsigned int high = (unsigned int)(x / 4294967296.0);
+    unsigned int low = (unsigned int)(x - (double)high * 4294967296.0);
+
+    return ((unsigned long long)high << 32) | low;
+
+}
+
+long long __fixdfdi(double x)
+{
+
+    return (x < 0) ? -(long long)__fixunsdfdi(-x) : (long long)__fixunsdfdi(x);
+
+}
+#endif
 
 unsigned long long __udivdi3(unsigned long long n, unsigned long long d)
 {

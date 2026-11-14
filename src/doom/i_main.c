@@ -130,15 +130,20 @@ unsigned int I_GetTimerMs(void)
 
 }
 
+/* 0 where there is no time stamp counter, so the clock stays the timer's */
 static unsigned long long readtsc(void)
 {
 
+#if defined(__i386__) || defined(__x86_64__)
     unsigned int low;
     unsigned int high;
 
     __asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
 
     return ((unsigned long long)high << 32) | low;
+#else
+    return 0;
+#endif
 
 }
 
@@ -168,7 +173,7 @@ static void calibrate(void)
     counter1 = waitedge();
     tsc1 = readtsc();
 
-    if (counter1 > counter0)
+    if (counter1 > counter0 && tsc1 > tsc0)
     {
 
         tscbase = tsc0;
