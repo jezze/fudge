@@ -877,7 +877,7 @@ static void __gb_execute_cb(struct gb_s *gb)
 static void __gb_draw_line(struct gb_s *gb)
 {
 
-    unsigned char pixels[160] = {0};
+    unsigned char pixels[LCD_WIDTH];
 
     if (gb->direct.frame_skip && !gb->display.frame_skip_count)
         return;
@@ -896,6 +896,8 @@ static void __gb_draw_line(struct gb_s *gb)
         }
 
     }
+
+    buffer_clear(pixels, LCD_WIDTH);
 
     if (gb->gb_reg.LCDC & LCDC_BG_ENABLE)
     {
@@ -3703,15 +3705,15 @@ enum gb_init_error_e gb_init(struct gb_s *gb, unsigned char (*gb_rom_read)(struc
      * TODO: HuC1 is unsupported.
      **/
 
-    const unsigned char cart_mbc[] = {
+    static const unsigned char cart_mbc[] = {
         0, 1, 1, 1, -1, 2, 2, -1, 0, 0, -1, 0, 0, 0, -1, 3,
         3, 3, 3, 3, -1, -1, -1, -1, -1, 5, 5, 5, 5, 5, 5, -1
     };
-    const unsigned char cart_ram[] = {
+    static const unsigned char cart_ram[] = {
         0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,
         1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0
     };
-    const unsigned short num_rom_banks[] = {
+    static const unsigned short num_rom_banks[] = {
         2, 4, 8, 16, 32, 64, 128, 256, 512, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3719,7 +3721,7 @@ enum gb_init_error_e gb_init(struct gb_s *gb, unsigned char (*gb_rom_read)(struc
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 72, 80, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
-    const unsigned char num_ram_banks[] = { 0, 1, 1, 4, 16, 8 };
+    static const unsigned char num_ram_banks[] = { 0, 1, 1, 4, 16, 8 };
     unsigned char mbc_value;
     unsigned char x = 0;
     unsigned short i;
