@@ -129,36 +129,43 @@ static unsigned int grow(struct file *file, unsigned int size)
 
 }
 
-static unsigned int readdata(struct file *file, unsigned char *buffer, unsigned int count, unsigned int offset)
+static void copydata(struct file *file, unsigned char *buffer, unsigned int count, unsigned int offset, unsigned int write)
 {
 
-    if (offset < file->size)
+    unsigned int done = 0;
+
+    while (done < count)
     {
 
-        unsigned int done = 0;
+        unsigned char *page = getpage(file, offset + done);
+        unsigned int chunk = MEMSRV_PAGESIZE - (offset + done) % MEMSRV_PAGESIZE;
 
-        if (count > file->size - offset)
-            count = file->size - offset;
+        if (chunk > count - done)
+            chunk = count - done;
 
-        while (done < count)
-        {
+        if (write)
+            buffer_copy(page, buffer + done, chunk);
+        else
+            buffer_copy(buffer + done, page, chunk);
 
-            unsigned int chunk = MEMSRV_PAGESIZE - (offset + done) % MEMSRV_PAGESIZE;
-
-            if (chunk > count - done)
-                chunk = count - done;
-
-            buffer_copy(buffer + done, getpage(file, offset + done), chunk);
-
-            done += chunk;
-
-        }
-
-        return count;
+        done += chunk;
 
     }
 
-    return 0;
+}
+
+static unsigned int readdata(struct file *file, unsigned char *buffer, unsigned int count, unsigned int offset)
+{
+
+    if (offset >= file->size)
+        return 0;
+
+    if (count > file->size - offset)
+        count = file->size - offset;
+
+    copydata(file, buffer, count, offset, 0);
+
+    return count;
 
 }
 
@@ -168,30 +175,12 @@ static unsigned int writedata(struct file *file, unsigned char *buffer, unsigned
     if (!count || offset + count < offset)
         return 0;
 
-    if (offset + count <= file->size || grow(file, offset + count))
-    {
+    if (offset + count > file->size && !grow(file, offset + count))
+        return 0;
 
-        unsigned int done = 0;
+    copydata(file, buffer, count, offset, 1);
 
-        while (done < count)
-        {
-
-            unsigned int chunk = MEMSRV_PAGESIZE - (offset + done) % MEMSRV_PAGESIZE;
-
-            if (chunk > count - done)
-                chunk = count - done;
-
-            buffer_copy(getpage(file, offset + done), buffer + done, chunk);
-
-            done += chunk;
-
-        }
-
-        return count;
-
-    }
-
-    return 0;
+    return count;
 
 }
 
