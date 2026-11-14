@@ -60,3 +60,26 @@ cpu_leave:
     moveq #1, %d0
     bra isr_exit
 
+# The FPU's state, 208 bytes (ARCH_FPUSTATESIZE): the fsave frame, then fp0-fp7 and the control registers unless the frame is null (an all-zero state restores a reset FPU).
+.global cpu_savefpu
+cpu_savefpu:
+    move.l 4(%sp), %a0
+    fsave (%a0)
+    tst.b (%a0)
+    beq 1f
+    fmovem.x %fp0-%fp7, 96(%a0)
+    fmovem.l %fpcr/%fpsr/%fpiar, 192(%a0)
+1:
+    rts
+
+.global cpu_loadfpu
+cpu_loadfpu:
+    move.l 4(%sp), %a0
+    tst.b (%a0)
+    beq 1f
+    fmovem.l 192(%a0), %fpcr/%fpsr/%fpiar
+    fmovem.x 96(%a0), %fp0-%fp7
+1:
+    frestore (%a0)
+    rts
+

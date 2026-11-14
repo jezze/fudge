@@ -31,6 +31,7 @@
 #define ARCH_MEM_BASE                   (ARCH_RAMBASE + 0x0A000000)
 #define ARCH_MEM_SIZE                   (MEMSRV_PAGES * MEMSRV_PAGESIZE)
 #define ARCH_INTERRUPTS                 8
+#define ARCH_FPUSTATESIZE               208
 
 void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags);
 void arch_setinterrupt(unsigned int level, void (*routine)(void));

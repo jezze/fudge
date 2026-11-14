@@ -106,4 +106,6 @@ void cpu_flushtlb(void);
 void cpu_setcacr(unsigned int value);
 void cpu_invalidatecode(void);
 void cpu_halt(void);
+void cpu_savefpu(void *state);
+void cpu_loadfpu(void *state);
 void cpu_leave(struct cpu_frame *frame);

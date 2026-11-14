@@ -9,6 +9,7 @@
 static struct cpu_general registers[POOL_TASKS];
 static unsigned short ccrs[POOL_TASKS];
 static void (*routines[ARCH_INTERRUPTS])(void);
+static unsigned char fpustates[POOL_TASKS * ARCH_FPUSTATESIZE + 4];
 
 static unsigned long createtable(unsigned long root, unsigned long mmap)
 {
@@ -137,10 +138,18 @@ static void unmap(unsigned long vaddress, unsigned int size)
 
 }
 
+static void *getfpustate(unsigned int itask)
+{
+
+    return (void *)((((unsigned long)fpustates + 3) & ~3UL) + itask * ARCH_FPUSTATESIZE);
+
+}
+
 static void resettask(unsigned int itask)
 {
 
     buffer_clear(&registers[itask], sizeof (struct cpu_general));
+    buffer_clear(getfpustate(itask), ARCH_FPUSTATESIZE);
 
     ccrs[itask] = 0;
 
@@ -205,6 +214,7 @@ static unsigned int schedule(struct cpu_frame *frame)
 {
 
     struct core *core = kernel_getcore();
+    unsigned int previous = core->itask;
 
     if (core->itask)
     {
@@ -221,13 +231,28 @@ static unsigned int schedule(struct cpu_frame *frame)
 
     kernel_schedule(core);
 
+    if (previous && previous != core->itask)
+        cpu_savefpu(getfpustate(previous));
+
     if (core->itask)
     {
 
         struct task *task = pool_gettask(core->itask);
 
         if (task->thread.ip == task->start.ip && task->thread.sp == task->start.sp)
+        {
+
             resettask(core->itask);
+            cpu_loadfpu(getfpustate(core->itask));
+
+        }
+
+        else if (core->itask != previous)
+        {
+
+            cpu_loadfpu(getfpustate(core->itask));
+
+        }
 
         buffer_copy(&frame->general, &registers[core->itask], sizeof (struct cpu_general));
 
