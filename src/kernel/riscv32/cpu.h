@@ -1,6 +1,7 @@
 #define CPU_STATUS_SIE                  (1UL << 1)
 #define CPU_STATUS_SPIE                 (1UL << 5)
 #define CPU_STATUS_SPP                  (1UL << 8)
+#define CPU_STATUS_FS                   (3UL << 13)
 #define CPU_STATUS_SUM                  (1UL << 18)
 #define CPU_CAUSE_INTERRUPT             (1UL << 31)
 #define CPU_CAUSE_TIMER                 5
@@ -85,4 +86,6 @@ void cpu_disableinterrupt(unsigned long mask);
 void cpu_settrap(void (*trap)(void));
 void cpu_setstatus(unsigned long value);
 void cpu_halt(void);
+void cpu_savefpu(void *state);
+void cpu_loadfpu(void *state);
 void cpu_leave(struct cpu_frame *frame);

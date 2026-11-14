@@ -8,6 +8,7 @@
 
 static struct cpu_general registers[POOL_TASKS];
 static void (*routines[ARCH_INTERRUPTS])(void);
+static unsigned char fpustates[POOL_TASKS * ARCH_FPUSTATESIZE + 8];
 
 static unsigned long createtable(unsigned long directory, unsigned long mmap)
 {
@@ -150,10 +151,18 @@ static void unmap(unsigned long vaddress, unsigned int size)
 
 }
 
+static void *getfpustate(unsigned int itask)
+{
+
+    return (void *)((((unsigned long)fpustates + 7) & ~7UL) + itask * ARCH_FPUSTATESIZE);
+
+}
+
 static void resettask(unsigned int itask)
 {
 
     buffer_clear(&registers[itask], sizeof (struct cpu_general));
+    buffer_clear(getfpustate(itask), ARCH_FPUSTATESIZE);
 
 }
 
@@ -219,6 +228,9 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         struct task *task = pool_gettask(core->itask);
 
         buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
+
+        if (interrupt->status.value & CPU_STATUS_FS)
+            cpu_savefpu(getfpustate(core->itask));
 
         task->thread.ip = interrupt->pc.value;
         task->thread.sp = interrupt->sp.value;
@@ -390,6 +402,23 @@ void arch_trap(struct cpu_general *general, struct cpu_interrupt *interrupt, uns
         general->a0.value = abi_call(general->a7.value, kernel_getcore()->itask, interrupt->sp.reference);
 
         arch_resume(general, interrupt);
+
+        break;
+
+    case CPU_CAUSE_ILLEGAL:
+        if (kernel_getcore()->itask && !(interrupt->status.value & (CPU_STATUS_SPP | CPU_STATUS_FS)))
+        {
+
+            cpu_loadfpu(getfpustate(kernel_getcore()->itask));
+
+            interrupt->status.value |= CPU_STATUS_FS;
+
+            break;
+
+        }
+
+        debugaddress("Exception", cause, value, interrupt->pc.value);
+        fault(general, interrupt);
 
         break;
 
