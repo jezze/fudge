@@ -12,6 +12,7 @@
 #define CALLS                           16
 
 static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
+static unsigned long (*locate)(unsigned int target, unsigned int id);
 
 static unsigned int checkargs(void *address, unsigned int count)
 {
@@ -49,7 +50,7 @@ static unsigned int load(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int target; unsigned int id;} *args = stack;
-    unsigned long address = kernel_locate(args->target, args->id);
+    unsigned long address = (locate) ? locate(args->target, args->id) : 0;
 
     if (address)
     {
@@ -84,7 +85,7 @@ static unsigned int unload(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int target; unsigned int id;} *args = stack;
-    unsigned long address = kernel_locate(args->target, args->id);
+    unsigned long address = (locate) ? locate(args->target, args->id) : 0;
 
     if (address)
     {
@@ -211,6 +212,13 @@ void abi_setcallback(unsigned int index, unsigned int (*callback)(unsigned int i
 {
 
     calls[index] = callback;
+
+}
+
+void abi_setlocate(unsigned long (*callback)(unsigned int target, unsigned int id))
+{
+
+    locate = callback;
 
 }
 

@@ -80,7 +80,7 @@ void module_init(void)
 {
 
     debug_initinterface(&debuginterface, debuginterface_write);
-    server_init(&server, 0, operands_place, 0);
+    server_init(&server, 0, operands_place);
     service_init(&service, "log");
 
 }

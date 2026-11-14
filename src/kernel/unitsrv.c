@@ -331,7 +331,7 @@ void unitsrv_unregister(struct unitsrv *unitsrv)
 void unitsrv_init(struct unitsrv *unitsrv, unsigned int type, char *name)
 {
 
-    server_init(&unitsrv->server, unitsrv, operands_place, 0);
+    server_init(&unitsrv->server, unitsrv, operands_place);
     service_init(&unitsrv->service, name);
 
     unitsrv->type = type;

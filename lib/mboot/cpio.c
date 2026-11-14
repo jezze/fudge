@@ -173,10 +173,10 @@ static unsigned int map(unsigned int id)
 
 }
 
-static unsigned long operands_locate(unsigned int id)
+static unsigned long locate(unsigned int target, unsigned int id)
 {
 
-    return (isheader(id)) ? map(id) : 0;
+    return (target == server.resource.inode && isheader(id)) ? map(id) : 0;
 
 }
 
@@ -485,11 +485,12 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void cpio_setup(unsigned int addr)
 {
 
-    server_init(&server, 0, operands_place, operands_locate);
+    server_init(&server, 0, operands_place);
     service_init(&service, "initrd");
 
     address = addr;
     service_register(&service, pool_attachnode(&server.resource));
+    abi_setlocate(locate);
 
 }
 

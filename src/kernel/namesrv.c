@@ -178,7 +178,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void namesrv_setup(void)
 {
 
-    server_init(&server, 0, operands_place, 0);
+    server_init(&server, 0, operands_place);
     service_init(&service, "namesrv");
     service_register(&service, MESSAGE_ROOT);
     pool_setroot(&server.resource);

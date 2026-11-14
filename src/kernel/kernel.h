@@ -15,7 +15,6 @@ unsigned int kernel_kill(unsigned int itask);
 void kernel_signal(unsigned int itask, unsigned int signal);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_announce(unsigned int inode, char *name);
-unsigned long kernel_locate(unsigned int target, unsigned int id);
 void kernel_notify(struct resource *resource, unsigned int event, unsigned int count, void *data);
 void kernel_starttask(unsigned int itask);
 unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer);

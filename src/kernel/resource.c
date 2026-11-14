@@ -70,11 +70,10 @@ void resource_unregister(struct resource *resource)
 
 }
 
-void resource_operands_init(struct resource_operands *operands, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data), unsigned long (*locate)(unsigned int id))
+void resource_operands_init(struct resource_operands *operands, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     operands->place = place;
-    operands->locate = locate;
 
 }
 

@@ -294,7 +294,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int hz)
 void module_init(void)
 {
 
-    resource_operands_init(&operands, operands_place, 0);
+    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_TIMERINTERFACE, "timer");
 

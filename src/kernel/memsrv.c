@@ -801,7 +801,7 @@ void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, 
 {
 
     spinlock_init(&spinlock);
-    server_init(&server, 0, operands_place, 0);
+    server_init(&server, 0, operands_place);
     service_init(&service, "mem");
     service_register(&service, pool_attachnode(&server.resource));
 

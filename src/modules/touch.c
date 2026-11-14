@@ -74,7 +74,7 @@ void touch_initinterface(struct touch_interface *interface)
 void module_init(void)
 {
 
-    resource_operands_init(&operands, operands_place, 0);
+    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_TOUCHINTERFACE, "touch");
 

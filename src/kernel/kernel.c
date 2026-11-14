@@ -342,15 +342,6 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
 }
 
-unsigned long kernel_locate(unsigned int target, unsigned int id)
-{
-
-    struct resource_operands *operands = getoperands(target);
-
-    return (operands && operands->locate) ? operands->locate(id) : 0;
-
-}
-
 unsigned int kernel_announce(unsigned int inode, char *name)
 {
 

@@ -91,7 +91,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int (*getse
 void module_init(void)
 {
 
-    resource_operands_init(&operands, operands_place, 0);
+    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_CLOCKINTERFACE, "clock");
 
