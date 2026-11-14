@@ -342,8 +342,6 @@ default_t defaults[] =
    def_int,ss_none},
   {"usegamma",{&usegamma},{0},0,4, //jff 3/6/98 fix erroneous upper limit in range
    def_int,ss_none}, // gamma correction level // killough 1/18/98
-  {"uncapped_framerate", {&movement_smooth_default},  {0},0,1, // capped: uncapped never sleeps, as the port is always focused
-   def_bool,ss_stat},
   {"test_interpolation_method", {&interpolation_method},  {0},0,1,
    def_int,ss_stat},
   {"filter_wall",{(int*)&drawvars.filterwall},{RDRAW_FILTER_POINT},
