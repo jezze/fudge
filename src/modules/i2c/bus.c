@@ -1377,28 +1377,14 @@ static unsigned int getfirstcontroller(void)
 static void bus_setup(void)
 {
 
-    struct resource *current = 0;
+    unsigned int id = 0;
     unsigned int i;
 
-    while ((current = resource_foreachtype(current, RESOURCE_BUS)))
+    while ((id = pci_next(id)))
     {
 
-        struct base_bus *pcibus = current->data;
-
-        if (pcibus->type == PCI_BUS)
-        {
-
-            unsigned int id = 0;
-
-            while ((id = pcibus->next(id)))
-            {
-
-                if (ismatch(id))
-                    reset(id);
-
-            }
-
-        }
+        if (ismatch(id))
+            reset(id);
 
     }
 

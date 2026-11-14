@@ -4,7 +4,6 @@
 #include <arch.h>
 #include <modules/acpi/acpi.h>
 #include <modules/apic/apic.h>
-#include <modules/bus.h>
 #include <modules/pci/pci.h>
 #include "gpio.h"
 
@@ -220,33 +219,22 @@ static unsigned long readp2sb(void)
 static struct chip *findchip(void)
 {
 
-    struct resource *current = 0;
+    unsigned int id = 0;
 
-    while ((current = resource_foreachtype(current, RESOURCE_BUS)))
+    while ((id = pci_next(id)))
     {
 
-        struct base_bus *pcibus = current->data;
-        unsigned int id = 0;
+        unsigned short device = pci_inw(id, PCI_CONFIG_DEVICE);
+        unsigned int i;
 
-        if (pcibus->type != PCI_BUS)
+        if (pci_inw(id, PCI_CONFIG_VENDOR) != VENDOR_INTEL)
             continue;
 
-        while ((id = pcibus->next(id)))
+        for (i = 0; i < CHIPS; i++)
         {
 
-            unsigned short device = pci_inw(id, PCI_CONFIG_DEVICE);
-            unsigned int i;
-
-            if (pci_inw(id, PCI_CONFIG_VENDOR) != VENDOR_INTEL)
-                continue;
-
-            for (i = 0; i < CHIPS; i++)
-            {
-
-                if (device == chips[i].smbus)
-                    return &chips[i];
-
-            }
+            if (device == chips[i].smbus)
+                return &chips[i];
 
         }
 

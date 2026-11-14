@@ -1357,27 +1357,13 @@ static void enableinterrupts(void)
 static unsigned int findcontroller(void)
 {
 
-    struct resource *current = 0;
+    unsigned int id = 0;
 
-    while ((current = resource_foreachtype(current, RESOURCE_BUS)))
+    while ((id = pci_next(id)))
     {
 
-        struct base_bus *pcibus = current->data;
-
-        if (pcibus->type == PCI_BUS)
-        {
-
-            unsigned int id = 0;
-
-            while ((id = pcibus->next(id)))
-            {
-
-                if (pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_SERIAL && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_SERIAL_USB && pci_inb(id, PCI_CONFIG_INTERFACE) == 0x30)
-                    return id;
-
-            }
-
-        }
+        if (pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_SERIAL && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_SERIAL_USB && pci_inb(id, PCI_CONFIG_INTERFACE) == 0x30)
+            return id;
 
     }
 
