@@ -511,11 +511,7 @@ static unsigned int oncreaterequest(unsigned int source, unsigned int count, voi
     if (request)
     {
 
-        spinlock_acquire(&spinlock);
-
         response.id = create(request->parent, (char *)(request + 1), request->count);
-
-        spinlock_release(&spinlock);
 
         return kernel_place(server.resource.inode, source, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
@@ -534,11 +530,7 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
     if (request)
     {
 
-        spinlock_acquire(&spinlock);
-
         response.address = map(source, request->id, request->size);
-
-        spinlock_release(&spinlock);
 
         return kernel_place(server.resource.inode, source, MESSAGE_TYPE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
 
@@ -557,11 +549,7 @@ static unsigned int onmunmaprequest(unsigned int source, unsigned int count, voi
     if (request)
     {
 
-        spinlock_acquire(&spinlock);
-
         response.status = unmap(source, request->id);
-
-        spinlock_release(&spinlock);
 
         return kernel_place(server.resource.inode, source, MESSAGE_TYPE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
 
@@ -582,11 +570,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     {
 
         unsigned int length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
-        struct file *file;
-
-        spinlock_acquire(&spinlock);
-
-        file = getfile(request->id);
+        struct file *file = getfile(request->id);
 
         if (request->id == ROOT)
             response->count = readrecords((struct record *)(response + 1), length, request->offset);
@@ -594,8 +578,6 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
             response->count = readdata(file, (unsigned char *)(response + 1), length, request->offset);
         else
             response->count = 0;
-
-        spinlock_release(&spinlock);
 
         response->buffer = 0;
 
@@ -616,11 +598,7 @@ static unsigned int onremoverequest(unsigned int source, unsigned int count, voi
     if (request)
     {
 
-        spinlock_acquire(&spinlock);
-
         response.status = remove(request->parent, request->id);
-
-        spinlock_release(&spinlock);
 
         return kernel_place(server.resource.inode, source, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
@@ -640,11 +618,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     if (request)
     {
 
-        spinlock_acquire(&spinlock);
-
         response->count = stat(request->id, (struct record *)(response + 1));
-
-        spinlock_release(&spinlock);
 
         return kernel_place(server.resource.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
 
@@ -663,11 +637,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     if (request)
     {
 
-        spinlock_acquire(&spinlock);
-
         response.id = walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length);
-
-        spinlock_release(&spinlock);
 
         return kernel_place(server.resource.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
@@ -686,14 +656,9 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     if (request)
     {
 
-        struct file *file;
+        struct file *file = getfile(request->id);
 
-        spinlock_acquire(&spinlock);
-
-        file = getfile(request->id);
         response.count = (file) ? writedata(file, (unsigned char *)(request + 1), request->count, request->offset) : 0;
-
-        spinlock_release(&spinlock);
 
         return kernel_place(server.resource.inode, source, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
@@ -703,7 +668,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
-static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int handle(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -736,6 +701,21 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
     }
 
     return MESSAGE_FAILED;
+
+}
+
+static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    unsigned int status;
+
+    spinlock_acquire(&spinlock);
+
+    status = handle(source, event, count, data);
+
+    spinlock_release(&spinlock);
+
+    return status;
 
 }
 
