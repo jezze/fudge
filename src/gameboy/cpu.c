@@ -40,11 +40,6 @@
  * 4194304 / (8192 / 8) = 4096 clock cycles for sending 1 byte. */
 #define SERIAL_CYCLES                   4096
 
-/* Calculating VSYNC. */
-#define DMG_CLOCK_FREQ                  4194304.0
-#define SCREEN_REFRESH_CYCLES           70224.0
-#define VERTICAL_SYNC                   (DMG_CLOCK_FREQ/SCREEN_REFRESH_CYCLES)
-
 /* STAT register masks */
 #define STAT_LYC_INTR                   0x40
 #define STAT_MODE_2_INTR                0x20

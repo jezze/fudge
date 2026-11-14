@@ -2,6 +2,11 @@
 #include "audio.h"
 
 #define AUDIO_NSAMPLES (AUDIO_SAMPLES * 2)
+#define PHASEONE 0x10000
+#define PHASERATE 45812984
+#define COUNTERONE 0x400000
+#define COUNTERINC(n, d) (((unsigned int)(n) << 22) / (AUDIO_RATE * (d)))
+#define LEVELONE 0x10000
 #define AUDIO_MEM_SIZE (0xFF3F - 0xFF10 + 1)
 #define AUDIO_ADDR_COMPENSATION 0xFF10
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -14,8 +19,8 @@ struct chan_len_ctr
 
     unsigned load : 6;
     unsigned enabled : 1;
-    float counter;
-    float inc;
+    int counter;
+    int inc;
 
 };
 
@@ -24,8 +29,8 @@ struct chan_vol_env
 
     unsigned step : 3;
     unsigned up : 1;
-    float counter;
-    float inc;
+    int counter;
+    int inc;
 
 };
 
@@ -36,8 +41,8 @@ struct chan_freq_sweep
     unsigned rate : 3;
     unsigned up : 1;
     unsigned shift : 3;
-    float counter;
-    float inc;
+    int counter;
+    int inc;
 
 };
 
@@ -52,8 +57,8 @@ static struct chan
     unsigned volume : 4;
     unsigned volume_init : 4;
     unsigned short freq;
-    float freq_counter;
-    float freq_inc;
+    int freq_counter;
+    int freq_inc;
     int val;
     struct chan_len_ctr len;
     struct chan_vol_env env;
@@ -64,27 +69,35 @@ static struct chan
     unsigned char lfsr_wide;
     int lfsr_div;
     unsigned char sample;
-    float capacitor;
+    int capacitor;
 
 } chans[4];
 
-static float vol_l, vol_r;
+static int mix[AUDIO_NSAMPLES];
+static int vol_l, vol_r;
 
-static float hipass(struct chan *c, float sample)
+static int hipass(struct chan *c, int sample)
 {
 
-    float out = sample - c->capacitor;
+    int out = sample - c->capacitor;
 
-    c->capacitor = sample - out * 0.996f;
+    c->capacitor = sample - (out - out / 250);
 
     return out;
 
 }
 
-static void set_note_freq(struct chan *c, const unsigned int freq)
+static int squareinc(unsigned int freq)
 {
 
-    c->freq_inc = freq / AUDIO_SAMPLE_RATE;
+    return PHASERATE / ((2048 - freq) << 5);
+
+}
+
+static int weigh(int length, int inc, int value)
+{
+
+    return (length * ((1 << 30) / inc) >> 14) * value;
 
 }
 
@@ -104,7 +117,7 @@ static void update_env(struct chan *c)
 
     c->env.counter += c->env.inc;
 
-    while (c->env.counter > 1.0f)
+    while (c->env.counter > COUNTERONE)
     {
 
         if (c->env.step)
@@ -119,7 +132,7 @@ static void update_env(struct chan *c)
 
         }
 
-        c->env.counter -= 1.0f;
+        c->env.counter -= COUNTERONE;
 
     }
 
@@ -133,12 +146,12 @@ static void update_len(struct chan *c)
 
         c->len.counter += c->len.inc;
 
-        if (c->len.counter > 1.0f)
+        if (c->len.counter > COUNTERONE)
         {
 
             chan_enable(c - chans, 0);
 
-            c->len.counter = 0.0f;
+            c->len.counter = 0;
 
         }
 
@@ -146,31 +159,22 @@ static void update_len(struct chan *c)
 
 }
 
-static unsigned char update_freq(struct chan *c, float *pos)
+static int update_freq(struct chan *c, int pos)
 {
 
-    float inc = c->freq_inc - *pos;
+    c->freq_counter += c->freq_inc - pos;
 
-    c->freq_counter += inc;
-
-    if (c->freq_counter > 1.0f)
+    if (c->freq_counter > PHASEONE)
     {
 
-        *pos = c->freq_inc - (c->freq_counter - 1.0f);
-        c->freq_counter = 0.0f;
+        pos = c->freq_inc - (c->freq_counter - PHASEONE);
+        c->freq_counter = 0;
 
-        return 1;
+        return pos;
 
     }
 
-    else
-    {
-
-        *pos = c->freq_inc;
-
-        return 0;
-
-    }
+    return -1;
 
 }
 
@@ -179,7 +183,7 @@ static void update_sweep(struct chan *c)
 
     c->sweep.counter += c->sweep.inc;
 
-    while (c->sweep.counter > 1.0f)
+    while (c->sweep.counter > COUNTERONE)
     {
 
         if (c->sweep.shift)
@@ -202,9 +206,7 @@ static void update_sweep(struct chan *c)
             else
             {
 
-                set_note_freq(c, 4194304 / ((2048 - c->freq) << 5));
-
-                c->freq_inc *= 8.0f;
+                c->freq_inc = squareinc(c->freq);
 
             }
 
@@ -217,13 +219,13 @@ static void update_sweep(struct chan *c)
 
         }
 
-        c->sweep.counter -= 1.0f;
+        c->sweep.counter -= COUNTERONE;
 
     }
 
 }
 
-static void update_square(float *samples, const unsigned char ch2)
+static void update_square(const unsigned char ch2)
 {
 
     struct chan *c = chans + ch2;
@@ -232,9 +234,7 @@ static void update_square(float *samples, const unsigned char ch2)
     if (!c->powered)
         return;
 
-    set_note_freq(c, 4194304.0f / ((2048 - c->freq) << 5));
-
-    c->freq_inc *= 8.0f;
+    c->freq_inc = squareinc(c->freq);
 
     for (i = 0; i < AUDIO_NSAMPLES; i += 2)
     {
@@ -244,34 +244,34 @@ static void update_square(float *samples, const unsigned char ch2)
         if (c->enabled)
         {
 
-            float pos = 0.0f;
-            float prev_pos = 0.0f;
-            float sample = 0.0f;
+            int pos = 0;
+            int prev_pos = 0;
+            int sample = 0;
 
             update_env(c);
 
             if (!ch2)
                 update_sweep(c);
 
-            while (update_freq(c, &pos))
+            while ((pos = update_freq(c, pos)) >= 0)
             {
 
                 c->duty_counter = (c->duty_counter + 1) & 7;
 
-                sample += ((pos - prev_pos) / c->freq_inc) * (float)c->val;
+                sample += weigh(pos - prev_pos, c->freq_inc, c->val);
                 c->val = (c->duty & (1 << c->duty_counter)) ? 1 : -1;
                 prev_pos = pos;
 
             }
 
-            sample += ((pos - prev_pos) / c->freq_inc) * (float)c->val;
-            sample = hipass(c, sample * (c->volume / 15.0f));
+            sample += weigh(c->freq_inc - prev_pos, c->freq_inc, c->val);
+            sample = hipass(c, sample * (int)c->volume / 15);
 
             if (!c->muted)
             {
 
-                samples[i + 0] += sample * 0.25f * c->on_left * vol_l;
-                samples[i + 1] += sample * 0.25f * c->on_right * vol_r;
+                mix[i + 0] += sample * (int)c->on_left * vol_l / 28;
+                mix[i + 1] += sample * (int)c->on_right * vol_r / 28;
 
             }
 
@@ -295,21 +295,16 @@ static unsigned char wave_sample(const unsigned int pos, const unsigned int volu
 
 }
 
-static void update_wave(float *samples)
+static void update_wave(void)
 {
 
     struct chan *c = chans + 2;
-    unsigned int freq;
     unsigned int i;
 
     if (!c->powered)
         return;
 
-    freq = 4194304.0f / ((2048 - c->freq) << 5);
-
-    set_note_freq(c, freq);
-
-    c->freq_inc *= 16.0f;
+    c->freq_inc = PHASERATE * 2 / ((2048 - c->freq) << 5);
 
     for (i = 0; i < AUDIO_NSAMPLES; i += 2)
     {
@@ -319,37 +314,37 @@ static void update_wave(float *samples)
         if (c->enabled)
         {
 
-            float pos = 0.0f;
-            float prev_pos = 0.0f;
-            float sample = 0.0f;
+            int pos = 0;
+            int prev_pos = 0;
+            int sample = 0;
 
             c->sample = wave_sample(c->val, c->volume);
 
-            while (update_freq(c, &pos))
+            while ((pos = update_freq(c, pos)) >= 0)
             {
 
                 c->val = (c->val + 1) & 31;
-                sample += ((pos - prev_pos) / c->freq_inc) * (float)c->sample;
+                sample += weigh(pos - prev_pos, c->freq_inc, c->sample);
                 c->sample = wave_sample(c->val, c->volume);
                 prev_pos = pos;
 
             }
 
-            sample += ((pos - prev_pos) / c->freq_inc) * (float)c->sample;
+            sample += weigh(c->freq_inc - prev_pos, c->freq_inc, c->sample);
 
             if (c->volume > 0)
             {
 
-                float list[] = { 7.5f, 3.75f, 1.5f };
-                float diff = list[c->volume - 1];
+                static const int list[] = { LEVELONE * 15 / 2, LEVELONE * 15 / 4, LEVELONE * 3 / 2 };
+                int diff = list[c->volume - 1];
 
-                sample = hipass(c, (sample - diff) / 7.5f);
+                sample = hipass(c, (sample - diff) * 2 / 15);
 
                 if (!c->muted)
                 {
 
-                    samples[i + 0] += sample * 0.25f * c->on_left * vol_l;
-                    samples[i + 1] += sample * 0.25f * c->on_right * vol_r;
+                    mix[i + 0] += sample * (int)c->on_left * vol_l / 28;
+                    mix[i + 1] += sample * (int)c->on_right * vol_r / 28;
 
                 }
 
@@ -361,20 +356,17 @@ static void update_wave(float *samples)
 
 }
 
-static void update_noise(float *samples)
+static void update_noise(void)
 {
 
-    unsigned char rates[] = { 8, 16, 32, 48, 64, 80, 96, 112 };
+    static const unsigned char rates[] = { 8, 16, 32, 48, 64, 80, 96, 112 };
     struct chan *c = chans + 3;
-    unsigned int freq;
     unsigned int i;
 
     if (!c->powered)
         return;
 
-    freq = 4194304 / (rates[c->lfsr_div] << c->freq);
-
-    set_note_freq(c, freq);
+    c->freq_inc = PHASERATE / 8 / (rates[c->lfsr_div] << c->freq);
 
     if (c->freq >= 14)
         c->enabled = 0;
@@ -387,13 +379,13 @@ static void update_noise(float *samples)
         if (c->enabled)
         {
 
-            float pos = 0.0f;
-            float prev_pos = 0.0f;
-            float sample = 0.0f;
+            int pos = 0;
+            int prev_pos = 0;
+            int sample = 0;
 
             update_env(c);
 
-            while (update_freq(c, &pos))
+            while ((pos = update_freq(c, pos)) >= 0)
             {
 
                 c->lfsr_reg = (c->lfsr_reg << 1) | (c->val == 1);
@@ -404,19 +396,19 @@ static void update_noise(float *samples)
                     c->val = !(((c->lfsr_reg >> 6) & 1) ^ ((c->lfsr_reg >> 5) & 1)) ? 1 : -1;
                 }
 
-                sample += ((pos - prev_pos) / c->freq_inc) * c->val;
+                sample += weigh(pos - prev_pos, c->freq_inc, c->val);
                 prev_pos = pos;
 
             }
 
-            sample += ((pos - prev_pos) / c->freq_inc) * c->val;
-            sample = hipass(c, sample * (c->volume / 15.0f));
+            sample += weigh(c->freq_inc - prev_pos, c->freq_inc, c->val);
+            sample = hipass(c, sample * (int)c->volume / 15);
 
             if (!c->muted)
             {
 
-                samples[i + 0] += sample * 0.25f * c->on_left * vol_l;
-                samples[i + 1] += sample * 0.25f * c->on_right * vol_r;
+                mix[i + 0] += sample * (int)c->on_left * vol_l / 28;
+                mix[i + 1] += sample * (int)c->on_right * vol_r / 28;
 
             }
 
@@ -426,39 +418,29 @@ static void update_noise(float *samples)
 
 }
 
-void audio_callback(void *userdata, unsigned char *stream, int len)
-{
-
-    float *samples = (float *)stream;
-
-    buffer_clear(stream, len);
-    update_square(samples, 0);
-    update_square(samples, 1);
-    update_wave(samples);
-    update_noise(samples);
-
-}
-
 void audio_render(short *out)
 {
 
-    static float samples[AUDIO_NSAMPLES];
     unsigned int i;
 
-    audio_callback(0, (unsigned char *)samples, sizeof (samples));
+    buffer_clear(mix, sizeof (mix));
+    update_square(0);
+    update_square(1);
+    update_wave();
+    update_noise();
 
     for (i = 0; i < AUDIO_NSAMPLES; i++)
     {
 
-        float sample = samples[i];
+        int sample = mix[i];
 
-        if (sample > 1.0f)
-            sample = 1.0f;
+        if (sample > LEVELONE)
+            sample = LEVELONE;
 
-        if (sample < -1.0f)
-            sample = -1.0f;
+        if (sample < -LEVELONE)
+            sample = -LEVELONE;
 
-        out[i] = (short)(sample * 32767.0f);
+        out[i] = sample * 32767 / LEVELONE;
 
     }
 
@@ -479,8 +461,8 @@ static void chan_trigger(unsigned char i)
 
         c->env.step = val & 0x07;
         c->env.up = val & 0x08 ? 1 : 0;
-        c->env.inc  = c->env.step ? (64.0f / (float)c->env.step) / AUDIO_SAMPLE_RATE : 8.0f / AUDIO_SAMPLE_RATE;
-        c->env.counter = 0.0f;
+        c->env.inc = c->env.step ? COUNTERINC(64, c->env.step) : COUNTERINC(8, 1);
+        c->env.counter = 0;
 
     }
 
@@ -493,8 +475,8 @@ static void chan_trigger(unsigned char i)
         c->sweep.rate = (val >> 4) & 0x07;
         c->sweep.up = !(val & 0x08);
         c->sweep.shift = (val & 0x07);
-        c->sweep.inc = c->sweep.rate ? (128.0f / (float)(c->sweep.rate)) / AUDIO_SAMPLE_RATE : 0;
-        c->sweep.counter = 1.0000001f;
+        c->sweep.inc = c->sweep.rate ? COUNTERINC(128, c->sweep.rate) : 0;
+        c->sweep.counter = COUNTERONE + 1;
 
     }
 
@@ -514,8 +496,8 @@ static void chan_trigger(unsigned char i)
 
     }
 
-    c->len.inc = (256.0f / (float)(len_max - c->len.load)) / AUDIO_SAMPLE_RATE;
-    c->len.counter = 0.0f;
+    c->len.inc = COUNTERINC(256, len_max - c->len.load);
+    c->len.counter = 0;
 
 }
 
@@ -640,8 +622,8 @@ void audio_write(const unsigned short addr, const unsigned char val)
         break;
 
     case 0xFF24:
-        vol_l = ((val >> 4) & 0x07) / 7.0f;
-        vol_r = (val & 0x07) / 7.0f;
+        vol_l = (val >> 4) & 0x07;
+        vol_r = val & 0x07;
 
         break;
 
