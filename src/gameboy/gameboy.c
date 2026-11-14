@@ -28,6 +28,7 @@ static unsigned int screenid;
 static unsigned int *screen;
 static char screenname[32];
 static short sound[AUDIO_SAMPLES * 2];
+static unsigned char sounddata[AUDIO_SAMPLES * 4];
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
 {
@@ -203,8 +204,19 @@ static void ontimertick(struct message *message)
     if (audio)
     {
 
+        unsigned int i;
+
         audio_render(sound);
-        channel_send(1, audio, MESSAGE_TYPE_DATA, sizeof (sound), sound);
+
+        for (i = 0; i < AUDIO_SAMPLES * 2; i++)
+        {
+
+            sounddata[i * 2] = sound[i];
+            sounddata[i * 2 + 1] = sound[i] >> 8;
+
+        }
+
+        channel_send(1, audio, MESSAGE_TYPE_DATA, AUDIO_SAMPLES * 4, sounddata);
 
     }
 
