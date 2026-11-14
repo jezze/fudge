@@ -81,6 +81,7 @@ src/utils/touch
 src/utils/tr
 src/utils/untar
 src/utils/unzip
+src/utils/vi
 src/utils/wc
 src/utils/webc
 src/utils/webs
