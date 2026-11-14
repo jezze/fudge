@@ -91,16 +91,6 @@ static unsigned int mapentry(unsigned long directory, unsigned long mmap, struct
 
         cpu_flushtlb();
 
-        switch (entry->type)
-        {
-
-        case MMAP_TYPE_ZERO:
-            buffer_clear((void *)entry->vaddress, entry->size);
-
-            break;
-
-        }
-
         return 1;
 
     }

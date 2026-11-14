@@ -92,24 +92,7 @@ static unsigned int maprange(unsigned long root, unsigned long mmap, unsigned lo
 static unsigned int mapentry(unsigned long root, unsigned long mmap, struct mmap_entry *entry)
 {
 
-    if (maprange(root, mmap, entry->vaddress, entry->paddress, entry->size, entry->flags))
-    {
-
-        switch (entry->type)
-        {
-
-        case MMAP_TYPE_ZERO:
-            buffer_clear((void *)entry->vaddress, entry->size);
-
-            break;
-
-        }
-
-        return 1;
-
-    }
-
-    return 0;
+    return maprange(root, mmap, entry->vaddress, entry->paddress, entry->size, entry->flags);
 
 }
 
