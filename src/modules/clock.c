@@ -43,10 +43,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case MESSAGE_TYPE_LINK:
-            return kernel_linknode(&interface->resource, source);
+            return kernel_linknode(resource, source);
 
         case MESSAGE_TYPE_UNLINK:
-            return kernel_unlinknode(&interface->resource, source);
+            return kernel_unlinknode(resource, source);
 
         case MESSAGE_TYPE_INFO:
             return oninfo(interface, source);

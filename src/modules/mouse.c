@@ -13,16 +13,14 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
     if (resource)
     {
 
-        struct mouse_interface *interface = resource->data;
-
         switch (event)
         {
 
         case MESSAGE_TYPE_LINK:
-            return kernel_linknode(&interface->resource, source);
+            return kernel_linknode(resource, source);
 
         case MESSAGE_TYPE_UNLINK:
-            return kernel_unlinknode(&interface->resource, source);
+            return kernel_unlinknode(resource, source);
 
         }
 
