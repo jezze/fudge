@@ -96,7 +96,7 @@ L:=\
 DOOM_WARNINGS:=-Wno-misleading-indentation -Wno-pointer-sign -Wno-switch -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-value -Wno-unused-function -Wno-stringop-overflow -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -Wno-missing-braces -Wno-format
 
 $(DIR_SRC)/doom/%.o: PP_FLAGS:=$(filter-out -std=c89 -pedantic, $(PP_FLAGS)) -std=c99 -DHAVE_CONFIG_H
-$(DIR_SRC)/doom/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic $(CC_FLAGS_FLOAT), $(CC_FLAGS)) -std=c99 -fcommon $(DOOM_WARNINGS)
+$(DIR_SRC)/doom/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic $(CC_FLAGS_FLOAT), $(CC_FLAGS)) -std=c99 -fcommon -fno-short-enums $(DOOM_WARNINGS)
 
 include $(DIR_MK)/bin.mk
 
