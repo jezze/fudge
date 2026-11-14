@@ -45,24 +45,37 @@ struct cpu_registers_s
         struct
         {
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+            unsigned char a;
+#endif
+
             union
             {
 
                 struct
                 {
-
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+                    unsigned char z : 1; /* Zero flag. */
+                    unsigned char n : 1; /* Add/sub flag. */
+                    unsigned char h : 1; /* Half carry flag. */
+                    unsigned char c : 1; /* Carry flag. */
+                    unsigned char unused : 4;
+#else
                     unsigned char unused : 4;
                     unsigned char c : 1; /* Carry flag. */
                     unsigned char h : 1; /* Half carry flag. */
                     unsigned char n : 1; /* Add/sub flag. */
                     unsigned char z : 1; /* Zero flag. */
+#endif
                 } f_bits;
 
                 unsigned char f;
 
             };
 
+#if __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
             unsigned char a;
+#endif
 
         };
 
@@ -76,8 +89,13 @@ struct cpu_registers_s
         struct
         {
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+            unsigned char b;
+            unsigned char c;
+#else
             unsigned char c;
             unsigned char b;
+#endif
 
         };
 
@@ -91,8 +109,13 @@ struct cpu_registers_s
         struct
         {
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+            unsigned char d;
+            unsigned char e;
+#else
             unsigned char e;
             unsigned char d;
+#endif
 
         };
 
@@ -106,8 +129,13 @@ struct cpu_registers_s
         struct
         {
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+            unsigned char h;
+            unsigned char l;
+#else
             unsigned char l;
             unsigned char h;
+#endif
 
         };
 
@@ -130,9 +158,15 @@ struct gb_registers_s
         struct
         {
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+            unsigned char unused : 5;
+            unsigned char tac_enable : 1; /* Timer enable */
+            unsigned char tac_rate : 2; /* Input clock select */
+#else
             unsigned char tac_rate : 2; /* Input clock select */
             unsigned char tac_enable : 1; /* Timer enable */
             unsigned char unused : 5;
+#endif
         };
 
         unsigned char TAC;
@@ -257,6 +291,16 @@ struct gb_s
             struct
             {
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+                unsigned int down : 1;
+                unsigned int up : 1;
+                unsigned int left : 1;
+                unsigned int right : 1;
+                unsigned int start : 1;
+                unsigned int select : 1;
+                unsigned int b : 1;
+                unsigned int a : 1;
+#else
                 unsigned int a : 1;
                 unsigned int b : 1;
                 unsigned int select : 1;
@@ -265,6 +309,7 @@ struct gb_s
                 unsigned int left : 1;
                 unsigned int up : 1;
                 unsigned int down : 1;
+#endif
 
             } joypad_bits;
 
