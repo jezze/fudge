@@ -333,15 +333,6 @@ static struct resource_operands *getoperands(unsigned int inode)
 
 }
 
-unsigned int kernel_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int release, unsigned int flags)
-{
-
-    struct resource_operands *operands = getoperands(source);
-
-    return (operands && operands->pick) ? operands->pick(source, messages, count, release, flags) : MESSAGE_FAILED;
-
-}
-
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 

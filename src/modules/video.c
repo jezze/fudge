@@ -149,7 +149,7 @@ void video_initinterface(struct video_interface *interface, unsigned long frameb
 void module_init(void)
 {
 
-    resource_operands_init(&operands, 0, operands_place, 0);
+    resource_operands_init(&operands, operands_place, 0);
 
     unitsrv_init(&unitsrv, RESOURCE_VIDEOINTERFACE, "video");
 

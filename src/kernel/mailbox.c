@@ -138,7 +138,7 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
 }
 
-static unsigned int operands_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
+unsigned int mailbox_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
 {
 
     struct mailbox *mailbox = mailbox_get(source);
@@ -292,7 +292,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 void mailbox_setup(void)
 {
 
-    resource_operands_init(&operands, operands_pick, operands_place, 0);
+    resource_operands_init(&operands, operands_place, 0);
 
 }
 

@@ -118,7 +118,7 @@ void audio_initinterface(struct audio_interface *interface, unsigned int (*setfo
 void module_init(void)
 {
 
-    resource_operands_init(&operands, 0, operands_place, 0);
+    resource_operands_init(&operands, operands_place, 0);
 
     unitsrv_init(&unitsrv, RESOURCE_AUDIOINTERFACE, "audio");
 

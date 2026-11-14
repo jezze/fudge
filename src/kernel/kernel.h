@@ -13,7 +13,6 @@ unsigned int kernel_unlinknode(struct resource *resource, unsigned int source);
 void kernel_schedule(struct core *core);
 unsigned int kernel_kill(unsigned int itask);
 void kernel_signal(unsigned int itask, unsigned int signal);
-unsigned int kernel_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int release, unsigned int flags);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_announce(unsigned int inode, char *name);
 unsigned long kernel_locate(unsigned int target, unsigned int id);

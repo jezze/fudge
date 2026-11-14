@@ -16,6 +16,7 @@ struct mailbox
 };
 
 struct mailbox *mailbox_get(unsigned int inode);
+unsigned int mailbox_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags);
 unsigned int mailbox_isfull(unsigned int inode);
 unsigned int mailbox_wait(unsigned int target, unsigned int itask);
 void mailbox_wake(unsigned int inode);

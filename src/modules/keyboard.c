@@ -76,7 +76,7 @@ void keyboard_initinterface(struct keyboard_interface *interface)
 void module_init(void)
 {
 
-    resource_operands_init(&operands, 0, operands_place, 0);
+    resource_operands_init(&operands, operands_place, 0);
 
     unitsrv_init(&unitsrv, RESOURCE_KEYBOARDINTERFACE, "keyboard");
 

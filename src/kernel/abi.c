@@ -137,7 +137,7 @@ static unsigned int pick(unsigned int itask, void *stack)
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
 
-        return (inode) ? kernel_pick(inode, args->messages, args->count, args->release, args->flags) : MESSAGE_FAILED;
+        return (inode) ? mailbox_pick(inode, args->messages, args->count, args->release, args->flags) : MESSAGE_FAILED;
 
     }
 
