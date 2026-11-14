@@ -677,7 +677,6 @@ void arch_setup1(unsigned int ramkb)
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
     buffer_clear((void *)ARCH_FIRMWARE_BASE, ARCH_FIRMWARE_SIZE);
     setupmmap();
-    mailbox_setup();
     kernel_setup();
     abi_setup();
     abi_setcallback(0x03, spawn);

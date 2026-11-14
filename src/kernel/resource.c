@@ -70,14 +70,7 @@ void resource_unregister(struct resource *resource)
 
 }
 
-void resource_operands_init(struct resource_operands *operands, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
-{
-
-    operands->place = place;
-
-}
-
-void resource_init(struct resource *resource, unsigned int type, void *data, struct resource_operands *operands)
+void resource_init(struct resource *resource, unsigned int type, void *data, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     list_inititem(&resource->item, resource);
@@ -86,7 +79,7 @@ void resource_init(struct resource *resource, unsigned int type, void *data, str
     resource->type = type;
     resource->data = data;
     resource->inode = 0;
-    resource->operands = operands;
+    resource->place = place;
 
 }
 

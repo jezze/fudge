@@ -3,7 +3,6 @@
 #include <kernel.h>
 #include "ethernet.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int ondata(struct ethernet_interface *interface, unsigned int source, void *data, unsigned int count)
@@ -97,7 +96,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 void ethernet_initinterface(struct ethernet_interface *interface, void (*getmac)(unsigned char address[6]), unsigned int (*send)(void *buffer, unsigned int count))
 {
 
-    resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface, operands_place);
 
     interface->getmac = getmac;
     interface->send = send;
@@ -106,8 +105,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, void (*getmac)
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_ETHERNETINTERFACE, "ethernet");
 

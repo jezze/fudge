@@ -5,8 +5,7 @@
 void server_init(struct server *server, void *data, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
-    resource_operands_init(&server->operands, place);
-    resource_init(&server->resource, 0, data, &server->operands);
+    resource_init(&server->resource, 0, data, place);
 
 }
 

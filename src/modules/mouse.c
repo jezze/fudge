@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "mouse.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
@@ -109,14 +108,12 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 void mouse_initinterface(struct mouse_interface *interface)
 {
 
-    resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface, operands_place);
 
 }
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_MOUSEINTERFACE, "mouse");
 

@@ -23,4 +23,3 @@ void mailbox_wake(unsigned int inode);
 void mailbox_reset(struct mailbox *mailbox);
 void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel);
 void mailbox_init(struct mailbox *mailbox, unsigned long data);
-void mailbox_setup(void);

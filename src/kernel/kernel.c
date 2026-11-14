@@ -324,21 +324,12 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
-static struct resource_operands *getoperands(unsigned int inode)
-{
-
-    struct resource *resource = pool_getnoderesource(inode);
-
-    return (resource) ? resource->operands : 0;
-
-}
-
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct resource_operands *operands = getoperands(target);
+    struct resource *resource = pool_getnoderesource(target);
 
-    return (operands && operands->place) ? operands->place(target, source, event, count, data) : MESSAGE_FAILED;
+    return (resource && resource->place) ? resource->place(target, source, event, count, data) : MESSAGE_FAILED;
 
 }
 

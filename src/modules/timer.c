@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "timer.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int getticks(struct timer_interface *interface, unsigned int ms)
@@ -272,7 +271,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int hz)
 
     unsigned int i;
 
-    resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface, operands_place);
     spinlock_init(&interface->spinlock);
     list_init(&interface->free);
 
@@ -293,8 +292,6 @@ void timer_initinterface(struct timer_interface *interface, unsigned int hz)
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_TIMERINTERFACE, "timer");
 

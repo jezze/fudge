@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "audio.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int oninfo(struct audio_interface *interface, unsigned int source)
@@ -108,7 +107,7 @@ void audio_unregisterinterface(struct audio_interface *interface)
 void audio_initinterface(struct audio_interface *interface, unsigned int (*setformat)(unsigned int rate, unsigned int channels, unsigned int bits), unsigned int (*write)(void *buffer, unsigned int count))
 {
 
-    resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface, operands_place);
 
     interface->setformat = setformat;
     interface->write = write;
@@ -117,8 +116,6 @@ void audio_initinterface(struct audio_interface *interface, unsigned int (*setfo
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_AUDIOINTERFACE, "audio");
 

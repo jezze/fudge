@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "block.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int oninfo(struct block_interface *interface, unsigned int source)
@@ -193,7 +192,7 @@ void block_unregisterinterface(struct block_interface *interface)
 void block_initinterface(struct block_interface *interface, unsigned int blocksize, unsigned int (*startsession)(struct block_session *session))
 {
 
-    resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface, operands_place);
 
     interface->blocksize = blocksize;
     interface->blockcount = 0;
@@ -203,8 +202,6 @@ void block_initinterface(struct block_interface *interface, unsigned int blocksi
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_BLOCKINTERFACE, "block");
 

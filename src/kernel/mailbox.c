@@ -7,8 +7,6 @@
 #include "mailbox.h"
 #include "kernel.h"
 
-static struct resource_operands operands;
-
 struct mailbox *mailbox_get(unsigned int inode)
 {
 
@@ -270,7 +268,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
     unsigned int i;
 
-    resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox, &operands);
+    resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox, operands_place);
     spinlock_init(&mailbox->spinlock);
 
     for (i = 0; i < MESSAGE_SLOTS; i++)
@@ -286,13 +284,6 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
     mailbox->resource.inode = pool_picknode(&mailbox->resource);
     mailbox->data = data;
-
-}
-
-void mailbox_setup(void)
-{
-
-    resource_operands_init(&operands, operands_place);
 
 }
 

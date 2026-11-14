@@ -2,7 +2,6 @@ struct server
 {
 
     struct resource resource;
-    struct resource_operands operands;
 
 };
 

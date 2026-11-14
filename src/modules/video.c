@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "video.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int oninfo(struct video_interface *interface, unsigned int source)
@@ -134,7 +133,7 @@ void video_unregisterinterface(struct video_interface *interface)
 void video_initinterface(struct video_interface *interface, unsigned long framebuffer, unsigned int (*setcmap)(unsigned int count, void *data), void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp))
 {
 
-    resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface, operands_place);
 
     interface->width = 0;
     interface->height = 0;
@@ -148,8 +147,6 @@ void video_initinterface(struct video_interface *interface, unsigned long frameb
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_VIDEOINTERFACE, "video");
 

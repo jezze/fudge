@@ -505,7 +505,6 @@ void arch_setup1(void)
     udebug_setup();
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_ROOTSIZE);
     setupmmap();
-    mailbox_setup();
     kernel_setup();
     abi_setup();
     abi_setcallback(0x03, spawn);

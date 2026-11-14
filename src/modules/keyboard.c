@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "keyboard.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
@@ -69,14 +68,12 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 void keyboard_initinterface(struct keyboard_interface *interface)
 {
 
-    resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface, operands_place);
 
 }
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_KEYBOARDINTERFACE, "keyboard");
 

@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "console.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int ondata(struct console_interface *interface, unsigned int source, void *data, unsigned int count)
@@ -124,7 +123,7 @@ void console_unregisterinterface(struct console_interface *interface)
 void console_initinterface(struct console_interface *interface, unsigned int (*send)(void *buffer, unsigned int count))
 {
 
-    resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface, operands_place);
 
     interface->width = 0;
     interface->height = 0;
@@ -136,8 +135,6 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_CONSOLEINTERFACE, "console");
 

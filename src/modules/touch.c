@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "touch.h"
 
-static struct resource_operands operands;
 static struct unitsrv unitsrv;
 
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
@@ -67,14 +66,12 @@ void touch_unregisterinterface(struct touch_interface *interface)
 void touch_initinterface(struct touch_interface *interface)
 {
 
-    resource_init(&interface->resource, RESOURCE_TOUCHINTERFACE, interface, &operands);
+    resource_init(&interface->resource, RESOURCE_TOUCHINTERFACE, interface, operands_place);
 
 }
 
 void module_init(void)
 {
-
-    resource_operands_init(&operands, operands_place);
 
     unitsrv_init(&unitsrv, RESOURCE_TOUCHINTERFACE, "touch");
 
