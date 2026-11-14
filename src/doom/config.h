@@ -9,6 +9,9 @@
 #define DOGS                            1
 #define SIMPLECHECKS                    1
 #define ZONEIDCHECK                     1
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define WORDS_BIGENDIAN                 1
+#endif
 #define stricmp                         strcasecmp
 #define strnicmp                        strncasecmp
 
