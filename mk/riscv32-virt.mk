@@ -6,7 +6,8 @@ NM=$(TARGET)-nm
 PP=$(TARGET)-gcc
 AR_FLAGS=rcs
 AS_FLAGS=-c -march=rv32ima_zicsr_zifencei -mabi=ilp32 -mno-relax
-CC_FLAGS_FLOAT=-mabi=ilp32
+CC_FLAGS_FLOAT=-march=rv32ima_zicsr_zifencei
+CC_FLAGS_FPU=-march=rv32imafd_zicsr_zifencei
 CC_FLAGS=-Wall -Werror -Wno-overlength-strings -march=rv32ima_zicsr_zifencei -mabi=ilp32 -mcmodel=medany -fsigned-char -mno-relax -mstrict-align -msmall-data-limit=0 -ffreestanding -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector -std=c89 -pedantic -O2 -S
 LD_FLAGS_BIN=-z max-page-size=0x1000 -Ttext-segment=0x08048000 -s -static -nostdlib
 LD_FLAGS_KBIN=-z max-page-size=0x1000 -static -nostdlib -T$(DIR_MK)/riscv32-virt.ld

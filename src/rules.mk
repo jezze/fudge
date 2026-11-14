@@ -1,5 +1,7 @@
 ifneq ($(filter i386-unknown-elf x86_64-unknown-elf,$(TARGET)),)
 include $(DIR_SRC)/demo/rules.mk
+endif
+ifneq ($(filter i386-unknown-elf x86_64-unknown-elf riscv32-unknown-elf riscv64-unknown-elf m68k-unknown-elf,$(TARGET)),)
 include $(DIR_SRC)/doom/rules.mk
 endif
 include $(DIR_SRC)/gameboy/rules.mk
