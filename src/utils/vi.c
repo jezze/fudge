@@ -30,6 +30,19 @@
 #define KEY_PAGEDOWN                    0x109
 #define KEY_GG                          0x10A
 
+struct escape
+{
+
+    unsigned int mode;
+    unsigned int cursor;
+    unsigned int wantcolumn;
+    unsigned int count;
+    unsigned int operator;
+    unsigned int pending;
+    unsigned int linecount;
+
+};
+
 struct motion
 {
 
@@ -74,6 +87,7 @@ static unsigned int editline;
 static unsigned int modified;
 static unsigned int eol = 1;
 static unsigned int escaped;
+static struct escape beforeescape;
 static unsigned int param;
 static unsigned int lastbyte;
 
@@ -2035,17 +2049,22 @@ static void onconsoledata(struct message *message)
 
             escaped = 0;
 
-            if (c == '[' || c == 'O')
+            if (c == '[')
             {
 
+                mode = beforeescape.mode;
+                cursor = beforeescape.cursor;
+                wantcolumn = beforeescape.wantcolumn;
+                count = beforeescape.count;
+                operator = beforeescape.operator;
+                pending = beforeescape.pending;
+                linecount = beforeescape.linecount;
                 escaped = 2;
                 param = 0;
 
                 continue;
 
             }
-
-            onkey(0x1B);
 
         }
 
@@ -2071,18 +2090,27 @@ static void onconsoledata(struct message *message)
         }
 
         if (c == 0x1B)
+        {
+
+            beforeescape.mode = mode;
+            beforeescape.cursor = cursor;
+            beforeescape.wantcolumn = wantcolumn;
+            beforeescape.count = count;
+            beforeescape.operator = operator;
+            beforeescape.pending = pending;
+            beforeescape.linecount = linecount;
             escaped = 1;
-        else if (!(c == 0x0A && previous == 0x0D))
+
             onkey(c);
 
-    }
+        }
 
-    if (escaped == 1)
-    {
+        else if (!(c == 0x0A && previous == 0x0D))
+        {
 
-        escaped = 0;
+            onkey(c);
 
-        onkey(0x1B);
+        }
 
     }
 
