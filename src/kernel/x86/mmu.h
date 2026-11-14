@@ -38,4 +38,3 @@ unsigned long mmu_getpage(unsigned long daddress, unsigned long vaddress);
 void mmu_settable(unsigned long daddress, unsigned long vaddress, unsigned long taddress, unsigned int flags);
 void mmu_setpage(unsigned long daddress, unsigned long vaddress, unsigned long paddress, unsigned int flags);
 void mmu_enable(void);
-void mmu_disable(void);

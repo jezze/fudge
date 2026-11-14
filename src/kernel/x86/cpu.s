@@ -28,26 +28,10 @@ cpu_geteflags:
     popl %eax
     ret
 
-.global cpu_getgdt
-cpu_getgdt:
-    sgdt (%eax)
-    ret
-
-.global cpu_getidt
-cpu_getidt:
-    sidt (%eax)
-    ret
-
 .global cpu_setcr0
 cpu_setcr0:
     movl 4(%esp), %eax
     movl %eax, %cr0
-    ret
-
-.global cpu_setcr2
-cpu_setcr2:
-    movl 4(%esp), %eax
-    movl %eax, %cr2
     ret
 
 .global cpu_setcr3
@@ -60,13 +44,6 @@ cpu_setcr3:
 cpu_setcr4:
     movl 4(%esp), %eax
     movl %eax, %cr4
-    ret
-
-.global cpu_seteflags
-cpu_seteflags:
-    movl 4(%esp), %eax
-    pushl %eax
-    popf
     ret
 
 .global cpu_setgdt
