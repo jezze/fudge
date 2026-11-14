@@ -23,10 +23,13 @@
 #define REG2_MMU_ALLOCATE               (1 << 5)
 #define REG2_MMU_RESET                  (2 << 5)
 #define REG2_MMU_RELEASERX              (4 << 5)
+#define REG2_MMU_RELEASE                (5 << 5)
 #define REG2_MMU_ENQUEUE                (6 << 5)
 #define REG2_PACKET                     0x02
 #define REG2_ALLOCATION                 0x03
 #define REG2_ALLOCATION_FAILED          0xC0
+#define REG2_TXFIFO                     0x04
+#define REG2_TXFIFO_EMPTY               (1 << 7)
 #define REG2_RXFIFO                     0x05
 #define REG2_RXFIFO_EMPTY               (1 << 7)
 #define REG2_POINTER                    0x06
@@ -36,14 +39,18 @@
 #define REG2_DATA                       0x08
 #define REG2_INTERRUPT                  0x0C
 #define REG2_INTERRUPT_RECEIVE          (1 << 0)
+#define REG2_INTERRUPT_TRANSMIT         (1 << 1)
+#define REG2_INTERRUPT_ALLOCATE         (1 << 3)
 #define REG2_MASK                       0x0D
 #define STATUS_ODD                      (1 << 12)
 #define CONTROL_ODD                     (1 << 5)
+#define POLLS                   1000
 
 static struct base_driver driver;
 static struct ethernet_interface ethernetinterface;
 static volatile unsigned char *regs;
 static unsigned short rx[PACKETSIZE / 2];
+static unsigned int allocating;
 
 static void setbank(unsigned int bank)
 {
@@ -66,10 +73,34 @@ static void write16(unsigned int offset, unsigned short value)
 
 }
 
+static void handletransmit(void)
+{
+
+    while (!(regs[REG2_TXFIFO] & REG2_TXFIFO_EMPTY))
+    {
+
+        unsigned char packet = regs[REG2_PACKET];
+
+        regs[REG2_PACKET] = regs[REG2_TXFIFO];
+        regs[REG2_MMU] = REG2_MMU_RELEASE;
+        regs[REG2_PACKET] = packet;
+        regs[REG2_INTERRUPT] = REG2_INTERRUPT_TRANSMIT;
+
+    }
+
+    setbank(0);
+    write16(REG0_TCR, REG0_TCR_TXENABLE | REG0_TCR_PAD);
+    setbank(2);
+
+}
+
 static void handleirq(unsigned int irq)
 {
 
     setbank(2);
+
+    if (regs[REG2_INTERRUPT] & REG2_INTERRUPT_TRANSMIT)
+        handletransmit();
 
     while (!(regs[REG2_RXFIFO] & REG2_RXFIFO_EMPTY))
     {
@@ -121,19 +152,29 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
     unsigned int even = count & ~1;
+    unsigned int i;
 
     if (count > PACKETSIZE - 6)
         return 0;
 
     setbank(2);
 
-    regs[REG2_MMU] = REG2_MMU_ALLOCATE;
+    if (!allocating)
+        regs[REG2_MMU] = REG2_MMU_ALLOCATE;
+
+    allocating = 1;
+
+    for (i = 0; i < POLLS && !(regs[REG2_INTERRUPT] & REG2_INTERRUPT_ALLOCATE); i++);
+
+    if (!(regs[REG2_INTERRUPT] & REG2_INTERRUPT_ALLOCATE))
+        return 0;
+
+    allocating = 0;
 
     if (!(regs[REG2_ALLOCATION] & REG2_ALLOCATION_FAILED))
     {
 
         unsigned char *data = buffer;
-        unsigned int i;
 
         regs[REG2_PACKET] = regs[REG2_ALLOCATION];
 
@@ -197,7 +238,7 @@ static void driver_attach(unsigned int id)
     ethernet_registerinterface(&ethernetinterface);
     platform_setroutine(platform_getirq(id), handleirq);
 
-    regs[REG2_MASK] = REG2_INTERRUPT_RECEIVE;
+    regs[REG2_MASK] = REG2_INTERRUPT_RECEIVE | REG2_INTERRUPT_TRANSMIT;
 
 }
 
