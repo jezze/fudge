@@ -31,6 +31,8 @@ void task_register(struct task *task, unsigned long mmap, unsigned long buffer, 
 
     task->mmap = mmap;
     task->buffer = buffer;
+    task->start.ip = ip;
+    task->start.sp = sp;
     task->thread.ip = ip;
     task->thread.sp = sp;
 

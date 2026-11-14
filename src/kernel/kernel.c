@@ -459,41 +459,25 @@ static unsigned int loadbinary(struct mmap_header *header, unsigned long base, u
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
 {
 
     struct task *task = pool_gettask(itask);
+    struct binary_format *format = binary_findformat(base);
     unsigned int inode = 0;
 
-    if (task)
+    if (task && format)
     {
 
+        struct mmap_header *header = (struct mmap_header *)mmap;
+
         task_reset(task);
-        task_register(task, mmap, buffer, ip, sp);
+        mmap_initheader(header);
+        mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+        mmap_allocate(header, MMAP_TYPE_NORMAL, buffer, KERNEL_VBUFFER, TASK_BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
-        if (base)
-        {
-
-            struct binary_format *format = binary_findformat(base);
-
-            if (format)
-            {
-
-                struct mmap_header *header = (struct mmap_header *)task->mmap;
-
-                mmap_initheader(header);
-                mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-                mmap_allocate(header, MMAP_TYPE_NORMAL, buffer, KERNEL_VBUFFER, TASK_BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-
-                if (format->map(base, MEMSRV_PAGESIZE, code, TASK_CODESIZE, header) && loadbinary(header, base, id))
-                    task->thread.ip = format->findentry(base);
-
-                task->start.ip = task->thread.ip;
-                task->start.sp = task->thread.sp;
-
-            }
-
-        }
+        if (format->map(base, MEMSRV_PAGESIZE, code, TASK_CODESIZE, header) && loadbinary(header, base, id))
+            task_register(task, mmap, buffer, format->findentry(base), KERNEL_VSTACK);
 
         inode = (task->thread.ip) ? kernel_getchannelinode(itask, 0) : 0;
 
