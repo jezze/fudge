@@ -9,11 +9,6 @@
 
 static unsigned char audio_mem[AUDIO_MEM_SIZE];
 
-static float nexttowardf(float x, long double y)
-{
-    return x + y;
-}
-
 struct chan_len_ctr
 {
 
@@ -499,7 +494,7 @@ static void chan_trigger(unsigned char i)
         c->sweep.up = !(val & 0x08);
         c->sweep.shift = (val & 0x07);
         c->sweep.inc = c->sweep.rate ? (128.0f / (float)(c->sweep.rate)) / AUDIO_SAMPLE_RATE : 0;
-        c->sweep.counter = nexttowardf(1.0f, 1.1f);
+        c->sweep.counter = 1.0000001f;
 
     }
 
