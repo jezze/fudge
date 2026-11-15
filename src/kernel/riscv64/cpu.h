@@ -81,6 +81,7 @@ void cpu_setsatp(unsigned long value);
 void cpu_flushtlb(void);
 unsigned long cpu_gettime(void);
 void cpu_settimer(unsigned long time);
+void cpu_systemreset(unsigned int type, unsigned int reason);
 void cpu_enableinterrupt(unsigned long mask);
 void cpu_disableinterrupt(unsigned long mask);
 void cpu_settrap(void (*trap)(void));

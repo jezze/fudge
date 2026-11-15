@@ -3,6 +3,7 @@
 #include <cpu.h>
 #include <arch.h>
 #include <modules/bus.h>
+#include <modules/power.h>
 #include <modules/platform/platform.h>
 #include "virt.h"
 
@@ -18,6 +19,9 @@
 #define REG_UART0                       0x10000000
 #define REG_VIRTIO                      0x10001000
 #define REG_FWCFG                       0x10100000
+#define SRST_SHUTDOWN                   0
+#define SRST_COLDREBOOT                 1
+#define SRST_NOREASON                   0
 #define IRQ_RTC                         11
 #define IRQ_UART0                       10
 #define IRQ_VIRTIO                      1
@@ -31,6 +35,7 @@ struct device
 };
 
 static struct base_bus bus;
+static struct power_interface powerinterface;
 static void (*routines[ROUTINES][SHARED])(unsigned int irq);
 
 static struct device devices[DEVICES] = {
@@ -205,6 +210,24 @@ unsigned int platform_unsetroutine(unsigned int irq, void (*routine)(unsigned in
 
 }
 
+static unsigned int poweroff(void)
+{
+
+    cpu_systemreset(SRST_SHUTDOWN, SRST_NOREASON);
+
+    return MESSAGE_FAILED;
+
+}
+
+static unsigned int reboot(void)
+{
+
+    cpu_systemreset(SRST_COLDREBOOT, SRST_NOREASON);
+
+    return MESSAGE_FAILED;
+
+}
+
 static void bus_setup(void)
 {
 
@@ -228,6 +251,7 @@ void module_init(void)
 
     arch_setinterrupt(CPU_CAUSE_EXTERNAL, handleirq);
     base_initbus(&bus, PLATFORM_BUS, "platform", bus_setup, bus_next);
+    power_initinterface(&powerinterface, poweroff, reboot);
 
 }
 
@@ -235,12 +259,14 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
+    power_registerinterface(&powerinterface);
 
 }
 
 void module_unregister(void)
 {
 
+    power_unregisterinterface(&powerinterface);
     base_unregisterbus(&bus);
 
 }

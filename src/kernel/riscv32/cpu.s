@@ -37,6 +37,14 @@ settimer:
     ecall
     ret
 
+# SBI system reset extension (SRST), system_reset; returns only when it failed
+.global cpu_systemreset
+cpu_systemreset:
+    li a7, 0x53525354
+    li a6, 0
+    ecall
+    ret
+
 .global cpu_enableinterrupt
 cpu_enableinterrupt:
     csrs sie, a0
