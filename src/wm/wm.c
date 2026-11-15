@@ -133,6 +133,8 @@ struct state
     struct keys plainkeys;
     unsigned int active;
     unsigned int opaque;
+    unsigned int cursorscale;
+    unsigned int cursormapped[BLIT_MOUSES];
     struct widget *draggedthumb;
     unsigned int clock;
     unsigned int timer;
@@ -281,6 +283,78 @@ static void loadbackground(char *path, unsigned int length)
         }
 
     }
+
+}
+
+static unsigned int getquotednumber(char *data, unsigned int count, unsigned int index)
+{
+
+    unsigned int offset = 0;
+    unsigned int i;
+
+    for (i = 0; i < index * 2 + 1; i++)
+    {
+
+        offset += buffer_findbyte(data + offset, count - offset, '"') + 1;
+
+        if (offset >= count)
+            return 0;
+
+    }
+
+    return cstring_read_value(data + offset, buffer_findbyte(data + offset, count - offset, '"'), 10);
+
+}
+
+static void loadcursor(unsigned int type, char *name, int hotx, int hoty)
+{
+
+    unsigned int *cmap = cmap_get(PALETTE_MOUSE, SHADE_NORMAL);
+    char path[64];
+    char reply[64];
+    unsigned int target;
+    unsigned int id;
+    unsigned int count;
+    unsigned int width;
+    unsigned int height;
+    struct record record;
+
+    cstring_write_fmt(path, 64, 0, "mem:cursor-%s\\0", name);
+
+    target = fs_auth(path);
+
+    if (state.cursormapped[type])
+    {
+
+        blit_setmouse(type, 0, 0, 0, 0, 0);
+        fs_munmap(1, target, fs_walk(1, target, 0, path));
+
+        state.cursormapped[type] = 0;
+
+    }
+
+    count = system_feed(0, 0, reply, 63, "mapimage -scale %u -palette \"%H8u %H8u %H8u %H8u\" initrd:data/cursor/%s.tof %s", &state.cursorscale, &cmap[PART_SHADOW], &cmap[PART_BODY], &cmap[PART_DARK], &cmap[PART_LIGHT], name, path);
+    width = getquotednumber(reply, count, 0);
+    height = getquotednumber(reply, count, 1);
+    id = (target) ? fs_walk(1, target, 0, path) : 0;
+
+    if (id && width && height && fs_stat(1, target, id, &record) && record.size / 4 / width >= height)
+    {
+
+        blit_setmouse(type, fs_mmap(1, target, id, 0), width, height, hotx * (int)state.cursorscale / 100, hoty * (int)state.cursorscale / 100);
+
+        state.cursormapped[type] = 1;
+
+    }
+
+}
+
+static void loadcursors(void)
+{
+
+    loadcursor(BLIT_MOUSE_ARROW, "arrow", 0, 0);
+    loadcursor(BLIT_MOUSE_TEXT, "text", 3, 10);
+    loadcursor(BLIT_MOUSE_HAND, "hand", 8, 0);
 
 }
 
@@ -516,7 +590,9 @@ static void configline(char *line, unsigned int length)
     else if (count == 6 && buffer_match(word, "cursor", 6))
     {
 
-        blit_setmousescale(cstring_read_value(rest, length, 10));
+        unsigned int scale = cstring_read_value(rest, length, 10);
+
+        state.cursorscale = (scale >= 50 && scale <= 400) ? scale : 100;
 
     }
 
@@ -3227,6 +3303,7 @@ static void onmain(struct message *message)
 {
 
     loadconfig(option_getstring("config"));
+    loadcursors();
 
     if (!state.ndisplays)
         state.ndisplays = 1;
@@ -4072,6 +4149,7 @@ static void onconfig(struct message *message)
     unsigned int video = state.displays[0].video;
 
     configlines(message->data, message->length);
+    loadcursors();
 
     if (video)
         applyconfig(&videoconf, video);
@@ -4250,9 +4328,6 @@ static void setupwidgets(void)
     parser_parse(0, "", cstring_length(data0), data0);
     parser_parse(0, "root", fs_read_path(1, "initrd:data/alfi/wm.alfi", data1, 4096), data1);
     pool_loadresources();
-    blit_loadmouse(BLIT_MOUSE_ARROW, 0, 0, data1, fs_read_path(1, "initrd:data/cursor/arrow.tof", data1, 4096));
-    blit_loadmouse(BLIT_MOUSE_TEXT, 3, 10, data1, fs_read_path(1, "initrd:data/cursor/text.tof", data1, 4096));
-    blit_loadmouse(BLIT_MOUSE_HAND, 8, 0, data1, fs_read_path(1, "initrd:data/cursor/hand.tof", data1, 4096));
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
 
@@ -4282,6 +4357,7 @@ void init(void)
     state.displays[0].videoconf.bpp = 4;
     cstring_write_fmt(state.displays[0].device, DEVICENAME, 0, "video:0\\0");
     state.ndisplays = 1;
+    state.cursorscale = 100;
     pool_setup();
     setupwidgets();
     render_init();

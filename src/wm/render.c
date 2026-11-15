@@ -1286,7 +1286,7 @@ struct util_region render_update(struct blit_display *display)
 
         }
 
-        blit_mouse(display, mousetype, mouse.x, mouse.y, line, clipped.position0.x, clipped.position2.x, getpalette(PALETTE_MOUSE, SHADE_NORMAL)->frame);
+        blit_mouse(display, mousetype, mouse.x, mouse.y, line, clipped.position0.x, clipped.position2.x);
         blit(display, line, clipped.position0.x, clipped.position2.x);
 
     }
