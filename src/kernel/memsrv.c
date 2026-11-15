@@ -93,6 +93,13 @@ static unsigned char *getpage(struct file *file, unsigned int offset)
 
 }
 
+static unsigned long findpage(struct file *file, unsigned int offset)
+{
+
+    return (file && offset < countpages(file->size) * MEMSRV_PAGESIZE) ? (unsigned long)getpage(file, offset - offset % MEMSRV_PAGESIZE) : 0;
+
+}
+
 static unsigned int grow(struct file *file, unsigned int size)
 {
 
@@ -721,15 +728,11 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 unsigned long memsrv_getpage(unsigned int id, unsigned int offset)
 {
 
-    struct file *file;
-    unsigned long paddress = 0;
+    unsigned long paddress;
 
     spinlock_acquire(&spinlock);
 
-    file = getused(id);
-
-    if (file && offset < countpages(file->size) * MEMSRV_PAGESIZE)
-        paddress = (unsigned long)getpage(file, offset - offset % MEMSRV_PAGESIZE);
+    paddress = findpage(getused(id), offset);
 
     spinlock_release(&spinlock);
 
@@ -740,7 +743,15 @@ unsigned long memsrv_getpage(unsigned int id, unsigned int offset)
 unsigned long memsrv_getbase(unsigned int target, unsigned int id)
 {
 
-    return (target == server.inode && getfile(id)) ? memsrv_getpage(id, 0) : 0;
+    unsigned long paddress;
+
+    spinlock_acquire(&spinlock);
+
+    paddress = (target == server.inode) ? findpage(getfile(id), 0) : 0;
+
+    spinlock_release(&spinlock);
+
+    return paddress;
 
 }
 
