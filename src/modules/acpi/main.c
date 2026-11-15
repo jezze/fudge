@@ -2,10 +2,28 @@
 #include <kernel.h>
 #include <cpu.h>
 #include <arch.h>
+#include <modules/io/io.h>
 #include <modules/acpi/acpi.h>
 
 #define TABLES                          32
 #define FADT_XDSDT                      140
+#define FADT_SMICMD                     48
+#define FADT_ACPIENABLE                 52
+#define FADT_PM1ACNT                    64
+#define FADT_PM1BCNT                    68
+#define FADT_FLAGS                      112
+#define FADT_RESETREG                   116
+#define FADT_RESETVALUE                 128
+#define FADT_XPM1ACNT                   172
+#define FADT_XPM1BCNT                   184
+#define FADT_FLAG_RESETREG              0x00000400
+#define FADT_FLAG_HWREDUCED             0x00100000
+#define GAS_SPACE_IO                    0x01
+#define PM1_SCIEN                       0x0001
+#define PM1_SLPTYP                      0x1C00
+#define PM1_SLPEN                       0x2000
+#define PM1_WAIT                        100000
+#define SCI_WAIT                        1000000
 #define AML_EXTPREFIX                   0x5B
 #define AML_OPREGION                    0x80
 #define AML_FIELD                       0x81
@@ -15,6 +33,7 @@
 #define AML_QWORDPREFIX                 0x0E
 #define AML_SPACE_MEMORY                0x00
 #define AML_NAME                        0x08
+#define AML_PACKAGE                     0x12
 #define AML_ZERO                        0x00
 #define AML_ONE                         0x01
 #define AML_ONES                        0xFF
@@ -657,6 +676,208 @@ struct acpi_field acpi_readfield(char *name)
     }
 
     return field;
+
+}
+
+static struct integer findpackageinteger(char *name, unsigned int index)
+{
+
+    struct integer integer;
+    unsigned int t;
+
+    integer.found = 0;
+
+    for (t = 0; t < TABLES; t++)
+    {
+
+        struct acpi_sdth *header = gettable(t);
+        struct aml aml;
+        unsigned int i;
+
+        if (!header)
+            continue;
+
+        aml = getaml(header);
+
+        for (i = 0; i + 5 < aml.length; i++)
+        {
+
+            struct namestring namestring;
+            unsigned int offset;
+            unsigned int count;
+            unsigned int e;
+
+            if (getbyte(&aml, i) != AML_NAME)
+                continue;
+
+            namestring = getnamestring(&aml, i + 1);
+
+            if (!matchname(&aml, namestring.seg, name))
+                continue;
+
+            offset = i + 1 + namestring.bytes;
+
+            if (getbyte(&aml, offset) != AML_PACKAGE)
+                continue;
+
+            offset += 1 + getpkglength(&aml, offset + 1).bytes;
+            count = getbyte(&aml, offset);
+            offset++;
+
+            for (e = 0; e < count; e++)
+            {
+
+                integer = getoperand(&aml, offset);
+
+                if (!integer.found || e == index)
+                    break;
+
+                offset += integer.bytes;
+
+            }
+
+            if (e == index && integer.found)
+                return integer;
+
+            integer.found = 0;
+
+        }
+
+    }
+
+    return integer;
+
+}
+
+static unsigned int readfadt(struct acpi_sdth *fadt, unsigned int offset, unsigned int size)
+{
+
+    unsigned char *data = (unsigned char *)fadt;
+    unsigned int value = 0;
+    unsigned int i;
+
+    if (fadt->length < offset + size)
+        return 0;
+
+    for (i = 0; i < size; i++)
+        value |= data[offset + i] << (i * 8);
+
+    return value;
+
+}
+
+static unsigned int getport(struct acpi_sdth *fadt, unsigned int xoffset, unsigned int offset)
+{
+
+    if (fadt->length >= xoffset + 12 && readfadt(fadt, xoffset, 1) == GAS_SPACE_IO)
+    {
+
+        unsigned long address = readaddress((unsigned char *)fadt + xoffset + 4, 8);
+
+        if (address && address <= 0xFFFF)
+            return address;
+
+    }
+
+    return readfadt(fadt, offset, 4) & 0xFFFF;
+
+}
+
+static void waitport(unsigned int port)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < PM1_WAIT; i++)
+        io_inw(port);
+
+}
+
+static void enableacpi(struct acpi_sdth *fadt, unsigned int pm1a)
+{
+
+    unsigned int smicmd = readfadt(fadt, FADT_SMICMD, 4) & 0xFFFF;
+    unsigned int acpienable = readfadt(fadt, FADT_ACPIENABLE, 1);
+    unsigned int i;
+
+    if (!smicmd || !acpienable || (io_inw(pm1a) & PM1_SCIEN))
+        return;
+
+    io_outb(smicmd, acpienable);
+
+    for (i = 0; i < SCI_WAIT; i++)
+    {
+
+        if (io_inw(pm1a) & PM1_SCIEN)
+            break;
+
+    }
+
+}
+
+void acpi_reset(void)
+{
+
+    struct acpi_sdth *fadt = acpi_findheader("FACP", 0);
+
+    if (!fadt || !(readfadt(fadt, FADT_FLAGS, 4) & FADT_FLAG_RESETREG) || fadt->length < FADT_RESETVALUE + 1)
+        return;
+
+    if (readfadt(fadt, FADT_RESETREG, 1) == GAS_SPACE_IO)
+    {
+
+        unsigned long address = readaddress((unsigned char *)fadt + FADT_RESETREG + 4, 8);
+
+        if (address && address <= 0xFFFF)
+        {
+
+            io_outb(address, readfadt(fadt, FADT_RESETVALUE, 1));
+            waitport(address);
+
+        }
+
+    }
+
+}
+
+void acpi_poweroff(void)
+{
+
+    struct acpi_sdth *fadt = acpi_findheader("FACP", 0);
+    struct integer typea = findpackageinteger("_S5_", 0);
+    struct integer typeb = findpackageinteger("_S5_", 1);
+    unsigned int pm1a;
+    unsigned int pm1b;
+    unsigned int a;
+    unsigned int b = 0;
+
+    if (!fadt || !typea.found || (readfadt(fadt, FADT_FLAGS, 4) & FADT_FLAG_HWREDUCED))
+        return;
+
+    pm1a = getport(fadt, FADT_XPM1ACNT, FADT_PM1ACNT);
+    pm1b = getport(fadt, FADT_XPM1BCNT, FADT_PM1BCNT);
+
+    if (!pm1a)
+        return;
+
+    enableacpi(fadt, pm1a);
+
+    a = (io_inw(pm1a) & ~(PM1_SLPTYP | PM1_SLPEN)) | ((typea.value << 10) & PM1_SLPTYP);
+
+    if (pm1b)
+        b = (io_inw(pm1b) & ~(PM1_SLPTYP | PM1_SLPEN)) | ((((typeb.found) ? typeb.value : typea.value) << 10) & PM1_SLPTYP);
+
+    io_outw(pm1a, a);
+
+    if (pm1b)
+        io_outw(pm1b, b);
+
+    io_outw(pm1a, a | PM1_SLPEN);
+
+    if (pm1b)
+        io_outw(pm1b, b | PM1_SLPEN);
+
+    waitport(pm1a);
 
 }
 

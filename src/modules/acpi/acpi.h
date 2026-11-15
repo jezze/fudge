@@ -181,3 +181,5 @@ struct acpi_field
 
 struct acpi_sdth *acpi_findheader(char *name, unsigned int index);
 struct acpi_field acpi_readfield(char *name);
+void acpi_reset(void);
+void acpi_poweroff(void);
