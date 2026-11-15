@@ -56,6 +56,16 @@
       command: "wedit"
     }
     {
+      suffix: ".tof"
+      label: "View"
+      command: "wimage"
+    }
+    {
+      suffix: ".tof"
+      label: "Edit"
+      command: "wedit"
+    }
+    {
       suffix: ".txt"
       label: "View"
       command: "wedit"

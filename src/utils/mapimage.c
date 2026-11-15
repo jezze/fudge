@@ -4,6 +4,10 @@
 #include <image.h>
 
 #define ROWSIZE                         4096
+#define TEXTSIZE                        0x4000
+#define TYPE_PCX                        0
+#define TYPE_PNG                        1
+#define TYPE_TOFFEE                     2
 
 static char source[1024];
 static unsigned int paths;
@@ -16,6 +20,9 @@ static struct png png;
 static unsigned char colormap[768];
 static unsigned char rawline[ROWSIZE * 2];
 static unsigned char line[ROWSIZE];
+static struct toffee toffee;
+static unsigned int palette[TOFFEE_SLOTS];
+static char text[TEXTSIZE];
 
 static unsigned int readpng(struct png *png, void *buffer, unsigned int count, unsigned int offset)
 {
@@ -125,6 +132,177 @@ static unsigned int decodepcx(struct pcx_header *header)
 
 }
 
+static unsigned int opentoffee(void)
+{
+
+    if (!toffee_parse(&toffee, text, fs_read_full(1, filetarget, fileid, text, TEXTSIZE, 0)))
+        return 0;
+
+    width = option_getdecimal("width");
+    height = option_getdecimal("height");
+
+    if (width > TOFFEE_SIZE || height > TOFFEE_SIZE)
+        return 0;
+
+    if (!width && !height)
+    {
+
+        width = toffee.width;
+        height = toffee.height;
+
+    }
+
+    else if (!width)
+    {
+
+        width = height * toffee.width / toffee.height;
+
+    }
+
+    else if (!height)
+    {
+
+        height = width * toffee.height / toffee.width;
+
+    }
+
+    return width && height && width <= TOFFEE_SIZE && height <= TOFFEE_SIZE;
+
+}
+
+static unsigned int blend(unsigned int bg, unsigned int color)
+{
+
+    unsigned int a = color >> 24;
+    unsigned int ba = (bg >> 24) * (255 - a) / 255;
+    unsigned int oa = a + ba;
+    unsigned int result = oa << 24;
+    unsigned int shift;
+
+    if (!oa)
+        return 0;
+
+    for (shift = 0; shift < 24; shift += 8)
+        result |= ((((color >> shift) & 0xFF) * a + ((bg >> shift) & 0xFF) * ba) / oa) << shift;
+
+    return result;
+
+}
+
+static void readpalette(void)
+{
+
+    char *value = option_getstring("palette");
+    unsigned int length = cstring_length(value);
+    unsigned int offset = 0;
+    unsigned int i;
+
+    for (i = 0; i < TOFFEE_SLOTS; i++)
+    {
+
+        unsigned int count = buffer_findbyte(value + offset, length - offset, ' ');
+
+        palette[i] = (count) ? cstring_read_value(value + offset, count, 16) : 0;
+        offset += (offset + count < length) ? count + 1 : count;
+
+    }
+
+}
+
+static unsigned int decodetoffee(void)
+{
+
+    unsigned int y;
+
+    readpalette();
+
+    for (y = 0; y < height; y++)
+    {
+
+        unsigned int *row = pixels + y * width;
+        unsigned int i;
+
+        buffer_clear(row, width * 4);
+
+        for (i = 0; i < toffee.nshapes; i++)
+        {
+
+            struct toffee_shape *shape = &toffee.shapes[i];
+            unsigned int color = (shape->slot < TOFFEE_SLOTS) ? palette[shape->slot] : shape->color;
+            struct toffee_line scan;
+            unsigned int j;
+
+            toffee_scanline(&toffee, &scan, i, width, height, y);
+
+            for (j = 0; j < scan.count; j++)
+            {
+
+                int x;
+
+                for (x = scan.spans[j].x0; x < scan.spans[j].x2; x++)
+                    row[x] = blend(row[x], color);
+
+            }
+
+        }
+
+    }
+
+    return 1;
+
+}
+
+static unsigned int gettype(char *path)
+{
+
+    unsigned int length = cstring_length(path);
+
+    if (length > 4 && cstring_match(path + length - 4, ".png"))
+        return TYPE_PNG;
+
+    if (length > 4 && cstring_match(path + length - 4, ".tof"))
+        return TYPE_TOFFEE;
+
+    return TYPE_PCX;
+
+}
+
+static unsigned int open(unsigned int type, struct pcx_header *header)
+{
+
+    switch (type)
+    {
+
+    case TYPE_PNG:
+        return openpng();
+
+    case TYPE_TOFFEE:
+        return opentoffee();
+
+    }
+
+    return openpcx(header);
+
+}
+
+static unsigned int decode(unsigned int type, struct pcx_header *header)
+{
+
+    switch (type)
+    {
+
+    case TYPE_PNG:
+        return decodepng();
+
+    case TYPE_TOFFEE:
+        return decodetoffee();
+
+    }
+
+    return decodepcx(header);
+
+}
+
 static unsigned int findtarget(unsigned int target, char *path)
 {
 
@@ -165,8 +343,7 @@ static unsigned int fit(unsigned int target, unsigned int id)
 static void convert(unsigned int reply, char *path, char *to)
 {
 
-    unsigned int length = cstring_length(path);
-    unsigned int ispng = length > 4 && cstring_match(path + length - 4, ".png");
+    unsigned int type = gettype(path);
     unsigned int target = fs_auth(to);
     struct pcx_header header;
     unsigned int id;
@@ -183,7 +360,7 @@ static void convert(unsigned int reply, char *path, char *to)
 
     }
 
-    if (!(ispng ? openpng() : openpcx(&header)))
+    if (!open(type, &header))
     {
 
         channel_send_fmt(0, reply, MESSAGE_TYPE_ERROR, "Not an image: %s\n", path);
@@ -214,7 +391,7 @@ static void convert(unsigned int reply, char *path, char *to)
 
     }
 
-    if (ispng ? decodepng() : decodepcx(&header))
+    if (decode(type, &header))
         channel_send_fmt(0, reply, MESSAGE_TYPE_DATA, "width \"%u\" height \"%u\"\n", &width, &height);
     else
         channel_send_fmt(0, reply, MESSAGE_TYPE_ERROR, "Image could not be decoded: %s\n", path);
@@ -239,13 +416,16 @@ static void onterm(struct message *message)
 {
 
     if (paths != 2)
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Usage: mapimage <image> <file>\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Usage: mapimage [-width <n>] [-height <n>] [-palette <colors>] <image> <file>\n");
 
 }
 
 void init(void)
 {
 
+    option_add("width", "0");
+    option_add("height", "0");
+    option_add("palette", "FF101010 FF202020 FF000000 FFF0F0F0 FFE0E0E0 FFFFFFFF");
     channel_bind(MESSAGE_TYPE_PATH, onpath);
     channel_bind(MESSAGE_TYPE_TERM, onterm);
 
