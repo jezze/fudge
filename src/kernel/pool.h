@@ -12,6 +12,7 @@
 struct core *pool_getcore(unsigned int icore);
 struct mailbox *pool_getmailbox(unsigned int imailbox);
 struct resource *pool_getnoderesource(unsigned int inode);
+struct mailbox *pool_getnodemailbox(unsigned int inode);
 struct task *pool_gettask(unsigned int itask);
 unsigned int pool_getlinktarget(struct list_item *item);
 unsigned int pool_pickcorefrom(struct list *list);

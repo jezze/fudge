@@ -103,6 +103,15 @@ struct resource *pool_getnoderesource(unsigned int inode)
 
 }
 
+struct mailbox *pool_getnodemailbox(unsigned int inode)
+{
+
+    struct resource *resource = pool_getnoderesource(inode);
+
+    return (resource && resource->type == RESOURCE_MAILBOX) ? resource->data : 0;
+
+}
+
 struct task *pool_gettask(unsigned int itask)
 {
 

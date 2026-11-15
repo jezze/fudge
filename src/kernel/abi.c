@@ -40,7 +40,7 @@ static unsigned int kill(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int target;} *args = stack;
-    struct mailbox *mailbox = mailbox_get(args->target);
+    struct mailbox *mailbox = pool_getnodemailbox(args->target);
 
     return (mailbox && mailbox->itask && kernel_kill(mailbox->itask)) ? MESSAGE_OK : MESSAGE_FAILED;
 
@@ -162,7 +162,7 @@ static unsigned int place(unsigned int itask, void *stack)
         if (!inode)
             return MESSAGE_FAILED;
 
-        if (mailbox_get(args->target))
+        if (pool_getnodemailbox(args->target))
         {
 
             status = kernel_place(inode, args->target, args->event, args->count, args->data);

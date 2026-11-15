@@ -7,38 +7,6 @@
 #include "mailbox.h"
 #include "kernel.h"
 
-struct mailbox *mailbox_get(unsigned int inode)
-{
-
-    struct resource *resource = pool_getnoderesource(inode);
-
-    return (resource && resource->type == RESOURCE_MAILBOX) ? resource->data : 0;
-
-}
-
-void mailbox_wake(unsigned int inode)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < POOL_TASKS; i++)
-    {
-
-        struct task *task = pool_gettask(i);
-
-        if (task && task->waitingfor == inode)
-        {
-
-            task->waitingfor = 0;
-
-            kernel_signal(i, TASK_SIGNAL_UNBLOCK);
-
-        }
-
-    }
-
-}
-
 static unsigned int release(struct mailbox *mailbox, unsigned int slots)
 {
 
@@ -96,7 +64,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
     spinlock_release(&mailbox->spinlock);
 
     if (released)
-        mailbox_wake(mailbox->resource.inode);
+        kernel_wake(mailbox->resource.inode);
 
     return n;
 
@@ -139,7 +107,7 @@ static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned i
 unsigned int mailbox_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
 {
 
-    struct mailbox *mailbox = mailbox_get(source);
+    struct mailbox *mailbox = pool_getnodemailbox(source);
 
     if (mailbox)
     {
@@ -161,7 +129,7 @@ unsigned int mailbox_pick(unsigned int source, struct message *messages, unsigne
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = mailbox_get(target);
+    struct mailbox *mailbox = pool_getnodemailbox(target);
 
     if (mailbox)
     {
@@ -209,7 +177,7 @@ static unsigned int move(struct mailbox *mailbox, struct list *to, struct list *
 unsigned int mailbox_reservereply(unsigned int inode)
 {
 
-    struct mailbox *mailbox = mailbox_get(inode);
+    struct mailbox *mailbox = pool_getnodemailbox(inode);
 
     if (mailbox && mailbox->itask)
         return (mailbox->reply.head || move(mailbox, &mailbox->reply, &mailbox->free)) ? MESSAGE_OK : MESSAGE_RETRY;
@@ -221,17 +189,17 @@ unsigned int mailbox_reservereply(unsigned int inode)
 void mailbox_unreservereply(unsigned int inode)
 {
 
-    struct mailbox *mailbox = mailbox_get(inode);
+    struct mailbox *mailbox = pool_getnodemailbox(inode);
 
     if (mailbox && move(mailbox, &mailbox->free, &mailbox->reply))
-        mailbox_wake(inode);
+        kernel_wake(inode);
 
 }
 
 unsigned int mailbox_keepreply(unsigned int inode)
 {
 
-    struct mailbox *mailbox = mailbox_get(inode);
+    struct mailbox *mailbox = pool_getnodemailbox(inode);
 
     return (mailbox && move(mailbox, &mailbox->reserved, &mailbox->reply)) ? MESSAGE_OK : MESSAGE_FAILED;
 
@@ -240,17 +208,17 @@ unsigned int mailbox_keepreply(unsigned int inode)
 void mailbox_unreserve(unsigned int inode)
 {
 
-    struct mailbox *mailbox = mailbox_get(inode);
+    struct mailbox *mailbox = pool_getnodemailbox(inode);
 
     if (mailbox && move(mailbox, &mailbox->free, &mailbox->reserved))
-        mailbox_wake(inode);
+        kernel_wake(inode);
 
 }
 
 unsigned int mailbox_placereply(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = mailbox_get(target);
+    struct mailbox *mailbox = pool_getnodemailbox(target);
 
     if (mailbox && mailbox->itask)
     {
@@ -271,7 +239,7 @@ unsigned int mailbox_placereply(unsigned int target, unsigned int source, unsign
 unsigned int mailbox_placereserved(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = mailbox_get(target);
+    struct mailbox *mailbox = pool_getnodemailbox(target);
 
     if (mailbox && mailbox->itask)
     {
@@ -292,7 +260,7 @@ unsigned int mailbox_placereserved(unsigned int target, unsigned int source, uns
 unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 {
 
-    struct mailbox *mailbox = mailbox_get(target);
+    struct mailbox *mailbox = pool_getnodemailbox(target);
     struct task *task = pool_gettask(itask);
     unsigned int waiting = 0;
 

@@ -432,7 +432,7 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
 {
 
     struct file *file = getfile(id);
-    struct mailbox *mailbox = mailbox_get(source);
+    struct mailbox *mailbox = pool_getnodemailbox(source);
     unsigned int itask = (mailbox) ? mailbox->itask : 0;
     struct task *task = pool_gettask(itask);
 
@@ -478,7 +478,7 @@ static unsigned int unmap(unsigned int source, unsigned int id)
 {
 
     struct file *file = getused(id);
-    struct mailbox *mailbox = mailbox_get(source);
+    struct mailbox *mailbox = pool_getnodemailbox(source);
     unsigned int itask = (mailbox) ? mailbox->itask : 0;
     struct task *task = pool_gettask(itask);
     struct mmap_entry *entry = (file && task) ? findmapping((struct mmap_header *)task->mmap, id) : 0;

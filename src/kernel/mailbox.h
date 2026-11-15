@@ -17,7 +17,6 @@ struct mailbox
 
 };
 
-struct mailbox *mailbox_get(unsigned int inode);
 unsigned int mailbox_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags);
 unsigned int mailbox_reservereply(unsigned int inode);
 void mailbox_unreservereply(unsigned int inode);
@@ -26,7 +25,6 @@ void mailbox_unreserve(unsigned int inode);
 unsigned int mailbox_placereply(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int mailbox_placereserved(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int mailbox_wait(unsigned int target, unsigned int itask);
-void mailbox_wake(unsigned int inode);
 void mailbox_reset(struct mailbox *mailbox);
 void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel);
 void mailbox_init(struct mailbox *mailbox, unsigned long data);
