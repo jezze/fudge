@@ -8,6 +8,12 @@
 #define MESSAGE_FLAG_BLOCK              0x01
 #define MESSAGE_ROOT                    0x01
 #define MESSAGE_SECTORSIZE              512
+#define MESSAGE_BATTERY_UNKNOWN         0xFFFFFFFF
+#define MESSAGE_BATTERY_DISCHARGING     0x01
+#define MESSAGE_BATTERY_CHARGING        0x02
+#define MESSAGE_BATTERY_CRITICAL        0x04
+#define MESSAGE_BATTERY_MILLIWATTS      0
+#define MESSAGE_BATTERY_MILLIAMPS       1
 #define MESSAGE_TYPE_MAIN               0x01
 #define MESSAGE_TYPE_TERM               0x02
 #define MESSAGE_TYPE_INTERRUPT          0x03
@@ -51,6 +57,7 @@
 #define MESSAGE_TYPE_TOUCHCONTACT       0x3A
 #define MESSAGE_TYPE_POWEROFF           0x3B
 #define MESSAGE_TYPE_REBOOT             0x3C
+#define MESSAGE_TYPE_BATTERYINFO        0x3D
 #define MESSAGE_TYPE_WALKREQUEST        0x40
 #define MESSAGE_TYPE_WALKRESPONSE       0x41
 #define MESSAGE_TYPE_READREQUEST        0x42
@@ -518,6 +525,20 @@ struct message_writeresponse
 {
 
     unsigned int count;
+
+};
+
+struct message_batteryinfo
+{
+
+    unsigned int present;
+    unsigned int state;
+    unsigned int unit;
+    unsigned int rate;
+    unsigned int remaining;
+    unsigned int full;
+    unsigned int design;
+    unsigned int voltage;
 
 };
 

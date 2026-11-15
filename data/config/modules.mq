@@ -9,6 +9,7 @@
     { path: initrd:kernel/mouse.ko }
     { path: initrd:kernel/touch.ko }
     { path: initrd:kernel/power.ko }
+    { path: initrd:kernel/battery.ko }
     { path: initrd:kernel/timer.ko }
     { path: initrd:kernel/audio.ko }
     { path: initrd:kernel/video.ko }

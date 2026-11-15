@@ -93,6 +93,9 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     case MESSAGE_TYPE_BLOCKWRITERESPONSE:
         return checksize(data, count, sizeof (struct message_blockresponse));
 
+    case MESSAGE_TYPE_BATTERYINFO:
+        return checksize(data, count, sizeof (struct message_batteryinfo));
+
     case MESSAGE_TYPE_CLOCKINFO:
         return checksize(data, count, sizeof (struct message_clockinfo));
 
