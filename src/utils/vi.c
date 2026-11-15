@@ -16,6 +16,7 @@
 #define MODE_INSERT                     1
 #define MODE_COMMAND                    2
 #define MODE_SEARCH                     3
+#define MODE_VISUAL                     4
 #define REDRAW_NONE                     0
 #define REDRAW_LINE                     1
 #define REDRAW_ALL                      2
@@ -92,6 +93,10 @@ static struct escape beforeescape;
 static unsigned int params[PARAMS];
 static unsigned int nparams;
 static unsigned int lastbyte;
+static unsigned int visualstart;
+static unsigned int visuallines;
+static unsigned int selectfrom;
+static unsigned int selectto;
 
 static void flush(void)
 {
@@ -1441,6 +1446,14 @@ static void command(unsigned int key, unsigned int n)
 
         break;
 
+    case 'v':
+    case 'V':
+        mode = MODE_VISUAL;
+        visualstart = cursor;
+        visuallines = (key == 'V');
+
+        break;
+
     case 0x02:
     case KEY_PAGEUP:
         scroll(0, (rows > 3) ? rows - 3 : 1, 0);
@@ -1730,8 +1743,109 @@ static void linekey(unsigned int key)
 
 }
 
+static void visualkey(unsigned int key)
+{
+
+    struct motion m;
+    unsigned int value;
+
+    if (pending == 'g')
+    {
+
+        pending = 0;
+
+        if (key != 'g')
+        {
+
+            count = 0;
+
+            return;
+
+        }
+
+        key = KEY_GG;
+
+    }
+
+    else if (key == 'g')
+    {
+
+        pending = 'g';
+        keepwant = 1;
+
+        return;
+
+    }
+
+    if (key < 0x80 && cstring_isdigit(key) && (key != '0' || count))
+    {
+
+        count = count * 10 + cstring_toint(key);
+        keepwant = 1;
+
+        return;
+
+    }
+
+    m = motion(key, count);
+    count = 0;
+
+    if (m.position != NOMOTION)
+    {
+
+        cursor = m.position;
+
+        return;
+
+    }
+
+    switch (key)
+    {
+
+    case 'd':
+    case 'x':
+    case 'y':
+    case 'c':
+    case 's':
+    case KEY_DELETE:
+        m.position = visualstart;
+        m.linewise = visuallines;
+        m.inclusive = 1;
+        mode = MODE_NORMAL;
+
+        applyoperator((key == 'y') ? 'y' : ((key == 'c' || key == 's') ? 'c' : 'd'), m);
+
+        break;
+
+    case 'o':
+        value = visualstart;
+        visualstart = cursor;
+        cursor = value;
+
+        break;
+
+    case 'v':
+    case 'V':
+        if (visuallines == (key == 'V'))
+            mode = MODE_NORMAL;
+        else
+            visuallines = (key == 'V');
+
+        break;
+
+    case 0x1B:
+        mode = MODE_NORMAL;
+
+        break;
+
+    }
+
+}
+
 static void onkey(unsigned int key)
 {
+
+    unsigned int previous = mode;
 
     keepwant = 0;
 
@@ -1753,10 +1867,15 @@ static void onkey(unsigned int key)
 
         break;
 
+    case MODE_VISUAL:
+        visualkey(key);
+
+        break;
+
     default:
         normalkey(key);
 
-        if (mode == MODE_INSERT)
+        if (mode == MODE_INSERT || mode == MODE_VISUAL)
             notice[0] = '\0';
 
         break;
@@ -1766,8 +1885,11 @@ static void onkey(unsigned int key)
     if (cursor > textcount)
         cursor = textcount;
 
-    if (mode == MODE_NORMAL && cursor == lineend(cursor) && cursor > linestart(cursor))
+    if ((mode == MODE_NORMAL || mode == MODE_VISUAL) && cursor == lineend(cursor) && cursor > linestart(cursor))
         cursor = prevchar(cursor);
+
+    if (mode == MODE_VISUAL || previous == MODE_VISUAL)
+        redraw = REDRAW_ALL;
 
     if (!keepwant)
         wantcolumn = columnof(cursor);
@@ -1829,11 +1951,24 @@ static unsigned int translate(unsigned char c)
 
 }
 
+static unsigned int highlight(unsigned int pos, unsigned int reversed)
+{
+
+    unsigned int selected = pos >= selectfrom && pos < selectto;
+
+    if (selected != reversed)
+        emitstring((selected) ? "\033[7m" : "\033[27m");
+
+    return selected;
+
+}
+
 static void drawline(unsigned int row, unsigned int start)
 {
 
     unsigned int column = 0;
     unsigned int visible = 0;
+    unsigned int reversed = 0;
     unsigned int pos;
 
     emitfmt2("\033[%u;1H", &row, (void *)0);
@@ -1852,7 +1987,13 @@ static void drawline(unsigned int row, unsigned int start)
             {
 
                 if (column >= left)
+                {
+
+                    reversed = highlight(pos, reversed);
+
                     emitbyte(' ');
+
+                }
 
             }
 
@@ -1872,7 +2013,13 @@ static void drawline(unsigned int row, unsigned int start)
             visible = column >= left;
 
             if (visible)
+            {
+
+                reversed = highlight(pos, reversed);
+
                 emitbyte((c < 0x20 || c == 0x7F) ? '?' : c);
+
+            }
 
             column++;
 
@@ -1880,6 +2027,17 @@ static void drawline(unsigned int row, unsigned int start)
 
     }
 
+    if (pos < textcount && text[pos] == '\n' && (pos == start || !visuallines) && column >= left && column < left + columns)
+    {
+
+        reversed = highlight(pos, reversed);
+
+        if (reversed)
+            emitbyte(' ');
+
+    }
+
+    highlight(selectto, reversed);
     emitstring("\033[K");
 
 }
@@ -1945,6 +2103,13 @@ static void drawstatus(unsigned int number, unsigned int column)
 
     }
 
+    else if (mode == MODE_VISUAL)
+    {
+
+        size = cstring_write(status, columns - 1, (visuallines) ? "-- VISUAL LINE --" : "-- VISUAL --", 0);
+
+    }
+
     emitfmt2("\033[%u;1H", &rows, (void *)0);
     emit(status, size);
     emitstring("\033[K");
@@ -1969,6 +2134,32 @@ static void render(void)
     unsigned int number = linenumber(cursor);
     unsigned int column = columnof(cursor);
     unsigned int row;
+
+    selectfrom = 0;
+    selectto = 0;
+
+    if (mode == MODE_VISUAL)
+    {
+
+        selectfrom = (visualstart < cursor) ? visualstart : cursor;
+        selectto = (visualstart < cursor) ? cursor : visualstart;
+
+        if (visuallines)
+        {
+
+            selectfrom = linestart(selectfrom);
+            selectto = lineend(selectto) + 1;
+
+        }
+
+        else
+        {
+
+            selectto = (selectto < textcount && text[selectto] == '\n') ? selectto + 1 : nextchar(selectto);
+
+        }
+
+    }
 
     if (number < top)
     {
