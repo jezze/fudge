@@ -9,6 +9,7 @@
 #define PATHSIZE                        1024
 #define TABSIZE                         8
 #define RULERSIZE                       16
+#define PARAMS                          3
 #define COLUMNEND                       0xFFFFFFFF
 #define NOMOTION                        0xFFFFFFFF
 #define MODE_NORMAL                     0
@@ -88,7 +89,8 @@ static unsigned int modified;
 static unsigned int eol = 1;
 static unsigned int escaped;
 static struct escape beforeescape;
-static unsigned int param;
+static unsigned int params[PARAMS];
+static unsigned int nparams;
 static unsigned int lastbyte;
 
 static void flush(void)
@@ -1794,7 +1796,7 @@ static unsigned int translate(unsigned char c)
         return KEY_END;
 
     case '~':
-        switch (param)
+        switch (params[0])
         {
 
         case 1:
@@ -2029,6 +2031,15 @@ static void render(void)
 
 }
 
+static void setsize(unsigned int r, unsigned int c)
+{
+
+    rows = (r > 2) ? r : 24;
+    columns = (c > RULERSIZE * 2) ? ((c < STATUSSIZE) ? c : STATUSSIZE - 1) : 80;
+    redraw = REDRAW_ALL;
+
+}
+
 static void onconsoledata(struct message *message)
 {
 
@@ -2060,7 +2071,9 @@ static void onconsoledata(struct message *message)
                 pending = beforeescape.pending;
                 linecount = beforeescape.linecount;
                 escaped = 2;
-                param = 0;
+                nparams = 0;
+
+                buffer_clear(params, sizeof (params));
 
                 continue;
 
@@ -2071,17 +2084,20 @@ static void onconsoledata(struct message *message)
         if (escaped >= 2)
         {
 
-            if (escaped == 2 && cstring_isdigit(c))
-                param = param * 10 + cstring_toint(c);
+            if (cstring_isdigit(c) && nparams < PARAMS)
+                params[nparams] = params[nparams] * 10 + cstring_toint(c);
             else if (c == ';')
-                escaped = 3;
+                nparams++;
 
             if (c >= 0x40 && c <= 0x7E)
             {
 
                 escaped = 0;
 
-                onkey(translate(c));
+                if (c == 't' && params[0] == 48)
+                    setsize(params[1], params[2]);
+                else
+                    onkey(translate(c));
 
             }
 
@@ -2121,18 +2137,13 @@ static void onconsoledata(struct message *message)
 static void onmain(struct message *message)
 {
 
-    int r = option_getdecimal("rows");
-    int c = option_getdecimal("columns");
-
     output = message->source;
-    rows = (r > 2) ? r : 24;
-    columns = (c > RULERSIZE * 2 && c < STATUSSIZE) ? c : 80;
-    redraw = REDRAW_ALL;
 
-    emitstring("\033[?1049h\033[H\033[2J");
+    setsize(option_getdecimal("rows"), option_getdecimal("columns"));
+    emitstring("\033[?1049h\033[?2048h\033[H\033[2J");
     render();
     channel_hold(0);
-    emitstring("\033[2J\033[H\033[?1049l");
+    emitstring("\033[?2048l\033[2J\033[H\033[?1049l");
     flush();
 
 }
