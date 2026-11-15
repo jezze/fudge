@@ -1,5 +1,4 @@
 #define ATTR_COLOR                      1
-#define ATTR_CURSOR                     2
 #define ATTR_DISPLAY                    3
 #define ATTR_FLOW                       4
 #define ATTR_HALIGN                     5

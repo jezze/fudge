@@ -18,6 +18,18 @@ static unsigned int saving;
 static unsigned int choosing;
 static char savedata[SAVESIZE];
 
+static void sendcursor(unsigned int position)
+{
+
+    struct {struct message_wmcursor wmcursor; char id[8];} message;
+
+    message.wmcursor.position = position;
+
+    buffer_write(message.id, 8, "content", 8, 0);
+    channel_send(0, wm, MESSAGE_TYPE_WMCURSOR, sizeof (struct message_wmcursor) + 8, &message);
+
+}
+
 static void sendchunk(char *data, unsigned int count)
 {
 
@@ -113,7 +125,8 @@ static void showfile(void)
 
             }
 
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n= content cursor \"0\"\n", &chunks, wraps[wrap]);
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n", &chunks, wraps[wrap]);
+            sendcursor(0);
 
             chunks++;
             loaded = offset < MAXSIZE;

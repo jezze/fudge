@@ -39,6 +39,7 @@ struct terminal
     unsigned int pending;
     unsigned int reports;
     unsigned int shown;
+    unsigned int sentcursor;
 
 };
 
@@ -722,6 +723,20 @@ static void addoutput(struct output *output, char *line, unsigned int count)
 
 }
 
+static void sendcursor(unsigned int position)
+{
+
+    struct {struct message_wmcursor wmcursor; char id[8];} message;
+
+    message.wmcursor.position = position;
+
+    buffer_write(message.id, 8, "screen", 7, 0);
+
+    if (wm)
+        channel_send(0, wm, MESSAGE_TYPE_WMCURSOR, sizeof (struct message_wmcursor) + 7, &message);
+
+}
+
 static void render(struct terminal *terminal)
 {
 
@@ -762,8 +777,12 @@ static void render(struct terminal *terminal)
 
     terminal->shown = terminal->rows;
 
-    addoutput(&output, line, cstring_write_fmt(line, LINESIZE, 0, "= screen cursor \"%u\"\n", &cursor));
     flushoutput(&output);
+
+    if (cursor != terminal->sentcursor)
+        sendcursor(cursor);
+
+    terminal->sentcursor = cursor;
 
 }
 
@@ -783,6 +802,7 @@ static void setup(struct terminal *terminal)
 
     terminal->rows = 24;
     terminal->columns = 80;
+    terminal->sentcursor = 0xFFFFFFFF;
 
 }
 

@@ -84,6 +84,8 @@
 #define MESSAGE_TYPE_WMREAD             0x60
 #define MESSAGE_TYPE_WMTEXT             0x61
 #define MESSAGE_TYPE_CONFIG             0x62
+#define MESSAGE_TYPE_WMCURSOR           0x63
+#define MESSAGE_TYPE_WMSELECT           0x64
 #define MESSAGE_TYPE_P9P                0x70
 #define PIPE_ROUTES                     10
 #define READ_FLAG_BUFFER                0x01
@@ -363,6 +365,21 @@ struct message_wmevent
 
     unsigned int type;
     unsigned int length;
+
+};
+
+struct message_wmcursor
+{
+
+    unsigned int position;
+
+};
+
+struct message_wmselect
+{
+
+    unsigned int anchor;
+    unsigned int end;
 
 };
 

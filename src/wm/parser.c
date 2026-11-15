@@ -16,7 +16,7 @@
 
 #define NUM_COMMANDS                    5
 #define NUM_WIDGETS                     13
-#define NUM_ATTRIBUTES                  27
+#define NUM_ATTRIBUTES                  26
 
 static struct util_token commands[NUM_COMMANDS] =
 {
@@ -48,7 +48,6 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
 {
     {ATTR_CHECKED, "checked"},
     {ATTR_COLOR, "color"},
-    {ATTR_CURSOR, "cursor"},
     {ATTR_DISPLAY, "display"},
     {ATTR_FLOW, "flow"},
     {ATTR_HALIGN, "halign"},
@@ -238,7 +237,7 @@ static void movecursortoend(struct widget *widget)
     if (parent && widget_iseditable(parent))
     {
 
-        parent->attributes.cursor = pool_gettextlength(parent);
+        parent->cursor = pool_gettextlength(parent);
         parent->followcursor = 1;
 
     }
@@ -276,8 +275,7 @@ static void parseattributes(struct state *state, struct widget *widget)
 
             widget_setattribute(widget, attribute, value);
 
-            if (attribute != ATTR_CURSOR)
-                widget->changed = 1;
+            widget->changed = 1;
 
             if (attribute == ATTR_IN)
                 pool_setparent(widget);

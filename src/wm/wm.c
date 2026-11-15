@@ -1921,11 +1921,11 @@ static void notifychange(struct widget *widget)
 static void edittextbox(struct widget *widget, unsigned int id)
 {
 
-    struct widget *text = pool_gettextat(widget, widget->attributes.cursor);
+    struct widget *text = pool_gettextat(widget, widget->cursor);
     unsigned int printable = state.keys.code.length && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] != 0x7F;
     char *data = (char *)state.keys.code.value;
     unsigned int count = (printable) ? state.keys.code.length : 0;
-    unsigned int previous = util_min(widget->attributes.cursor, pool_gettextlength(widget));
+    unsigned int previous = util_min(widget->cursor, pool_gettextlength(widget));
     unsigned int cursor = previous;
     unsigned int changed = 0;
     unsigned int moved = 0;
@@ -2038,7 +2038,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
     }
 
-    widget->attributes.cursor = cursor;
+    widget->cursor = cursor;
     widget->followcursor = 1;
 
     if (changed)
@@ -2127,7 +2127,7 @@ static void pastetext(struct widget *widget)
 {
 
     char *path = option_getstring("clipboard");
-    unsigned int cursor = util_min(widget->attributes.cursor, pool_gettextlength(widget));
+    unsigned int cursor = util_min(widget->cursor, pool_gettextlength(widget));
     unsigned int multiline = widget_isscrollable(widget);
     unsigned int target = fs_auth(path);
     unsigned int id = (target) ? fs_walk(1, target, 0, path) : 0;
@@ -2155,7 +2155,7 @@ static void pastetext(struct widget *widget)
 
         }
 
-        widget->attributes.cursor = cursor;
+        widget->cursor = cursor;
         widget->followcursor = 1;
 
         notifychange(widget);
@@ -2176,7 +2176,7 @@ static void movecursor(struct widget *widget)
 
         int y = util_clamp(state.mouseposition.y, first->placement.position.y, last->placement.position.y + util_max((int)last->placement.size.h - 1, 0));
 
-        widget->attributes.cursor = getmarkindex(widget, state.mouseposition.x, y);
+        widget->cursor = getmarkindex(widget, state.mouseposition.x, y);
         widget->followcursor = 1;
 
         damageall(widget);
@@ -2768,7 +2768,7 @@ static unsigned int markall(struct widget *widget)
         if (widget_iseditable(widget))
         {
 
-            widget->attributes.cursor = total;
+            widget->cursor = total;
             widget->followcursor = 1;
 
         }
@@ -4070,6 +4070,63 @@ static void onconfig(struct message *message)
 
 }
 
+static struct widget *getaddressed(struct message *message, unsigned int size)
+{
+
+    char id[64];
+    unsigned int length;
+
+    if (message->length <= size)
+        return 0;
+
+    length = message->length - size;
+
+    cstring_write_fmt(id, 64, 0, "%w\\0", (char *)message->data + size, &length);
+
+    return pool_getwidgetbyid(message->source, id);
+
+}
+
+static void onwmcursor(struct message *message)
+{
+
+    struct widget *widget = getaddressed(message, sizeof (struct message_wmcursor));
+
+    if (widget)
+    {
+
+        struct message_wmcursor *wmcursor = message->data;
+
+        widget->cursor = util_min(wmcursor->position, pool_gettextlength(widget));
+        widget->appcursor = 1;
+        widget->followcursor = 1;
+
+        damage(widget);
+        placewindows(message->source);
+        redraw(1);
+
+    }
+
+}
+
+static void onwmselect(struct message *message)
+{
+
+    struct widget *widget = getaddressed(message, sizeof (struct message_wmselect));
+
+    if (widget)
+    {
+
+        struct message_wmselect *wmselect = message->data;
+
+        setmark(widget, wmselect->anchor, wmselect->end);
+        damageall(widget);
+        redraw(1);
+
+    }
+
+}
+
 static void onwmread(struct message *message)
 {
 
@@ -4232,6 +4289,8 @@ void init(void)
     channel_bind(MESSAGE_TYPE_WMFLUSH, onwmflush);
     channel_bind(MESSAGE_TYPE_WMGRAB, onwmgrab);
     channel_bind(MESSAGE_TYPE_WMREAD, onwmread);
+    channel_bind(MESSAGE_TYPE_WMCURSOR, onwmcursor);
+    channel_bind(MESSAGE_TYPE_WMSELECT, onwmselect);
     channel_bind(MESSAGE_TYPE_WMRENDERDATA, onwmrenderdata);
     channel_bind(MESSAGE_TYPE_WMRENDERFILE, onwmrenderfile);
     channel_bind(MESSAGE_TYPE_WMUNGRAB, onwmungrab);

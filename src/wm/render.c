@@ -445,7 +445,7 @@ struct util_region render_getcursor(struct widget *widget, unsigned int index)
 static void placecursor(struct widget *widget)
 {
 
-    struct util_region cursor = render_getcursor(widget, widget->attributes.cursor);
+    struct util_region cursor = render_getcursor(widget, widget->cursor);
 
     widget->cursorposition = cursor.position;
     widget->cursorsize = cursor.size;

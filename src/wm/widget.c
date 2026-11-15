@@ -22,13 +22,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case ATTR_CURSOR:
-        widget->attributes.cursor = attr_update(ATTR_CURSOR, value, widget->attributes.cursor);
-        widget->appcursor = (value != 0);
-        widget->followcursor = 1;
-
-        break;
-
     case ATTR_DISPLAY:
         widget->attributes.display = attr_update(ATTR_DISPLAY, value, widget->attributes.display);
 
@@ -159,7 +152,6 @@ void widget_unsetattributes(struct widget *widget)
 
     widget_setattribute(widget, ATTR_CHECKED, 0);
     widget_setattribute(widget, ATTR_COLOR, 0);
-    widget_setattribute(widget, ATTR_CURSOR, 0);
     widget_setattribute(widget, ATTR_DISPLAY, 0);
     widget_setattribute(widget, ATTR_FLOW, 0);
     widget_setattribute(widget, ATTR_HALIGN, 0);
@@ -335,7 +327,6 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
 
     attributes->checked = 0;
     attributes->color = 0;
-    attributes->cursor = 0;
     attributes->display = ATTR_DISPLAY_BLOCK;
     attributes->flow = ATTR_FLOW_DEFAULT;
     attributes->halign = ATTR_HALIGN_LEFT;
@@ -402,6 +393,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->parent = 0;
     widget->markstart = 0;
     widget->markend = 0;
+    widget->cursor = 0;
     widget->followcursor = 0;
     widget->resource = 0;
     widget->appcursor = 0;

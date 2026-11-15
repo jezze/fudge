@@ -1,2 +1,2 @@
 + window id "window" label "Shell"
-+ box id "screen" in "window" flow "vertical" padding "3" overflow "scroll" span "1" cursor "0" onresize "q=resize"
++ box id "screen" in "window" flow "vertical" padding "3" overflow "scroll" span "1" onresize "q=resize"

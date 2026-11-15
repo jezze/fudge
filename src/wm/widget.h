@@ -17,7 +17,6 @@ struct widget_attributes
 
     unsigned int checked;
     unsigned int color;
-    unsigned int cursor;
     unsigned int display;
     unsigned int flow;
     unsigned int halign;
@@ -54,6 +53,7 @@ struct widget
     struct widget *parent;
     unsigned int markstart;
     unsigned int markend;
+    unsigned int cursor;
     unsigned int followcursor;
     void *resource;
     unsigned int appcursor;

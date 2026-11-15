@@ -96,9 +96,6 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     case ATTR_COLOR:
         return getnum(value, 16);
 
-    case ATTR_CURSOR:
-        return getnum(value, 10);
-
     case ATTR_DISPLAY:
         return util_getkey(displays, 3, value);
 
