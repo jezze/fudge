@@ -195,6 +195,22 @@ void pool_unlink(struct list_item *item)
 
 }
 
+static void unpicknode(unsigned int inode)
+{
+
+    struct noderow *noderow = getnoderow(inode);
+
+    if (noderow)
+    {
+
+        noderow->generation++;
+
+        list_add(&freenodes, &noderow->item);
+
+    }
+
+}
+
 unsigned int pool_attachnode(struct resource *resource)
 {
 
@@ -229,7 +245,7 @@ void pool_detachnode(struct resource *resource)
     while ((item = list_pickhead(&resource->links)))
         pool_unlink(item);
 
-    pool_unpicknode(inode);
+    unpicknode(inode);
 
 }
 
@@ -263,22 +279,6 @@ void pool_unpickmailbox(unsigned int imailbox)
 
     if (mailboxrow)
         list_add(&freemailboxes, &mailboxrow->item);
-
-}
-
-void pool_unpicknode(unsigned int inode)
-{
-
-    struct noderow *noderow = getnoderow(inode);
-
-    if (noderow)
-    {
-
-        noderow->generation++;
-
-        list_add(&freenodes, &noderow->item);
-
-    }
 
 }
 
