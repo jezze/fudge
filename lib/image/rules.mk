@@ -4,5 +4,6 @@ L:=\
 O:=\
     $(DIR_LIB)/image/pcx.o \
     $(DIR_LIB)/image/png.o \
+    $(DIR_LIB)/image/toffee.o \
 
 include $(DIR_MK)/lib.mk
