@@ -9,6 +9,8 @@
 + text in "fudge-settings" label "Settings"
 + item id "fudge-reboot" in "fudge-layout" padding "4" onclick "run=initrd:bin/reboot"
 + text in "fudge-reboot" label "Reboot"
++ item id "fudge-shutdown" in "fudge-layout" padding "4" onclick "run=initrd:bin/shutdown"
++ text in "fudge-shutdown" label "Shut down"
 + select id "apps-select" in "menu" label "Apps"
 + panel id "apps-layout" in "apps-select" flow "vertical-stretch"
 + item id "apps-shell" in "apps-layout" padding "4" onclick "run=initrd:bin/wshell"

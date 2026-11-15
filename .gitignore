@@ -72,6 +72,7 @@ src/utils/rm
 src/utils/sh
 src/utils/sha1
 src/utils/shell
+src/utils/shutdown
 src/utils/socket
 src/utils/sound
 src/utils/stat

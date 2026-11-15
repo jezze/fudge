@@ -4,14 +4,19 @@
 static void onmain(struct message *message)
 {
 
-    channel_send(0, option_getdecimal("reset-service"), MESSAGE_TYPE_TERM, 0, 0);
+    unsigned int power = channel_lookup(option_getstring("power-service"));
+
+    if (!power)
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Service not found: %s\n", option_getstring("power-service"));
+    else if (!channel_send(1, power, MESSAGE_TYPE_REBOOT, 0, 0))
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Could not reboot: %s\n", option_getstring("power-service"));
 
 }
 
 void init(void)
 {
 
-    option_add("reset-service", "0");
+    option_add("power-service", "power:0");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
