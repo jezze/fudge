@@ -1,408 +1,799 @@
 #include <fudge.h>
 #include <abi.h>
+#include "kv.h"
 
-#define INPUTSIZE                       128
-#define RESULTSIZE                      2048
-#define CONTENTSIZE                     1200
-#define LINESIZE                        (INPUTSIZE * 2)
+#define ROWS                            100
+#define COLUMNS                         320
+#define SCREENS                         2
+#define PARAMS                          4
+#define LINESIZE                        (COLUMNS * 4 + 64)
+#define STATE_NORMAL                    0
+#define STATE_ESCAPE                    1
+#define STATE_CSI                       2
 
-static char inputdata1[INPUTSIZE];
-static struct ring input1;
-static char inputdata2[INPUTSIZE];
-static struct ring input2;
-static char resultdata[RESULTSIZE];
-static struct ring result;
-static char line[LINESIZE];
-static unsigned int linecount;
-static unsigned int sh;
-static unsigned int newline = 1;
-
-static void print(void *buffer, unsigned int count)
+struct position
 {
 
-    ring_overwrite(&result, buffer, count);
+    unsigned int row;
+    unsigned int column;
 
-    if (ring_count(&result) >= CONTENTSIZE)
-    {
+};
 
-        unsigned int nl;
-
-        ring_skip(&result, ring_count(&result) - CONTENTSIZE + 1);
-
-        nl = ring_find(&result, '\n');
-
-        if (nl)
-            ring_skip(&result, nl + 1);
-
-    }
-
-}
-
-static void printfmt1(char *fmt, void *arg1)
+struct terminal
 {
 
-    char buffer[MESSAGE_SIZE];
-
-    print(buffer, cstring_write_fmt(buffer, MESSAGE_SIZE, 0, fmt, arg1));
-
-}
-
-static void printoutput(void *buffer, unsigned int count)
-{
-
-    if (count)
-    {
-
-        char *data = buffer;
-
-        print(buffer, count);
-
-        newline = (data[count - 1] == '\n');
-
-    }
-
-}
-
-static void printring(struct ring *ring)
-{
-
-    char buffer[INPUTSIZE];
-    unsigned int count = ring_readcopy(ring, buffer, INPUTSIZE);
-
-    if (count)
-        print(buffer, count);
-
-}
-
-static unsigned int fitlabel(char *data, unsigned int count, unsigned int size)
-{
-
-    unsigned int total = 0;
-    unsigned int start = count;
-
-    while (start > 0)
-    {
-
-        unsigned int width = (data[start - 1] == '"') ? 4 : 1;
-
-        if (total + width > size)
-            break;
-
-        total += width;
-        start--;
-
-    }
-
-    return start;
-
-}
-
-static unsigned int writelabel(char *buffer, unsigned int size, unsigned int offset, char *id, char *data, unsigned int count, unsigned int *length)
-{
-
+    unsigned char cells[SCREENS][ROWS][COLUMNS];
+    unsigned int dirty[ROWS];
+    unsigned int rows;
+    unsigned int columns;
+    unsigned int screen;
+    struct position cursor;
+    struct position saved;
+    unsigned int drawnrow;
+    unsigned int wrapnext;
+    unsigned int state;
+    unsigned int params[PARAMS];
+    unsigned int nparams;
+    unsigned int private;
     unsigned int codepoint;
-    unsigned int first;
-    unsigned int start;
+    unsigned int pending;
+    unsigned int reports;
+    unsigned int shown;
+
+};
+
+struct output
+{
+
+    char data[MESSAGE_SIZE];
+    unsigned int count;
+
+};
+
+static struct terminal term;
+static unsigned int shell;
+static unsigned int wm;
+
+static void sendconsole(void *data, unsigned int count)
+{
+
+    if (shell)
+        channel_send(0, shell, MESSAGE_TYPE_CONSOLEDATA, count, data);
+
+}
+
+static void sendreport(struct terminal *terminal)
+{
+
+    char buffer[64];
+
+    sendconsole(buffer, cstring_write_fmt(buffer, 64, 0, "\033[48;%u;%u;0;0t", &terminal->rows, &terminal->columns));
+
+}
+
+static void markall(struct terminal *terminal)
+{
+
+    unsigned int row;
+
+    for (row = 0; row < ROWS; row++)
+        terminal->dirty[row] = 1;
+
+}
+
+static void clearcells(struct terminal *terminal, unsigned int screen, unsigned int row, unsigned int from, unsigned int to)
+{
+
+    unsigned int column;
+
+    for (column = from; column < to; column++)
+        terminal->cells[screen][row][column] = ' ';
+
+    terminal->dirty[row] = 1;
+
+}
+
+static void clearrows(struct terminal *terminal, unsigned int from, unsigned int to)
+{
+
+    unsigned int row;
+
+    for (row = from; row < to; row++)
+        clearcells(terminal, terminal->screen, row, 0, COLUMNS);
+
+}
+
+static void scrollup(struct terminal *terminal, unsigned int count)
+{
+
+    unsigned int row;
+
+    if (count > terminal->rows)
+        count = terminal->rows;
+
+    for (row = 0; row + count < terminal->rows; row++)
+        buffer_copy(terminal->cells[terminal->screen][row], terminal->cells[terminal->screen][row + count], COLUMNS);
+
+    clearrows(terminal, terminal->rows - count, terminal->rows);
+    markall(terminal);
+
+}
+
+static void setcursor(struct terminal *terminal, unsigned int row, unsigned int column)
+{
+
+    terminal->cursor.row = (row < terminal->rows) ? row : terminal->rows - 1;
+    terminal->cursor.column = (column < terminal->columns) ? column : terminal->columns - 1;
+    terminal->wrapnext = 0;
+
+}
+
+static void linefeed(struct terminal *terminal)
+{
+
+    terminal->wrapnext = 0;
+
+    if (terminal->cursor.row + 1 < terminal->rows)
+        terminal->cursor.row++;
+    else
+        scrollup(terminal, 1);
+
+}
+
+static void put(struct terminal *terminal, unsigned char c)
+{
+
+    if (terminal->wrapnext)
+    {
+
+        terminal->cursor.column = 0;
+
+        linefeed(terminal);
+
+    }
+
+    terminal->cells[terminal->screen][terminal->cursor.row][terminal->cursor.column] = c;
+    terminal->dirty[terminal->cursor.row] = 1;
+
+    if (terminal->cursor.column + 1 < terminal->columns)
+        terminal->cursor.column++;
+    else
+        terminal->wrapnext = 1;
+
+}
+
+static unsigned char tocell(unsigned int codepoint)
+{
+
+    if (codepoint < 0x80 || (codepoint >= 0xA0 && codepoint < 0x100))
+        return codepoint;
+
+    if (codepoint == 0x20AC)
+        return 0x80;
+
+    return '?';
+
+}
+
+static unsigned int getparam(struct terminal *terminal, unsigned int index, unsigned int fallback)
+{
+
+    return (index < terminal->nparams && terminal->params[index]) ? terminal->params[index] : fallback;
+
+}
+
+static void erasedisplay(struct terminal *terminal, unsigned int mode)
+{
+
+    unsigned int row = terminal->cursor.row;
+    unsigned int column = terminal->cursor.column;
+
+    switch (mode)
+    {
+
+    case 0:
+        clearcells(terminal, terminal->screen, row, column, COLUMNS);
+        clearrows(terminal, row + 1, terminal->rows);
+
+        break;
+
+    case 1:
+        clearrows(terminal, 0, row);
+        clearcells(terminal, terminal->screen, row, 0, column + 1);
+
+        break;
+
+    case 2:
+        clearrows(terminal, 0, terminal->rows);
+
+        break;
+
+    }
+
+}
+
+static void eraseline(struct terminal *terminal, unsigned int mode)
+{
+
+    unsigned int row = terminal->cursor.row;
+    unsigned int column = terminal->cursor.column;
+
+    switch (mode)
+    {
+
+    case 0:
+        clearcells(terminal, terminal->screen, row, column, COLUMNS);
+
+        break;
+
+    case 1:
+        clearcells(terminal, terminal->screen, row, 0, column + 1);
+
+        break;
+
+    case 2:
+        clearcells(terminal, terminal->screen, row, 0, COLUMNS);
+
+        break;
+
+    }
+
+}
+
+static void savecursor(struct terminal *terminal)
+{
+
+    terminal->saved.row = terminal->cursor.row;
+    terminal->saved.column = terminal->cursor.column;
+
+}
+
+static void setscreen(struct terminal *terminal, unsigned int screen)
+{
+
+    if (screen == terminal->screen)
+        return;
+
+    if (screen)
+    {
+
+        terminal->screen = screen;
+
+        savecursor(terminal);
+        clearrows(terminal, 0, terminal->rows);
+
+    }
+
+    else
+    {
+
+        terminal->screen = screen;
+
+        setcursor(terminal, terminal->saved.row, terminal->saved.column);
+
+    }
+
+    markall(terminal);
+
+}
+
+static void setmode(struct terminal *terminal, unsigned int on)
+{
+
     unsigned int i;
 
-    offset += cstring_write_fmt(buffer, size, offset, "= %s label \"", id);
-    start = (size > offset + 2) ? fitlabel(data, count, size - offset - 2) : count;
-    first = utf8_fit(data, count, start);
+    if (!terminal->private)
+        return;
 
-    if (first < start)
-        start = first + utf8_read(data + first, count - first, &codepoint);
-
-    *length = count - start;
-
-    for (i = start; i < count; i++)
+    for (i = 0; i < terminal->nparams; i++)
     {
 
-        if (data[i] == '"')
-            offset += buffer_write(buffer, size, "\"\\\"\"", 4, offset);
+        switch (terminal->params[i])
+        {
+
+        case 47:
+        case 1047:
+        case 1049:
+            setscreen(terminal, on);
+
+            break;
+
+        case 2048:
+            terminal->reports = on;
+
+            if (on)
+                sendreport(terminal);
+
+            break;
+
+        }
+
+    }
+
+}
+
+static void runcsi(struct terminal *terminal, unsigned char c)
+{
+
+    unsigned int row = terminal->cursor.row;
+    unsigned int column = terminal->cursor.column;
+    unsigned int count = getparam(terminal, 0, 1);
+
+    switch (c)
+    {
+
+    case 'A':
+        setcursor(terminal, (row > count) ? row - count : 0, column);
+
+        break;
+
+    case 'B':
+        setcursor(terminal, row + count, column);
+
+        break;
+
+    case 'C':
+        setcursor(terminal, row, column + count);
+
+        break;
+
+    case 'D':
+        setcursor(terminal, row, (column > count) ? column - count : 0);
+
+        break;
+
+    case 'G':
+        setcursor(terminal, row, count - 1);
+
+        break;
+
+    case 'H':
+    case 'f':
+        setcursor(terminal, count - 1, getparam(terminal, 1, 1) - 1);
+
+        break;
+
+    case 'd':
+        setcursor(terminal, count - 1, column);
+
+        break;
+
+    case 'J':
+        erasedisplay(terminal, getparam(terminal, 0, 0));
+
+        break;
+
+    case 'K':
+        eraseline(terminal, getparam(terminal, 0, 0));
+
+        break;
+
+    case 'h':
+        setmode(terminal, 1);
+
+        break;
+
+    case 'l':
+        setmode(terminal, 0);
+
+        break;
+
+    }
+
+}
+
+static void feedcontrol(struct terminal *terminal, unsigned char c)
+{
+
+    switch (c)
+    {
+
+    case 0x08:
+        if (terminal->cursor.column)
+            setcursor(terminal, terminal->cursor.row, terminal->cursor.column - 1);
+
+        break;
+
+    case 0x09:
+        setcursor(terminal, terminal->cursor.row, (terminal->cursor.column + 8) & ~7u);
+
+        break;
+
+    case 0x0A:
+    case 0x0B:
+    case 0x0C:
+        terminal->cursor.column = 0;
+
+        linefeed(terminal);
+
+        break;
+
+    case 0x0D:
+        setcursor(terminal, terminal->cursor.row, 0);
+
+        break;
+
+    case 0x1B:
+        terminal->state = STATE_ESCAPE;
+
+        break;
+
+    }
+
+}
+
+static void feednormal(struct terminal *terminal, unsigned char c)
+{
+
+    if (c >= 0x80 && c < 0xC0)
+    {
+
+        if (terminal->pending)
+        {
+
+            terminal->codepoint = (terminal->codepoint << 6) | (c & 0x3F);
+
+            if (!--terminal->pending)
+                put(terminal, tocell(terminal->codepoint));
+
+        }
+
         else
-            offset += buffer_write(buffer, size, &data[i], 1, offset);
+        {
+
+            put(terminal, '?');
+
+        }
+
+        return;
 
     }
 
-    offset += buffer_write(buffer, size, "\"\n", 2, offset);
-
-    return offset;
-
-}
-
-static void update(void)
-{
-
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
-
-    if (wm)
+    if (terminal->pending)
     {
 
-        char buffer[MESSAGE_SIZE];
-        char content[CONTENTSIZE];
-        unsigned int offset = 0;
-        unsigned int count;
-        unsigned int length;
-        unsigned int before;
-        unsigned int cursor;
+        terminal->pending = 0;
 
-        /* the cursor counts through result, prompt and input, so it is sent last, once their lengths are known */
-        before = ring_readcopy(&input1, content, CONTENTSIZE);
-        count = before + ring_readcopy(&input2, content + before, CONTENTSIZE - before);
-        offset = writelabel(buffer, MESSAGE_SIZE, offset, "input", content, count, &length);
-        cursor = (before > count - length) ? before - (count - length) : 0;
-        offset = writelabel(buffer, MESSAGE_SIZE, offset, "prompt", "$ ", (sh) ? 0 : 2, &length);
-        cursor += length;
-        count = ring_readcopy(&result, content, CONTENTSIZE);
-        offset = writelabel(buffer, MESSAGE_SIZE - 32, offset, "result", content, count, &length);
-        cursor += length;
-        offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
+        put(terminal, '?');
 
-        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, offset, buffer);
+    }
+
+    if (c >= 0xC0)
+    {
+
+        terminal->pending = (c >= 0xF0) ? 3 : (c >= 0xE0) ? 2 : 1;
+        terminal->codepoint = c & (0x3F >> terminal->pending);
+
+    }
+
+    else if (c < 0x20 || c == 0x7F)
+    {
+
+        feedcontrol(terminal, c);
+
+    }
+
+    else
+    {
+
+        put(terminal, c);
 
     }
 
 }
 
-static void showprompt(void)
+static void feedescape(struct terminal *terminal, unsigned char c)
 {
 
-    if (!newline)
-        print("\n", 1);
+    terminal->state = STATE_NORMAL;
 
-    newline = 1;
+    switch (c)
+    {
 
-    update();
+    case '[':
+        terminal->state = STATE_CSI;
+        terminal->nparams = 0;
+        terminal->private = 0;
+
+        break;
+
+    case '7':
+        savecursor(terminal);
+
+        break;
+
+    case '8':
+        setcursor(terminal, terminal->saved.row, terminal->saved.column);
+
+        break;
+
+    }
 
 }
 
-static void clearresult(void)
+static void feedcsi(struct terminal *terminal, unsigned char c)
 {
 
-    ring_reset(&result);
+    if (c == '?' && !terminal->nparams)
+    {
 
-    newline = 1;
+        terminal->private = 1;
+
+    }
+
+    else if (cstring_isdigit(c))
+    {
+
+        if (!terminal->nparams)
+            terminal->params[terminal->nparams++] = 0;
+
+        terminal->params[terminal->nparams - 1] = terminal->params[terminal->nparams - 1] * 10 + cstring_toint(c);
+
+    }
+
+    else if (c == ';')
+    {
+
+        if (!terminal->nparams)
+            terminal->params[terminal->nparams++] = 0;
+
+        if (terminal->nparams < PARAMS)
+            terminal->params[terminal->nparams++] = 0;
+
+    }
+
+    else if (c >= 0x40 && c <= 0x7E)
+    {
+
+        terminal->state = STATE_NORMAL;
+
+        runcsi(terminal, c);
+
+    }
+
+    else if (c < 0x20)
+    {
+
+        feedcontrol(terminal, c);
+
+    }
 
 }
 
-static void insertleft(unsigned int count, void *data)
+static void feed(struct terminal *terminal, void *buffer, unsigned int count)
 {
 
-    if (ring_avail(&input1) >= count)
-        ring_write(&input1, data, count);
-
-}
-
-static unsigned int leftsize(void)
-{
-
-    char buffer[INPUTSIZE];
-    unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
-
-    return count - utf8_prev(buffer, count);
-
-}
-
-static unsigned int rightsize(void)
-{
-
-    char buffer[4];
-    unsigned int count = ring_readcopy(&input2, buffer, 4);
-    unsigned int codepoint;
-
-    return (count) ? utf8_read(buffer, count, &codepoint) : 0;
-
-}
-
-static void moveleft(unsigned int steps)
-{
-
-    char buffer[INPUTSIZE];
-
-    ring_write_reverse(&input2, buffer, ring_read_reverse(&input1, buffer, steps));
-
-}
-
-static void moveright(unsigned int steps)
-{
-
-    char buffer[INPUTSIZE];
-
-    ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
-
-}
-
-static void movestart(void)
-{
-
-    moveleft(ring_count(&input1));
-
-}
-
-static void moveend(void)
-{
-
-    moveright(ring_count(&input2));
-
-}
-
-static void deleteleft(unsigned int steps)
-{
-
-    ring_skip_reverse(&input1, steps);
-
-}
-
-static void deleteright(unsigned int steps)
-{
-
-    ring_skip(&input2, steps);
-
-}
-
-static void deletestart(void)
-{
-
-    ring_reset(&input1);
-
-}
-
-static void deleteend(void)
-{
-
-    ring_reset(&input2);
-
-}
-
-static void interrupt(void)
-{
-
-    channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, 1, "\003");
-
-}
-
-static void run(void)
-{
-
-    struct message_pipe pipe;
+    unsigned char data[MESSAGE_SIZE];
     unsigned int i;
 
-    for (i = 0; i < linecount; i++)
+    count = buffer_read(data, MESSAGE_SIZE, buffer, count, 0);
+
+    for (i = 0; i < count; i++)
     {
 
-        if (line[i] != ' ' && line[i] != '\n')
+        switch (terminal->state)
+        {
+
+        case STATE_ESCAPE:
+            feedescape(terminal, data[i]);
+
             break;
 
+        case STATE_CSI:
+            feedcsi(terminal, data[i]);
+
+            break;
+
+        default:
+            feednormal(terminal, data[i]);
+
+            break;
+
+        }
+
     }
 
-    if (i == linecount)
+}
+
+static void resize(struct terminal *terminal, unsigned int rows, unsigned int columns)
+{
+
+    unsigned int screen;
+    unsigned int row;
+
+    rows = (rows < 1) ? 1 : (rows > ROWS) ? ROWS : rows;
+    columns = (columns < 1) ? 1 : (columns > COLUMNS) ? COLUMNS : columns;
+
+    if (terminal->cursor.row >= rows)
     {
 
-        showprompt();
+        unsigned int count = terminal->cursor.row - rows + 1;
 
-        return;
+        scrollup(terminal, count);
+
+        terminal->cursor.row -= count;
 
     }
 
-    sh = fs_spawn(1, "initrd:bin/sh");
-
-    if (!sh)
+    for (screen = 0; screen < SCREENS; screen++)
     {
 
-        printfmt1("%s\n", "Could not start sh");
-        showprompt();
-
-        return;
+        for (row = 0; row < ROWS; row++)
+            clearcells(terminal, screen, row, (row < rows) ? columns : 0, COLUMNS);
 
     }
 
-    channel_send_fmt(0, sh, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
-    message_initpipe(&pipe);
-    channel_send(0, sh, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
-    channel_send(0, sh, MESSAGE_TYPE_DATA, linecount, line);
-    channel_send(0, sh, MESSAGE_TYPE_TERM, 0, 0);
-    update();
+    terminal->rows = rows;
+    terminal->columns = columns;
+
+    setcursor(terminal, terminal->cursor.row, terminal->cursor.column);
+
+    if (terminal->saved.row >= rows)
+        terminal->saved.row = rows - 1;
+
+    if (terminal->saved.column >= columns)
+        terminal->saved.column = columns - 1;
+
+    markall(terminal);
 
 }
 
-static void detach(void)
+static unsigned int cellsize(unsigned char c)
 {
 
-    sh = 0;
-
-    showprompt();
+    return (c < 0x80) ? 1 : (c == 0x80) ? 3 : 2;
 
 }
 
-static void submit(void)
+static unsigned int rowend(struct terminal *terminal, unsigned int row)
 {
 
-    linecount = ring_read(&input1, line, LINESIZE - 1);
-    linecount += ring_read(&input2, line + linecount, LINESIZE - 1 - linecount);
-    line[linecount++] = '\n';
+    unsigned int end = terminal->columns;
 
-    print("$ ", 2);
-    print(line, linecount);
+    while (end && terminal->cells[terminal->screen][row][end - 1] == ' ')
+        end--;
 
-    newline = 1;
+    if (row == terminal->cursor.row && end <= terminal->cursor.column)
+        end = terminal->cursor.column + 1;
 
-    run();
+    return (end) ? end : 1;
 
 }
 
-static unsigned int runcomplete(char *output, unsigned int size)
+static unsigned int rowsize(struct terminal *terminal, unsigned int row, unsigned int end)
 {
 
-    char input[INPUTSIZE];
+    unsigned int size = 0;
+    unsigned int column;
 
-    return system_feed(input, ring_readcopy(&input1, input, INPUTSIZE), output, size, "complete");
+    for (column = 0; column < end; column++)
+        size += cellsize(terminal->cells[terminal->screen][row][column]);
+
+    return size;
 
 }
 
-static void complete(void)
+static unsigned int writerow(struct terminal *terminal, char *line, unsigned int row, unsigned int end)
 {
 
-    char buffer[MESSAGE_SIZE];
-    unsigned int count = runcomplete(buffer, MESSAGE_SIZE);
-    unsigned int length = buffer_findbyte(buffer, count, '\n');
+    unsigned int offset;
+    unsigned int column;
 
-    ring_write(&input1, buffer, length);
+    if (row < terminal->shown)
+        offset = cstring_write_fmt(line, LINESIZE, 0, "= r%u label \"", &row);
+    else
+        offset = cstring_write_fmt(line, LINESIZE, 0, "+ text id \"r%u\" in \"screen\" wrap \"none\" label \"", &row);
 
-    if (length + 1 < count)
+    for (column = 0; column < end; column++)
     {
 
-        print("$ ", 2);
-        printring(&input1);
-        printring(&input2);
-        print("\n", 1);
-        printoutput(buffer + length + 1, count - length - 1);
+        unsigned char c = terminal->cells[terminal->screen][row][column];
+
+        if (c == '"')
+            offset += buffer_write(line, LINESIZE, "\"\\\"\"", 4, offset);
+        else if (c < 0x80)
+            offset += buffer_write(line, LINESIZE, &c, 1, offset);
+        else
+            offset += utf8_write(line + offset, LINESIZE - offset, (c == 0x80) ? 0x20AC : c);
 
     }
+
+    return offset + buffer_write(line, LINESIZE, "\"\n", 2, offset);
+
+}
+
+static void flushoutput(struct output *output)
+{
+
+    if (output->count && wm)
+        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, output->count, output->data);
+
+    output->count = 0;
+
+}
+
+static void addoutput(struct output *output, char *line, unsigned int count)
+{
+
+    if (output->count + count > MESSAGE_SIZE)
+        flushoutput(output);
+
+    output->count += buffer_write(output->data, MESSAGE_SIZE, line, count, output->count);
+
+}
+
+static void render(struct terminal *terminal)
+{
+
+    struct output output;
+    char line[LINESIZE];
+    unsigned int total = 0;
+    unsigned int cursor = 0;
+    unsigned int row;
+
+    output.count = 0;
+
+    for (row = terminal->rows; row < terminal->shown; row++)
+        addoutput(&output, line, cstring_write_fmt(line, LINESIZE, 0, "- r%u\n", &row));
+
+    if (terminal->shown > terminal->rows)
+        terminal->shown = terminal->rows;
+
+    terminal->dirty[terminal->drawnrow] = 1;
+    terminal->dirty[terminal->cursor.row] = 1;
+    terminal->drawnrow = terminal->cursor.row;
+
+    for (row = 0; row < terminal->rows; row++)
+    {
+
+        unsigned int end = rowend(terminal, row);
+
+        if (row == terminal->cursor.row)
+            cursor = total + rowsize(terminal, row, terminal->cursor.column);
+
+        total += rowsize(terminal, row, end);
+
+        if (terminal->dirty[row] || row >= terminal->shown)
+            addoutput(&output, line, writerow(terminal, line, row, end));
+
+        terminal->dirty[row] = 0;
+
+    }
+
+    terminal->shown = terminal->rows;
+
+    addoutput(&output, line, cstring_write_fmt(line, LINESIZE, 0, "= screen cursor \"%u\"\n", &cursor));
+    flushoutput(&output);
+
+}
+
+static void setup(struct terminal *terminal)
+{
+
+    unsigned int screen;
+    unsigned int row;
+
+    for (screen = 0; screen < SCREENS; screen++)
+    {
+
+        for (row = 0; row < ROWS; row++)
+            clearcells(terminal, screen, row, 0, COLUMNS);
+
+    }
+
+    terminal->rows = 24;
+    terminal->columns = 80;
 
 }
 
 static void ondata(struct message *message)
 {
 
-    if (message->source == sh)
+    if (message->source == shell)
     {
 
-        printoutput(message->data, message->length);
-        update();
-
-    }
-
-}
-
-static void onterm(struct message *message)
-{
-
-    if (message->source == sh)
-    {
-
-        sh = 0;
-
-        showprompt();
+        feed(&term, message->data, message->length);
+        render(&term);
 
     }
 
@@ -411,16 +802,30 @@ static void onterm(struct message *message)
 static void onerror(struct message *message)
 {
 
-    print("[ERROR] ", 8);
-    printoutput(message->data, message->length);
-    update();
+    feed(&term, "[ERROR] ", 8);
+    feed(&term, message->data, message->length);
+    render(&term);
+
+}
+
+static void onterm(struct message *message)
+{
+
+    if (message->source == shell)
+    {
+
+        shell = 0;
+
+        channel_close(0);
+
+    }
 
 }
 
 static void onmain(struct message *message)
 {
 
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
+    wm = channel_lookup(option_getstring("wm-service"));
 
     if (wm)
     {
@@ -428,11 +833,57 @@ static void onmain(struct message *message)
         char *alfi = "initrd:data/alfi/wshell.alfi";
 
         channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-        update();
 
+        shell = fs_spawn(1, "initrd:bin/shell");
+
+        if (shell)
+        {
+
+            struct message_pipe pipe;
+
+            channel_send_fmt(0, shell, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0console-service\\0\\0keyboard-service\\0\\0", option_getstring("pwd"));
+            message_initpipe(&pipe);
+            channel_send(0, shell, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
+
+        }
+
+        else
+        {
+
+            feed(&term, "Could not start shell\n", 22);
+
+        }
+
+        render(&term);
         channel_hold(0);
-        interrupt();
+
+        if (shell)
+        {
+
+            sendconsole("\003", 1);
+            channel_send(0, shell, MESSAGE_TYPE_TERM, 0, 0);
+
+        }
+
         channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
+
+    }
+
+}
+
+static void onwmevent(struct message *message)
+{
+
+    struct message_wmevent *event = message_validate(MESSAGE_TYPE_WMEVENT, message->data, message->length);
+
+    if (event && kv_match(event, "q=resize"))
+    {
+
+        resize(&term, kv_getvalue(event, "rows=", 10), kv_getvalue(event, "columns=", 10));
+        render(&term);
+
+        if (term.reports)
+            sendreport(&term);
 
     }
 
@@ -446,94 +897,16 @@ static void onwmkeypress(struct message *message)
     if (wmkeypress)
     {
 
-        if (sh)
+        unsigned char code[4];
+
+        buffer_copy(code, &wmkeypress->unicode, 4);
+
+        if ((wmkeypress->keymod & KEYS_MOD_CTRL) && wmkeypress->length == 1 && code[0] >= 0x40 && code[0] < 0x80)
         {
 
-            if (wmkeypress->keymod & KEYS_MOD_CTRL)
-            {
+            code[0] &= 0x1F;
 
-                switch (wmkeypress->id)
-                {
-
-                case KEYS_KEY_C:
-                    interrupt();
-
-                    break;
-
-                case KEYS_KEY_Z:
-                    detach();
-
-                    break;
-
-                }
-
-            }
-
-            else
-            {
-
-                channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
-
-            }
-
-            return;
-
-        }
-
-        if (wmkeypress->keymod & KEYS_MOD_CTRL)
-        {
-
-            switch (wmkeypress->id)
-            {
-
-            case KEYS_KEY_A:
-                movestart();
-
-                break;
-
-            case KEYS_KEY_B:
-                moveleft(leftsize());
-
-                break;
-
-            case KEYS_KEY_D:
-                deleteright(rightsize());
-
-                break;
-
-            case KEYS_KEY_E:
-                moveend();
-
-                break;
-
-            case KEYS_KEY_F:
-                moveright(rightsize());
-
-                break;
-
-            case KEYS_KEY_H:
-                deleteleft(leftsize());
-
-                break;
-
-            case KEYS_KEY_K:
-                deleteend();
-
-                break;
-
-            case KEYS_KEY_L:
-                clearresult();
-
-                break;
-
-            case KEYS_KEY_U:
-                deletestart();
-
-                break;
-
-            }
-
-            update();
+            sendconsole(code, 1);
 
             return;
 
@@ -542,58 +915,83 @@ static void onwmkeypress(struct message *message)
         switch (wmkeypress->id)
         {
 
-        case KEYS_KEY_BACKSPACE:
-            deleteleft(leftsize());
+        case KEYS_KEY_ENTER:
+            sendconsole("\r", 1);
 
             break;
 
-        case KEYS_KEY_DELETE:
-            deleteright(rightsize());
+        case KEYS_KEY_BACKSPACE:
+            sendconsole("\177", 1);
 
             break;
 
         case KEYS_KEY_TAB:
-            complete();
+            sendconsole("\t", 1);
 
             break;
 
-        case KEYS_KEY_ENTER:
-            submit();
-
-            return;
-
-        case KEYS_KEY_HOME:
-            movestart();
-
-            break;
-
-        case KEYS_KEY_CURSORLEFT:
-            moveleft(leftsize());
-
-            break;
-
-        case KEYS_KEY_CURSORRIGHT:
-            moveright(rightsize());
-
-            break;
-
-        case KEYS_KEY_END:
-            moveend();
+        case KEYS_KEY_ESCAPE:
+            sendconsole("\033", 1);
 
             break;
 
         case KEYS_KEY_CURSORUP:
+            sendconsole("\033[A", 3);
+
+            break;
+
         case KEYS_KEY_CURSORDOWN:
+            sendconsole("\033[B", 3);
+
+            break;
+
+        case KEYS_KEY_CURSORRIGHT:
+            sendconsole("\033[C", 3);
+
+            break;
+
+        case KEYS_KEY_CURSORLEFT:
+            sendconsole("\033[D", 3);
+
+            break;
+
+        case KEYS_KEY_HOME:
+            sendconsole("\033[H", 3);
+
+            break;
+
+        case KEYS_KEY_END:
+            sendconsole("\033[F", 3);
+
+            break;
+
+        case KEYS_KEY_INSERT:
+            sendconsole("\033[2~", 4);
+
+            break;
+
+        case KEYS_KEY_DELETE:
+            sendconsole("\033[3~", 4);
+
+            break;
+
+        case KEYS_KEY_PAGEUP:
+            sendconsole("\033[5~", 4);
+
+            break;
+
+        case KEYS_KEY_PAGEDOWN:
+            sendconsole("\033[6~", 4);
+
             break;
 
         default:
-            insertleft(wmkeypress->length, &wmkeypress->unicode);
+            if (wmkeypress->length)
+                sendconsole(code, wmkeypress->length);
 
             break;
 
         }
-
-        update();
 
     }
 
@@ -602,14 +1000,13 @@ static void onwmkeypress(struct message *message)
 void init(void)
 {
 
-    ring_init(&input1, INPUTSIZE, inputdata1);
-    ring_init(&input2, INPUTSIZE, inputdata2);
-    ring_init(&result, RESULTSIZE, resultdata);
+    setup(&term);
     option_add("wm-service", "wm");
     channel_bind(MESSAGE_TYPE_DATA, ondata);
-    channel_bind(MESSAGE_TYPE_TERM, onterm);
     channel_bind(MESSAGE_TYPE_ERROR, onerror);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_WMEVENT, onwmevent);
     channel_bind(MESSAGE_TYPE_WMKEYPRESS, onwmkeypress);
 
 }

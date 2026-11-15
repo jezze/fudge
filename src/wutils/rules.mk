@@ -71,6 +71,7 @@ B:=\
     $(DIR_SRC)/wutils/wshell \
 
 O:=\
+    $(DIR_SRC)/wutils/kv.o \
     $(DIR_SRC)/wutils/wshell.o \
 
 L:=\
