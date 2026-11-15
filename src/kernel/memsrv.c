@@ -270,6 +270,23 @@ static void release(struct file *file)
 
 }
 
+static unsigned int findfile(char *name, unsigned int length)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < MEMSRV_FILES; i++)
+    {
+
+        if (files[i].linked && files[i].length == length && buffer_match(files[i].name, name, length))
+            return getid(&files[i]);
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int walk(unsigned int id, char *path, unsigned int length)
 {
 
@@ -280,31 +297,11 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
         char *cp = path + offset;
         unsigned int cl = buffer_findbyte(cp, length - offset, '/');
-        unsigned int i;
 
         if (cl == 0 || (cl == 2 && cp[0] == '.' && cp[1] == '.'))
-        {
-
             id = ROOT;
-
-        }
-
         else if (cl != 1 || cp[0] != '.')
-        {
-
-            unsigned int found = 0;
-
-            for (i = 0; i < MEMSRV_FILES && id == ROOT; i++)
-            {
-
-                if (files[i].linked && files[i].length == cl && buffer_match(files[i].name, cp, cl))
-                    found = getid(&files[i]);
-
-            }
-
-            id = found;
-
-        }
+            id = (id == ROOT) ? findfile(cp, cl) : 0;
 
         if (!id)
             return 0;
