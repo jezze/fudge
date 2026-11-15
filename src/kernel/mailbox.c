@@ -117,29 +117,31 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, uns
 
 }
 
+static unsigned int deliver(struct mailbox *mailbox, struct list *from, unsigned int event, unsigned int source, unsigned int count, void *data)
+{
+
+    if (mailbox->itask)
+    {
+
+        unsigned int status = place(mailbox, from, event, source, count, data);
+
+        if (status == MESSAGE_OK)
+            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
+
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
 
-    if (mailbox)
-    {
-
-        if (mailbox->itask)
-        {
-
-            unsigned int status = place(mailbox, &mailbox->free, event, source, count, data);
-
-            if (status == MESSAGE_OK)
-                kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
-
-            return status;
-
-        }
-
-    }
-
-    return MESSAGE_FAILED;
+    return (mailbox) ? deliver(mailbox, &mailbox->free, event, source, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -201,38 +203,14 @@ void mailbox_unreserve(struct mailbox *mailbox)
 unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    if (mailbox->itask)
-    {
-
-        unsigned int status = place(mailbox, (mailbox->reply.head) ? &mailbox->reply : &mailbox->free, event, source, count, data);
-
-        if (status == MESSAGE_OK)
-            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
+    return deliver(mailbox, (mailbox->reply.head) ? &mailbox->reply : &mailbox->free, event, source, count, data);
 
 }
 
 unsigned int mailbox_placereserved(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    if (mailbox->itask)
-    {
-
-        unsigned int status = place(mailbox, &mailbox->reserved, event, source, count, data);
-
-        if (status == MESSAGE_OK)
-            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
+    return deliver(mailbox, &mailbox->reserved, event, source, count, data);
 
 }
 
