@@ -171,6 +171,42 @@ static void blitbitmap(struct blit_display *display, char **rows, unsigned int c
 
 }
 
+static void blendline(struct blit_display *display, unsigned int color, int x0, int x2)
+{
+
+    unsigned int alpha = (color >> 24) + 1;
+    unsigned int ialpha = 256 - (color >> 24);
+    unsigned int r = alpha * ((color >> 16) & 0xFF);
+    unsigned int g = alpha * ((color >> 8) & 0xFF);
+    unsigned int b = alpha * (color & 0xFF);
+
+    if (color >> 24)
+    {
+
+        int x;
+
+        if ((color >> 24) == 0xFF)
+        {
+
+            blit_line(display, 0xFF000000 | color, x0, x2);
+
+            return;
+
+        }
+
+        for (x = x0; x < x2; x++)
+        {
+
+            unsigned int bg = display->linebuffer[x - display->region.position.x];
+
+            display->linebuffer[x - display->region.position.x] = 0xFF000000 | (((r + ialpha * ((bg >> 16) & 0xFF)) >> 8) << 16) | (((g + ialpha * ((bg >> 8) & 0xFF)) >> 8) << 8) | ((b + ialpha * (bg & 0xFF)) >> 8);
+
+        }
+
+    }
+
+}
+
 static void blittoffee(struct blit_display *display, struct toffee *toffee, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
@@ -190,7 +226,7 @@ static void blittoffee(struct blit_display *display, struct toffee *toffee, stru
             toffee_scanline(toffee, &scan, i, region->size.w, region->size.h, line - region->position.y);
 
             for (j = 0; j < scan.count; j++)
-                blit_alphaline(display, color, util_max(region->position.x + scan.spans[j].x0, x0), util_min(region->position.x + scan.spans[j].x2, x2));
+                blendline(display, color, util_max(region->position.x + scan.spans[j].x0, x0), util_min(region->position.x + scan.spans[j].x2, x2));
 
         }
 
@@ -211,36 +247,10 @@ void blit_line(struct blit_display *display, unsigned int color, int x0, int x2)
 void blit_alphaline(struct blit_display *display, unsigned int color, int x0, int x2)
 {
 
-    unsigned int alpha = (color >> 24) + 1;
-    unsigned int ialpha = 256 - (color >> 24);
-    unsigned int r = alpha * ((color >> 16) & 0xFF);
-    unsigned int g = alpha * ((color >> 8) & 0xFF);
-    unsigned int b = alpha * (color & 0xFF);
-
-    if (color >> 24)
-    {
-
-        int x;
-
-        if (display->opaque || (color >> 24) == 0xFF)
-        {
-
-            blit_line(display, 0xFF000000 | color, x0, x2);
-
-            return;
-
-        }
-
-        for (x = x0; x < x2; x++)
-        {
-
-            unsigned int bg = display->linebuffer[x - display->region.position.x];
-
-            display->linebuffer[x - display->region.position.x] = 0xFF000000 | (((r + ialpha * ((bg >> 16) & 0xFF)) >> 8) << 16) | (((g + ialpha * ((bg >> 8) & 0xFF)) >> 8) << 8) | ((b + ialpha * (bg & 0xFF)) >> 8);
-
-        }
-
-    }
+    if (display->opaque && (color >> 24))
+        blit_line(display, 0xFF000000 | color, x0, x2);
+    else
+        blendline(display, color, x0, x2);
 
 }
 
