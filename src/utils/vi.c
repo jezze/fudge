@@ -442,6 +442,30 @@ static void yankrange(unsigned int from, unsigned int to, unsigned int linewise)
 
 }
 
+static void writeclipboard(void)
+{
+
+    char *path = option_getstring("clipboard");
+    char *name = path + fs_dirlength(path);
+    unsigned int target = fs_auth(path);
+    unsigned int parent = (target) ? fs_walkparent(1, target, path) : 0;
+    unsigned int id;
+
+    if (!parent)
+        return;
+
+    id = fs_walk(1, target, 0, path);
+
+    if (id && !fs_remove(1, target, parent, id))
+        return;
+
+    id = fs_create(1, target, parent, name, cstring_length(name));
+
+    if (id)
+        fs_write_all(1, target, id, yank, yankcount, 0);
+
+}
+
 static void snapshot(void)
 {
 
@@ -700,6 +724,8 @@ static void applyoperator(unsigned int op, struct motion m)
         if (op == 'y')
         {
 
+            writeclipboard();
+
             cursor = (m.position < cursor) ? m.position : cursor;
 
             return;
@@ -757,7 +783,13 @@ static void applyoperator(unsigned int op, struct motion m)
     cursor = from;
 
     if (op == 'y')
+    {
+
+        writeclipboard();
+
         return;
+
+    }
 
     snapshot();
     deleterange(from, to);
@@ -2369,6 +2401,7 @@ static void onpath(struct message *message)
 void init(void)
 {
 
+    option_add("clipboard", "mem:clipboard");
     option_add("rows", "24");
     option_add("columns", "80");
     channel_bind(MESSAGE_TYPE_CONSOLEDATA, onconsoledata);
