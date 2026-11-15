@@ -147,8 +147,8 @@ static unsigned int opentoffee(void)
     if (!width && !height)
     {
 
-        width = toffee.width;
-        height = toffee.height;
+        width = toffee.width * option_getdecimal("scale") / 100;
+        height = toffee.height * option_getdecimal("scale") / 100;
 
     }
 
@@ -416,7 +416,7 @@ static void onterm(struct message *message)
 {
 
     if (paths != 2)
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Usage: mapimage [-width <n>] [-height <n>] [-palette <colors>] <image> <file>\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Usage: mapimage [-width <n>] [-height <n>] [-scale <percent>] [-palette <colors>] <image> <file>\n");
 
 }
 
@@ -425,6 +425,7 @@ void init(void)
 
     option_add("width", "0");
     option_add("height", "0");
+    option_add("scale", "100");
     option_add("palette", "FF101010 FF202020 FF000000 FFF0F0F0 FFE0E0E0 FFFFFFFF");
     channel_bind(MESSAGE_TYPE_PATH, onpath);
     channel_bind(MESSAGE_TYPE_TERM, onterm);
