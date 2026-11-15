@@ -434,7 +434,7 @@ struct util_region render_getcursor(struct widget *widget, unsigned int index)
 
         x = text_getrowx(&rowinfo, text->attributes.halign, text->placement.size.w - offx) + offx + (info.lastrow.x - offx);
 
-        return util_region(text->placement.position.x + x, text->placement.position.y + info.lastrow.y, 2, font->lineheight);
+        return util_region(text->placement.position.x + x, text->placement.position.y + info.lastrow.y, CONFIG_CURSOR_WIDTH, font->lineheight);
 
     }
 

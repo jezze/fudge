@@ -135,6 +135,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     case ATTR_ONENTER:
         return strpool_updatestring(current, value);
 
+    case ATTR_ONRESIZE:
+        return strpool_updatestring(current, value);
+
     case ATTR_ONSELECT:
         return strpool_updatestring(current, value);
 

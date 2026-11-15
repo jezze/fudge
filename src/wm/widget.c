@@ -90,6 +90,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_ONRESIZE:
+        widget->attributes.onresize = attr_update(ATTR_ONRESIZE, value, widget->attributes.onresize);
+
+        break;
+
     case ATTR_ONSELECT:
         widget->attributes.onselect = attr_update(ATTR_ONSELECT, value, widget->attributes.onselect);
 
@@ -167,6 +172,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_ONCHANGE, 0);
     widget_setattribute(widget, ATTR_ONCLICK, 0);
     widget_setattribute(widget, ATTR_ONENTER, 0);
+    widget_setattribute(widget, ATTR_ONRESIZE, 0);
     widget_setattribute(widget, ATTR_ONSELECT, 0);
     widget_setattribute(widget, ATTR_OVERFLOW, 0);
     widget_setattribute(widget, ATTR_PADDING, 0);
@@ -342,6 +348,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->onchange = 0;
     attributes->onclick = 0;
     attributes->onenter = 0;
+    attributes->onresize = 0;
     attributes->onselect = 0;
     attributes->overflow = ATTR_OVERFLOW_NONE;
     attributes->padding = 0;
@@ -398,6 +405,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->followcursor = 0;
     widget->resource = 0;
     widget->appcursor = 0;
+    widget->columns = 0;
+    widget->rows = 0;
     widget->selected = 0;
     widget->anchor = 0;
     widget->textrow = 0;

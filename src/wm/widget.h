@@ -30,6 +30,7 @@ struct widget_attributes
     unsigned int onchange;
     unsigned int onclick;
     unsigned int onenter;
+    unsigned int onresize;
     unsigned int onselect;
     unsigned int overflow;
     unsigned int padding;
@@ -56,6 +57,8 @@ struct widget
     unsigned int followcursor;
     void *resource;
     unsigned int appcursor;
+    unsigned int columns;
+    unsigned int rows;
     unsigned int selected;
     unsigned int anchor;
     unsigned int textrow;

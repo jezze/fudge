@@ -3,6 +3,7 @@
 #define CONFIG_FRAME_WIDTH                  3
 #define CONFIG_FRAME_HEIGHT                 3
 #define CONFIG_MEDIA_MISSING                0xFF202020
+#define CONFIG_CURSOR_WIDTH                 2
 #define CONFIG_PANEL_BORDER_WIDTH           2
 #define CONFIG_PANEL_BORDER_HEIGHT          2
 #define CONFIG_SCROLL_WIDTH                 12

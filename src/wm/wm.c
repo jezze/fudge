@@ -2430,6 +2430,44 @@ static void damagechanged(void)
 
 }
 
+static void reportsizes(void)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->attributes.onresize && widget->source)
+        {
+
+            struct text_font *font = pool_getfont(widget->attributes.weight);
+            struct util_region view = widget_getview(widget);
+            unsigned int width = util_max(text_getatlas(font, 'M')->width, 1);
+            unsigned int columns = util_max((int)view.size.w - CONFIG_CURSOR_WIDTH, 0) / width;
+            unsigned int rows = view.size.h / font->lineheight;
+
+            if (columns != widget->columns || rows != widget->rows)
+            {
+
+                char text[64];
+
+                widget->columns = columns;
+                widget->rows = rows;
+
+                cstring_write_fmt(text, 64, 0, "&columns=%u&rows=%u\\0", &columns, &rows);
+                sendevent(widget->source, 1, widget->attributes.onresize, text);
+
+            }
+
+        }
+
+    }
+
+}
+
 static void placeroots(void)
 {
 
@@ -2461,6 +2499,7 @@ static void redraw(unsigned int relayout)
 
             render_place(state.rootwidget, &state.displays[0].blit.region, &area);
             placeroots();
+            reportsizes();
             damagechanged();
             render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
 
