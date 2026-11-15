@@ -91,6 +91,16 @@ static unsigned int isfocused(struct widget *widget)
 
 }
 
+static unsigned int isinfocusedwindow(struct widget *widget)
+{
+
+    while (widget && widget->type != WIDGET_TYPE_WINDOW)
+        widget = widget->parent;
+
+    return widget && widget == focusedwindow;
+
+}
+
 static unsigned int isscrollablex(struct widget *widget)
 {
 
@@ -976,7 +986,7 @@ static void renderbox(struct blit_display *display, struct widget *widget, int l
 
     blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_BOX, shade)->frame);
 
-    if (isfocused(widget) && (widget->attributes.mode == ATTR_MODE_EDIT || widget->appcursor))
+    if ((isfocused(widget) && widget->attributes.mode == ATTR_MODE_EDIT) || (widget->appcursor && isinfocusedwindow(widget)))
         blit_iconcursor(display, &rcursor, line, x0, x2, getpalette(PALETTE_TEXT, SHADE_NORMAL)->text);
 
 }
