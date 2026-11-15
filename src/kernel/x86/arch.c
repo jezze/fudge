@@ -124,12 +124,7 @@ static void unmap(unsigned long vaddress, unsigned int size)
     unsigned int i;
 
     for (i = 0; i < size; i += MMU_PAGESIZE)
-    {
-
-        if (mmu_gettable(directory, vaddress + i) & MMU_TFLAG_PRESENT)
-            mmu_setpage(directory, vaddress + i, 0, 0);
-
-    }
+        mmu_setpage(directory, vaddress + i, 0, 0);
 
     cpu_setcr3(directory);
 
