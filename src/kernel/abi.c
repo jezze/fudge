@@ -40,9 +40,8 @@ static unsigned int kill(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int target;} *args = stack;
-    struct mailbox *mailbox = pool_getnodemailbox(args->target);
 
-    return (mailbox && mailbox->itask && kernel_kill(mailbox->itask)) ? MESSAGE_OK : MESSAGE_FAILED;
+    return (kernel_kill(kernel_getinodetask(args->target))) ? MESSAGE_OK : MESSAGE_FAILED;
 
 }
 

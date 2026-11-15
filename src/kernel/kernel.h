@@ -8,6 +8,7 @@
 
 struct core *kernel_getcore(void);
 unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel);
+unsigned int kernel_getinodetask(unsigned int inode);
 unsigned int kernel_linknode(struct resource *resource, unsigned int source);
 unsigned int kernel_unlinknode(struct resource *resource, unsigned int source);
 void kernel_schedule(struct core *core);

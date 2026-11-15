@@ -190,6 +190,15 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
 }
 
+unsigned int kernel_getinodetask(unsigned int inode)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(inode);
+
+    return (mailbox) ? mailbox->itask : 0;
+
+}
+
 unsigned int kernel_linknode(struct resource *resource, unsigned int source)
 {
 
@@ -526,19 +535,9 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned in
 unsigned long kernel_getbuffer(unsigned int inode)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(inode);
+    struct task *task = pool_gettask(kernel_getinodetask(inode));
 
-    if (mailbox)
-    {
-
-        struct task *task = pool_gettask(mailbox->itask);
-
-        if (task)
-            return task->buffer;
-
-    }
-
-    return 0;
+    return (task) ? task->buffer : 0;
 
 }
 

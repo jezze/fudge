@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "mmap.h"
 #include "service.h"
-#include "mailbox.h"
 #include "task.h"
 #include "pool.h"
 #include "kernel.h"
@@ -439,9 +438,7 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
 {
 
     struct file *file = getfile(id);
-    struct mailbox *mailbox = pool_getnodemailbox(source);
-    unsigned int itask = (mailbox) ? mailbox->itask : 0;
-    struct task *task = pool_gettask(itask);
+    struct task *task = pool_gettask(kernel_getinodetask(source));
 
     if (!file || !task)
         return 0;
@@ -485,9 +482,7 @@ static unsigned int unmap(unsigned int source, unsigned int id)
 {
 
     struct file *file = getused(id);
-    struct mailbox *mailbox = pool_getnodemailbox(source);
-    unsigned int itask = (mailbox) ? mailbox->itask : 0;
-    struct task *task = pool_gettask(itask);
+    struct task *task = pool_gettask(kernel_getinodetask(source));
     struct mmap_entry *entry = (file && task) ? findmapping((struct mmap_header *)task->mmap, id) : 0;
 
     if (entry)
