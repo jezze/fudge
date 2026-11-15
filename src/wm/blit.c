@@ -45,15 +45,14 @@ struct rowsegment
 struct mouse
 {
 
-    unsigned int *pixels;
-    unsigned int width;
-    unsigned int height;
+    struct blit_image image;
     int hotx;
     int hoty;
 
 };
 
 static struct mouse mice[BLIT_MOUSES];
+static struct blit_image icons[BLIT_ICONS];
 
 static int getpoint(unsigned int type, int p, int o, int m)
 {
@@ -118,58 +117,6 @@ static void blitsegment(struct blit_display *display, struct rowsegment *rows, u
 
 }
 
-static void blitbitmap(struct blit_display *display, char **rows, unsigned int count, int bx, int by, int line, int x0, int x2, unsigned int *cmap)
-{
-
-    if (line >= by && line < by + (int)count)
-    {
-
-        int i;
-
-        for (i = 0; rows[line - by][i] && bx + i < x2; i++)
-        {
-
-            int x = bx + i;
-
-            if (x < x0)
-                continue;
-
-            switch (rows[line - by][i])
-            {
-
-            case '#':
-                blit_alphaline(display, cmap[CMAP_ICON_COLOR], x, x + 1);
-
-                break;
-
-            case 'S':
-                blit_alphaline(display, cmap[CMAP_SHADOW], x, x + 1);
-
-                break;
-
-            case 'N':
-                blit_alphaline(display, cmap[CMAP_NORMAL], x, x + 1);
-
-                break;
-
-            case 'D':
-                blit_alphaline(display, cmap[CMAP_DARK], x, x + 1);
-
-                break;
-
-            case 'L':
-                blit_alphaline(display, cmap[CMAP_LIGHT], x, x + 1);
-
-                break;
-
-            }
-
-        }
-
-    }
-
-}
-
 static void blendline(struct blit_display *display, unsigned int color, int x0, int x2)
 {
 
@@ -203,6 +150,44 @@ static void blendline(struct blit_display *display, unsigned int color, int x0, 
         }
 
     }
+
+}
+
+static void blitimage(struct blit_display *display, struct blit_image *image, int bx, int by, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    if (image->pixels && line >= by && line < by + (int)image->height)
+    {
+
+        unsigned int *row = image->pixels + (line - by) * image->width;
+        int start = util_max(bx, x0);
+        int end = util_min(bx + (int)image->width, x2);
+
+        while (start < end)
+        {
+
+            unsigned int pixel = row[start - bx];
+            int x;
+
+            for (x = start + 1; x < end && row[x - bx] == pixel; x++);
+
+            if (cmap)
+                blit_alphaline(display, (((pixel >> 24) * (cmap[CMAP_ICON_COLOR] >> 24) / 0xFF) << 24) | (cmap[CMAP_ICON_COLOR] & 0xFFFFFF), start, x);
+            else
+                blendline(display, pixel, start, x);
+
+            start = x;
+
+        }
+
+    }
+
+}
+
+static void bliticon(struct blit_display *display, struct blit_image *image, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    blitimage(display, image, region->position.x + (int)(region->size.w / 2) - (int)(image->width / 2), region->position.y + (int)(region->size.h / 2) - (int)(image->height / 2), line, x0, x2, cmap);
 
 }
 
@@ -302,16 +287,7 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
 void blit_iconarrowdown(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static char *rows[6] = {
-        "############",
-        " ##########",
-        "  ########",
-        "   ######",
-        "    ####",
-        "     ##"
-    };
-
-    blitbitmap(display, rows, 6, region->position.x + (int)(region->size.w / 2) - 6, region->position.y + (int)(region->size.h / 2) - 3, line, x0, x2, cmap);
+    bliticon(display, &icons[BLIT_ICON_ARROWDOWN], region, line, x0, x2, cmap);
 
 }
 
@@ -332,66 +308,21 @@ void blit_iconcursor(struct blit_display *display, struct util_region *region, i
 void blit_iconhamburger(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static char *rows[16] = {
-        "################",
-        "################",
-        "################",
-        "################",
-        "",
-        "",
-        "################",
-        "################",
-        "################",
-        "################",
-        "",
-        "",
-        "################",
-        "################",
-        "################",
-        "################"
-    };
-
-    blitbitmap(display, rows, 16, region->position.x + (int)(region->size.w / 2) - 8, region->position.y + (int)(region->size.h / 2) - 8, line, x0, x2, cmap);
+    bliticon(display, &icons[BLIT_ICON_HAMBURGER], region, line, x0, x2, cmap);
 
 }
 
 void blit_iconminimize(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static char *rows[4] = {
-        "################",
-        "################",
-        "################",
-        "################"
-    };
-
-    blitbitmap(display, rows, 4, region->position.x + (int)(region->size.w / 2) - 8, region->position.y + (int)(region->size.h / 2) + 4, line, x0, x2, cmap);
+    bliticon(display, &icons[BLIT_ICON_MINIMIZE], region, line, x0, x2, cmap);
 
 }
 
 void blit_iconx(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static char *rows[16] = {
-        "  #          #",
-        " ###        ###",
-        "#####      #####",
-        " #####    #####",
-        "  #####  #####",
-        "   ##########",
-        "    ########",
-        "     ######",
-        "     ######",
-        "    ########",
-        "   ##########",
-        "  #####  #####",
-        " #####    #####",
-        "#####      #####",
-        " ###        ###",
-        "  #          #"
-    };
-
-    blitbitmap(display, rows, 16, region->position.x + (int)(region->size.w / 2) - 8, region->position.y + (int)(region->size.h / 2) - 8, line, x0, x2, cmap);
+    bliticon(display, &icons[BLIT_ICON_X], region, line, x0, x2, cmap);
 
 }
 
@@ -400,38 +331,16 @@ struct util_region blit_getmouseregion(unsigned int type, int mx, int my)
 
     struct mouse *mouse = &mice[type];
 
-    return util_region(mx - mouse->hotx, my - mouse->hoty, mouse->width, mouse->height);
+    return util_region(mx - mouse->hotx, my - mouse->hoty, mouse->image.width, mouse->image.height);
 
 }
 
 void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my, int line, int x0, int x2)
 {
 
-    struct mouse *mouse = &mice[type];
     struct util_region region = blit_getmouseregion(type, mx, my);
 
-    if (mouse->pixels && line >= region.position.y && line < region.position.y + (int)region.size.h)
-    {
-
-        unsigned int *row = mouse->pixels + (line - region.position.y) * mouse->width;
-        int start = util_max(region.position.x, x0);
-        int end = util_min(region.position.x + (int)region.size.w, x2);
-
-        while (start < end)
-        {
-
-            unsigned int color = row[start - region.position.x];
-            int x;
-
-            for (x = start + 1; x < end && row[x - region.position.x] == color; x++);
-
-            blendline(display, color, start, x);
-
-            start = x;
-
-        }
-
-    }
+    blitimage(display, &mice[type].image, region.position.x, region.position.y, line, x0, x2, 0);
 
 }
 
@@ -516,16 +425,25 @@ void blit_raw(struct blit_display *display, unsigned int *data, unsigned int wid
 }
 
 
-void blit_setmouse(unsigned int type, unsigned int *pixels, unsigned int width, unsigned int height, int hotx, int hoty)
+void blit_setmouse(unsigned int type, struct blit_image *image, int hotx, int hoty)
 {
 
     struct mouse *mouse = &mice[type];
 
-    mouse->pixels = pixels;
-    mouse->width = width;
-    mouse->height = height;
+    mouse->image.pixels = image->pixels;
+    mouse->image.width = image->width;
+    mouse->image.height = image->height;
     mouse->hotx = hotx;
     mouse->hoty = hoty;
+
+}
+
+void blit_seticon(unsigned int type, struct blit_image *image)
+{
+
+    icons[type].pixels = image->pixels;
+    icons[type].width = image->width;
+    icons[type].height = image->height;
 
 }
 

@@ -134,7 +134,8 @@ struct state
     unsigned int active;
     unsigned int opaque;
     unsigned int cursorscale;
-    unsigned int cursormapped[BLIT_MOUSES];
+    struct blit_image cursors[BLIT_MOUSES];
+    struct blit_image icons[BLIT_ICONS];
     struct widget *draggedthumb;
     unsigned int clock;
     unsigned int timer;
@@ -306,46 +307,43 @@ static unsigned int getquotednumber(char *data, unsigned int count, unsigned int
 
 }
 
-static void loadcursor(unsigned int type, char *name, int hotx, int hoty)
+static void loadimage(struct blit_image *image, char *directory, char *name, unsigned int scale, char *palette)
 {
 
-    unsigned int *cmap = cmap_get(PALETTE_MOUSE, SHADE_NORMAL);
     char path[64];
     char reply[64];
     unsigned int target;
     unsigned int id;
     unsigned int count;
-    unsigned int width;
-    unsigned int height;
     struct record record;
 
-    cstring_write_fmt(path, 64, 0, "mem:cursor-%s\\0", name);
+    cstring_write_fmt(path, 64, 0, "mem:%s-%s\\0", directory, name);
 
     target = fs_auth(path);
 
-    if (state.cursormapped[type])
-    {
-
-        blit_setmouse(type, 0, 0, 0, 0, 0);
+    if (image->pixels)
         fs_munmap(1, target, fs_walk(1, target, 0, path));
 
-        state.cursormapped[type] = 0;
-
-    }
-
-    count = system_feed(0, 0, reply, 63, "mapimage -scale %u -palette \"%H8u %H8u %H8u %H8u\" initrd:data/cursor/%s.tof %s", &state.cursorscale, &cmap[PART_SHADOW], &cmap[PART_BODY], &cmap[PART_DARK], &cmap[PART_LIGHT], name, path);
-    width = getquotednumber(reply, count, 0);
-    height = getquotednumber(reply, count, 1);
+    count = system_feed(0, 0, reply, 63, "mapimage -scale %u -palette \"%s\" initrd:data/%s/%s.tof %s", &scale, palette, directory, name, path);
+    image->pixels = 0;
+    image->width = getquotednumber(reply, count, 0);
+    image->height = getquotednumber(reply, count, 1);
     id = (target) ? fs_walk(1, target, 0, path) : 0;
 
-    if (id && width && height && fs_stat(1, target, id, &record) && record.size / 4 / width >= height)
-    {
+    if (id && image->width && image->height && fs_stat(1, target, id, &record) && record.size / 4 / image->width >= image->height)
+        image->pixels = fs_mmap(1, target, id, 0);
 
-        blit_setmouse(type, fs_mmap(1, target, id, 0), width, height, hotx * (int)state.cursorscale / 100, hoty * (int)state.cursorscale / 100);
+}
 
-        state.cursormapped[type] = 1;
+static void loadcursor(unsigned int type, char *name, int hotx, int hoty)
+{
 
-    }
+    unsigned int *cmap = cmap_get(PALETTE_MOUSE, SHADE_NORMAL);
+    char palette[64];
+
+    cstring_write_fmt(palette, 64, 0, "%H8u %H8u %H8u %H8u\\0", &cmap[PART_SHADOW], &cmap[PART_BODY], &cmap[PART_DARK], &cmap[PART_LIGHT]);
+    loadimage(&state.cursors[type], "cursor", name, state.cursorscale, palette);
+    blit_setmouse(type, &state.cursors[type], hotx * (int)state.cursorscale / 100, hoty * (int)state.cursorscale / 100);
 
 }
 
@@ -355,6 +353,24 @@ static void loadcursors(void)
     loadcursor(BLIT_MOUSE_ARROW, "arrow", 0, 0);
     loadcursor(BLIT_MOUSE_TEXT, "text", 3, 10);
     loadcursor(BLIT_MOUSE_HAND, "hand", 8, 0);
+
+}
+
+static void loadicon(unsigned int type, char *name)
+{
+
+    loadimage(&state.icons[type], "icon", name, 50, "FFFFFFFF");
+    blit_seticon(type, &state.icons[type]);
+
+}
+
+static void loadicons(void)
+{
+
+    loadicon(BLIT_ICON_ARROWDOWN, "arrowdown");
+    loadicon(BLIT_ICON_HAMBURGER, "hamburger");
+    loadicon(BLIT_ICON_MINIMIZE, "minimize");
+    loadicon(BLIT_ICON_X, "x");
 
 }
 
@@ -3304,6 +3320,7 @@ static void onmain(struct message *message)
 
     loadconfig(option_getstring("config"));
     loadcursors();
+    loadicons();
 
     if (!state.ndisplays)
         state.ndisplays = 1;
