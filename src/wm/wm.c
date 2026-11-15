@@ -324,7 +324,7 @@ static void loadimage(struct blit_image *image, char *directory, char *name, uns
     if (image->pixels)
         fs_munmap(1, target, fs_walk(1, target, 0, path));
 
-    count = system_feed(0, 0, reply, 63, "mapimage -scale %u -palette \"%s\" initrd:data/%s/%s.tof %s", &scale, palette, directory, name, path);
+    count = system_feed(0, 0, reply, 63, "mapimage -scale %u -palette \"%s\" initrd:data/toffee/%s.tof %s", &scale, palette, name, path);
     image->pixels = 0;
     image->width = getquotednumber(reply, count, 0);
     image->height = getquotednumber(reply, count, 1);
