@@ -104,25 +104,16 @@ static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned i
 
 }
 
-unsigned int mailbox_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
+unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(source);
+    if (pick(mailbox, messages, count, slots))
+        return MESSAGE_OK;
 
-    if (mailbox)
-    {
+    if (flags & MESSAGE_FLAG_BLOCK)
+        kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
 
-        if (pick(mailbox, messages, count, slots))
-            return MESSAGE_OK;
-
-        if (flags & MESSAGE_FLAG_BLOCK)
-            kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
-
-        return MESSAGE_RETRY;
-
-    }
-
-    return MESSAGE_FAILED;
+    return MESSAGE_RETRY;
 
 }
 
@@ -174,53 +165,43 @@ static unsigned int move(struct mailbox *mailbox, struct list *to, struct list *
 
 }
 
-unsigned int mailbox_reservereply(unsigned int inode)
+unsigned int mailbox_reservereply(struct mailbox *mailbox)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(inode);
-
-    if (mailbox && mailbox->itask)
+    if (mailbox->itask)
         return (mailbox->reply.head || move(mailbox, &mailbox->reply, &mailbox->free)) ? MESSAGE_OK : MESSAGE_RETRY;
 
     return MESSAGE_FAILED;
 
 }
 
-void mailbox_unreservereply(unsigned int inode)
+void mailbox_unreservereply(struct mailbox *mailbox)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(inode);
-
-    if (mailbox && move(mailbox, &mailbox->free, &mailbox->reply))
-        kernel_wake(inode);
+    if (move(mailbox, &mailbox->free, &mailbox->reply))
+        kernel_wake(mailbox->resource.inode);
 
 }
 
-unsigned int mailbox_keepreply(unsigned int inode)
+unsigned int mailbox_keepreply(struct mailbox *mailbox)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(inode);
-
-    return (mailbox && move(mailbox, &mailbox->reserved, &mailbox->reply)) ? MESSAGE_OK : MESSAGE_FAILED;
+    return move(mailbox, &mailbox->reserved, &mailbox->reply) ? MESSAGE_OK : MESSAGE_FAILED;
 
 }
 
-void mailbox_unreserve(unsigned int inode)
+void mailbox_unreserve(struct mailbox *mailbox)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(inode);
-
-    if (mailbox && move(mailbox, &mailbox->free, &mailbox->reserved))
-        kernel_wake(inode);
+    if (move(mailbox, &mailbox->free, &mailbox->reserved))
+        kernel_wake(mailbox->resource.inode);
 
 }
 
-unsigned int mailbox_placereply(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(target);
-
-    if (mailbox && mailbox->itask)
+    if (mailbox->itask)
     {
 
         unsigned int status = place(mailbox, (mailbox->reply.head) ? &mailbox->reply : &mailbox->free, event, source, count, data);
@@ -236,12 +217,10 @@ unsigned int mailbox_placereply(unsigned int target, unsigned int source, unsign
 
 }
 
-unsigned int mailbox_placereserved(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+unsigned int mailbox_placereserved(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(target);
-
-    if (mailbox && mailbox->itask)
+    if (mailbox->itask)
     {
 
         unsigned int status = place(mailbox, &mailbox->reserved, event, source, count, data);
@@ -257,32 +236,26 @@ unsigned int mailbox_placereserved(unsigned int target, unsigned int source, uns
 
 }
 
-unsigned int mailbox_wait(unsigned int target, unsigned int itask)
+unsigned int mailbox_wait(struct mailbox *mailbox, unsigned int itask)
 {
 
-    struct mailbox *mailbox = pool_getnodemailbox(target);
     struct task *task = pool_gettask(itask);
     unsigned int waiting = 0;
 
-    if (mailbox && task)
+    if (task && mailbox->itask && mailbox->itask != itask)
     {
 
-        if (mailbox->itask && mailbox->itask != itask)
+        spinlock_acquire(&mailbox->spinlock);
+
+        if (!mailbox->free.head)
         {
 
-            spinlock_acquire(&mailbox->spinlock);
-
-            if (!mailbox->free.head)
-            {
-
-                task->waitingfor = target;
-                waiting = 1;
-
-            }
-
-            spinlock_release(&mailbox->spinlock);
+            task->waitingfor = mailbox->resource.inode;
+            waiting = 1;
 
         }
+
+        spinlock_release(&mailbox->spinlock);
 
     }
 

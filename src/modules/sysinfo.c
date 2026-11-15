@@ -405,7 +405,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
         readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse), readresponse + 1);
         readresponse->buffer = 0;
 
-        status = mailbox_placereply(source, server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + readresponse->count, response);
+        status = kernel_placereply(source, server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + readresponse->count, response);
 
         spinlock_release(&spinlock);
 
@@ -431,7 +431,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
         spinlock_acquire(&spinlock);
 
         statresponse->count = stat(request->id, statresponse + 1);
-        status = mailbox_placereply(source, server.inode, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + statresponse->count, response);
+        status = kernel_placereply(source, server.inode, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + statresponse->count, response);
 
         spinlock_release(&spinlock);
 
@@ -454,7 +454,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
         response.id = walk(request->parent ? request->parent : ROOT, request->length, (char *)(request + 1));
 
-        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_placereply(source, server.inode, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 

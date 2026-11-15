@@ -17,7 +17,7 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
         blockinfo.blocksize = interface->blocksize;
         blockinfo.blockcount = interface->blockcount;
 
-        return mailbox_placereply(source, interface->resource.inode, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
+        return kernel_placereply(source, interface->resource.inode, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
 
     }
 
@@ -41,7 +41,7 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
         if (!session->source)
         {
 
-            unsigned int status = mailbox_keepreply(source);
+            unsigned int status = kernel_keepreply(source);
 
             if (status != MESSAGE_OK)
                 return status;
@@ -60,7 +60,7 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
 
                 session->source = 0;
 
-                mailbox_unreserve(source);
+                kernel_unreserve(source);
 
             }
 
@@ -89,7 +89,7 @@ static unsigned int onblockwriterequest(struct block_interface *interface, unsig
         if (!session->source)
         {
 
-            unsigned int status = mailbox_keepreply(source);
+            unsigned int status = kernel_keepreply(source);
 
             if (status != MESSAGE_OK)
                 return status;
@@ -108,7 +108,7 @@ static unsigned int onblockwriterequest(struct block_interface *interface, unsig
 
                 session->source = 0;
 
-                mailbox_unreserve(source);
+                kernel_unreserve(source);
 
             }
 
@@ -178,12 +178,12 @@ void block_session_done(struct block_interface *interface, struct block_session 
     {
 
     case BLOCK_TYPE_READ:
-        mailbox_placereserved(session->source, interface->resource.inode, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
+        kernel_placereserved(session->source, interface->resource.inode, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        mailbox_placereserved(session->source, interface->resource.inode, MESSAGE_TYPE_BLOCKWRITERESPONSE, sizeof (struct message_blockresponse), &response);
+        kernel_placereserved(session->source, interface->resource.inode, MESSAGE_TYPE_BLOCKWRITERESPONSE, sizeof (struct message_blockresponse), &response);
 
         break;
 

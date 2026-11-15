@@ -17,7 +17,7 @@ static unsigned int oninfo(struct video_interface *interface, unsigned int sourc
         videoinfo.height = interface->height;
         videoinfo.bpp = interface->bpp;
 
-        return mailbox_placereply(source, interface->resource.inode, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo);
+        return kernel_placereply(source, interface->resource.inode, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo);
 
     }
 

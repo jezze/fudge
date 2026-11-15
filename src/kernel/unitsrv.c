@@ -153,7 +153,7 @@ static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, u
     response->count = (request->offset < length) ? buffer_write(response + 1, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
     response->buffer = 0;
 
-    return mailbox_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+    return kernel_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
 }
 
@@ -197,7 +197,7 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
         response->count = c * sizeof (struct record);
         response->buffer = 0;
 
-        return mailbox_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return kernel_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
@@ -229,7 +229,7 @@ static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, 
         else
             response->count = 0;
 
-        return mailbox_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
+        return kernel_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
 
     }
 
@@ -248,7 +248,7 @@ static unsigned int onwalkrequest(struct unitsrv *unitsrv, unsigned int source, 
 
         response.id = walk(unitsrv, request->parent, request->length, (char *)(request + 1));
 
-        return mailbox_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 
@@ -272,7 +272,7 @@ static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source
         if (response.status)
             pool_detachnode(device);
 
-        return mailbox_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+        return kernel_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
     }
 

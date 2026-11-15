@@ -31,7 +31,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
         interface->getmac(ethernetinfo.address);
 
-        return mailbox_placereply(source, interface->resource.inode, MESSAGE_TYPE_ETHERNETINFO, sizeof (struct message_ethernetinfo), &ethernetinfo);
+        return kernel_placereply(source, interface->resource.inode, MESSAGE_TYPE_ETHERNETINFO, sizeof (struct message_ethernetinfo), &ethernetinfo);
 
     }
 

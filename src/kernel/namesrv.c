@@ -104,7 +104,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
         response->count = c * sizeof (struct record);
         response->buffer = 0;
 
-        return mailbox_placereply(source, MESSAGE_ROOT, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return kernel_placereply(source, MESSAGE_ROOT, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
@@ -127,7 +127,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
         response->count = (request->id == MESSAGE_ROOT) ? sizeof (struct record) : 0;
 
-        return mailbox_placereply(source, MESSAGE_ROOT, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
+        return kernel_placereply(source, MESSAGE_ROOT, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
 
     }
 
@@ -146,7 +146,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
         response.id = walk(request->parent, request->length, (char *)(request + 1));
 
-        return mailbox_placereply(source, MESSAGE_ROOT, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_placereply(source, MESSAGE_ROOT, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 

@@ -356,6 +356,43 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
 }
 
+unsigned int kernel_placereply(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(target);
+
+    return (mailbox) ? mailbox_placereply(mailbox, source, event, count, data) : MESSAGE_FAILED;
+
+}
+
+unsigned int kernel_placereserved(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(target);
+
+    return (mailbox) ? mailbox_placereserved(mailbox, source, event, count, data) : MESSAGE_FAILED;
+
+}
+
+unsigned int kernel_keepreply(unsigned int inode)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(inode);
+
+    return (mailbox) ? mailbox_keepreply(mailbox) : MESSAGE_FAILED;
+
+}
+
+void kernel_unreserve(unsigned int inode)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(inode);
+
+    if (mailbox)
+        mailbox_unreserve(mailbox);
+
+}
+
 unsigned int kernel_announce(unsigned int inode, char *name)
 {
 
