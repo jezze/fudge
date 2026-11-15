@@ -14,6 +14,7 @@
 #define MMU_PFLAG_ACCESSED              0x0040
 #define MMU_PFLAG_DIRTY                 0x0080
 #define MMU_SATP_SV39                   (8UL << 60)
+#define MMU_SATP_PPNMASK                0x00000FFFFFFFFFFFUL
 
 unsigned int mmu_tflags(unsigned int flags);
 unsigned int mmu_pflags(unsigned int flags);

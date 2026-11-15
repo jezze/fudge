@@ -129,7 +129,7 @@ static unsigned int copytable(unsigned long directory, unsigned long mmap, unsig
 static unsigned long getdirectory(void)
 {
 
-    return (cpu_getsatp() & 0x00000FFFFFFFFFFFUL) << 12;
+    return (cpu_getsatp() & MMU_SATP_PPNMASK) << 12;
 
 }
 
