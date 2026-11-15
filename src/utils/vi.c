@@ -1756,6 +1756,9 @@ static void onkey(unsigned int key)
     default:
         normalkey(key);
 
+        if (mode == MODE_INSERT)
+            notice[0] = '\0';
+
         break;
 
     }
