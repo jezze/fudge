@@ -1,10 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
+#include <image/toffee.h>
 #include "util.h"
 #include "text.h"
 #include "attr.h"
 #include "widget.h"
 #include "pool.h"
+#include "cmap.h"
 #include "blit.h"
 
 #define REL0                            1
@@ -17,6 +19,7 @@
 #define CMAP_ICON_COLOR                 0
 #define CMAP_RECT_COLOR                 0
 #define CMAP_TEXT_COLOR                 0
+#define MOUSE_LINEHEIGHT                12
 
 struct linesegment
 {
@@ -40,6 +43,18 @@ struct rowsegment
     unsigned int numlines;
 
 };
+
+struct mouse
+{
+
+    struct toffee toffee;
+    int hotx;
+    int hoty;
+
+};
+
+static struct mouse mice[BLIT_MOUSES];
+static unsigned int mouselineheight = MOUSE_LINEHEIGHT;
 
 static int getpoint(unsigned int type, int p, int o, int m)
 {
@@ -149,6 +164,33 @@ static void blitbitmap(struct blit_display *display, char **rows, unsigned int c
                 break;
 
             }
+
+        }
+
+    }
+
+}
+
+static void blittoffee(struct blit_display *display, struct toffee *toffee, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    if (line >= region->position.y && line < region->position.y + (int)region->size.h)
+    {
+
+        struct toffee_line scan;
+        unsigned int i;
+
+        for (i = 0; i < toffee->nshapes; i++)
+        {
+
+            struct toffee_shape *shape = &toffee->shapes[i];
+            unsigned int color = (shape->slot < NUM_PARTS) ? cmap[shape->slot] : shape->color;
+            unsigned int j;
+
+            toffee_scanline(toffee, &scan, i, region->size.w, region->size.h, line - region->position.y);
+
+            for (j = 0; j < scan.count; j++)
+                blit_alphaline(display, color, util_max(region->position.x + scan.spans[j].x0, x0), util_min(region->position.x + scan.spans[j].x2, x2));
 
         }
 
@@ -371,126 +413,28 @@ void blit_iconx(struct blit_display *display, struct util_region *region, int li
 
 }
 
+static int scalemouse(int value)
+{
+
+    return value * (int)mouselineheight / MOUSE_LINEHEIGHT;
+
+}
+
 struct util_region blit_getmouseregion(unsigned int type, int mx, int my)
 {
 
-    switch (type)
-    {
+    struct mouse *mouse = &mice[type];
 
-    case BLIT_MOUSE_TEXT:
-        return util_region(mx - 3, my - 10, 10, 24);
-
-    case BLIT_MOUSE_HAND:
-        return util_region(mx - 8, my, 23, 24);
-
-    }
-
-    return util_region(mx, my, 18, 24);
+    return util_region(mx - scalemouse(mouse->hotx), my - scalemouse(mouse->hoty), scalemouse(mouse->toffee.width), scalemouse(mouse->toffee.height));
 
 }
 
 void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static char *arrow[24] = {
-        "SSS",
-        "SLSS",
-        "SLLSS",
-        "SLNLSS",
-        "SLNNLSS",
-        "SLNNNLSS",
-        "SLNNNNLSS",
-        "SLNNNNNLSS",
-        "SLNNNNNNLSS",
-        "SLNNNNNNNLSS",
-        "SLNNNNNNNNLSS",
-        "SLNNNNNNNNNLSS",
-        "SLNNNNNNNNNNLSS",
-        "SLNNNNNNNNNNNLSS",
-        "SLNNNNNNNNNNNNLSS",
-        "SLNNNNNNNNNNNNNLSS",
-        "SLNNNNNLLLLLLLLLLS",
-        "SLNNNNLSSSSSSSSSSS",
-        "SLNNNLSS",
-        "SLNNLSS",
-        "SLNLSS",
-        "SLLSS",
-        "SLSS",
-        "SSS"
-    };
-    static char *text[24] = {
-        "SSS    SSS",
-        "SLLSSSSLLS",
-        "SLLLLLLLLS",
-        "SLNNNNNNLS",
-        "SLLLNNLLLS",
-        "SSSLNNLSSS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
-        "SSSLNNLSSS",
-        "SLLLNNLLLS",
-        "SLNNNNNNLS",
-        "SLLLLLLLLS",
-        "SLLSSSSLLS",
-        "SSS    SSS"
-    };
-    static char *hand[24] = {
-        "      SSSS",
-        "     SSLLSS",
-        "     SLNNLS",
-        "     SLNNLS",
-        "     SLNNLS",
-        "     SLNNLS",
-        "     SLNNLS",
-        "     SLNNLS",
-        "     SLNNLSSSSSSSSSSSSS",
-        "     SLNNLLLSLLSLLSLLSS",
-        " SS  SLNNLNNLNNLNNLNNLS",
-        "SLLS SLNNLNNLNNLNNLNNLS",
-        "SLNLSLNNNLNNLNNLNNLNNLS",
-        "SLNNLNNNNNNNNNNNNNNNNLS",
-        "SLNNNNNNNNNNNNNNNNNNNLS",
-        "SLNNNNNNNNNNNNNNNNNNNLS",
-        " SLNNNNNNNNNNNNNNNNNNLS",
-        "  SLNNNNNNNNNNNNNNNNNLS",
-        "   SLNNNNNNNNNNNNNNNNLS",
-        "    SLNNNNNNNNNNNNNNNLS",
-        "     SLNNNNNNNNNNNNNNLS",
-        "      SLNNNNNNNNNNNNLS",
-        "       SLLLLLLLLLLLLLS",
-        "       SSSSSSSSSSSSSSS"
-    };
     struct util_region region = blit_getmouseregion(type, mx, my);
 
-    switch (type)
-    {
-
-    case BLIT_MOUSE_TEXT:
-        blitbitmap(display, text, 24, region.position.x, region.position.y, line, x0, x2, cmap);
-
-        break;
-
-    case BLIT_MOUSE_HAND:
-        blitbitmap(display, hand, 24, region.position.x, region.position.y, line, x0, x2, cmap);
-
-        break;
-
-    default:
-        blitbitmap(display, arrow, 24, region.position.x, region.position.y, line, x0, x2, cmap);
-
-        break;
-
-    }
+    blittoffee(display, &mice[type].toffee, &region, line, x0, x2, cmap);
 
 }
 
@@ -571,6 +515,25 @@ void blit_raw(struct blit_display *display, unsigned int *data, unsigned int wid
         }
 
     }
+
+}
+
+void blit_loadmouse(unsigned int type, int hotx, int hoty, char *data, unsigned int count)
+{
+
+    struct mouse *mouse = &mice[type];
+
+    toffee_parse(&mouse->toffee, data, count);
+
+    mouse->hotx = hotx;
+    mouse->hoty = hoty;
+
+}
+
+void blit_setmousescale(unsigned int lineheight)
+{
+
+    mouselineheight = lineheight;
 
 }
 

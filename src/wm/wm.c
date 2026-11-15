@@ -4242,6 +4242,9 @@ static void setupwidgets(void)
     parser_parse(0, "", cstring_length(data0), data0);
     parser_parse(0, "root", fs_read_path(1, "initrd:data/alfi/wm.alfi", data1, 4096), data1);
     pool_loadresources();
+    blit_loadmouse(BLIT_MOUSE_ARROW, 0, 0, data1, fs_read_path(1, "initrd:data/cursor/arrow.tof", data1, 4096));
+    blit_loadmouse(BLIT_MOUSE_TEXT, 3, 10, data1, fs_read_path(1, "initrd:data/cursor/text.tof", data1, 4096));
+    blit_loadmouse(BLIT_MOUSE_HAND, 8, 0, data1, fs_read_path(1, "initrd:data/cursor/hand.tof", data1, 4096));
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
 

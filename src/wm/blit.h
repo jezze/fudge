@@ -1,6 +1,7 @@
 #define BLIT_MOUSE_ARROW                0
 #define BLIT_MOUSE_TEXT                 1
 #define BLIT_MOUSE_HAND                 2
+#define BLIT_MOUSES                     3
 
 struct blit_display
 {
@@ -25,5 +26,7 @@ struct util_region blit_getmouseregion(unsigned int type, int mx, int my);
 void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my, int line, int x0, int x2, unsigned int *cmap);
 void blit_frame(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_raw(struct blit_display *display, unsigned int *data, unsigned int width, unsigned int height, int line, int x, int y, unsigned int w, unsigned int h, int x0, int x2);
+void blit_loadmouse(unsigned int type, int hotx, int hoty, char *data, unsigned int count);
+void blit_setmousescale(unsigned int lineheight);
 void blit_initdisplay(struct blit_display *display, void *framebuffer, int x, int y, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer);
 void blit(struct blit_display *display, int line, int x0, int x2);
