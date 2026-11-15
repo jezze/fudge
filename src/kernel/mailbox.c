@@ -102,7 +102,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
 
 }
 
-static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned int source, unsigned int count, void *data)
+static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned int event, unsigned int source, unsigned int count, void *data)
 {
 
     if (count <= MESSAGE_SIZE)
@@ -112,15 +112,15 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
         spinlock_acquire(&mailbox->spinlock);
 
-        if (mailbox->free.head)
+        if (from->head)
         {
 
-            struct list_item *item = mailbox->free.head;
+            struct list_item *item = from->head;
             struct message *message = item->data;
 
             message_init(message, event, source, count, (void *)(unsigned long)(KERNEL_VMAILBOX + MESSAGE_SIZE * message->slot + MESSAGE_CAPACITY * mailbox->ichannel));
             buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * message->slot), data, count);
-            list_move_unsafe(&mailbox->queued, &mailbox->free, item);
+            list_move_unsafe(&mailbox->queued, from, item);
 
             status = MESSAGE_OK;
 
@@ -169,7 +169,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         if (mailbox->itask)
         {
 
-            unsigned int status = place(mailbox, event, source, count, data);
+            unsigned int status = place(mailbox, &mailbox->free, event, source, count, data);
 
             if (status == MESSAGE_OK)
                 kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
@@ -202,6 +202,78 @@ unsigned int mailbox_isfull(unsigned int inode)
     }
 
     return full;
+
+}
+
+unsigned int mailbox_reserve(unsigned int inode)
+{
+
+    struct mailbox *mailbox = mailbox_get(inode);
+
+    if (mailbox && mailbox->itask)
+    {
+
+        unsigned int status = MESSAGE_RETRY;
+
+        spinlock_acquire(&mailbox->spinlock);
+
+        if (mailbox->free.head)
+        {
+
+            list_move_unsafe(&mailbox->reserved, &mailbox->free, mailbox->free.head);
+
+            status = MESSAGE_OK;
+
+        }
+
+        spinlock_release(&mailbox->spinlock);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
+
+void mailbox_unreserve(unsigned int inode)
+{
+
+    struct mailbox *mailbox = mailbox_get(inode);
+
+    if (mailbox)
+    {
+
+        spinlock_acquire(&mailbox->spinlock);
+
+        if (mailbox->reserved.head)
+            list_move_unsafe(&mailbox->free, &mailbox->reserved, mailbox->reserved.head);
+
+        spinlock_release(&mailbox->spinlock);
+        mailbox_wake(inode);
+
+    }
+
+}
+
+unsigned int mailbox_placereserved(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = mailbox_get(target);
+
+    if (mailbox && mailbox->itask)
+    {
+
+        unsigned int status = place(mailbox, &mailbox->reserved, event, source, count, data);
+
+        if (status == MESSAGE_OK)
+            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -249,6 +321,7 @@ void mailbox_reset(struct mailbox *mailbox)
     list_init(&mailbox->free);
     list_init(&mailbox->queued);
     list_init(&mailbox->picked);
+    list_init(&mailbox->reserved);
 
     for (i = 0; i < MESSAGE_SLOTS; i++)
         list_add_unsafe(&mailbox->free, &mailbox->items[i]);
