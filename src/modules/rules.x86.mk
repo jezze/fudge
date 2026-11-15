@@ -6,6 +6,7 @@ include $(DIR_SRC)/modules/ata/rules.mk
 include $(DIR_SRC)/modules/atapi/rules.mk
 include $(DIR_SRC)/modules/bga/rules.mk
 include $(DIR_SRC)/modules/cpuid/$(ARCH)/rules.mk
+include $(DIR_SRC)/modules/ec/rules.mk
 include $(DIR_SRC)/modules/fpu/rules.mk
 include $(DIR_SRC)/modules/gop/rules.mk
 include $(DIR_SRC)/modules/gpio/rules.mk
