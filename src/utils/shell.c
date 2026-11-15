@@ -623,9 +623,11 @@ static void onerror(struct message *message)
 static void onmain(struct message *message)
 {
 
-    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
+    char *consoleservice = option_getstring("console-service");
+    char *keyboardservice = option_getstring("keyboard-service");
+    unsigned int keyboard = (cstring_length(keyboardservice)) ? channel_lookup(keyboardservice) : 0;
 
-    console = channel_lookup(option_getstring("console-service"));
+    console = (cstring_length(consoleservice)) ? channel_lookup(consoleservice) : message->source;
 
     if (console)
         channel_send(0, console, MESSAGE_TYPE_LINK, 0, 0);
