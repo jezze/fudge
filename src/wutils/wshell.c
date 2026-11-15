@@ -23,6 +23,7 @@ struct terminal
 {
 
     unsigned char cells[SCREENS][ROWS][COLUMNS];
+    unsigned char reversed[SCREENS][ROWS][COLUMNS];
     unsigned int dirty[ROWS];
     unsigned int rows;
     unsigned int columns;
@@ -39,7 +40,10 @@ struct terminal
     unsigned int pending;
     unsigned int reports;
     unsigned int shown;
+    unsigned int reverse;
     unsigned int sentcursor;
+    unsigned int sentanchor;
+    unsigned int sentend;
 
 };
 
@@ -88,7 +92,12 @@ static void clearcells(struct terminal *terminal, unsigned int screen, unsigned 
     unsigned int column;
 
     for (column = from; column < to; column++)
+    {
+
         terminal->cells[screen][row][column] = ' ';
+        terminal->reversed[screen][row][column] = 0;
+
+    }
 
     terminal->dirty[row] = 1;
 
@@ -113,7 +122,12 @@ static void scrollup(struct terminal *terminal, unsigned int count)
         count = terminal->rows;
 
     for (row = 0; row + count < terminal->rows; row++)
+    {
+
         buffer_copy(terminal->cells[terminal->screen][row], terminal->cells[terminal->screen][row + count], COLUMNS);
+        buffer_copy(terminal->reversed[terminal->screen][row], terminal->reversed[terminal->screen][row + count], COLUMNS);
+
+    }
 
     clearrows(terminal, terminal->rows - count, terminal->rows);
     markall(terminal);
@@ -154,6 +168,7 @@ static void put(struct terminal *terminal, unsigned char c)
     }
 
     terminal->cells[terminal->screen][terminal->cursor.row][terminal->cursor.column] = c;
+    terminal->reversed[terminal->screen][terminal->cursor.row][terminal->cursor.column] = terminal->reverse;
     terminal->dirty[terminal->cursor.row] = 1;
 
     if (terminal->cursor.column + 1 < terminal->columns)
@@ -313,6 +328,26 @@ static void setmode(struct terminal *terminal, unsigned int on)
 
 }
 
+static void setstyle(struct terminal *terminal)
+{
+
+    unsigned int i;
+
+    if (!terminal->nparams)
+        terminal->reverse = 0;
+
+    for (i = 0; i < terminal->nparams; i++)
+    {
+
+        if (terminal->params[i] == 0 || terminal->params[i] == 27)
+            terminal->reverse = 0;
+        else if (terminal->params[i] == 7)
+            terminal->reverse = 1;
+
+    }
+
+}
+
 static void runcsi(struct terminal *terminal, unsigned char c)
 {
 
@@ -376,6 +411,11 @@ static void runcsi(struct terminal *terminal, unsigned char c)
 
     case 'l':
         setmode(terminal, 0);
+
+        break;
+
+    case 'm':
+        setstyle(terminal);
 
         break;
 
@@ -651,7 +691,7 @@ static unsigned int rowend(struct terminal *terminal, unsigned int row)
 
     unsigned int end = terminal->columns;
 
-    while (end && terminal->cells[terminal->screen][row][end - 1] == ' ')
+    while (end && terminal->cells[terminal->screen][row][end - 1] == ' ' && !terminal->reversed[terminal->screen][row][end - 1])
         end--;
 
     if (row == terminal->cursor.row && end <= terminal->cursor.column)
@@ -737,6 +777,21 @@ static void sendcursor(unsigned int position)
 
 }
 
+static void sendselect(unsigned int anchor, unsigned int end)
+{
+
+    struct {struct message_wmselect wmselect; char id[8];} message;
+
+    message.wmselect.anchor = anchor;
+    message.wmselect.end = end;
+
+    buffer_write(message.id, 8, "screen", 7, 0);
+
+    if (wm)
+        channel_send(0, wm, MESSAGE_TYPE_WMSELECT, sizeof (struct message_wmselect) + 7, &message);
+
+}
+
 static void render(struct terminal *terminal)
 {
 
@@ -744,6 +799,8 @@ static void render(struct terminal *terminal)
     char line[LINESIZE];
     unsigned int total = 0;
     unsigned int cursor = 0;
+    unsigned int anchor = 0;
+    unsigned int end = 0;
     unsigned int row;
 
     output.count = 0;
@@ -761,15 +818,33 @@ static void render(struct terminal *terminal)
     for (row = 0; row < terminal->rows; row++)
     {
 
-        unsigned int end = rowend(terminal, row);
+        unsigned int stop = rowend(terminal, row);
+        unsigned int column;
 
         if (row == terminal->cursor.row)
             cursor = total + rowsize(terminal, row, terminal->cursor.column);
 
-        total += rowsize(terminal, row, end);
-
         if (terminal->dirty[row] || row >= terminal->shown)
-            addoutput(&output, line, writerow(terminal, line, row, end));
+            addoutput(&output, line, writerow(terminal, line, row, stop));
+
+        for (column = 0; column < stop; column++)
+        {
+
+            unsigned int size = cellsize(terminal->cells[terminal->screen][row][column]);
+
+            if (terminal->reversed[terminal->screen][row][column])
+            {
+
+                if (end <= anchor)
+                    anchor = total;
+
+                end = total + size;
+
+            }
+
+            total += size;
+
+        }
 
         terminal->dirty[row] = 0;
 
@@ -782,7 +857,12 @@ static void render(struct terminal *terminal)
     if (cursor != terminal->sentcursor)
         sendcursor(cursor);
 
+    if (anchor != terminal->sentanchor || end != terminal->sentend)
+        sendselect(anchor, end);
+
     terminal->sentcursor = cursor;
+    terminal->sentanchor = anchor;
+    terminal->sentend = end;
 
 }
 
