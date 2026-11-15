@@ -157,15 +157,33 @@ static unsigned int place(unsigned int itask, void *stack)
     {
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
-        unsigned int status = (inode) ? kernel_place(inode, args->target, args->event, args->count, args->data) : MESSAGE_FAILED;
+        unsigned int status;
 
-        /* a full mailbox: the caller's library takes in its own mail, then sleeps in pick until a slot frees or mail arrives */
-        if (status == MESSAGE_RETRY && mailbox_wait(args->target, itask))
-            return MESSAGE_FULL;
+        if (!inode)
+            return MESSAGE_FAILED;
 
-        /* a kernel service could not answer into the caller's own full mailbox: the library takes in its own mail and tries again */
-        if (status == MESSAGE_RETRY && mailbox_isfull(inode))
-            return MESSAGE_FULL;
+        if (mailbox_get(args->target))
+        {
+
+            status = kernel_place(inode, args->target, args->event, args->count, args->data);
+
+            /* a full mailbox: the caller's library takes in its own mail, then sleeps in pick until a slot frees or mail arrives */
+            if (status == MESSAGE_RETRY && mailbox_wait(args->target, itask))
+                return MESSAGE_FULL;
+
+            return status;
+
+        }
+
+        /* a kernel server answers into a slot of the caller's mailbox reserved before any work is done; no room: the library takes in its own mail and tries again */
+        status = mailbox_reservereply(inode);
+
+        if (status != MESSAGE_OK)
+            return (status == MESSAGE_RETRY) ? MESSAGE_FULL : status;
+
+        status = kernel_place(inode, args->target, args->event, args->count, args->data);
+
+        mailbox_unreservereply(inode);
 
         return status;
 

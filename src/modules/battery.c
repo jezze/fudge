@@ -18,7 +18,7 @@ static unsigned int oninfo(struct battery_interface *interface, unsigned int sou
     batteryinfo.design = (batteryinfo.present) ? interface->getdesign() : MESSAGE_BATTERY_UNKNOWN;
     batteryinfo.voltage = (batteryinfo.present) ? interface->getvoltage() : MESSAGE_BATTERY_UNKNOWN;
 
-    return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_BATTERYINFO, sizeof (struct message_batteryinfo), &batteryinfo);
+    return mailbox_placereply(source, interface->resource.inode, MESSAGE_TYPE_BATTERYINFO, sizeof (struct message_batteryinfo), &batteryinfo);
 
 }
 

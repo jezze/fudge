@@ -16,7 +16,7 @@ static unsigned int oninfo(struct audio_interface *interface, unsigned int sourc
         audioinfo.channels = interface->channels;
         audioinfo.bits = interface->bits;
 
-        return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo);
+        return mailbox_placereply(source, interface->resource.inode, MESSAGE_TYPE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo);
 
     }
 

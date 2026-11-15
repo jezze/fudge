@@ -189,7 +189,7 @@ static unsigned int oninfo(struct timer_interface *interface, unsigned int sourc
     timerinfo.counter = interface->jiffies;
     timerinfo.hz = interface->hz;
 
-    return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo);
+    return mailbox_placereply(source, interface->resource.inode, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo);
 
 }
 

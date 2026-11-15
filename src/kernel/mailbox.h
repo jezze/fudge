@@ -11,6 +11,7 @@ struct mailbox
     struct list free;
     struct list queued;
     struct list picked;
+    struct list reply;
     struct list reserved;
     unsigned long data;
 
@@ -18,9 +19,11 @@ struct mailbox
 
 struct mailbox *mailbox_get(unsigned int inode);
 unsigned int mailbox_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags);
-unsigned int mailbox_isfull(unsigned int inode);
-unsigned int mailbox_reserve(unsigned int inode);
+unsigned int mailbox_reservereply(unsigned int inode);
+void mailbox_unreservereply(unsigned int inode);
+unsigned int mailbox_keepreply(unsigned int inode);
 void mailbox_unreserve(unsigned int inode);
+unsigned int mailbox_placereply(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int mailbox_placereserved(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int mailbox_wait(unsigned int target, unsigned int itask);
 void mailbox_wake(unsigned int inode);

@@ -512,7 +512,7 @@ static unsigned int oncreaterequest(unsigned int source, unsigned int count, voi
 
         response.id = create(request->parent, (char *)(request + 1), request->count);
 
-        return kernel_place(server.inode, source, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
     }
 
@@ -531,7 +531,7 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
 
         response.address = map(source, request->id, request->size);
 
-        return kernel_place(server.inode, source, MESSAGE_TYPE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
+        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
 
     }
 
@@ -550,7 +550,7 @@ static unsigned int onmunmaprequest(unsigned int source, unsigned int count, voi
 
         response.status = unmap(source, request->id);
 
-        return kernel_place(server.inode, source, MESSAGE_TYPE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
+        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
 
     }
 
@@ -580,7 +580,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
         response->buffer = 0;
 
-        return kernel_place(server.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
@@ -599,7 +599,7 @@ static unsigned int onremoverequest(unsigned int source, unsigned int count, voi
 
         response.status = remove(request->parent, request->id);
 
-        return kernel_place(server.inode, source, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
     }
 
@@ -619,7 +619,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
         response->count = stat(request->id, (struct record *)(response + 1));
 
-        return kernel_place(server.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
+        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
 
     }
 
@@ -638,7 +638,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
         response.id = walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length);
 
-        return kernel_place(server.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 
@@ -659,7 +659,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
         response.count = (file) ? writedata(file, (unsigned char *)(request + 1), request->count, request->offset) : 0;
 
-        return kernel_place(server.inode, source, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+        return mailbox_placereply(source, server.inode, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
     }
 

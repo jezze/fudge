@@ -20,7 +20,7 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
         clockinfo.month = interface->getmonth();
         clockinfo.year = interface->getyear();
 
-        return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo);
+        return mailbox_placereply(source, interface->resource.inode, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo);
 
     }
 
