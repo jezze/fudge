@@ -3,6 +3,7 @@
 #include <cpu.h>
 #include <arch.h>
 #include <modules/bus.h>
+#include <modules/power.h>
 #include <modules/platform/platform.h>
 #include "../virt.h"
 
@@ -16,7 +17,11 @@
 #define REG_PIC_ENABLE                  0x10
 #define REG_RTC                         0xFF006000
 #define REG_TTY                         0xFF008000
+#define REG_CTRL                        0xFF009000
+#define REG_CTRL_COMMAND                0x04
 #define REG_VIRTIO                      0xFF010000
+#define CTRL_RESET                      1
+#define CTRL_HALT                       2
 #define IRQ_RTC                         (5 * 32)
 #define IRQ_TTY                         31
 #define IRQ_VIRTIO                      32
@@ -30,6 +35,7 @@ struct device
 };
 
 static struct base_bus bus;
+static struct power_interface powerinterface;
 static void (*routines[ROUTINES][SHARED])(unsigned int irq);
 /* qemu fills the 128 virtio-mmio slots from the last one, so the bus offers the last eight */
 static struct device devices[DEVICES] = {
@@ -204,6 +210,31 @@ unsigned int platform_unsetroutine(unsigned int irq, void (*routine)(unsigned in
 
 }
 
+static void setcontrol(unsigned int command)
+{
+
+    *(volatile unsigned int *)(REG_CTRL + REG_CTRL_COMMAND) = command;
+
+}
+
+static unsigned int poweroff(void)
+{
+
+    setcontrol(CTRL_HALT);
+
+    return MESSAGE_FAILED;
+
+}
+
+static unsigned int reboot(void)
+{
+
+    setcontrol(CTRL_RESET);
+
+    return MESSAGE_FAILED;
+
+}
+
 static void bus_setup(void)
 {
 
@@ -222,11 +253,13 @@ void module_init(void)
     unsigned int i;
 
     arch_kmap(REG_PIC, REG_PIC, PICS * 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(REG_CTRL, REG_CTRL, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
     for (i = 1; i <= PICS; i++)
         arch_setinterrupt(i, handleirq);
 
     base_initbus(&bus, PLATFORM_BUS, "platform", bus_setup, bus_next);
+    power_initinterface(&powerinterface, poweroff, reboot);
 
 }
 
@@ -234,12 +267,14 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
+    power_registerinterface(&powerinterface);
 
 }
 
 void module_unregister(void)
 {
 
+    power_unregisterinterface(&powerinterface);
     base_unregisterbus(&bus);
 
 }
