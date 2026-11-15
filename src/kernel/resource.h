@@ -14,6 +14,7 @@
 #define RESOURCE_BLOCKINTERFACE         0x17
 #define RESOURCE_CONSOLEINTERFACE       0x18
 #define RESOURCE_TOUCHINTERFACE         0x19
+#define RESOURCE_POWERINTERFACE         0x1A
 
 struct resource
 {
