@@ -45,6 +45,16 @@ static unsigned int kill(unsigned int itask, void *stack)
 
 }
 
+static void callmodule(struct binary_format *format, unsigned long address, char *name)
+{
+
+    void (*call)(void) = (void (*)(void))(format->findsymbol(address, cstring_length(name), name));
+
+    if (call)
+        call();
+
+}
+
 static unsigned int load(unsigned int itask, void *stack)
 {
 
@@ -59,14 +69,8 @@ static unsigned int load(unsigned int itask, void *stack)
         if (format)
         {
 
-            void (*module_init)(void) = (void (*)(void))(format->findsymbol(address, 11, "module_init"));
-            void (*module_register)(void) = (void (*)(void))(format->findsymbol(address, 15, "module_register"));
-
-            if (module_init)
-                module_init();
-
-            if (module_register)
-                module_register();
+            callmodule(format, address, "module_init");
+            callmodule(format, address, "module_register");
 
             return MESSAGE_OK;
 
@@ -94,10 +98,7 @@ static unsigned int unload(unsigned int itask, void *stack)
         if (format)
         {
 
-            void (*module_unregister)(void) = (void (*)(void))(format->findsymbol(address, 17, "module_unregister"));
-
-            if (module_unregister)
-                module_unregister();
+            callmodule(format, address, "module_unregister");
 
             return MESSAGE_OK;
 
