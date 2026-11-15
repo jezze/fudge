@@ -26,6 +26,7 @@
 #define NUM_TIMEZONES                   8
 #define NUM_RESOLUTIONS                 11
 #define NUM_TRANSPARENCIES              2
+#define NUM_CURSORS                     4
 #define NUM_DOUBLETAPS                  2
 #define NUM_NETWORKTYPES                2
 #define NUM_DISPLAYS                    4
@@ -50,6 +51,13 @@ static struct entry layouts[NUM_LAYOUTS] = {
 static struct entry transparencies[NUM_TRANSPARENCIES] = {
     {"on", "On"},
     {"off", "Off"}
+};
+
+static struct entry cursors[NUM_CURSORS] = {
+    {"100", "100%"},
+    {"150", "150%"},
+    {"200", "200%"},
+    {"300", "300%"}
 };
 
 static struct entry languages[NUM_LANGUAGES] = {
@@ -231,6 +239,7 @@ static struct
     struct devices audios;
     struct devices networks;
     char transparency[8];
+    char cursor[8];
     char bindingspath[256];
     char themepath[256];
     struct binding bindings[NUM_BINDINGS];
@@ -791,6 +800,13 @@ static void loadconfig(void)
     if (!cstring_match(config.transparency, "off"))
         copystring(config.transparency, 8, "on", 2);
 
+    count = query(data, 256, option_getstring("config"), ".general.cursor", 0);
+
+    getword(data, count, 0, config.cursor, 8);
+
+    if (!config.cursor[0])
+        copystring(config.cursor, 8, "100", 3);
+
     count = query(data, 256, option_getstring("config"), ".bindings", 0);
 
     getword(data, count, 0, config.bindingspath, 256);
@@ -838,7 +854,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
     unsigned int count = 0;
     unsigned int i;
 
-    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n    transparency: %s\n  }\n", config.layout, config.themepath, config.background, config.transparency);
+    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n    transparency: %s\n    cursor: %s\n  }\n", config.layout, config.themepath, config.background, config.transparency, config.cursor);
     count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
     count += cstring_write_fmt(data, size, count, "  displays:\n  [\n");
 
@@ -1022,7 +1038,7 @@ static unsigned int writelines(char *data, unsigned int size)
     unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "layout %s\nbackground %s\n", config.layout, config.background);
-    count += cstring_write_fmt(data, size, count, "transparency %s\ndisplays\n", config.transparency);
+    count += cstring_write_fmt(data, size, count, "transparency %s\ncursor %s\ndisplays\n", config.transparency, config.cursor);
 
     for (i = 0; i < config.ndisplays; i++)
     {
@@ -1164,6 +1180,8 @@ static void setchoice(char *id, char *value)
         setresolution(&config.displays[config.selecteddisplay], value);
     else if (cstring_match(id, "general-transparency"))
         copystring(config.transparency, 8, value, cstring_length(value));
+    else if (cstring_match(id, "mouse-cursor"))
+        copystring(config.cursor, 8, value, cstring_length(value));
 
 }
 
@@ -1373,15 +1391,17 @@ static void rendermouse(void)
     renderdevicechoice(&config.mice, "mouse");
 
     if (device)
+    {
+
         enabledfield("mouse", device->enabled);
+        beginrow("mouse-speed");
 
-    if (!device)
-        return;
+        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"mouse-speed-row\" valign \"middle\" span \"4\" label \"Speed\"\n+ slider id \"mouse-speed\" in \"mouse-speed-row\" span \"3\" value \"%u\" onchange \"q=speed&value=\"\n", &value);
+        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"mouse-speed-box\" in \"mouse-speed-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=mouse-speed-box&value=\"\n+ text id \"mouse-speed-text\" in \"mouse-speed-box\" halign \"right\" label \"%s\"\n", device->speed);
 
-    beginrow("mouse-speed");
+    }
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"mouse-speed-row\" valign \"middle\" span \"4\" label \"Speed\"\n+ slider id \"mouse-speed\" in \"mouse-speed-row\" span \"3\" value \"%u\" onchange \"q=speed&value=\"\n", &value);
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"mouse-speed-box\" in \"mouse-speed-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=mouse-speed-box&value=\"\n+ text id \"mouse-speed-text\" in \"mouse-speed-box\" halign \"right\" label \"%s\"\n", device->speed);
+    choice("mouse-cursor", "Cursor size", config.cursor, cursors, NUM_CURSORS);
 
 }
 

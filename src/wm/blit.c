@@ -19,7 +19,6 @@
 #define CMAP_ICON_COLOR                 0
 #define CMAP_RECT_COLOR                 0
 #define CMAP_TEXT_COLOR                 0
-#define MOUSE_LINEHEIGHT                12
 
 struct linesegment
 {
@@ -54,7 +53,7 @@ struct mouse
 };
 
 static struct mouse mice[BLIT_MOUSES];
-static unsigned int mouselineheight = MOUSE_LINEHEIGHT;
+static unsigned int mousescale = 100;
 
 static int getpoint(unsigned int type, int p, int o, int m)
 {
@@ -426,7 +425,7 @@ void blit_iconx(struct blit_display *display, struct util_region *region, int li
 static int scalemouse(int value)
 {
 
-    return value * (int)mouselineheight / MOUSE_LINEHEIGHT;
+    return value * (int)mousescale / 100;
 
 }
 
@@ -540,10 +539,10 @@ void blit_loadmouse(unsigned int type, int hotx, int hoty, char *data, unsigned 
 
 }
 
-void blit_setmousescale(unsigned int lineheight)
+void blit_setmousescale(unsigned int percent)
 {
 
-    mouselineheight = lineheight;
+    mousescale = (percent >= 50 && percent <= 400) ? percent : 100;
 
 }
 

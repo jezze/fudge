@@ -5,6 +5,7 @@
     theme: "initrd:data/config/wm-theme-default.mq"
     background: "initrd:data/fudge.pcx"
     transparency: on
+    cursor: 100
   }
   localization:
   {

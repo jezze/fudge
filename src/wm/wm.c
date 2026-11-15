@@ -513,6 +513,13 @@ static void configline(char *line, unsigned int length)
 
     }
 
+    else if (count == 6 && buffer_match(word, "cursor", 6))
+    {
+
+        blit_setmousescale(cstring_read_value(rest, length, 10));
+
+    }
+
     else if (count == 5 && buffer_match(word, "color", 5))
     {
 
@@ -588,6 +595,7 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"layout {layout}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"background {background}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"cursor {cursor}\" %s", config));
     configlines("displays", 8);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .displays -format \"display {width} {height} {bpp} {device}\" %s", config));
     configlines("inputs", 6);
@@ -3992,7 +4000,6 @@ static void onvideoinfo(struct message *message)
     pool_setfont(0, lineheight);
     pool_loadfont(1, fontb[factor]);
     pool_setfont(1, lineheight);
-    blit_setmousescale(lineheight);
     render_setunit(factor + 1);
 
     state.active = 0;
