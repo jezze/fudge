@@ -43,6 +43,7 @@
 #define TOUCH_WHEELCOUNTS   24
 #define TOUCH_TAPTICKS      12
 #define LINEBUFFER          3840
+#define FLUSHES             16
 
 struct listing
 {
@@ -143,6 +144,8 @@ struct state
     int slidergrab;
     unsigned int pressedsources[KEYS_MAPSIZE];
     unsigned int drawpending;
+    unsigned int flushes[FLUSHES];
+    unsigned int nflushes;
 
 };
 
@@ -2615,10 +2618,17 @@ static void redraw(unsigned int relayout)
 static void draw(void)
 {
 
+    unsigned int i;
+
     if (state.drawpending && state.state == STATE_NORMAL && state.displays[0].blit.framebuffer)
         update();
 
     state.drawpending = 0;
+
+    for (i = 0; i < state.nflushes; i++)
+        channel_send(0, state.flushes[i], MESSAGE_TYPE_WMACK, 0, 0);
+
+    state.nflushes = 0;
 
 }
 
@@ -4314,7 +4324,11 @@ static void onwmflush(struct message *message)
 
     }
 
-    channel_send(0, message->source, MESSAGE_TYPE_WMACK, 0, 0);
+    /* the ack waits for the draw, so the program does not write the next frame while this one is read */
+    if (state.nflushes < FLUSHES)
+        state.flushes[state.nflushes++] = message->source;
+    else
+        channel_send(0, message->source, MESSAGE_TYPE_WMACK, 0, 0);
 
 }
 
