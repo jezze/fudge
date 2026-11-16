@@ -744,6 +744,14 @@ static void onerror(struct message *message)
 
 }
 
+static void oninterrupt(struct message *message)
+{
+
+    if (job_exist(&job, message->source))
+        channel_send(0, output, MESSAGE_TYPE_INTERRUPT, 0, 0);
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -806,6 +814,7 @@ void init(void)
     channel_bind(MESSAGE_TYPE_CONSOLEDATA, onconsoledata);
     channel_bind(MESSAGE_TYPE_DATA, ondata);
     channel_bind(MESSAGE_TYPE_ERROR, onerror);
+    channel_bind(MESSAGE_TYPE_INTERRUPT, oninterrupt);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
     channel_bind(MESSAGE_TYPE_PATH, onpath);
     channel_bind(MESSAGE_TYPE_TERM, onterm);
