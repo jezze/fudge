@@ -142,6 +142,7 @@ struct state
     int scrollgrab;
     int slidergrab;
     unsigned int pressedsources[KEYS_MAPSIZE];
+    unsigned int drawpending;
 
 };
 
@@ -2605,9 +2606,19 @@ static void redraw(unsigned int relayout)
 
         }
 
-        update();
+        state.drawpending = 1;
 
     }
+
+}
+
+static void draw(void)
+{
+
+    if (state.drawpending && state.state == STATE_NORMAL && state.displays[0].blit.framebuffer)
+        update();
+
+    state.drawpending = 0;
 
 }
 
@@ -3348,7 +3359,10 @@ static void onmain(struct message *message)
     else
         hideclock();
 
-    channel_hold(0);
+    draw();
+
+    while (channel_process(0) && channel_drain(0))
+        draw();
 
     if (state.clock && state.timer)
         requestclock(0);
