@@ -6,6 +6,7 @@
 #include "service.h"
 #include "mailbox.h"
 #include "kernel.h"
+#include "debug.h"
 
 static unsigned int release(struct mailbox *mailbox, unsigned int slots)
 {
@@ -104,11 +105,60 @@ static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned i
 
 }
 
+static void checkselflock(struct mailbox *mailbox)
+{
+
+    struct task *task = pool_gettask(mailbox->itask);
+
+    /* only the task itself could free a slot here, and it is about to sleep */
+    if (task && !task->waitingfor && !mailbox->free.count && !mailbox->queued.head && !mailbox->reserved.head)
+        debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u sleeps on its own full mailbox", &mailbox->itask);
+
+}
+
+static void checkcycle(struct mailbox *mailbox, unsigned int itask)
+{
+
+    unsigned int owner = mailbox->itask;
+    unsigned int i;
+
+    for (i = 0; i < POOL_TASKS; i++)
+    {
+
+        struct task *task = pool_gettask(owner);
+        struct mailbox *next;
+
+        if (owner == itask)
+        {
+
+            debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u waits on task %u, which waits on it", &itask, &mailbox->itask);
+
+            return;
+
+        }
+
+        if (!task || !task->waitingfor)
+            return;
+
+        next = pool_getnodemailbox(task->waitingfor);
+
+        if (!next)
+            return;
+
+        owner = next->itask;
+
+    }
+
+}
+
 unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
 {
 
     if (pick(mailbox, messages, count, slots))
         return MESSAGE_OK;
+
+    if ((flags & MESSAGE_FLAG_BLOCK) && !count)
+        checkselflock(mailbox);
 
     if (flags & MESSAGE_FLAG_BLOCK)
         kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
@@ -235,6 +285,9 @@ unsigned int mailbox_wait(struct mailbox *mailbox, unsigned int itask)
         }
 
         spinlock_release(&mailbox->spinlock);
+
+        if (waiting)
+            checkcycle(mailbox, itask);
 
     }
 
