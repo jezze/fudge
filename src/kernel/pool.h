@@ -1,7 +1,7 @@
 #define POOL_CORES                      256
-#define POOL_TASKMAILBOXES              (MESSAGE_PAGES / MESSAGE_SLOTS)
+#define POOL_TASKMAILBOXES              2
 #define POOL_TASKMMUSIZE                0x20000
-#define POOL_PERTASK                    (TASK_CODESIZE + TASK_STACKSIZE + TASK_BUFFERSIZE + MMAP_SIZE + POOL_TASKMMUSIZE + MESSAGE_CAPACITY * POOL_TASKMAILBOXES)
+#define POOL_PERTASK                    (TASK_CODESIZE + TASK_STACKSIZE + TASK_BUFFERSIZE + MMAP_SIZE + POOL_TASKMMUSIZE + MESSAGE_PAGES * MESSAGE_SIZE)
 #define POOL_CHUNK                      0x04880000
 #define POOL_TASKS                      (POOL_CHUNK / POOL_PERTASK)
 #define POOL_MAILBOXES                  (POOL_TASKS * POOL_TASKMAILBOXES)
@@ -31,4 +31,4 @@ void pool_unlink(struct list_item *item);
 unsigned int pool_attachnode(struct resource *resource);
 void pool_detachnode(struct resource *resource);
 void pool_setroot(struct resource *resource);
-void pool_setup(unsigned long mbaddress);
+void pool_setup(unsigned long address);

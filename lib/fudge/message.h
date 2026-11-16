@@ -1,6 +1,5 @@
 #define MESSAGE_SIZE                    0x1000
 #define MESSAGE_SLOTS                   8
-#define MESSAGE_CAPACITY                (MESSAGE_SIZE * MESSAGE_SLOTS)
 #define MESSAGE_PAGES                   16
 #define MESSAGE_STARTPAGES              6
 #define MESSAGE_OK                      0x01

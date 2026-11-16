@@ -338,12 +338,12 @@ void pool_placetask(unsigned int itask, struct list *list)
 
 }
 
-void pool_setup(unsigned long mbaddress)
+void pool_setup(unsigned long address)
 {
 
     unsigned int i;
 
-    pages = mbaddress;
+    pages = address;
 
     list_init(&freetasks);
     list_init(&freemailboxes);

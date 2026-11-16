@@ -11,8 +11,8 @@
 #define ARCH_MMU_KERNELSIZE             0x200000
 #define ARCH_MMU_TASKBASE               0x00C00000
 #define ARCH_MMU_TASKSIZE               0x20000
-#define ARCH_MAILBOX_BASE               0x01000000
-#define ARCH_MAILBOX_SIZE               (MESSAGE_CAPACITY * POOL_MAILBOXES)
+#define ARCH_PAGES_BASE                 0x01000000
+#define ARCH_PAGES_SIZE                 (MESSAGE_PAGES * MESSAGE_SIZE * POOL_TASKS)
 #define ARCH_RAMDISK_BASE               0x01200000
 #define ARCH_RAMDISK_SIZE               0x00E00000
 #define ARCH_TASK_BUFFERBASE            0x02000000
