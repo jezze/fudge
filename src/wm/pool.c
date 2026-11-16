@@ -301,13 +301,32 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 
 }
 
+static unsigned int ismapped(unsigned int target, unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < POOL_RAWRESOURCES; i++)
+    {
+
+        struct pool_rawresource *resource = &rawresources[i];
+
+        if (resource->used && resource->data && resource->target == target && resource->id == id)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static void destroyraw(struct pool_rawresource *resource)
 {
 
-    if (resource->data)
-        fs_munmap(1, resource->target, resource->id);
-
     resource->used = 0;
+
+    if (resource->data && !ismapped(resource->target, resource->id))
+        fs_munmap(1, resource->target, resource->id);
 
 }
 
