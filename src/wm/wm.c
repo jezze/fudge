@@ -146,6 +146,7 @@ struct state
     unsigned int drawpending;
     unsigned int flushes[FLUSHES];
     unsigned int nflushes;
+    unsigned int owner;
 
 };
 
@@ -336,6 +337,9 @@ static void loadimage(struct blit_image *image, char *directory, char *name, uns
 
     if (id && image->width && image->height && fs_stat(1, target, id, &record) && record.size / 4 / image->width >= image->height)
         image->pixels = fs_mmap(1, target, id, 0);
+
+    if (!image->pixels)
+        channel_send_fmt(0, state.owner, MESSAGE_TYPE_ERROR, "Could not load image: initrd:data/toffee/%s.tof\n", name);
 
 }
 
@@ -3338,6 +3342,8 @@ static void onwalkrequest(struct message *message)
 
 static void onmain(struct message *message)
 {
+
+    state.owner = message->source;
 
     loadconfig(option_getstring("config"));
     loadcursors();
