@@ -138,27 +138,6 @@ static void scalerow(unsigned int width, unsigned int y)
 
 }
 
-static void flush(void)
-{
-
-    char *id = "screen";
-
-    if (flushing)
-    {
-
-        dirty = 1;
-
-        return;
-
-    }
-
-    channel_send(0, wm, MESSAGE_TYPE_WMFLUSH, cstring_length_zero(id), id);
-
-    flushing = 1;
-    dirty = 0;
-
-}
-
 static void draw(unsigned int *buffer, unsigned int stride, unsigned int scale)
 {
 
@@ -212,6 +191,28 @@ static void draw(unsigned int *buffer, unsigned int stride, unsigned int scale)
 
 }
 
+static void flush(void)
+{
+
+    char *id = "screen";
+
+    if (flushing)
+    {
+
+        dirty = 1;
+
+        return;
+
+    }
+
+    draw(screen, WIDTH, 1);
+    channel_send(0, wm, MESSAGE_TYPE_WMFLUSH, cstring_length_zero(id), id);
+
+    flushing = 1;
+    dirty = 0;
+
+}
+
 static void present(void)
 {
 
@@ -226,12 +227,7 @@ static void present(void)
     {
 
         if (screen)
-        {
-
-            draw(screen, WIDTH, 1);
             flush();
-
-        }
 
         return;
 

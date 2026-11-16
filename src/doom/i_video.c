@@ -71,6 +71,7 @@ static unsigned int fullscreen;
 static unsigned int wanted;
 static unsigned int flushing;
 static unsigned int dirty;
+static unsigned int *shownpalette;
 static unsigned int screentarget;
 static unsigned int screenid;
 static unsigned int screenwidth;
@@ -416,11 +417,12 @@ static void setscale(void)
 
 }
 
-/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
+/* one flush at a time is on its way to the wm, and the window's screen is only written then, so the wm never reads a frame being written; a frame shown meanwhile goes out when it answers; the screen is converted as it is (the wm scales it), unless its size changed since the window was made */
 static void flush(void)
 {
 
     char *id = "screen";
+    unsigned int y;
 
     if (flushing)
     {
@@ -428,6 +430,21 @@ static void flush(void)
         dirty = 1;
 
         return;
+
+    }
+
+    if (!screen || (unsigned int)SCREENWIDTH != screenwidth || (unsigned int)SCREENHEIGHT != screenheight)
+        return;
+
+    for (y = 0; y < screenheight; y++)
+    {
+
+        byte *source = screens[0].data + y * screens[0].byte_pitch;
+        unsigned int *line = screen + y * screenwidth;
+        unsigned int x;
+
+        for (x = 0; x < screenwidth; x++)
+            line[x] = shownpalette[source[x]];
 
     }
 
@@ -448,26 +465,10 @@ static void onwmack(struct message *message)
 
 }
 
-/* in a window the screen is converted as it is (the wm scales it), unless its size changed since the window was made */
 static void present(unsigned int *palette)
 {
 
-    unsigned int y;
-
-    if (!screen || (unsigned int)SCREENWIDTH != screenwidth || (unsigned int)SCREENHEIGHT != screenheight)
-        return;
-
-    for (y = 0; y < screenheight; y++)
-    {
-
-        byte *source = screens[0].data + y * screens[0].byte_pitch;
-        unsigned int *line = screen + y * screenwidth;
-        unsigned int x;
-
-        for (x = 0; x < screenwidth; x++)
-            line[x] = palette[source[x]];
-
-    }
+    shownpalette = palette;
 
     flush();
 

@@ -114,6 +114,7 @@ static void flush(void)
 
     }
 
+    buffer_copy(screen, emulator.ppu.screen, SCREENSIZE);
     channel_send(0, wm, MESSAGE_TYPE_WMFLUSH, cstring_length_zero(id), id);
 
     flushing = 1;
@@ -138,12 +139,7 @@ static void present(void)
     {
 
         if (screen)
-        {
-
-            buffer_copy(screen, emulator.ppu.screen, SCREENSIZE);
             flush();
-
-        }
 
         return;
 

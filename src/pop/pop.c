@@ -44,6 +44,7 @@ static unsigned int fullscreen;
 static unsigned int wanted;
 static unsigned int flushing;
 static unsigned int dirty;
+static SDL_Surface *shown;
 static unsigned int screentarget;
 static unsigned int screenid;
 static unsigned int *screen;
@@ -330,11 +331,12 @@ static void onwmkeyrelease(struct message *message)
 
 }
 
-/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
+/* one flush at a time is on its way to the wm, and the window's screen is only written then, so the wm never reads a frame being written; a frame shown meanwhile goes out when it answers; the 320x200 RGB24 screen is converted as it is, and the wm scales it */
 static void flush(void)
 {
 
     char *id = "screen";
+    unsigned int y;
 
     if (flushing)
     {
@@ -342,6 +344,24 @@ static void flush(void)
         dirty = 1;
 
         return;
+
+    }
+
+    for (y = 0; y < SCREENHEIGHT; y++)
+    {
+
+        unsigned char *row = (unsigned char *)shown->pixels + y * shown->pitch;
+        unsigned int *out = screen + y * SCREENWIDTH;
+        unsigned int x;
+
+        for (x = 0; x < SCREENWIDTH; x++)
+        {
+
+            unsigned char *p = row + x * 3;
+
+            out[x] = 0xFF000000 | (p[0] << 16) | (p[1] << 8) | p[2];
+
+        }
 
     }
 
@@ -673,29 +693,10 @@ Uint32 SDL_GetPerformanceFrequency(void)
 
 }
 
-/* in a window the 320x200 RGB24 screen is converted as it is, and the wm scales it */
 static void present(SDL_Surface *surface)
 {
 
-    unsigned int y;
-
-    for (y = 0; y < SCREENHEIGHT; y++)
-    {
-
-        unsigned char *row = (unsigned char *)surface->pixels + y * surface->pitch;
-        unsigned int *out = screen + y * SCREENWIDTH;
-        unsigned int x;
-
-        for (x = 0; x < SCREENWIDTH; x++)
-        {
-
-            unsigned char *p = row + x * 3;
-
-            out[x] = 0xFF000000 | (p[0] << 16) | (p[1] << 8) | p[2];
-
-        }
-
-    }
+    shown = surface;
 
     flush();
 
