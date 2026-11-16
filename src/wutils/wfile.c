@@ -373,6 +373,55 @@ static void delete(void)
 
 }
 
+static void sendvolumes(unsigned int wm)
+{
+
+    unsigned int target = fs_auth("namesrv:");
+    unsigned int id = (target) ? fs_walk(1, target, 0, "namesrv:") : 0;
+    unsigned char data[MESSAGE_SIZE];
+    unsigned char d[MESSAGE_SIZE];
+    unsigned int count;
+    unsigned int offset = 0;
+    unsigned int index = 0;
+    unsigned int c = 0;
+
+    while (id && (count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < count; i += sizeof (struct record))
+        {
+
+            struct record *record = (struct record *)(data + i);
+
+            offset = record->offset;
+
+            if (record->name[0] == '.')
+                continue;
+
+            if (c + 512 > MESSAGE_SIZE)
+            {
+
+                channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
+
+                c = 0;
+
+            }
+
+            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"volume%u\" in \"volume-list\" padding \"4\" onclick \"q=abspath&path=%w:\"\n", &index, record->name, &record->length);
+            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ text in \"volume%u\" label \"%w:\"\n", &index, record->name, &record->length);
+            index++;
+
+        }
+
+    }
+
+    if (c)
+        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -391,6 +440,7 @@ static void onmain(struct message *message)
         if (opener)
             channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Open\"\n- copy\n- cut\n- paste\n- delete\n+ button id \"open\" in \"bottom\" mode \"disabled\" label \"Open\" onclick \"q=open\"\n");
 
+        sendvolumes(wm);
         changepath(wm, "initrd:");
         channel_hold(0);
         channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
