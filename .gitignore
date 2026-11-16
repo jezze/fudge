@@ -47,6 +47,7 @@ src/utils/dump
 src/utils/echo
 src/utils/elfload
 src/utils/elfunload
+src/utils/exit
 src/utils/ext2srv
 src/utils/fatsrv
 src/utils/grep
@@ -69,6 +70,7 @@ src/utils/play
 src/utils/pwd
 src/utils/random
 src/utils/reboot
+src/utils/respawn
 src/utils/rm
 src/utils/services
 src/utils/sh
