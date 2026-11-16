@@ -774,11 +774,15 @@ static void onpath(struct message *message)
 
 }
 
-static void onterm(struct message *message)
+static void onstatus(struct message *message)
 {
 
-    if (job_exit(&job, message->source))
-        return;
+    job_exit(&job, message->source);
+
+}
+
+static void onterm(struct message *message)
+{
 
     if (running)
     {
@@ -817,6 +821,7 @@ void init(void)
     channel_bind(MESSAGE_TYPE_INTERRUPT, oninterrupt);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
     channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_STATUS, onstatus);
     channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }

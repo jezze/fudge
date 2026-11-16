@@ -100,7 +100,7 @@ static void addterm(struct message_pipe *pipe, unsigned int target, unsigned int
 
     }
 
-    if (target && pipe->nterms >= PIPE_ROUTES - 1)
+    if (!target || pipe->nterms >= PIPE_ROUTES)
         return;
 
     term = &pipe->terms[pipe->nterms++];
@@ -155,8 +155,6 @@ static void setpipe(struct job *job, unsigned int index, struct message_pipe *pi
             addterm(pipe, job->commands[command->routes[i].stage - 1].target, MESSAGE_TYPE_TERM);
 
     }
-
-    addterm(pipe, 0, MESSAGE_TYPE_TERM);
 
 }
 

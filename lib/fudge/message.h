@@ -14,6 +14,9 @@
 #define MESSAGE_BATTERY_CRITICAL        0x04
 #define MESSAGE_BATTERY_MILLIWATTS      0
 #define MESSAGE_BATTERY_MILLIAMPS       1
+#define MESSAGE_STATUS_OK               0x00
+#define MESSAGE_STATUS_ERROR            0x01
+#define MESSAGE_STATUS_ABORTED          0x02
 #define MESSAGE_TYPE_MAIN               0x01
 #define MESSAGE_TYPE_TERM               0x02
 #define MESSAGE_TYPE_INTERRUPT          0x03
@@ -128,6 +131,13 @@ struct message_pipe
     struct message_route routes[PIPE_ROUTES];
     unsigned int nterms;
     struct message_route terms[PIPE_ROUTES];
+
+};
+
+struct message_status
+{
+
+    unsigned int code;
 
 };
 

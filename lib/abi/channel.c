@@ -30,6 +30,7 @@ static struct inbox inboxes[CHANNEL_MAILBOXES];
 static char copies[CHANNEL_COPIES][MESSAGE_SIZE];
 static unsigned int copiesused;
 static unsigned int owner;
+static unsigned int status;
 static struct message_pipe pipe;
 
 static struct message_route *findroute(unsigned int event)
@@ -350,6 +351,9 @@ static void dispatch(unsigned int ichannel, struct message *message)
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
+    if (event == MESSAGE_TYPE_ERROR && status == MESSAGE_STATUS_OK)
+        status = MESSAGE_STATUS_ERROR;
+
     if (!ichannel && (target == owner || (pipe.prev && target == pipe.prev)))
     {
 
@@ -468,7 +472,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         finish(ichannel, message);
 
-        if (message->source == source && message->type == MESSAGE_TYPE_TERM)
+        if (message->source == source && message->type == MESSAGE_TYPE_STATUS)
             return 0;
 
     }
@@ -588,6 +592,17 @@ void channel_exit(unsigned int ichannel)
     for (i = 0; i < pipe.nterms; i++)
         place(ichannel, resolve(pipe.terms[i].target), pipe.terms[i].to, 0, 0);
 
+    if (owner)
+    {
+
+        struct message_status message;
+
+        message.code = status;
+
+        place(ichannel, owner, MESSAGE_TYPE_STATUS, sizeof (struct message_status), &message);
+
+    }
+
 }
 
 static void abortdrain(void)
@@ -653,5 +668,16 @@ void channel_abort(unsigned int ichannel)
 
     for (i = 0; i < pipe.nterms && i < PIPE_ROUTES; i++)
         abortplace(ichannel, resolve(pipe.terms[i].target), pipe.terms[i].to, 0, 0);
+
+    if (owner)
+    {
+
+        struct message_status message;
+
+        message.code = MESSAGE_STATUS_ABORTED;
+
+        abortplace(ichannel, owner, MESSAGE_TYPE_STATUS, sizeof (struct message_status), &message);
+
+    }
 
 }

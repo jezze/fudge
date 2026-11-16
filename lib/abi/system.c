@@ -44,7 +44,7 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
     {
 
         struct message message;
-        unsigned int errors = 0;
+        struct message_status *status;
 
         while (channel_pick(1, &message))
         {
@@ -53,15 +53,15 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
             {
 
             case MESSAGE_TYPE_ERROR:
-                errors++;
-
             case MESSAGE_TYPE_DATA:
                 channel_send(0, target, message.type, message.length, message.data);
 
                 break;
 
-            case MESSAGE_TYPE_TERM:
-                return !errors;
+            case MESSAGE_TYPE_STATUS:
+                status = message_validate(MESSAGE_TYPE_STATUS, message.data, message.length);
+
+                return status && status->code == MESSAGE_STATUS_OK;
 
             }
 
@@ -103,7 +103,7 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
 
                 break;
 
-            case MESSAGE_TYPE_TERM:
+            case MESSAGE_TYPE_STATUS:
                 return total;
 
             }

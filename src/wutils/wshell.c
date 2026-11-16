@@ -914,7 +914,7 @@ static void onerror(struct message *message)
 
 }
 
-static void onterm(struct message *message)
+static void onstatus(struct message *message)
 {
 
     if (message->source == shell)
@@ -1116,8 +1116,8 @@ void init(void)
     option_add("wm-service", "wm");
     channel_bind(MESSAGE_TYPE_DATA, ondata);
     channel_bind(MESSAGE_TYPE_ERROR, onerror);
-    channel_bind(MESSAGE_TYPE_TERM, onterm);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_STATUS, onstatus);
     channel_bind(MESSAGE_TYPE_WMEVENT, onwmevent);
     channel_bind(MESSAGE_TYPE_WMKEYPRESS, onwmkeypress);
 

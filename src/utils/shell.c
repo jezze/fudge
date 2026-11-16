@@ -603,7 +603,7 @@ static void ondata(struct message *message)
 
 }
 
-static void onterm(struct message *message)
+static void onstatus(struct message *message)
 {
 
     if (message->source == sh)
@@ -663,9 +663,9 @@ void init(void)
     channel_bind(MESSAGE_TYPE_KEYPRESS, onkeypress);
     channel_bind(MESSAGE_TYPE_KEYRELEASE, onkeyrelease);
     channel_bind(MESSAGE_TYPE_DATA, ondata);
-    channel_bind(MESSAGE_TYPE_TERM, onterm);
     channel_bind(MESSAGE_TYPE_ERROR, onerror);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_STATUS, onstatus);
 
 }
 
