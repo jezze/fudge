@@ -7,6 +7,8 @@ struct pool_rawresource
     unsigned int used;
     unsigned int target;
     unsigned int id;
+    unsigned int width;
+    unsigned int height;
     unsigned int *data;
 
 };

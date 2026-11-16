@@ -393,6 +393,8 @@ struct pool_rawresource *pool_createraw(struct widget *widget, char *source)
         buffer_clear(resource, sizeof (struct pool_rawresource));
 
         resource->used = 1;
+        resource->width = width;
+        resource->height = height;
         resource->target = fs_auth(source);
         resource->id = (resource->target) ? fs_walk(1, resource->target, 0, source) : 0;
 
@@ -555,10 +557,36 @@ void pool_loadfont(unsigned int index, char *path)
 
 }
 
+static unsigned int isstale(struct widget *widget)
+{
+
+    struct pool_rawresource *resource = widget->resource;
+
+    return widget->attributes.mimetype == ATTR_MIMETYPE_RAW && (resource->width != widget->attributes.width || resource->height != widget->attributes.height);
+
+}
+
 void pool_loadresources(void)
 {
 
     struct list_item *current = 0;
+
+    /* a resized image is mapped again, after every stale user of the file has let go of the old mapping */
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_MEDIA && widget->resource && isstale(widget))
+        {
+
+            destroyraw(widget->resource);
+
+            widget->resource = 0;
+
+        }
+
+    }
 
     while ((current = pool_next(current)))
     {
