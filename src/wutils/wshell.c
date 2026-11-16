@@ -44,6 +44,7 @@ struct terminal
     unsigned int sentcursor;
     unsigned int sentanchor;
     unsigned int sentend;
+    unsigned int changed;
 
 };
 
@@ -608,6 +609,7 @@ static void feed(struct terminal *terminal, void *buffer, unsigned int count)
     unsigned int i;
 
     count = buffer_read(data, MESSAGE_SIZE, buffer, count, 0);
+    terminal->changed = 1;
 
     for (i = 0; i < count; i++)
     {
@@ -676,6 +678,8 @@ static void resize(struct terminal *terminal, unsigned int rows, unsigned int co
         terminal->saved.column = columns - 1;
 
     markall(terminal);
+
+    terminal->changed = 1;
 
 }
 
@@ -866,6 +870,7 @@ static void render(struct terminal *terminal)
     terminal->sentcursor = cursor;
     terminal->sentanchor = anchor;
     terminal->sentend = end;
+    terminal->changed = 0;
 
 }
 
@@ -896,7 +901,6 @@ static void ondata(struct message *message)
     {
 
         feed(&term, message->data, message->length);
-        render(&term);
 
     }
 
@@ -907,7 +911,6 @@ static void onerror(struct message *message)
 
     feed(&term, "[ERROR] ", 8);
     feed(&term, message->data, message->length);
-    render(&term);
 
 }
 
@@ -958,7 +961,14 @@ static void onmain(struct message *message)
         }
 
         render(&term);
-        channel_hold(0);
+
+        while (channel_process(0) && channel_drain(0))
+        {
+
+            if (term.changed)
+                render(&term);
+
+        }
 
         if (shell)
         {
@@ -983,7 +993,6 @@ static void onwmevent(struct message *message)
     {
 
         resize(&term, kv_getvalue(event, "rows=", 10), kv_getvalue(event, "columns=", 10));
-        render(&term);
 
         if (term.reports)
             sendreport(&term);
