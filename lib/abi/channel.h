@@ -11,5 +11,6 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 void channel_hold(unsigned int ichannel);
 void channel_loop(unsigned int ichannel);
 void channel_close(unsigned int ichannel);
+void channel_setstatus(unsigned int code);
 void channel_exit(unsigned int ichannel);
 void channel_abort(unsigned int ichannel);

@@ -17,6 +17,7 @@
 #define MESSAGE_STATUS_OK               0x00
 #define MESSAGE_STATUS_ERROR            0x01
 #define MESSAGE_STATUS_ABORTED          0x02
+#define MESSAGE_STATUS_EXIT             0x03
 #define MESSAGE_TYPE_MAIN               0x01
 #define MESSAGE_TYPE_TERM               0x02
 #define MESSAGE_TYPE_INTERRUPT          0x03

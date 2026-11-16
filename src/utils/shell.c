@@ -606,12 +606,17 @@ static void ondata(struct message *message)
 static void onstatus(struct message *message)
 {
 
+    struct message_status *status = message_validate(MESSAGE_TYPE_STATUS, message->data, message->length);
+
     if (message->source == sh)
     {
 
         sh = 0;
 
-        showprompt();
+        if (status && status->code == MESSAGE_STATUS_EXIT)
+            channel_close(0);
+        else
+            showprompt();
 
     }
 

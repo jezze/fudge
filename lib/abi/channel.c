@@ -584,6 +584,13 @@ void channel_close(unsigned int ichannel)
 
 }
 
+void channel_setstatus(unsigned int code)
+{
+
+    status = code;
+
+}
+
 void channel_exit(unsigned int ichannel)
 {
 

@@ -4,7 +4,7 @@
 static void onmain(struct message *message)
 {
 
-    channel_send(0, message->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
+    channel_setstatus(MESSAGE_STATUS_EXIT);
 
 }
 
