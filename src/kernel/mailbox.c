@@ -70,7 +70,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
 
 }
 
-static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned int event, unsigned int source, unsigned int count, void *data)
+static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned int keep, unsigned int event, unsigned int source, unsigned int count, void *data)
 {
 
     if (count <= MESSAGE_SIZE)
@@ -80,7 +80,7 @@ static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned i
 
         spinlock_acquire(&mailbox->spinlock);
 
-        if (from->head)
+        if (from->count > keep)
         {
 
             struct list_item *item = from->head;
@@ -117,13 +117,13 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, uns
 
 }
 
-static unsigned int deliver(struct mailbox *mailbox, struct list *from, unsigned int event, unsigned int source, unsigned int count, void *data)
+static unsigned int deliver(struct mailbox *mailbox, struct list *from, unsigned int keep, unsigned int event, unsigned int source, unsigned int count, void *data)
 {
 
     if (mailbox->itask)
     {
 
-        unsigned int status = place(mailbox, from, event, source, count, data);
+        unsigned int status = place(mailbox, from, keep, event, source, count, data);
 
         if (status == MESSAGE_OK)
             kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
@@ -141,7 +141,8 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
 
-    return (mailbox) ? deliver(mailbox, &mailbox->free, event, source, count, data) : MESSAGE_FAILED;
+    /* task mail and notifies leave the last free slot to a reply, so a task flooded with them can still reserve one (mailbox_reservereply) and is never left waiting on its own mailbox */
+    return (mailbox) ? deliver(mailbox, &mailbox->free, MAILBOX_REPLYSLOTS, event, source, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -203,14 +204,14 @@ void mailbox_unreserve(struct mailbox *mailbox)
 unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    return deliver(mailbox, (mailbox->reply.head) ? &mailbox->reply : &mailbox->free, event, source, count, data);
+    return deliver(mailbox, (mailbox->reply.head) ? &mailbox->reply : &mailbox->free, 0, event, source, count, data);
 
 }
 
 unsigned int mailbox_placereserved(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    return deliver(mailbox, &mailbox->reserved, event, source, count, data);
+    return deliver(mailbox, &mailbox->reserved, 0, event, source, count, data);
 
 }
 
@@ -225,7 +226,7 @@ unsigned int mailbox_wait(struct mailbox *mailbox, unsigned int itask)
 
         spinlock_acquire(&mailbox->spinlock);
 
-        if (!mailbox->free.head)
+        if (mailbox->free.count <= MAILBOX_REPLYSLOTS)
         {
 
             task->waitingfor = mailbox->resource.inode;

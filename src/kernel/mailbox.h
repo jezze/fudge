@@ -1,3 +1,5 @@
+#define MAILBOX_REPLYSLOTS              1
+
 struct mailbox
 {
 
