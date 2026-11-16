@@ -3,6 +3,7 @@
 
 #define INPUTSIZE                       128
 #define LINESIZE                        (INPUTSIZE * 2)
+#define PROMPTSIZE                      (LINESIZE + 32)
 
 static char inputdata1[INPUTSIZE];
 static struct ring input1;
@@ -59,14 +60,24 @@ static void printescape(void *buffer, unsigned int count)
 
 }
 
-static void printprompt(void)
+static void printprompt(char *clear, unsigned int length)
 {
 
-    char buffer[INPUTSIZE * 2];
-    unsigned int count = buffer_write(buffer, INPUTSIZE * 2, "$ ", 2, 0);
+    char buffer[PROMPTSIZE];
+    unsigned int count = buffer_write(buffer, PROMPTSIZE, clear, length, 0);
+    unsigned int rest = ring_count(&input2);
 
-    count += ring_readcopy(&input1, buffer + count, INPUTSIZE * 2 - count);
-    count += ring_readcopy(&input2, buffer + count, INPUTSIZE * 2 - count);
+    count += buffer_write(buffer, PROMPTSIZE, "$ ", 2, count);
+    count += ring_readcopy(&input1, buffer + count, PROMPTSIZE - count);
+    count += ring_readcopy(&input2, buffer + count, PROMPTSIZE - count);
+
+    if (rest)
+    {
+
+        buffer[count++] = 0x1B;
+        count += cstring_write_fmt(buffer, PROMPTSIZE, count, "[%uD", &rest);
+
+    }
 
     print(buffer, count);
 
@@ -103,20 +114,14 @@ static void cursorright(unsigned int steps)
 static void clearline(void)
 {
 
-    printescape("[2K", 3);
-    printescape("[0G", 3);
-    printprompt();
-    cursorleft(ring_count(&input2));
+    printprompt("\033[2K\033[0G", 8);
 
 }
 
 static void clearscreen(void)
 {
 
-    printescape("[2J", 3);
-    printescape("[H", 2);
-    printprompt();
-    cursorleft(ring_count(&input2));
+    printprompt("\033[2J\033[H", 7);
 
 }
 
