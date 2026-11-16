@@ -44,6 +44,7 @@ void task_reset(struct task *task)
     unsigned int i;
 
     task->state = TASK_STATE_DEAD;
+    task->pages = 0;
     task->waitingfor = 0;
     task->aborted = 0;
     task->started = 0;

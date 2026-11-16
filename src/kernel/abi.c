@@ -131,14 +131,14 @@ static unsigned int despawn(unsigned int itask, void *stack)
 static unsigned int pick(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; struct message *messages; unsigned int count; unsigned int release; unsigned int flags;} *args = stack;
+    struct {void *caller; unsigned int ichannel; struct message *messages; unsigned int count; unsigned int pages; unsigned int flags;} *args = stack;
 
     if (args->count <= MESSAGE_SLOTS && (!args->count || (args->messages && checkargs(args->messages, sizeof (struct message) * args->count))))
     {
 
         struct mailbox *mailbox = pool_getnodemailbox(kernel_getchannelinode(itask, args->ichannel));
 
-        return (mailbox) ? mailbox_pick(mailbox, args->messages, args->count, args->release, args->flags) : MESSAGE_FAILED;
+        return (mailbox) ? mailbox_pick(mailbox, args->messages, args->count, args->pages, args->flags) : MESSAGE_FAILED;
 
     }
 

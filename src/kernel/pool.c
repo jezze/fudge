@@ -10,6 +10,7 @@
 static struct corerow {struct list_item item; struct core core;} corerows[POOL_CORES];
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
+static unsigned long pages;
 static struct noderow {struct list_item item; struct resource *resource; unsigned int generation;} noderows[POOL_NODES];
 static struct linkrow {struct list_item item; unsigned int target;} linkrows[POOL_LINKS];
 static struct list freetasks;
@@ -82,6 +83,13 @@ struct core *pool_getcore(unsigned int icore)
     struct corerow *corerow = getcorerow(icore);
 
     return corerow ? &corerow->core : 0;
+
+}
+
+unsigned long pool_getpages(unsigned int itask)
+{
+
+    return (itask && itask < POOL_TASKS) ? pages + itask * MESSAGE_PAGES * MESSAGE_SIZE : 0;
 
 }
 
@@ -335,6 +343,8 @@ void pool_setup(unsigned long mbaddress)
 
     unsigned int i;
 
+    pages = mbaddress;
+
     list_init(&freetasks);
     list_init(&freemailboxes);
     list_init(&freenodes);
@@ -377,7 +387,7 @@ void pool_setup(unsigned long mbaddress)
 
         struct mailboxrow *mailboxrow = &mailboxrows[i];
 
-        mailbox_init(&mailboxrow->mailbox, mbaddress + i * MESSAGE_CAPACITY);
+        mailbox_init(&mailboxrow->mailbox);
         list_inititem(&mailboxrow->item, mailboxrow);
         list_add(&freemailboxes, &mailboxrow->item);
 

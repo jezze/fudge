@@ -4,8 +4,7 @@
 
 #define CHANNEL_EVENTS                  256
 #define CHANNEL_MAILBOXES               8
-#define CHANNEL_ALLSLOTS                ((1 << MESSAGE_SLOTS) - 1)
-#define CHANNEL_COPIES                  16
+#define CHANNEL_POSTS                   6
 #define CHANNEL_QUEUE                   32
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
@@ -17,7 +16,7 @@ struct inbox
     struct message messages[CHANNEL_QUEUE];
     unsigned int head;
     unsigned int count;
-    unsigned int release;
+    unsigned int posted;
     unsigned int handed;
     unsigned int opened;
     unsigned int state;
@@ -27,8 +26,8 @@ struct inbox
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 
 static struct inbox inboxes[CHANNEL_MAILBOXES];
-static char copies[CHANNEL_COPIES][MESSAGE_SIZE];
-static unsigned int copiesused;
+static unsigned int freepages;
+static unsigned int started;
 static unsigned int owner;
 static unsigned int status;
 static struct message_pipe pipe;
@@ -98,39 +97,48 @@ static unsigned int frominput(unsigned int ichannel, unsigned int source)
 
 }
 
-static void release(struct inbox *inbox, unsigned int slots)
+static void release(unsigned int pages)
 {
 
-    inbox->release |= slots & ((1 << MESSAGE_SLOTS) - 1);
-    copiesused &= ~(slots >> MESSAGE_SLOTS);
+    freepages |= pages;
 
 }
 
-static unsigned int copy(struct inbox *inbox, struct message *message)
+static unsigned int topup(struct inbox *inbox)
 {
 
+    unsigned int pages = 0;
     unsigned int i;
 
-    for (i = 0; i < CHANNEL_COPIES; i++)
+    for (i = 0; i < MESSAGE_PAGES && inbox->posted < CHANNEL_POSTS; i++)
     {
 
-        if (!(copiesused & (1 << i)))
+        if (freepages & (1 << i))
         {
 
-            buffer_copy(copies[i], message->data, message->length);
-            release(inbox, 1 << message->slot);
-
-            copiesused |= 1 << i;
-            message->data = copies[i];
-            message->slot = MESSAGE_SLOTS + i;
-
-            return 1;
+            pages |= 1 << i;
+            freepages &= ~(1 << i);
+            inbox->posted++;
 
         }
 
     }
 
-    return 0;
+    return pages;
+
+}
+
+static void start(void)
+{
+
+    if (!started)
+    {
+
+        freepages = ((1 << MESSAGE_PAGES) - 1) & ~((1 << MESSAGE_STARTPAGES) - 1);
+        inboxes[0].posted = MESSAGE_STARTPAGES;
+        started = 1;
+
+    }
 
 }
 
@@ -138,10 +146,32 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
 {
 
     struct message messages[MESSAGE_SLOTS];
-    unsigned int status = call_pick(ichannel, messages, MESSAGE_SLOTS, inbox->release, flags);
+    unsigned int pages;
+    unsigned int status;
 
-    inbox->release = 0;
+    start();
+
+    pages = topup(inbox);
+    status = call_pick(ichannel, messages, MESSAGE_SLOTS, pages, flags);
+
     inbox->opened = 1;
+
+    if (status == MESSAGE_FAILED)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < MESSAGE_PAGES; i++)
+        {
+
+            if (pages & (1 << i))
+                inbox->posted--;
+
+        }
+
+        release(pages);
+
+    }
 
     if (status == MESSAGE_OK)
     {
@@ -149,7 +179,13 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
         unsigned int i;
 
         for (i = 0; i < MESSAGE_SLOTS && messages[i].type; i++)
+        {
+
             buffer_copy(&inbox->messages[(inbox->head + inbox->count++) % CHANNEL_QUEUE], &messages[i], sizeof (struct message));
+
+            inbox->posted--;
+
+        }
 
     }
 
@@ -157,54 +193,37 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
 
 }
 
-static unsigned int pullinbox(unsigned int ichannel, struct inbox *inbox)
-{
-
-    unsigned int freed = inbox->release;
-    unsigned int i;
-
-    fill(ichannel, inbox, 0);
-
-    for (i = 0; i < inbox->count; i++)
-    {
-
-        struct message *message = &inbox->messages[(inbox->head + i) % CHANNEL_QUEUE];
-
-        if (message->slot < MESSAGE_SLOTS && !copy(inbox, message))
-            break;
-
-    }
-
-    if (inbox->release)
-    {
-
-        freed |= inbox->release;
-
-        call_pick(ichannel, 0, 0, inbox->release, 0);
-
-        inbox->release = 0;
-
-    }
-
-    return freed;
-
-}
-
 static unsigned int pull(void)
 {
 
-    unsigned int freed = 0;
+    unsigned int progress = 0;
     unsigned int i;
 
     for (i = 0; i < CHANNEL_MAILBOXES; i++)
     {
 
-        if (inboxes[i].opened)
-            freed |= pullinbox(i, &inboxes[i]);
+        struct inbox *inbox = &inboxes[i];
+
+        if (inbox->opened)
+        {
+
+            unsigned int count = inbox->count;
+            unsigned int pages;
+
+            start();
+
+            pages = freepages;
+
+            fill(i, inbox, 0);
+
+            if (inbox->count != count || freepages != pages)
+                progress = 1;
+
+        }
 
     }
 
-    return freed;
+    return progress;
 
 }
 
@@ -213,7 +232,7 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    release(inbox, inbox->handed);
+    release(inbox->handed);
 
     inbox->handed = 0;
 
@@ -239,7 +258,7 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 static void finish(unsigned int ichannel, struct message *message)
 {
 
-    release(&inboxes[ichannel], 1 << message->slot);
+    release(1 << message->slot);
 
 }
 
@@ -300,6 +319,8 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
             continue;
 
         case MESSAGE_FULL:
+            inboxes[ichannel].opened = 1;
+
             if (!pull())
                 call_pick(ichannel, 0, 0, 0, MESSAGE_FLAG_BLOCK);
 
@@ -621,8 +642,16 @@ static void abortdrain(void)
     for (i = 0; i < CHANNEL_MAILBOXES; i++)
     {
 
-        call_pick(i, messages, MESSAGE_SLOTS, CHANNEL_ALLSLOTS, 0);
-        call_pick(i, 0, 0, CHANNEL_ALLSLOTS, 0);
+        unsigned int pages = 0;
+        unsigned int j;
+
+        if (call_pick(i, messages, MESSAGE_SLOTS, 0, 0) != MESSAGE_OK)
+            continue;
+
+        for (j = 0; j < MESSAGE_SLOTS && messages[j].type; j++)
+            pages |= 1 << messages[j].slot;
+
+        call_pick(i, 0, 0, pages, 0);
 
     }
 

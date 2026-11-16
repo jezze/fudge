@@ -37,6 +37,7 @@ struct task
     struct task_thread start;
     struct spinlock spinlock;
     unsigned int state;
+    unsigned int pages;
     unsigned long mmap;
     unsigned long buffer;
     unsigned int waitingfor;

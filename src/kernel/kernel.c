@@ -175,8 +175,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
                 mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
-                mailbox_register(mailbox, itask, ichannel);
-                mmap_allocate((struct mmap_header *)task->mmap, MMAP_TYPE_NORMAL, mailbox->data, KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel, MESSAGE_CAPACITY, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+                mailbox_register(mailbox, itask, ichannel, pool_getpages(itask));
 
             }
 
@@ -517,11 +516,15 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned in
         mmap_initheader(header);
         mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
         mmap_allocate(header, MMAP_TYPE_NORMAL, buffer, KERNEL_VBUFFER, TASK_BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+        mmap_allocate(header, MMAP_TYPE_NORMAL, pool_getpages(itask), KERNEL_VMAILBOX, MESSAGE_PAGES * MESSAGE_SIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
         if (format->map(base, MEMSRV_PAGESIZE, code, TASK_CODESIZE, header) && loadbinary(header, base, id))
             task_register(task, mmap, buffer, format->findentry(base), KERNEL_VSTACK);
 
         inode = (task->thread.ip) ? kernel_getchannelinode(itask, 0) : 0;
+
+        if (inode)
+            mailbox_post(pool_getnodemailbox(inode), (1 << MESSAGE_STARTPAGES) - 1);
 
         if (!inode)
             task_reset(task);
