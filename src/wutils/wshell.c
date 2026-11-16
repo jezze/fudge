@@ -852,9 +852,12 @@ static void render(struct terminal *terminal)
 
     terminal->shown = terminal->rows;
 
+    if (cursor < terminal->sentcursor && terminal->sentcursor != 0xFFFFFFFF)
+        sendcursor(cursor);
+
     flushoutput(&output);
 
-    if (cursor != terminal->sentcursor)
+    if (cursor > terminal->sentcursor || terminal->sentcursor == 0xFFFFFFFF)
         sendcursor(cursor);
 
     if (anchor != terminal->sentanchor || end != terminal->sentend)
