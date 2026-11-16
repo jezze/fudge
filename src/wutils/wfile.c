@@ -4,6 +4,7 @@
 
 #define ROWS                            512
 #define CLIPBOARD_SIZE                  0x4000
+#define SERVICES_SIZE                   0x1000
 
 static char path[256];
 static char names[ROWS][RECORD_NAMESIZE + 2];
@@ -376,44 +377,27 @@ static void delete(void)
 static void sendvolumes(unsigned int wm)
 {
 
-    unsigned int target = fs_auth("namesrv:");
-    unsigned int id = (target) ? fs_walk(1, target, 0, "namesrv:") : 0;
-    unsigned char data[MESSAGE_SIZE];
+    char services[SERVICES_SIZE];
+    unsigned int count = system_feed(0, 0, services, SERVICES_SIZE, "services | mq -query .services -format \"{name}\"");
     unsigned char d[MESSAGE_SIZE];
-    unsigned int count;
-    unsigned int offset = 0;
-    unsigned int index = 0;
+    char name[64];
     unsigned int c = 0;
+    unsigned int i;
 
-    while (id && (count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
+    for (i = 0; getline(services, count, i, name, 64); i++)
     {
 
-        unsigned int i;
-
-        for (i = 0; i < count; i += sizeof (struct record))
+        if (c + 512 > MESSAGE_SIZE)
         {
 
-            struct record *record = (struct record *)(data + i);
+            channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
 
-            offset = record->offset;
-
-            if (record->name[0] == '.')
-                continue;
-
-            if (c + 512 > MESSAGE_SIZE)
-            {
-
-                channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
-
-                c = 0;
-
-            }
-
-            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"volume%u\" in \"volume-list\" padding \"4\" onclick \"q=abspath&path=%w:\"\n", &index, record->name, &record->length);
-            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ text in \"volume%u\" label \"%w:\"\n", &index, record->name, &record->length);
-            index++;
+            c = 0;
 
         }
+
+        c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"volume%u\" in \"volume-list\" padding \"4\" onclick \"q=abspath&path=%s:\"\n", &i, name);
+        c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ text in \"volume%u\" label \"%s:\"\n", &i, name);
 
     }
 
