@@ -18,11 +18,11 @@
 #define ARCH_TASK_BUFFERSIZE            (TASK_BUFFERSIZE * POOL_TASKS)
 #define ARCH_FRAMEBUFFER_BASE           0x42200000
 #define ARCH_FRAMEBUFFER_SIZE           0x01E00000
-#define ARCH_TASK_CODEBASE              0x44000000
+#define ARCH_MEM_BASE                   0x44000000
+#define ARCH_MEM_SIZE                   (MEMSRV_PAGES * MEMSRV_PAGESIZE)
+#define ARCH_TASK_CODEBASE              0x48000000
 #define ARCH_TASK_CODESIZE              (TASK_CODESIZE * POOL_TASKS)
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_CODEBASE + ARCH_TASK_CODESIZE)
-#define ARCH_MEM_BASE                   0x4A000000
-#define ARCH_MEM_SIZE                   (MEMSRV_PAGES * MEMSRV_PAGESIZE)
 #define ARCH_UART_BASE                  0x09000000
 #define ARCH_INTERRUPTS                 2
 #define ARCH_FPUSTATESIZE               528

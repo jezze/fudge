@@ -2,6 +2,10 @@
 #include <abi.h>
 #include <binary.h>
 
+#define RELOCATE_UNSUPPORTED            0
+#define RELOCATE_OK                     1
+#define RELOCATE_RANGE                  2
+
 static char kerneldata[8192];
 static unsigned int kernelcount;
 static char mapdata[4096];
@@ -246,6 +250,130 @@ static unsigned int relocateriscv(unsigned int target, unsigned int id, unsigned
     }
 
     return 0;
+
+}
+
+static unsigned int encodebranch(unsigned int word, unsigned long offset, unsigned int bits, unsigned int shift)
+{
+
+    unsigned long range = 1UL << (bits + 1);
+    unsigned int mask = (1 << bits) - 1;
+
+    if (offset + range >= range * 2)
+        return 0;
+
+    return (word & ~(mask << shift)) | (((offset >> 2) & mask) << shift);
+
+}
+
+static unsigned int encodeadr(unsigned int word, unsigned long value)
+{
+
+    return (word & 0x9F00001F) | ((value & 3) << 29) | (((value >> 2) & 0x7FFFF) << 5);
+
+}
+
+static unsigned int encodelo12(unsigned int word, unsigned long value, unsigned int shift)
+{
+
+    return (word & 0xFFC003FF) | (((value & 0xFFF) >> shift) << 10);
+
+}
+
+static unsigned int relocateaarch64(unsigned int target, unsigned int id, unsigned int type, unsigned long value, unsigned long place, unsigned int fileoffset)
+{
+
+    unsigned long offset = value - place;
+    unsigned long page = (value & ~0xFFFUL) - (place & ~0xFFFUL);
+    unsigned int word = readword(target, id, fileoffset);
+
+    switch (type)
+    {
+
+    case ELF_RELOC_A64_ABS64:
+        fs_write_all(1, target, id, &value, 8, fileoffset);
+
+        return RELOCATE_OK;
+
+    case ELF_RELOC_A64_PREL64:
+        fs_write_all(1, target, id, &offset, 8, fileoffset);
+
+        return RELOCATE_OK;
+
+    case ELF_RELOC_A64_ABS32:
+        writeword(target, id, fileoffset, value);
+
+        return RELOCATE_OK;
+
+    case ELF_RELOC_A64_PREL32:
+        writeword(target, id, fileoffset, offset);
+
+        return RELOCATE_OK;
+
+    case ELF_RELOC_A64_CALL26:
+    case ELF_RELOC_A64_JUMP26:
+        word = encodebranch(word, offset, 26, 0);
+
+        break;
+
+    case ELF_RELOC_A64_CONDBR19:
+        word = encodebranch(word, offset, 19, 5);
+
+        break;
+
+    case ELF_RELOC_A64_TSTBR14:
+        word = encodebranch(word, offset, 14, 5);
+
+        break;
+
+    case ELF_RELOC_A64_ADRLO21:
+        word = encodeadr(word, offset);
+
+        break;
+
+    case ELF_RELOC_A64_ADRHI21:
+    case ELF_RELOC_A64_ADRHI21NC:
+        word = encodeadr(word, page >> 12);
+
+        break;
+
+    case ELF_RELOC_A64_ADDLO12:
+    case ELF_RELOC_A64_LDST8:
+        word = encodelo12(word, value, 0);
+
+        break;
+
+    case ELF_RELOC_A64_LDST16:
+        word = encodelo12(word, value, 1);
+
+        break;
+
+    case ELF_RELOC_A64_LDST32:
+        word = encodelo12(word, value, 2);
+
+        break;
+
+    case ELF_RELOC_A64_LDST64:
+        word = encodelo12(word, value, 3);
+
+        break;
+
+    case ELF_RELOC_A64_LDST128:
+        word = encodelo12(word, value, 4);
+
+        break;
+
+    default:
+        return RELOCATE_UNSUPPORTED;
+
+    }
+
+    if (!word)
+        return RELOCATE_RANGE;
+
+    writeword(target, id, fileoffset, word);
+
+    return RELOCATE_OK;
 
 }
 
@@ -569,6 +697,24 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
 
                 value = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
                 value += relocation.addend;
+
+                if (header->machine == ELF_MACHINE_AARCH64)
+                {
+
+                    unsigned int status = relocateaarch64(target, id, relocation.type, value, base + dataheader->offset + relocation.offset, dataheader->offset + relocation.offset);
+
+                    if (status != RELOCATE_OK)
+                    {
+
+                        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, (status == RELOCATE_RANGE) ? "Branch out of range: %s\n" : "Unsupported relocation: %s\n", strings + symbol.name);
+
+                        unresolved++;
+
+                    }
+
+                    continue;
+
+                }
 
                 if (header->machine == ELF_MACHINE_RISCV)
                 {
