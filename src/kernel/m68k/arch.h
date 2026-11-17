@@ -17,7 +17,7 @@
 #define ARCH_MMU_KERNELSIZE             0x200000
 #define ARCH_MMU_TASKBASE               (ARCH_RAMBASE + 0x00C00000)
 #define ARCH_MMU_TASKSIZE               0x20000
-#define ARCH_PAGES_BASE                 (ARCH_RAMBASE + 0x01000000)
+#define ARCH_PAGES_BASE                 (ARCH_MEM_BASE + ARCH_MEM_SIZE)
 #define ARCH_PAGES_SIZE                 (MESSAGE_PAGES * MESSAGE_SIZE * POOL_TASKS)
 #define ARCH_RAMDISK_BASE               (ARCH_RAMBASE + 0x01200000)
 #define ARCH_RAMDISK_SIZE               0x00E00000
