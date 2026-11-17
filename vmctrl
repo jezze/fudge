@@ -113,10 +113,6 @@ cmd_run() {
                     ;;
             esac
             ;;
-        aarch64)
-            test "${iso}${audio}${uefi}${storage}${network}" == "nnnnn" || error "No ISO, audio, UEFI, storage or network on aarch64 yet"
-            cmd="qemu-system-aarch64 -nodefaults -machine virt -cpu cortex-a53 -m 256 -audio none -serial stdio"
-            ;;
         arm)
             test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on arm"
             storagedevice="${storagedevice:-sd}"
@@ -135,7 +131,7 @@ cmd_run() {
             test "${audiodevice}" == "virtio" || error "Unknown audio device on m68k: ${audiodevice} (virtio)"
             cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -serial stdio -global virtio-mmio.force-legacy=false -device virtio-gpu-device -device virtio-keyboard-device -device virtio-mouse-device"
             ;;
-        riscv32|riscv64)
+        aarch64|riscv32|riscv64)
             test "${iso}${uefi}" == "nn" || error "No ISO or UEFI on ${arch}"
             storagedevice="${storagedevice:-virtio}"
             networkdevice="${networkdevice:-virtio}"
@@ -143,7 +139,7 @@ cmd_run() {
             test "${storagedevice}" == "virtio" || error "Unknown storage device on ${arch}: ${storagedevice} (virtio)"
             test "${networkdevice}" == "virtio" || error "Unknown network device on ${arch}: ${networkdevice} (virtio)"
             test "${audiodevice}" == "virtio" || error "Unknown audio device on ${arch}: ${audiodevice} (virtio)"
-            cmd="qemu-system-${arch} -nodefaults -machine virt -m 256 -device ramfb -device virtio-keyboard-device -device virtio-mouse-device -serial stdio"
+            cmd="qemu-system-${arch} -nodefaults -machine virt $(test "${arch}" == "aarch64" && echo "-cpu cortex-a53") -m 256 -device ramfb -device virtio-keyboard-device -device virtio-mouse-device -serial stdio"
             ;;
         *)
             error "Unknown architecture: ${arch} (x86, x86_64, aarch64, arm, m68k, riscv32 or riscv64)"
@@ -174,7 +170,7 @@ cmd_run() {
                 cmd="${cmd} ${drive} -device qemu-xhci,id=xhci0 -device usb-storage,drive=disk0,bus=xhci0.0"
                 ;;
             virtio)
-                if test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
+                if test "${arch}" == "aarch64" || test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
                 then
                     cmd="${cmd} ${drive} -device virtio-blk-device,drive=disk0"
                 else
@@ -203,7 +199,7 @@ cmd_run() {
                 cmd="${cmd} -device AC97,audiodev=audio0"
                 ;;
             virtio)
-                if test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
+                if test "${arch}" == "aarch64" || test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
                 then
                     cmd="${cmd} -device virtio-sound-device,audiodev=audio0"
                 else
@@ -214,7 +210,7 @@ cmd_run() {
                 error "Unknown audio device: ${audiodevice} (ac97 or virtio)"
                 ;;
         esac
-    elif test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
+    elif test "${arch}" == "aarch64" || test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
     then
         cmd="${cmd} -audio none"
     fi
@@ -252,7 +248,7 @@ cmd_run() {
                 cmd="${cmd} -net nic,model=smc91c111,netdev=eth0"
                 ;;
             virtio)
-                if test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
+                if test "${arch}" == "aarch64" || test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
                 then
                     cmd="${cmd} -device virtio-net-device,netdev=eth0"
                 else

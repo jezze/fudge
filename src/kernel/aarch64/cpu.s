@@ -77,6 +77,31 @@ cpu_disablefpu:
     isb
     ret
 
+.global cpu_gettimerfrequency
+cpu_gettimerfrequency:
+    mrs x0, cntfrq_el0
+    ret
+
+.global cpu_settimer
+cpu_settimer:
+    msr cntv_tval_el0, x0
+    mov x0, #1
+    msr cntv_ctl_el0, x0
+    isb
+    ret
+
+.global cpu_stoptimer
+cpu_stoptimer:
+    msr cntv_ctl_el0, xzr
+    isb
+    ret
+
+# PSCI through the hypervisor call (QEMU's virt without EL2 or EL3); returns only when it failed
+.global cpu_psci
+cpu_psci:
+    hvc #0
+    ret
+
 .global cpu_halt
 cpu_halt:
     wfi

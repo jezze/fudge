@@ -1,4 +1,14 @@
 {
   modules: [
+    { path: initrd:kernel/platform.ko }
+    { path: initrd:kernel/virt-timer.ko }
+    { path: initrd:kernel/pl011.ko }
+    { path: initrd:kernel/pl031.ko }
+    { path: initrd:kernel/virtio-block.ko }
+    { path: initrd:kernel/virtio-network.ko }
+    { path: initrd:kernel/virtio-keyboard.ko }
+    { path: initrd:kernel/virtio-mouse.ko }
+    { path: initrd:kernel/virtio-sound.ko }
+    { path: initrd:kernel/ramfb.ko }
   ]
 }
