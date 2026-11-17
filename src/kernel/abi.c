@@ -169,7 +169,7 @@ static unsigned int place(unsigned int itask, void *stack)
 
             status = kernel_place(inode, args->target, args->event, args->count, args->data);
 
-            /* a full mailbox: the caller's library takes in its own mail, then sleeps in pick until a slot frees or mail arrives */
+            /* a full mailbox: the caller's library returns its finished slots, then sleeps in pick until a slot frees or mail arrives */
             if (status == MESSAGE_RETRY && mailbox_wait(target, itask))
                 return MESSAGE_FULL;
 
@@ -177,7 +177,7 @@ static unsigned int place(unsigned int itask, void *stack)
 
         }
 
-        /* a kernel server answers into a slot of the caller's mailbox reserved before any work is done; no room: the library takes in its own mail and tries again */
+        /* a kernel server answers into a slot of the caller's mailbox reserved before any work is done; no room: the library returns its finished slots and tries again */
         status = mailbox_reservereply(mailbox);
 
         if (status != MESSAGE_OK)

@@ -17,7 +17,6 @@ struct inbox
     unsigned int count;
     unsigned int done;
     unsigned int handed;
-    unsigned int opened;
     unsigned int state;
 
 };
@@ -100,8 +99,6 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     struct message messages[MESSAGE_SLOTS];
     unsigned int status = call_pick(ichannel, messages, MESSAGE_SLOTS, inbox->done, flags);
 
-    inbox->opened = 1;
-
     if (status != MESSAGE_FAILED)
         inbox->done = 0;
 
@@ -130,16 +127,11 @@ static unsigned int pull(void)
 
         struct inbox *inbox = &inboxes[i];
 
-        if (inbox->opened)
+        if (inbox->done && call_pick(i, 0, 0, inbox->done, 0) != MESSAGE_FAILED)
         {
 
-            unsigned int count = inbox->count;
-            unsigned int done = inbox->done;
-
-            fill(i, inbox, 0);
-
-            if (inbox->count != count || inbox->done != done)
-                progress = 1;
+            inbox->done = 0;
+            progress = 1;
 
         }
 
@@ -240,8 +232,6 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
             continue;
 
         case MESSAGE_FULL:
-            inboxes[ichannel].opened = 1;
-
             if (!pull())
                 call_pick(ichannel, 0, 0, 0, MESSAGE_FLAG_BLOCK);
 
