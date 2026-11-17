@@ -35,6 +35,12 @@ check-full:
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK) $(DIR_INSTALL)/$(INIT)
 
+aarch64-virt:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=aarch64" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=virt" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=aarch64-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
+
 arm-integratorcp:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=arm" > $(DIR_MK)/$(CONFIG).mk
@@ -90,6 +96,7 @@ help:
 	@echo ""
 	@echo "Where <config> is one of the following:"
 	@echo ""
+	@echo "  aarch64-virt"
 	@echo "  arm-integratorcp"
 	@echo "  m68k-amiga"
 	@echo "  m68k-m68kvirt"
@@ -111,7 +118,7 @@ help:
 -include $(DIR_MK)/$(CONFIG).mk
 
 ifeq ($(TARGET),)
-ifneq ($(filter-out arm-% m68k-% riscv32-% riscv64-% x86-% x86_64-% help,$(or $(MAKECMDGOALS),all)),)
+ifneq ($(filter-out aarch64-% arm-% m68k-% riscv32-% riscv64-% x86-% x86_64-% help,$(or $(MAKECMDGOALS),all)),)
 $(error No configuration in $(DIR_MK)/$(CONFIG).mk, set one with make <config> (make help lists them))
 endif
 else

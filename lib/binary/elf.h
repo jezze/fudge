@@ -31,6 +31,7 @@
 #define ELF_MACHINE_MIPS                0x0008
 #define ELF_MACHINE_ARM                 0x0028
 #define ELF_MACHINE_X86_64              0x003E
+#define ELF_MACHINE_AARCH64             0x00B7
 #define ELF_MACHINE_RISCV               0x00F3
 
 #define ELF_SECTION_INDEX_UNDEFINED     0x0000
