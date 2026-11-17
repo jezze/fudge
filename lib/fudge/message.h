@@ -1,7 +1,6 @@
 #define MESSAGE_SIZE                    0x1000
-#define MESSAGE_SLOTS                   8
-#define MESSAGE_PAGES                   16
-#define MESSAGE_STARTPAGES              6
+#define MESSAGE_SLOTS                   16
+#define MESSAGE_PAGES                   64
 #define MESSAGE_OK                      0x01
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_FAILED                  0x03

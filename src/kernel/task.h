@@ -1,7 +1,7 @@
 #define TASK_CODESIZE                   0x00200000
 #define TASK_STACKSIZE                  0x00008000
 #define TASK_BUFFERSIZE                 0x00008000
-#define TASK_MAILBOXES                  8
+#define TASK_MAILBOXES                  (MESSAGE_PAGES / MESSAGE_SLOTS)
 #define TASK_STATE_DEAD                 1
 #define TASK_STATE_BLOCKED              2
 #define TASK_STATE_ASSIGNED             3
@@ -37,7 +37,6 @@ struct task
     struct task_thread start;
     struct spinlock spinlock;
     unsigned int state;
-    unsigned int pages;
     unsigned long mmap;
     unsigned long buffer;
     unsigned int waitingfor;

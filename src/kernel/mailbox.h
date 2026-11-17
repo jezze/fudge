@@ -10,17 +10,16 @@ struct mailbox
     unsigned int ichannel;
     struct message messages[MESSAGE_SLOTS];
     struct list_item items[MESSAGE_SLOTS];
-    struct list spare;
     struct list free;
     struct list queued;
     struct list reply;
     struct list reserved;
+    unsigned int held;
     unsigned long pages;
 
 };
 
-unsigned int mailbox_post(struct mailbox *mailbox, unsigned int pages);
-unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int pages, unsigned int flags);
+unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags);
 unsigned int mailbox_reservereply(struct mailbox *mailbox);
 void mailbox_unreservereply(struct mailbox *mailbox);
 unsigned int mailbox_keepreply(struct mailbox *mailbox);

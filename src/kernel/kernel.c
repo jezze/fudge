@@ -523,9 +523,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned in
 
         inode = (task->thread.ip) ? kernel_getchannelinode(itask, 0) : 0;
 
-        if (inode)
-            mailbox_post(pool_getnodemailbox(inode), (1 << MESSAGE_STARTPAGES) - 1);
-
         if (!inode)
             task_reset(task);
 
