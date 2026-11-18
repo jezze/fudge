@@ -9,6 +9,7 @@
 
 #define EXTENDED                        0x100
 #define KEYS                            0x68
+#define CAPSLOCK                        0x62
 #define HANDSHAKE                       3
 #define REG_CUSTOM                      0x00DFF000
 #define REG_VHPOSR                      0x006
@@ -71,7 +72,16 @@ static void handleirq(unsigned int irq)
         if (!scancode)
             return;
 
-        if (code & 0x80)
+        /* the keyboard sends caps lock down when its lock turns on and up when it turns off */
+        if ((code & 0x7F) == CAPSLOCK)
+        {
+
+            keyboard_notifypress(&keyboardinterface, scancode);
+            keyboard_notifyrelease(&keyboardinterface, scancode | 0x80);
+
+        }
+
+        else if (code & 0x80)
         {
 
             if (scancode & EXTENDED)
