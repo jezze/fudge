@@ -8,7 +8,7 @@
 + item id "area-localization" in "area-list" padding "4" onclick "q=area&name=localization"
 + text in "area-localization" label "Localization"
 + item id "area-displays" in "area-list" padding "4" onclick "q=area&name=displays"
-+ text in "area-displays" label "Displays"
++ text in "area-displays" label "Display"
 + item id "area-audio" in "area-list" padding "4" onclick "q=area&name=audio"
 + text in "area-audio" label "Audio"
 + item id "area-keyboard" in "area-list" padding "4" onclick "q=area&name=keyboard"

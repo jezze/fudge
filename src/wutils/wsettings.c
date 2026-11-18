@@ -1339,7 +1339,7 @@ static void renderdisplays(void)
     struct entry options[NUM_DISPLAYS];
     unsigned int i;
 
-    beginarea("Displays");
+    beginarea("Display");
 
     for (i = 0; i < config.ndisplays; i++)
     {
