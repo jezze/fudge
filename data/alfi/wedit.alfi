@@ -12,4 +12,5 @@
 + box id "content" in "base" flow "vertical" padding "2" overflow "scroll" span "1" mode "edit"
 + layout id "bottom" in "base" flow "horizontal" spacing "2"
 + button in "bottom" label "Open" onclick "q=open"
-+ button in "bottom" label "Save" onclick "q=save"
++ button id "save" in "bottom" mode "disabled" label "Save" onclick "q=save"
++ button id "saveas" in "bottom" label "Save As..." onclick "q=saveas"

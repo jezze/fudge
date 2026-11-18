@@ -6,6 +6,8 @@
 #define MAXSIZE                         0x4000
 #define SAVESIZE                        0x8000
 #define NUM_WRAPS                       3
+#define CHOOSE_OPEN                     1
+#define CHOOSE_SAVE                     2
 
 static char path[256];
 static unsigned int wm;
@@ -14,6 +16,7 @@ static char *wraps[NUM_WRAPS] = {"none", "word", "char"};
 static unsigned int wrap = 0;
 static unsigned int chunks;
 static unsigned int loaded;
+static unsigned int exists;
 static unsigned int saving;
 static unsigned int choosing;
 static char savedata[SAVESIZE];
@@ -69,6 +72,23 @@ static void setwrap(void)
 
 }
 
+static void setbuttons(void)
+{
+
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"%s\"\n= saveas mode \"%s\"\n", (loaded && exists) ? "normal" : "disabled", (loaded) ? "normal" : "disabled");
+
+}
+
+static void settitle(void)
+{
+
+    if (path[0])
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
+    else
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Text Editor\"\n");
+
+}
+
 static void clearfile(void)
 {
 
@@ -84,21 +104,23 @@ static void clearfile(void)
 
     chunks = 0;
     loaded = 0;
+    exists = 0;
 
 }
 
 static void showfile(void)
 {
 
-    if (wm && path[0])
+    if (!wm)
+        return;
+
+    settitle();
+
+    if (path[0])
     {
 
-        unsigned int target;
-        unsigned int id;
-
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
-        target = fs_auth(path);
-        id = (target) ? fs_walk(1, target, 0, path) : 0;
+        unsigned int target = fs_auth(path);
+        unsigned int id = (target) ? fs_walk(1, target, 0, path) : 0;
 
         if (id)
         {
@@ -125,11 +147,8 @@ static void showfile(void)
 
             }
 
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n", &chunks, wraps[wrap]);
-            sendcursor(0);
-
-            chunks++;
             loaded = offset < MAXSIZE;
+            exists = 1;
 
         }
 
@@ -140,9 +159,27 @@ static void showfile(void)
 
             chunks++;
 
+            setbuttons();
+
+            return;
+
         }
 
     }
+
+    else
+    {
+
+        loaded = 1;
+
+    }
+
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n", &chunks, wraps[wrap]);
+    sendcursor(0);
+
+    chunks++;
+
+    setbuttons();
 
 }
 
@@ -160,11 +197,12 @@ static unsigned int replacefile(unsigned int target, unsigned int parent, char *
 
 }
 
-static void writefile(void)
+static unsigned int writefile(void)
 {
 
     unsigned int count = 0;
     unsigned int total = 0;
+    unsigned int saved = 0;
     struct message message;
 
     channel_send(0, wm, MESSAGE_TYPE_WMREAD, 8, "content");
@@ -198,16 +236,20 @@ static void writefile(void)
             if (id)
                 fs_remove(1, target, parent, id);
 
+            saved = 1;
+
         }
 
     }
+
+    return saved;
 
 }
 
 static void save(void)
 {
 
-    if (!loaded || saving)
+    if (!loaded || !exists || saving)
         return;
 
     saving = 1;
@@ -216,7 +258,32 @@ static void save(void)
 
 }
 
-static void choose(void)
+static void saveas(char *newpath)
+{
+
+    char oldpath[256];
+
+    if (!loaded || saving)
+        return;
+
+    saving = 1;
+
+    cstring_write_fmt(oldpath, 256, 0, "%s\\0", path);
+    cstring_write_fmt(path, 256, 0, "%s\\0", newpath);
+
+    if (writefile())
+        exists = 1;
+    else
+        cstring_write_fmt(path, 256, 0, "%s\\0", oldpath);
+
+    saving = 0;
+
+    settitle();
+    setbuttons();
+
+}
+
+static void choose(char *mode)
 {
 
     unsigned int target = fs_spawn(1, "initrd:bin/wfile");
@@ -226,9 +293,9 @@ static void choose(void)
 
         struct message_pipe pipe;
 
-        choosing = 1;
+        choosing = (cstring_match(mode, "save")) ? CHOOSE_SAVE : CHOOSE_OPEN;
 
-        channel_send_fmt(0, target, MESSAGE_TYPE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+        channel_send_fmt(0, target, MESSAGE_TYPE_OPTION, "mode\\0%s\\0wm-service\\0%s\\0", mode, option_getstring("wm-service"));
         message_initpipe(&pipe);
         channel_send(0, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
         channel_send(0, target, MESSAGE_TYPE_TERM, 0, 0);
@@ -261,6 +328,17 @@ static void onpath(struct message *message)
 
     if (saving || (path[0] && !choosing))
         return;
+
+    if (choosing == CHOOSE_SAVE)
+    {
+
+        choosing = 0;
+
+        saveas(message->data);
+
+        return;
+
+    }
 
     choosing = 0;
 
@@ -297,7 +375,10 @@ static void onwmevent(struct message *message)
         }
 
         if (kv_match(event, "q=open"))
-            choose();
+            choose("select");
+
+        if (kv_match(event, "q=saveas"))
+            choose("save");
 
         if (kv_match(event, "q=save"))
             save();
