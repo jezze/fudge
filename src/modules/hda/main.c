@@ -122,6 +122,7 @@
 #define CHUNKSIZE                       MESSAGE_SIZE
 #define RINGSIZE                        (CHUNKS * CHUNKSIZE)
 #define GAP                             1024
+#define LEAD                            (CHUNKSIZE * 2)
 #define IDLE                            (RINGSIZE / 2)
 #define ALIGN                           128
 #define TIMEOUT                         100000
@@ -756,6 +757,17 @@ static unsigned int audiointerface_write(void *buffer, unsigned int count)
 
     spinlock_acquire(&spinlock);
     update();
+
+    /* start behind some silence, so the next write has time to arrive before the engine runs dry */
+    if (!stream.running)
+    {
+
+        buffer_clear(dma->ring, LEAD);
+
+        stream.tail = LEAD;
+        stream.queued = LEAD;
+
+    }
 
     /* the ring ran dry: continue a little ahead of the engine, which has fetched past the position */
     if (stream.running && !stream.queued)
