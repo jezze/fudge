@@ -1443,9 +1443,7 @@ void module_init(void)
     for (i = 0; i < CONTROLLERS; i++)
         spinlock_init(&controllers[i].lock);
 
-    if (!readsettings() && !scantables())
-        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: no PNP0C50 device in the ACPI tables");
-    else if (!nclients)
+    if ((readsettings() || scantables()) && !nclients)
         debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "i2c: PNP0C50 device without a static I2C address");
 
     base_initbus(&bus, I2C_BUS, "i2c", bus_setup, bus_next);
