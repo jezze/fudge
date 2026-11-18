@@ -371,7 +371,7 @@ static void pathfield(char *id, char *label, char *value)
     beginrow(id);
     addlabel(id, label);
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s-box\" in \"%s-value\" padding \"3\" flow \"stretch\"\n+ text id \"%s\" in \"%s-box\" valign \"middle\" label \"%s\"\n+ button in \"%s-value\" label \"Select\" onclick \"q=open&id=%s\"\n", id, id, id, id, value, id, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s-box\" in \"%s-value\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=%s&value=\"\n+ text id \"%s\" in \"%s-box\" label \"%s\"\n+ button in \"%s-value\" label \"Select\" onclick \"q=open&id=%s\"\n", id, id, id, id, id, value, id, id);
 
 }
 
@@ -1206,6 +1206,20 @@ static void setfield(char *id, char *value)
             copystring(device->netmask, 32, value, length);
         else if (cstring_match(id, "network-dns"))
             copystring(device->dns, 32, value, length);
+
+    }
+
+    else if (cstring_match(id, "general-theme"))
+    {
+
+        copystring(config.themepath, 256, value, length);
+
+    }
+
+    else if (cstring_match(id, "general-background"))
+    {
+
+        copystring(config.background, 256, value, length);
 
     }
 
