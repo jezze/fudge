@@ -16,6 +16,8 @@ static char pasted[CLIPBOARD_SIZE];
 static unsigned int clipcount;
 static unsigned int clipcut;
 static unsigned int opener;
+static unsigned int saver;
+static char filename[256];
 
 static void updatepath(unsigned int wm)
 {
@@ -43,6 +45,9 @@ static void setbuttons(unsigned int wm)
     unsigned int count = countselected();
     char *mode = (count) ? "normal" : "disabled";
     char *pastemode = (listing) ? "normal" : "disabled";
+
+    if (saver)
+        return;
 
     if (opener)
         channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= open mode \"%s\"\n", (count == 1) ? "normal" : "disabled");
@@ -209,7 +214,19 @@ static void updatecontent(unsigned int wm)
     else if (fs_stat(1, target, id, &record) && record.type != RECORD_TYPE_DIRECTORY)
     {
 
-        if (opener)
+        if (saver)
+        {
+
+            cstring_write_fmt(filename, 256, 0, "%s\\0", path + fs_dirlength(path));
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= name label \"%s\"\n", filename);
+
+            path[fs_dirlength(path)] = '\0';
+
+            updatecontent(wm);
+
+        }
+
+        else if (opener)
         {
 
             char *command = option_getstring("command");
@@ -374,6 +391,24 @@ static void delete(void)
 
 }
 
+static void savefile(void)
+{
+
+    unsigned int length = cstring_length(filename);
+
+    if (length && buffer_findbyte(filename, length, '"') == length)
+    {
+
+        char full[256];
+
+        fs_absolute(full, 256, path, filename);
+        channel_send_fmt(0, saver, MESSAGE_TYPE_PATH, "%s\\0", full);
+        channel_close(0);
+
+    }
+
+}
+
 static void sendvolumes(unsigned int wm)
 {
 
@@ -414,6 +449,9 @@ static void onmain(struct message *message)
     if (cstring_match(option_getstring("mode"), "select"))
         opener = message->source;
 
+    if (cstring_match(option_getstring("mode"), "save"))
+        saver = message->source;
+
     if (wm)
     {
 
@@ -421,7 +459,9 @@ static void onmain(struct message *message)
 
         channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
-        if (opener)
+        if (saver)
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Save As\"\n- copy\n- cut\n- paste\n- delete\n+ box id \"namebox\" in \"bottom\" mode \"edit\" padding \"3\" span \"1\" onchange \"q=name&name=\" onenter \"q=save&name=\"\n+ text id \"name\" in \"namebox\"\n+ button in \"bottom\" label \"Save\" onclick \"q=save\"\n");
+        else if (opener)
             channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Open\"\n- copy\n- cut\n- paste\n- delete\n+ button id \"open\" in \"bottom\" mode \"disabled\" label \"Open\" onclick \"q=open\"\n");
 
         sendvolumes(wm);
@@ -485,6 +525,27 @@ static void onwmevent(struct message *message)
 
         }
 
+        else if (kv_match(event, "q=name"))
+        {
+
+            char *name = kv_getstring(event, "name=");
+
+            cstring_write_fmt(filename, 256, 0, "%s\\0", (name) ? name : "");
+
+        }
+
+        else if (kv_match(event, "q=save"))
+        {
+
+            char *name = kv_getstring(event, "name=");
+
+            if (name)
+                cstring_write_fmt(filename, 256, 0, "%s\\0", name);
+
+            savefile();
+
+        }
+
         else if (kv_match(event, "q=mark"))
         {
 
@@ -540,7 +601,7 @@ static void onwmevent(struct message *message)
 static void onwmcopy(struct message *message)
 {
 
-    if (!opener && countselected())
+    if (!opener && !saver && countselected())
     {
 
         clip(0);
@@ -553,7 +614,7 @@ static void onwmcopy(struct message *message)
 static void onwmcut(struct message *message)
 {
 
-    if (!opener && countselected())
+    if (!opener && !saver && countselected())
     {
 
         clip(1);
@@ -566,7 +627,7 @@ static void onwmcut(struct message *message)
 static void onwmpaste(struct message *message)
 {
 
-    if (!opener && listing)
+    if (!opener && !saver && listing)
     {
 
         paste();
