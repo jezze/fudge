@@ -20,7 +20,6 @@ struct inbox
 };
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
-
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
 static unsigned int status;
@@ -92,7 +91,6 @@ static unsigned int frominput(unsigned int ichannel, unsigned int source)
 
 }
 
-/* the byte after the message pages that marks a slot finished; the kernel frees marked slots when it needs room */
 static void locate(unsigned int ichannel, struct message *message)
 {
 
@@ -157,7 +155,6 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 
 }
 
-/* a message given to the caller stays valid until its next take on that channel */
 static void hand(unsigned int ichannel, struct message *message)
 {
 
@@ -205,7 +202,6 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
     unsigned int status;
 
-    /* the kernel puts a sender to a full mailbox to sleep, so a retry comes after room was made */
     while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY);
 
     return (status == MESSAGE_OK) ? event : 0;
@@ -531,7 +527,6 @@ static void abortdrain(void)
 static void abortplace(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    /* drain before each try; if place has to sleep, the kernel frees the drained slots first, so a target waiting on this task can deliver */
     do
     {
 

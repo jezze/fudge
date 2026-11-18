@@ -8,7 +8,6 @@
 #include "kernel.h"
 #include "debug.h"
 
-/* free every slot its owner holds and has marked done in the page after its slots, and wake whoever waits for room */
 static void reclaim(struct mailbox *mailbox)
 {
 
@@ -109,7 +108,6 @@ static void checkselflock(struct mailbox *mailbox)
 
     struct task *task = pool_gettask(mailbox->itask);
 
-    /* only the task itself could free a slot here, and it is about to sleep */
     if (task && !task->waitingfor && !mailbox->free.count && !mailbox->queued.head && !mailbox->reserved.head)
         debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u sleeps on its own full mailbox", &mailbox->itask);
 
@@ -150,7 +148,6 @@ static void checkcycle(struct mailbox *mailbox, unsigned int itask)
 
 }
 
-/* before a task sleeps: free the slots it has finished on every channel, so tasks waiting on it can go on */
 void mailbox_reclaimtask(unsigned int itask)
 {
 
@@ -224,7 +221,6 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
 
-    /* task mail and notifies leave the last free slot to a reply, so a task flooded with them can still reserve one (mailbox_reservereply) and is never left waiting on its own mailbox */
     return (mailbox) ? deliver(mailbox, &mailbox->free, MAILBOX_REPLYSLOTS, event, source, count, data) : MESSAGE_FAILED;
 
 }
