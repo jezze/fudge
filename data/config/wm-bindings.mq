@@ -15,8 +15,8 @@
     { key: tab mod: none action: focusnext }
     { key: tab mod: shift action: focusprevious }
     { key: a mod: ctrl action: markall }
-    { key: c mod: ctrl action: copy }
-    { key: x mod: ctrl action: cut }
-    { key: v mod: ctrl action: paste }
+    { key: c mod: ctrl+shift action: copy }
+    { key: x mod: ctrl+shift action: cut }
+    { key: v mod: ctrl+shift action: paste }
   ]
 }

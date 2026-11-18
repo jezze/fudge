@@ -545,7 +545,7 @@ static void onwmkeypress(struct message *message)
     if (wmkeypress)
     {
 
-        if (opener || !(wmkeypress->keymod & KEYS_MOD_CTRL))
+        if (opener || !(wmkeypress->keymod & KEYS_MOD_CTRL) || !(wmkeypress->keymod & KEYS_MOD_SHIFT))
             return;
 
         switch (wmkeypress->id)
