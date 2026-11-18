@@ -4,7 +4,6 @@
 
 #define CHANNEL_EVENTS                  256
 #define CHANNEL_MAILBOXES               (MESSAGE_PAGES / MESSAGE_SLOTS)
-#define CHANNEL_QUEUE                   32
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
 #define CHANNEL_STATE_CLOSED            2
@@ -12,8 +11,8 @@
 struct inbox
 {
 
-    struct message messages[CHANNEL_QUEUE];
-    unsigned int head;
+    struct message messages[MESSAGE_SLOTS];
+    unsigned int index;
     unsigned int count;
     unsigned int done;
     unsigned int handed;
@@ -96,8 +95,10 @@ static unsigned int frominput(unsigned int ichannel, unsigned int source)
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
 
-    struct message messages[MESSAGE_SLOTS];
-    unsigned int status = call_pick(ichannel, messages, MESSAGE_SLOTS, inbox->done, flags);
+    unsigned int status = call_pick(ichannel, inbox->messages, MESSAGE_SLOTS, inbox->done, flags);
+
+    inbox->index = 0;
+    inbox->count = 0;
 
     if (status != MESSAGE_FAILED)
         inbox->done = 0;
@@ -105,10 +106,8 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     if (status == MESSAGE_OK)
     {
 
-        unsigned int i;
-
-        for (i = 0; i < MESSAGE_SLOTS && messages[i].type; i++)
-            buffer_copy(&inbox->messages[(inbox->head + inbox->count++) % CHANNEL_QUEUE], &messages[i], sizeof (struct message));
+        while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].type)
+            inbox->count++;
 
     }
 
@@ -149,7 +148,7 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
     inbox->done |= inbox->handed;
     inbox->handed = 0;
 
-    if (!inbox->count)
+    if (inbox->index == inbox->count)
     {
 
         unsigned int status = fill(ichannel, inbox, flags);
@@ -159,10 +158,7 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 
     }
 
-    buffer_copy(message, &inbox->messages[inbox->head], sizeof (struct message));
-
-    inbox->head = (inbox->head + 1) % CHANNEL_QUEUE;
-    inbox->count--;
+    buffer_copy(message, &inbox->messages[inbox->index++], sizeof (struct message));
 
     return MESSAGE_OK;
 
