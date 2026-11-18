@@ -537,44 +537,40 @@ static void onwmevent(struct message *message)
 
 }
 
-static void onwmkeypress(struct message *message)
+static void onwmcopy(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_TYPE_WMKEYPRESS, message->data, message->length);
-
-    if (wmkeypress)
+    if (!opener && countselected())
     {
 
-        if (opener || !(wmkeypress->keymod & KEYS_MOD_CTRL) || !(wmkeypress->keymod & KEYS_MOD_SHIFT))
-            return;
+        clip(0);
+        setbuttons(message->source);
 
-        switch (wmkeypress->id)
-        {
+    }
 
-        case KEYS_KEY_C:
-        case KEYS_KEY_X:
-            if (countselected())
-            {
+}
 
-                clip(wmkeypress->id == KEYS_KEY_X);
-                setbuttons(message->source);
+static void onwmcut(struct message *message)
+{
 
-            }
+    if (!opener && countselected())
+    {
 
-            break;
+        clip(1);
+        setbuttons(message->source);
 
-        case KEYS_KEY_V:
-            if (listing)
-            {
+    }
 
-                paste();
-                updatecontent(message->source);
+}
 
-            }
+static void onwmpaste(struct message *message)
+{
 
-            break;
+    if (!opener && listing)
+    {
 
-        }
+        paste();
+        updatecontent(message->source);
 
     }
 
@@ -590,7 +586,9 @@ void init(void)
     option_add("command", "");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
     channel_bind(MESSAGE_TYPE_WMEVENT, onwmevent);
-    channel_bind(MESSAGE_TYPE_WMKEYPRESS, onwmkeypress);
+    channel_bind(MESSAGE_TYPE_WMCOPY, onwmcopy);
+    channel_bind(MESSAGE_TYPE_WMCUT, onwmcut);
+    channel_bind(MESSAGE_TYPE_WMPASTE, onwmpaste);
 
 }
 

@@ -2922,6 +2922,18 @@ static unsigned int markall(struct widget *widget)
 
 }
 
+static unsigned int sendaction(unsigned int type)
+{
+
+    if (!state.focusedwindow)
+        return 0;
+
+    channel_send(0, state.focusedwindow->source, type, 0, 0);
+
+    return 1;
+
+}
+
 static unsigned int dobinding(struct bind_binding *binding)
 {
 
@@ -2995,11 +3007,14 @@ static unsigned int dobinding(struct bind_binding *binding)
         return markall(state.focusedwidget);
 
     case BIND_ACTION_COPY:
-        return state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_BOX && copymarked(state.focusedwidget);
+        if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_BOX && copymarked(state.focusedwidget))
+            return 1;
+
+        return sendaction(MESSAGE_TYPE_WMCOPY);
 
     case BIND_ACTION_CUT:
         if (!state.focusedwidget || !widget_iseditable(state.focusedwidget) || !copymarked(state.focusedwidget))
-            return 0;
+            return sendaction(MESSAGE_TYPE_WMCUT);
 
         edittextbox(state.focusedwidget, KEYS_KEY_DELETE);
 
@@ -3007,7 +3022,7 @@ static unsigned int dobinding(struct bind_binding *binding)
 
     case BIND_ACTION_PASTE:
         if (!state.focusedwidget || !widget_iseditable(state.focusedwidget))
-            return 0;
+            return sendaction(MESSAGE_TYPE_WMPASTE);
 
         pastetext(state.focusedwidget);
 
