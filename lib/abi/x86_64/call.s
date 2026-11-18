@@ -52,7 +52,6 @@ call_pick:
     movq %rsi, 16(%rsp)
     movl %edx, 24(%rsp)
     movl %ecx, 28(%rsp)
-    movl %r8d, 32(%rsp)
     callindex CALL_INDEX_PICK
 
 .global call_place

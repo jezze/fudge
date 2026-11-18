@@ -8,25 +8,31 @@
 #include "kernel.h"
 #include "debug.h"
 
-static unsigned int release(struct mailbox *mailbox, unsigned int slots)
+/* with the spinlock held: free every slot its owner holds and has marked done in the page after its slots */
+static unsigned int reclaim(struct mailbox *mailbox)
 {
 
+    unsigned int reclaimed = 0;
     unsigned int i;
-
-    if (slots & ~mailbox->held)
-        return MESSAGE_FAILED;
 
     for (i = 0; i < MESSAGE_SLOTS; i++)
     {
 
-        if (slots & (1 << i))
+        if ((mailbox->held & (1 << i)) && mailbox->done[i])
+        {
+
+            mailbox->done[i] = 0;
+            mailbox->held &= ~(1 << i);
+
             list_add_unsafe(&mailbox->free, &mailbox->items[i]);
+
+            reclaimed++;
+
+        }
 
     }
 
-    mailbox->held &= ~slots;
-
-    return MESSAGE_OK;
+    return reclaimed;
 
 }
 
@@ -44,6 +50,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
         buffer_copy(&messages[n], message, sizeof (struct message));
         list_remove_unsafe(&mailbox->queued, item);
 
+        mailbox->done[message->slot] = 0;
         mailbox->held |= 1 << message->slot;
 
         n++;
@@ -64,8 +71,11 @@ static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned i
     {
 
         unsigned int status = MESSAGE_RETRY;
+        unsigned int reclaimed;
 
         spinlock_acquire(&mailbox->spinlock);
+
+        reclaimed = reclaim(mailbox);
 
         if (from->count > keep)
         {
@@ -82,6 +92,9 @@ static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned i
         }
 
         spinlock_release(&mailbox->spinlock);
+
+        if (reclaimed)
+            kernel_wake(mailbox->resource.inode);
 
         return status;
 
@@ -137,35 +150,62 @@ static void checkcycle(struct mailbox *mailbox, unsigned int itask)
 
 }
 
-unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
+/* before its owner sleeps: free the slots it has finished on every channel, so tasks waiting on it can go on */
+void mailbox_sleep(struct mailbox *mailbox)
 {
 
-    unsigned int status;
-    unsigned int n = 0;
+    struct task *task = pool_gettask(mailbox->itask);
+    unsigned int i;
+
+    for (i = 0; task && i < TASK_MAILBOXES; i++)
+    {
+
+        struct mailbox *own = pool_getmailbox(task->imailbox[i]);
+
+        if (own)
+        {
+
+            unsigned int reclaimed;
+
+            spinlock_acquire(&own->spinlock);
+
+            reclaimed = reclaim(own);
+
+            spinlock_release(&own->spinlock);
+
+            if (reclaimed)
+                kernel_wake(own->resource.inode);
+
+        }
+
+    }
+
+    checkselflock(mailbox);
+    kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+
+}
+
+unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int flags)
+{
+
+    unsigned int reclaimed;
+    unsigned int n;
 
     spinlock_acquire(&mailbox->spinlock);
 
-    status = release(mailbox, slots);
-
-    if (status == MESSAGE_OK)
-        n = pick(mailbox, messages, count);
+    reclaimed = reclaim(mailbox);
+    n = pick(mailbox, messages, count);
 
     spinlock_release(&mailbox->spinlock);
 
-    if (status != MESSAGE_OK)
-        return status;
-
-    if (slots)
+    if (reclaimed)
         kernel_wake(mailbox->resource.inode);
 
     if (n)
         return MESSAGE_OK;
 
-    if ((flags & MESSAGE_FLAG_BLOCK) && !count)
-        checkselflock(mailbox);
-
     if (flags & MESSAGE_FLAG_BLOCK)
-        kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+        mailbox_sleep(mailbox);
 
     return MESSAGE_RETRY;
 
@@ -204,8 +244,11 @@ static unsigned int move(struct mailbox *mailbox, struct list *to, struct list *
 {
 
     unsigned int moved = 0;
+    unsigned int reclaimed;
 
     spinlock_acquire(&mailbox->spinlock);
+
+    reclaimed = reclaim(mailbox);
 
     if (from->head)
     {
@@ -217,6 +260,9 @@ static unsigned int move(struct mailbox *mailbox, struct list *to, struct list *
     }
 
     spinlock_release(&mailbox->spinlock);
+
+    if (reclaimed)
+        kernel_wake(mailbox->resource.inode);
 
     return moved;
 
@@ -280,6 +326,8 @@ unsigned int mailbox_wait(struct mailbox *mailbox, unsigned int itask)
 
         spinlock_acquire(&mailbox->spinlock);
 
+        reclaim(mailbox);
+
         if (mailbox->free.count <= MAILBOX_REPLYSLOTS)
         {
 
@@ -321,9 +369,15 @@ void mailbox_reset(struct mailbox *mailbox)
 void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel, unsigned long pages)
 {
 
+    unsigned int i;
+
     mailbox->itask = itask;
     mailbox->ichannel = ichannel;
     mailbox->pages = pages + MESSAGE_SIZE * MESSAGE_SLOTS * ichannel;
+    mailbox->done = (volatile unsigned char *)(pages + MESSAGE_SIZE * MESSAGE_PAGES + MESSAGE_SLOTS * ichannel);
+
+    for (i = 0; i < MESSAGE_SLOTS; i++)
+        mailbox->done[i] = 0;
 
 }
 

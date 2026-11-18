@@ -14,7 +14,6 @@ struct inbox
     struct message messages[MESSAGE_SLOTS];
     unsigned int index;
     unsigned int count;
-    unsigned int done;
     unsigned int handed;
     unsigned int state;
 
@@ -26,6 +25,7 @@ static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
 static unsigned int status;
 static struct message_pipe pipe;
+static volatile unsigned char *done;
 
 static struct message_route *findroute(unsigned int event)
 {
@@ -92,19 +92,35 @@ static unsigned int frominput(unsigned int ichannel, unsigned int source)
 
 }
 
+/* the byte after the message pages that marks a slot finished; the kernel frees marked slots when it needs room */
+static void locate(unsigned int ichannel, struct message *message)
+{
+
+    unsigned int page = ichannel * MESSAGE_SLOTS + message->slot;
+
+    done = (volatile unsigned char *)message->data + MESSAGE_SIZE * (MESSAGE_PAGES - page);
+
+}
+
+static void finish(unsigned int ichannel, struct message *message)
+{
+
+    done[ichannel * MESSAGE_SLOTS + message->slot] = 1;
+
+}
+
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
 
-    unsigned int status = call_pick(ichannel, inbox->messages, MESSAGE_SLOTS, inbox->done, flags);
+    unsigned int status = call_pick(ichannel, inbox->messages, MESSAGE_SLOTS, flags);
 
     inbox->index = 0;
     inbox->count = 0;
 
-    if (status != MESSAGE_FAILED)
-        inbox->done = 0;
-
     if (status == MESSAGE_OK)
     {
+
+        locate(ichannel, &inbox->messages[0]);
 
         while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].type)
             inbox->count++;
@@ -115,37 +131,14 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
 
 }
 
-static unsigned int pull(void)
-{
-
-    unsigned int progress = 0;
-    unsigned int i;
-
-    for (i = 0; i < CHANNEL_MAILBOXES; i++)
-    {
-
-        struct inbox *inbox = &inboxes[i];
-
-        if (inbox->done && call_pick(i, 0, 0, inbox->done, 0) != MESSAGE_FAILED)
-        {
-
-            inbox->done = 0;
-            progress = 1;
-
-        }
-
-    }
-
-    return progress;
-
-}
-
 static unsigned int take(unsigned int ichannel, struct message *message, unsigned int flags)
 {
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    inbox->done |= inbox->handed;
+    if (inbox->handed)
+        done[ichannel * MESSAGE_SLOTS + inbox->handed - 1] = 1;
+
     inbox->handed = 0;
 
     if (inbox->index == inbox->count)
@@ -164,17 +157,11 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 
 }
 
-static void finish(unsigned int ichannel, struct message *message)
-{
-
-    inboxes[ichannel].done |= 1 << message->slot;
-
-}
-
+/* a message given to the caller stays valid until its next take on that channel */
 static void hand(unsigned int ichannel, struct message *message)
 {
 
-    inboxes[ichannel].handed |= 1 << message->slot;
+    inboxes[ichannel].handed = message->slot + 1;
 
 }
 
@@ -225,12 +212,6 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
         {
 
         case MESSAGE_RETRY:
-            continue;
-
-        case MESSAGE_FULL:
-            if (!pull())
-                call_pick(ichannel, 0, 0, 0, MESSAGE_FLAG_BLOCK);
-
             continue;
 
         case MESSAGE_OK:
@@ -549,16 +530,17 @@ static void abortdrain(void)
     for (i = 0; i < CHANNEL_MAILBOXES; i++)
     {
 
-        unsigned int slots = 0;
         unsigned int j;
 
-        if (call_pick(i, messages, MESSAGE_SLOTS, 0, 0) != MESSAGE_OK)
+        if (call_pick(i, messages, MESSAGE_SLOTS, 0) != MESSAGE_OK)
             continue;
 
-        for (j = 0; j < MESSAGE_SLOTS && messages[j].type; j++)
-            slots |= 1 << messages[j].slot;
+        locate(i, &messages[0]);
 
-        call_pick(i, 0, 0, slots, 0);
+        for (j = 0; j < MESSAGE_SLOTS && messages[j].type; j++)
+            finish(i, &messages[j]);
+
+        call_pick(i, 0, 0, 0);
 
     }
 
@@ -567,27 +549,13 @@ static void abortdrain(void)
 static void abortplace(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    for (;;)
+    /* drain before each try, so a target waiting on this task can deliver while it sleeps */
+    do
     {
 
-        switch (call_place(ichannel, target, event, count, data))
-        {
+        abortdrain();
 
-        case MESSAGE_RETRY:
-            break;
-
-        case MESSAGE_FULL:
-            abortdrain();
-            call_pick(ichannel, 0, 0, 0, MESSAGE_FLAG_BLOCK);
-
-            break;
-
-        default:
-            return;
-
-        }
-
-    }
+    } while (call_place(ichannel, target, event, count, data) == MESSAGE_RETRY);
 
 }
 

@@ -131,14 +131,14 @@ static unsigned int despawn(unsigned int itask, void *stack)
 static unsigned int pick(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; struct message *messages; unsigned int count; unsigned int slots; unsigned int flags;} *args = stack;
+    struct {void *caller; unsigned int ichannel; struct message *messages; unsigned int count; unsigned int flags;} *args = stack;
 
     if (args->count <= MESSAGE_SLOTS && (!args->count || (args->messages && checkargs(args->messages, sizeof (struct message) * args->count))))
     {
 
         struct mailbox *mailbox = pool_getnodemailbox(kernel_getchannelinode(itask, args->ichannel));
 
-        return (mailbox) ? mailbox_pick(mailbox, args->messages, args->count, args->slots, args->flags) : MESSAGE_FAILED;
+        return (mailbox) ? mailbox_pick(mailbox, args->messages, args->count, args->flags) : MESSAGE_FAILED;
 
     }
 
@@ -169,19 +169,22 @@ static unsigned int place(unsigned int itask, void *stack)
 
             status = kernel_place(inode, args->target, args->event, args->count, args->data);
 
-            /* a full mailbox: the caller's library returns its finished slots, then sleeps in pick until a slot frees or mail arrives */
+            /* still full after reclaiming its finished slots: the caller sleeps until the target frees one, then places again */
             if (status == MESSAGE_RETRY && mailbox_wait(target, itask))
-                return MESSAGE_FULL;
+                mailbox_sleep(mailbox);
 
             return status;
 
         }
 
-        /* a kernel server answers into a slot of the caller's mailbox reserved before any work is done; no room: the library returns its finished slots and tries again */
+        /* a kernel server answers into a slot of the caller's mailbox reserved before any work is done; no room even after reclaiming: the caller sleeps until mail arrives or a slot frees, then places again */
         status = mailbox_reservereply(mailbox);
 
+        if (status == MESSAGE_RETRY)
+            mailbox_sleep(mailbox);
+
         if (status != MESSAGE_OK)
-            return (status == MESSAGE_RETRY) ? MESSAGE_FULL : status;
+            return status;
 
         status = kernel_place(inode, args->target, args->event, args->count, args->data);
 

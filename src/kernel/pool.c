@@ -89,7 +89,7 @@ struct core *pool_getcore(unsigned int icore)
 unsigned long pool_getpages(unsigned int itask)
 {
 
-    return (itask && itask < POOL_TASKS) ? pages + itask * MESSAGE_PAGES * MESSAGE_SIZE : 0;
+    return (itask && itask < POOL_TASKS) ? pages + itask * MESSAGE_AREASIZE : 0;
 
 }
 

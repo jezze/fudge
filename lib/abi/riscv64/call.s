@@ -51,7 +51,6 @@ call_pick:
     sd a1, 16(sp)
     sw a2, 24(sp)
     sw a3, 28(sp)
-    sw a4, 32(sp)
     callindex CALL_INDEX_PICK
 
 .global call_place

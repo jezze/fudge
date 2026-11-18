@@ -1,10 +1,10 @@
 #define MESSAGE_SIZE                    0x1000
 #define MESSAGE_SLOTS                   16
 #define MESSAGE_PAGES                   64
+#define MESSAGE_AREASIZE                ((MESSAGE_PAGES + 1) * MESSAGE_SIZE)
 #define MESSAGE_OK                      0x01
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_FAILED                  0x03
-#define MESSAGE_FULL                    0x04
 #define MESSAGE_FLAG_BLOCK              0x01
 #define MESSAGE_ROOT                    0x01
 #define MESSAGE_SECTORSIZE              512

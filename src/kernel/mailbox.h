@@ -15,11 +15,13 @@ struct mailbox
     struct list reply;
     struct list reserved;
     unsigned int held;
+    volatile unsigned char *done;
     unsigned long pages;
 
 };
 
-unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags);
+void mailbox_sleep(struct mailbox *mailbox);
+unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int flags);
 unsigned int mailbox_reservereply(struct mailbox *mailbox);
 void mailbox_unreservereply(struct mailbox *mailbox);
 unsigned int mailbox_keepreply(struct mailbox *mailbox);

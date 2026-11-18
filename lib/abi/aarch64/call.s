@@ -51,7 +51,6 @@ call_pick:
     str x1, [sp, #16]
     str w2, [sp, #24]
     str w3, [sp, #28]
-    str w4, [sp, #32]
     callindex CALL_INDEX_PICK
 
 .global call_place
