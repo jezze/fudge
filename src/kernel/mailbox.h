@@ -12,8 +12,8 @@ struct mailbox
     struct list_item items[MESSAGE_SLOTS];
     struct list free;
     struct list queued;
-    struct list reply;
-    struct list reserved;
+    unsigned int reply;
+    unsigned int reserved;
     unsigned int held;
     volatile unsigned char *done;
     unsigned long pages;
