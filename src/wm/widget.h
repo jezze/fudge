@@ -55,6 +55,9 @@ struct widget
     unsigned int markend;
     unsigned int cursor;
     unsigned int followcursor;
+    unsigned int sticky;
+    unsigned int stickyindex;
+    int stickyx;
     void *resource;
     unsigned int appcursor;
     unsigned int columns;

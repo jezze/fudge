@@ -1465,11 +1465,25 @@ static unsigned int stepright(struct widget *widget, unsigned int index)
 
 }
 
+static unsigned int keepcolumn(struct widget *widget, int x, unsigned int index)
+{
+
+    widget->sticky = 1;
+    widget->stickyindex = index;
+    widget->stickyx = x;
+
+    return index;
+
+}
+
 static unsigned int moveindex(struct widget *widget, unsigned int index, unsigned int id)
 {
 
     struct util_region cursor = render_getcursor(widget, index);
+    int x = (widget->sticky && widget->stickyindex == index) ? widget->stickyx : cursor.position.x;
     int y = cursor.position.y + (int)cursor.size.h / 2;
+
+    widget->sticky = 0;
 
     switch (id)
     {
@@ -1489,10 +1503,10 @@ static unsigned int moveindex(struct widget *widget, unsigned int index, unsigne
     {
 
     case KEYS_KEY_CURSORUP:
-        return getmarkindex(widget, cursor.position.x, y - (int)cursor.size.h);
+        return keepcolumn(widget, x, getmarkindex(widget, x, y - (int)cursor.size.h));
 
     case KEYS_KEY_CURSORDOWN:
-        return getmarkindex(widget, cursor.position.x, y + (int)cursor.size.h);
+        return keepcolumn(widget, x, getmarkindex(widget, x, y + (int)cursor.size.h));
 
     case KEYS_KEY_HOME:
         return getmarkindex(widget, -ROW_FAR, y);
