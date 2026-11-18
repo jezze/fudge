@@ -354,14 +354,14 @@ static void beginrow(char *id)
 static void addlabel(char *id, char *label)
 {
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"%s-row\" valign \"middle\" span \"1\" label \"%s\"\n", id, label);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"%s-row\" valign \"middle\" span \"1\" label \"%s\"\n+ layout id \"%s-value\" in \"%s-row\" flow \"horizontal-stretch\" spacing \"2\" span \"2\"\n", id, label, id, id);
 
 }
 
-static void addtextbox(char *row, char *id, char *value, unsigned int span, char *halign)
+static void addtextbox(char *parent, char *part, char *id, char *value, unsigned int span, char *halign)
 {
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s\" in \"%s-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"%u\" onchange \"q=change&id=%s&value=\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, row, &span, id, id, halign, value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s\" in \"%s-%s\" mode \"edit\" padding \"3\" flow \"stretch\" span \"%u\" onchange \"q=change&id=%s&value=\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, parent, part, &span, id, id, halign, value);
 
 }
 
@@ -371,17 +371,20 @@ static void pathfield(char *id, char *label, char *value)
     beginrow(id);
     addlabel(id, label);
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s-box\" in \"%s-row\" padding \"3\" flow \"stretch\"\n+ text id \"%s\" in \"%s-box\" valign \"middle\" label \"%s\"\n+ button in \"%s-row\" label \"Select\" onclick \"q=open&id=%s\"\n", id, id, id, id, value, id, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s-box\" in \"%s-value\" padding \"3\" flow \"stretch\"\n+ text id \"%s\" in \"%s-box\" valign \"middle\" label \"%s\"\n+ button in \"%s-value\" label \"Select\" onclick \"q=open&id=%s\"\n", id, id, id, id, value, id, id);
 
 }
 
 static void colorfield(unsigned int index, char *label, char *value)
 {
 
-    reserve();
+    char id[16];
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ layout id \"c%u\" in \"content\" flow \"horizontal-stretch\" spacing \"2\" padding \"1\"\n+ text in \"c%u\" valign \"middle\" span \"1\" label \"%s\"\n", &index, &index, label);
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"s%u\" in \"c%u\" color \"%s\"\n+ box id \"t%u\" in \"c%u\" mode \"edit\" padding \"3\" onchange \"q=color&index=%u&value=\"\n+ text in \"t%u\" label \"%s\"\n", &index, &index, value, &index, &index, &index, &index, value);
+    cstring_write_fmt(id, 16, 0, "c%u\\0", &index);
+    beginrow(id);
+    addlabel(id, label);
+
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"s%u\" in \"c%u-value\" color \"%s\"\n+ box id \"t%u\" in \"c%u-value\" mode \"edit\" padding \"3\" onchange \"q=color&index=%u&value=\"\n+ text in \"t%u\" label \"%s\"\n", &index, &index, value, &index, &index, &index, &index, value);
 
 }
 
@@ -405,7 +408,7 @@ static char *getlabel(struct entry *options, unsigned int count, char *value)
 static void addcheckbox(char *row, char *id, unsigned int checked, char *onclick)
 {
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ checkbox id \"%s\" in \"%s-row\" checked \"%u\" onclick \"%s\"\n", id, row, &checked, onclick);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ checkbox id \"%s\" in \"%s-value\" checked \"%u\" onclick \"%s\"\n", id, row, &checked, onclick);
 
 }
 
@@ -414,7 +417,7 @@ static void addselect(char *id, char *value, struct entry *options, unsigned int
 
     unsigned int i;
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ select id \"%s\" in \"%s-row\" span \"1\" label \"%s\"\n+ panel id \"%s-list\" in \"%s\" flow \"vertical-stretch\" padding \"1\"\n", id, id, getlabel(options, count, value), id, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ select id \"%s\" in \"%s-value\" span \"1\" label \"%s\"\n+ panel id \"%s-list\" in \"%s\" flow \"vertical-stretch\" padding \"1\"\n", id, id, getlabel(options, count, value), id, id);
 
     for (i = 0; i < count; i++)
     {
@@ -1395,9 +1398,10 @@ static void rendermouse(void)
 
         enabledfield("mouse", device->enabled);
         beginrow("mouse-speed");
+        addlabel("mouse-speed", "Speed");
 
-        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"mouse-speed-row\" valign \"middle\" span \"4\" label \"Speed\"\n+ slider id \"mouse-speed\" in \"mouse-speed-row\" span \"3\" value \"%u\" onchange \"q=speed&value=\"\n", &value);
-        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"mouse-speed-box\" in \"mouse-speed-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=mouse-speed-box&value=\"\n+ text id \"mouse-speed-text\" in \"mouse-speed-box\" halign \"right\" label \"%s\"\n", device->speed);
+        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ slider id \"mouse-speed\" in \"mouse-speed-value\" span \"3\" value \"%u\" onchange \"q=speed&value=\"\n", &value);
+        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"mouse-speed-box\" in \"mouse-speed-value\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=mouse-speed-box&value=\"\n+ text id \"mouse-speed-text\" in \"mouse-speed-box\" halign \"right\" label \"%s\"\n", device->speed);
 
     }
 
@@ -1448,9 +1452,10 @@ static void renderaudio(void)
 
     enabledfield("audio", device->enabled);
     beginrow("audio-volume");
+    addlabel("audio-volume", "Volume");
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"audio-volume-row\" valign \"middle\" span \"4\" label \"Volume\"\n+ slider id \"audio-volume\" in \"audio-volume-row\" span \"3\" value \"%u\" onchange \"q=volume&value=\"\n", &value);
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"audio-volume-box\" in \"audio-volume-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=audio-volume-box&value=\"\n+ text id \"audio-volume-text\" in \"audio-volume-box\" halign \"right\" label \"%s\"\n", device->volume);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ slider id \"audio-volume\" in \"audio-volume-value\" span \"3\" value \"%u\" onchange \"q=volume&value=\"\n", &value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"audio-volume-box\" in \"audio-volume-value\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=audio-volume-box&value=\"\n+ text id \"audio-volume-text\" in \"audio-volume-box\" halign \"right\" label \"%s\"\n", device->volume);
 
 }
 
@@ -1459,7 +1464,7 @@ static void networkfield(char *id, char *label, char *value)
 
     beginrow(id);
     addlabel(id, label);
-    addtextbox(id, id, value, 1, "left");
+    addtextbox(id, "value", id, value, 1, "left");
 
 }
 
@@ -1506,13 +1511,13 @@ static void renderbindings(void)
         cstring_write_fmt(row, 32, 0, "binding%u\\0", &i);
         beginrow(row);
         cstring_write_fmt(id, 64, 0, "binding%u-key\\0", &i);
-        addtextbox(row, id, binding->key, 1, "left");
+        addtextbox(row, "row", id, binding->key, 1, "left");
         cstring_write_fmt(id, 64, 0, "binding%u-mod\\0", &i);
-        addtextbox(row, id, binding->mod, 1, "left");
+        addtextbox(row, "row", id, binding->mod, 1, "left");
         cstring_write_fmt(id, 64, 0, "binding%u-action\\0", &i);
-        addtextbox(row, id, binding->action, 1, "left");
+        addtextbox(row, "row", id, binding->action, 1, "left");
         cstring_write_fmt(id, 64, 0, "binding%u-command\\0", &i);
-        addtextbox(row, id, binding->command, 1, "left");
+        addtextbox(row, "row", id, binding->command, 1, "left");
 
     }
 
