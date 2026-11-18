@@ -20,6 +20,7 @@ struct mailbox
 
 };
 
+void mailbox_reclaimtask(unsigned int itask);
 void mailbox_sleep(struct mailbox *mailbox);
 unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int flags);
 unsigned int mailbox_reservereply(struct mailbox *mailbox);

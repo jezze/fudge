@@ -170,8 +170,16 @@ static unsigned int place(unsigned int itask, void *stack)
             status = kernel_place(inode, args->target, args->event, args->count, args->data);
 
             /* still full after reclaiming its finished slots: the caller sleeps until the target frees one, then places again */
-            if (status == MESSAGE_RETRY && mailbox_wait(target, itask))
-                mailbox_sleep(mailbox);
+            if (status == MESSAGE_RETRY)
+            {
+
+                /* free the caller's finished slots first: that can unblock a target waiting on it, and then there is no cycle to report */
+                mailbox_reclaimtask(itask);
+
+                if (mailbox_wait(target, itask))
+                    kernel_signal(itask, TASK_SIGNAL_BLOCK);
+
+            }
 
             return status;
 

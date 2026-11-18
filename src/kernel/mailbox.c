@@ -8,12 +8,14 @@
 #include "kernel.h"
 #include "debug.h"
 
-/* with the spinlock held: free every slot its owner holds and has marked done in the page after its slots */
-static unsigned int reclaim(struct mailbox *mailbox)
+/* free every slot its owner holds and has marked done in the page after its slots, and wake whoever waits for room */
+static void reclaim(struct mailbox *mailbox)
 {
 
     unsigned int reclaimed = 0;
     unsigned int i;
+
+    spinlock_acquire(&mailbox->spinlock);
 
     for (i = 0; i < MESSAGE_SLOTS; i++)
     {
@@ -32,7 +34,10 @@ static unsigned int reclaim(struct mailbox *mailbox)
 
     }
 
-    return reclaimed;
+    spinlock_release(&mailbox->spinlock);
+
+    if (reclaimed)
+        kernel_wake(mailbox->resource.inode);
 
 }
 
@@ -71,11 +76,9 @@ static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned i
     {
 
         unsigned int status = MESSAGE_RETRY;
-        unsigned int reclaimed;
 
+        reclaim(mailbox);
         spinlock_acquire(&mailbox->spinlock);
-
-        reclaimed = reclaim(mailbox);
 
         if (from->count > keep)
         {
@@ -92,9 +95,6 @@ static unsigned int place(struct mailbox *mailbox, struct list *from, unsigned i
         }
 
         spinlock_release(&mailbox->spinlock);
-
-        if (reclaimed)
-            kernel_wake(mailbox->resource.inode);
 
         return status;
 
@@ -150,36 +150,29 @@ static void checkcycle(struct mailbox *mailbox, unsigned int itask)
 
 }
 
-/* before its owner sleeps: free the slots it has finished on every channel, so tasks waiting on it can go on */
-void mailbox_sleep(struct mailbox *mailbox)
+/* before a task sleeps: free the slots it has finished on every channel, so tasks waiting on it can go on */
+void mailbox_reclaimtask(unsigned int itask)
 {
 
-    struct task *task = pool_gettask(mailbox->itask);
+    struct task *task = pool_gettask(itask);
     unsigned int i;
 
     for (i = 0; task && i < TASK_MAILBOXES; i++)
     {
 
-        struct mailbox *own = pool_getmailbox(task->imailbox[i]);
+        struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
 
-        if (own)
-        {
-
-            unsigned int reclaimed;
-
-            spinlock_acquire(&own->spinlock);
-
-            reclaimed = reclaim(own);
-
-            spinlock_release(&own->spinlock);
-
-            if (reclaimed)
-                kernel_wake(own->resource.inode);
-
-        }
+        if (mailbox)
+            reclaim(mailbox);
 
     }
 
+}
+
+void mailbox_sleep(struct mailbox *mailbox)
+{
+
+    mailbox_reclaimtask(mailbox->itask);
     checkselflock(mailbox);
     kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
 
@@ -188,18 +181,14 @@ void mailbox_sleep(struct mailbox *mailbox)
 unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int flags)
 {
 
-    unsigned int reclaimed;
     unsigned int n;
 
+    reclaim(mailbox);
     spinlock_acquire(&mailbox->spinlock);
 
-    reclaimed = reclaim(mailbox);
     n = pick(mailbox, messages, count);
 
     spinlock_release(&mailbox->spinlock);
-
-    if (reclaimed)
-        kernel_wake(mailbox->resource.inode);
 
     if (n)
         return MESSAGE_OK;
@@ -244,11 +233,9 @@ static unsigned int move(struct mailbox *mailbox, struct list *to, struct list *
 {
 
     unsigned int moved = 0;
-    unsigned int reclaimed;
 
+    reclaim(mailbox);
     spinlock_acquire(&mailbox->spinlock);
-
-    reclaimed = reclaim(mailbox);
 
     if (from->head)
     {
@@ -260,9 +247,6 @@ static unsigned int move(struct mailbox *mailbox, struct list *to, struct list *
     }
 
     spinlock_release(&mailbox->spinlock);
-
-    if (reclaimed)
-        kernel_wake(mailbox->resource.inode);
 
     return moved;
 
@@ -324,9 +308,8 @@ unsigned int mailbox_wait(struct mailbox *mailbox, unsigned int itask)
     if (task && mailbox->itask && mailbox->itask != itask)
     {
 
-        spinlock_acquire(&mailbox->spinlock);
-
         reclaim(mailbox);
+        spinlock_acquire(&mailbox->spinlock);
 
         if (mailbox->free.count <= MAILBOX_REPLYSLOTS)
         {

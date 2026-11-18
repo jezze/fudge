@@ -203,28 +203,12 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
 static unsigned int place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    for (;;)
-    {
+    unsigned int status;
 
-        unsigned int status = call_place(ichannel, target, event, count, data);
+    /* the kernel puts a sender to a full mailbox to sleep, so a retry comes after room was made */
+    while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY);
 
-        switch (status)
-        {
-
-        case MESSAGE_RETRY:
-            continue;
-
-        case MESSAGE_OK:
-            return event;
-
-        case MESSAGE_FAILED:
-            return 0;
-
-        }
-
-    }
-
-    return 0;
+    return (status == MESSAGE_OK) ? event : 0;
 
 }
 
@@ -540,8 +524,6 @@ static void abortdrain(void)
         for (j = 0; j < MESSAGE_SLOTS && messages[j].type; j++)
             finish(i, &messages[j]);
 
-        call_pick(i, 0, 0, 0);
-
     }
 
 }
@@ -549,7 +531,7 @@ static void abortdrain(void)
 static void abortplace(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    /* drain before each try, so a target waiting on this task can deliver while it sleeps */
+    /* drain before each try; if place has to sleep, the kernel frees the drained slots first, so a target waiting on this task can deliver */
     do
     {
 
