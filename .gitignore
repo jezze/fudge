@@ -24,12 +24,6 @@ src/pop/pop
 src/pcx/pcxdata
 src/pcx/pcxinfo
 src/snes/snes
-src/test/t_disk
-src/test/t_disk2
-src/test/t_donut
-src/test/t_loop
-src/test/t_mandelbrot
-src/test/t_timer
 src/utils/audiosrv
 src/utils/automount
 src/utils/battery
@@ -43,6 +37,7 @@ src/utils/date
 src/utils/dhcpsrv
 src/utils/disk
 src/utils/dns
+src/utils/donut
 src/utils/dump
 src/utils/echo
 src/utils/elfload

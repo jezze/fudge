@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
+#define SCREENSIZE 1760
 #define R(mul, shift, x, y) \
     f = x; \
     x -= (mul * y) >> shift; \
@@ -9,8 +10,8 @@
     x = x * f >> 10; \
     y = y * f >> 10;
 
-static char b[1760];
-static char z[1760];
+static char b[SCREENSIZE];
+static char z[SCREENSIZE];
 static int sA = 1024;
 static int cA = 0;
 static int sB = 1024;
@@ -38,8 +39,8 @@ static void ontimertick(struct message *message)
     int j;
     int k;
 
-    setmemto(b, 32, 1760);
-    setmemto(z, 127, 1760);
+    setmemto(b, 32, SCREENSIZE);
+    setmemto(z, 127, SCREENSIZE);
 
     for (j = 0; j < 90; j++)
     {
@@ -89,7 +90,7 @@ static void ontimertick(struct message *message)
 
     channel_send(0, output, MESSAGE_TYPE_DATA, 2, sequence);
 
-    for (k = 0; k < 1760; k += 80)
+    for (k = 0; k < SCREENSIZE; k += 80)
     {
 
         char *offset = b + k;
@@ -122,7 +123,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
-    option_add("timer-service", "timer");
+    option_add("timer-service", "timer:0");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
     channel_bind(MESSAGE_TYPE_TIMERTICK, ontimertick);
 
