@@ -471,7 +471,12 @@ static unsigned int loadbinary(struct mmap_header *header, unsigned long base, u
         if (entry->type == MMAP_TYPE_BINARY)
         {
 
-            unsigned char *target = (unsigned char *)(entry->paddress + (entry->vaddress & 0xFFF));
+            unsigned int head = entry->vaddress & 0xFFF;
+            unsigned int span = (head + entry->msize + 0xFFF) & ~0xFFF;
+            unsigned char *target = (unsigned char *)(entry->paddress + head);
+
+            /* clear the whole pages first: the parts before and after the segment must not keep the previous task's bytes */
+            buffer_clear((void *)entry->paddress, span);
 
             if (id)
             {
@@ -488,7 +493,6 @@ static unsigned int loadbinary(struct mmap_header *header, unsigned long base, u
 
             }
 
-            buffer_clear(target + entry->fsize, entry->msize - entry->fsize);
 
             entry->type = MMAP_TYPE_NORMAL;
 
