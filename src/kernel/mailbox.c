@@ -68,13 +68,22 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
 
 }
 
+static unsigned int unpromised(struct mailbox *mailbox)
+{
+
+    return mailbox->free.count - mailbox->reply - mailbox->reserved;
+
+}
+
 static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsigned int keep, unsigned int event, unsigned int source, unsigned int count, void *data)
 {
 
-    if (count <= MESSAGE_SIZE)
+    unsigned int status = MESSAGE_FAILED;
+
+    if (mailbox->itask && count <= MESSAGE_SIZE)
     {
 
-        unsigned int status = MESSAGE_RETRY;
+        status = MESSAGE_RETRY;
 
         reclaim(mailbox);
         spinlock_acquire(&mailbox->spinlock);
@@ -82,13 +91,13 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
         if (promise && *promise)
             (*promise)--;
 
-        if (mailbox->free.count > mailbox->reply + mailbox->reserved + keep)
+        if (unpromised(mailbox) > keep)
         {
 
             struct list_item *item = mailbox->free.head;
             struct message *message = item->data;
 
-            message_init(message, event, source, count, (void *)(unsigned long)(KERNEL_VMAILBOX + MESSAGE_SIZE * (MESSAGE_SLOTS * mailbox->ichannel + message->slot)));
+            message_init(message, event, source, count, (void *)(mailbox->vpages + MESSAGE_SIZE * message->slot));
             buffer_copy((void *)(mailbox->pages + MESSAGE_SIZE * message->slot), data, count);
             list_move_unsafe(&mailbox->queued, &mailbox->free, item);
 
@@ -98,11 +107,12 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
 
         spinlock_release(&mailbox->spinlock);
 
-        return status;
+        if (status == MESSAGE_OK)
+            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
 
     }
 
-    return MESSAGE_FAILED;
+    return status;
 
 }
 
@@ -111,7 +121,7 @@ static void checkselflock(struct mailbox *mailbox)
 
     struct task *task = pool_gettask(mailbox->itask);
 
-    if (task && !task->waitingfor && mailbox->free.count <= mailbox->reply && !mailbox->queued.head && !mailbox->reserved)
+    if (task && !task->waitingfor && !unpromised(mailbox) && !mailbox->reserved && !mailbox->queued.head)
         debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u sleeps on its own full mailbox", &mailbox->itask);
 
 }
@@ -151,7 +161,7 @@ static void checkcycle(struct mailbox *mailbox, unsigned int itask)
 
 }
 
-void mailbox_reclaimtask(unsigned int itask)
+static void reclaimtask(unsigned int itask)
 {
 
     struct task *task = pool_gettask(itask);
@@ -172,7 +182,7 @@ void mailbox_reclaimtask(unsigned int itask)
 void mailbox_sleep(struct mailbox *mailbox)
 {
 
-    mailbox_reclaimtask(mailbox->itask);
+    reclaimtask(mailbox->itask);
     checkselflock(mailbox);
     kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
 
@@ -200,31 +210,12 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, uns
 
 }
 
-static unsigned int deliver(struct mailbox *mailbox, unsigned int *promise, unsigned int keep, unsigned int event, unsigned int source, unsigned int count, void *data)
-{
-
-    if (mailbox->itask)
-    {
-
-        unsigned int status = place(mailbox, promise, keep, event, source, count, data);
-
-        if (status == MESSAGE_OK)
-            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
-
-}
-
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
 
-    return (mailbox) ? deliver(mailbox, 0, MAILBOX_REPLYSLOTS, event, source, count, data) : MESSAGE_FAILED;
+    return (mailbox) ? place(mailbox, 0, MAILBOX_REPLYSLOTS, event, source, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -236,7 +227,7 @@ static unsigned int shift(struct mailbox *mailbox, unsigned int *from, unsigned 
     reclaim(mailbox);
     spinlock_acquire(&mailbox->spinlock);
 
-    if ((from) ? *from : mailbox->free.count > mailbox->reply + mailbox->reserved)
+    if ((from) ? *from : unpromised(mailbox))
     {
 
         if (from)
@@ -291,22 +282,24 @@ void mailbox_unreserve(struct mailbox *mailbox)
 unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    return deliver(mailbox, &mailbox->reply, 0, event, source, count, data);
+    return place(mailbox, &mailbox->reply, 0, event, source, count, data);
 
 }
 
 unsigned int mailbox_placereserved(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    return deliver(mailbox, &mailbox->reserved, 0, event, source, count, data);
+    return place(mailbox, &mailbox->reserved, 0, event, source, count, data);
 
 }
 
-unsigned int mailbox_wait(struct mailbox *mailbox, unsigned int itask)
+void mailbox_waitfor(struct mailbox *mailbox, unsigned int itask)
 {
 
     struct task *task = pool_gettask(itask);
     unsigned int waiting = 0;
+
+    reclaimtask(itask);
 
     if (task && mailbox->itask && mailbox->itask != itask)
     {
@@ -314,7 +307,7 @@ unsigned int mailbox_wait(struct mailbox *mailbox, unsigned int itask)
         reclaim(mailbox);
         spinlock_acquire(&mailbox->spinlock);
 
-        if (mailbox->free.count <= mailbox->reply + mailbox->reserved + MAILBOX_REPLYSLOTS)
+        if (unpromised(mailbox) <= MAILBOX_REPLYSLOTS)
         {
 
             task->waitingfor = mailbox->resource.inode;
@@ -324,12 +317,15 @@ unsigned int mailbox_wait(struct mailbox *mailbox, unsigned int itask)
 
         spinlock_release(&mailbox->spinlock);
 
-        if (waiting)
-            checkcycle(mailbox, itask);
-
     }
 
-    return waiting;
+    if (waiting)
+    {
+
+        checkcycle(mailbox, itask);
+        kernel_signal(itask, TASK_SIGNAL_BLOCK);
+
+    }
 
 }
 
@@ -360,6 +356,7 @@ void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int 
     mailbox->itask = itask;
     mailbox->ichannel = ichannel;
     mailbox->pages = pages + MESSAGE_SIZE * MESSAGE_SLOTS * ichannel;
+    mailbox->vpages = KERNEL_VMAILBOX + MESSAGE_SIZE * MESSAGE_SLOTS * ichannel;
     mailbox->done = (volatile unsigned char *)(pages + MESSAGE_SIZE * MESSAGE_PAGES + MESSAGE_SLOTS * ichannel);
 
     for (i = 0; i < MESSAGE_SLOTS; i++)

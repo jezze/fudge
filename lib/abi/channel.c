@@ -12,6 +12,7 @@ struct inbox
 {
 
     struct message messages[MESSAGE_SLOTS];
+    volatile unsigned char *done;
     unsigned int index;
     unsigned int count;
     unsigned int handed;
@@ -24,7 +25,6 @@ static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
 static unsigned int status;
 static struct message_pipe pipe;
-static volatile unsigned char *done;
 
 static struct message_route *findroute(unsigned int event)
 {
@@ -96,14 +96,14 @@ static void locate(unsigned int ichannel, struct message *message)
 
     unsigned int page = ichannel * MESSAGE_SLOTS + message->slot;
 
-    done = (volatile unsigned char *)message->data + MESSAGE_SIZE * (MESSAGE_PAGES - page);
+    inboxes[ichannel].done = (volatile unsigned char *)message->data + MESSAGE_SIZE * (MESSAGE_PAGES - page) + ichannel * MESSAGE_SLOTS;
 
 }
 
 static void finish(unsigned int ichannel, struct message *message)
 {
 
-    done[ichannel * MESSAGE_SLOTS + message->slot] = 1;
+    inboxes[ichannel].done[message->slot] = 1;
 
 }
 
@@ -135,7 +135,7 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
     struct inbox *inbox = &inboxes[ichannel];
 
     if (inbox->handed)
-        done[ichannel * MESSAGE_SLOTS + inbox->handed - 1] = 1;
+        inbox->done[inbox->handed - 1] = 1;
 
     inbox->handed = 0;
 
