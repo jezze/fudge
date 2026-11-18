@@ -3,7 +3,7 @@
   {
     layout: default
     theme: "initrd:data/config/wm-theme-default.mq"
-    background: "initrd:data/fudge.pcx"
+    background: "initrd:data/wallpaper-small.png"
     transparency: on
     cursor: 100
   }
