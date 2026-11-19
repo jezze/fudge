@@ -30,6 +30,5 @@ include $(DIR_SRC)/modules/rtl8139/rules.mk
 include $(DIR_SRC)/modules/smp/rules.mk
 include $(DIR_SRC)/modules/uart/rules.mk
 include $(DIR_SRC)/modules/usb/rules.mk
-include $(DIR_SRC)/modules/vbe/rules.mk
 include $(DIR_SRC)/modules/vga/rules.mk
 include $(DIR_SRC)/modules/virtio/rules.mk
