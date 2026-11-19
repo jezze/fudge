@@ -791,10 +791,13 @@ static void loadconfig(void)
 
     getword(data, count, 0, config.background, 256);
 
-    count = query(data, 256, option_getstring("config"), ".localization", "{language} {timezone}");
+    count = query(data, 256, option_getstring("localization-config"), ".language", 0);
 
     getword(data, count, 0, config.language, 32);
-    getword(data, count, 1, config.timezone, 32);
+
+    count = query(data, 256, option_getstring("localization-config"), ".timezone", 0);
+
+    getword(data, count, 0, config.timezone, 32);
 
     count = query(data, 256, option_getstring("config"), ".general.transparency", 0);
 
@@ -858,7 +861,6 @@ static unsigned int writeconfig(char *data, unsigned int size)
     unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n    transparency: %s\n    cursor: %s\n  }\n", config.layout, config.themepath, config.background, config.transparency, config.cursor);
-    count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
     count += cstring_write_fmt(data, size, count, "  displays:\n  [\n");
 
     for (i = 0; i < config.ndisplays; i++)
@@ -927,6 +929,13 @@ static unsigned int writeaudio(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "  ]\n}\n");
 
     return count;
+
+}
+
+static unsigned int writelocalization(char *data, unsigned int size)
+{
+
+    return cstring_write_fmt(data, size, 0, "{\n  language: %s\n  timezone: %s\n}\n", config.language, config.timezone);
 
 }
 
@@ -1872,7 +1881,7 @@ static void onwmevent(struct message *message)
 
             static char data[0x8000];
 
-            if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingspath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)) && savefile(option_getstring("audio-config"), data, writeaudio(data, 0x8000)) && savefile(option_getstring("network-config"), data, writenetwork(data, 0x8000)))
+            if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingspath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)) && savefile(option_getstring("audio-config"), data, writeaudio(data, 0x8000)) && savefile(option_getstring("localization-config"), data, writelocalization(data, 0x8000)) && savefile(option_getstring("network-config"), data, writenetwork(data, 0x8000)))
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"disabled\"\n");
 
         }
@@ -1922,6 +1931,7 @@ void init(void)
     option_add("wm-service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
     option_add("audio-config", "initrd:data/config/audio.mq");
+    option_add("localization-config", "initrd:data/config/localization.mq");
     option_add("network-config", "initrd:data/config/network.mq");
     option_add("mixer-service", "mixer");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);

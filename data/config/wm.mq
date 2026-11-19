@@ -7,11 +7,6 @@
     transparency: on
     cursor: 100
   }
-  localization:
-  {
-    language: en_US
-    timezone: UTC
-  }
   displays:
   [
     { device: video:0 width: 1920 height: 1080 bpp: 4 }
