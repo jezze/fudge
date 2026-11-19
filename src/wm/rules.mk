@@ -8,6 +8,7 @@ O:=\
     $(DIR_SRC)/wm/cmap.o \
     $(DIR_SRC)/wm/parser.o \
     $(DIR_SRC)/wm/pool.o \
+    $(DIR_SRC)/wm/record.o \
     $(DIR_SRC)/wm/render.o \
     $(DIR_SRC)/wm/strpool.o \
     $(DIR_SRC)/wm/text.o \

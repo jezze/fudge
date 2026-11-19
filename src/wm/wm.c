@@ -7,6 +7,7 @@
 #include "widget.h"
 #include "strpool.h"
 #include "pool.h"
+#include "record.h"
 #include "blit.h"
 #include "render.h"
 #include "parser.h"
@@ -1502,7 +1503,7 @@ static void selectrange(struct widget *item)
         struct widget *child = current->data;
         unsigned int edge;
 
-        if (child->type != WIDGET_TYPE_ITEM)
+        if (child->type != WIDGET_TYPE_ITEM || !widget_isshown(child))
             continue;
 
         edge = (child == item) + child->anchor;
@@ -2808,7 +2809,7 @@ static void moveselection(struct widget *item, unsigned int forward)
 
         struct widget *child = current->data;
 
-        if (child->type != WIDGET_TYPE_ITEM)
+        if (child->type != WIDGET_TYPE_ITEM || !widget_isshown(child))
             continue;
 
         if (child == item)
@@ -2848,10 +2849,13 @@ static struct widget *getgroupitem(struct widget *parent)
 
         struct widget *child = current->data;
 
-        if (child->type == WIDGET_TYPE_ITEM && child->anchor)
+        if (child->type != WIDGET_TYPE_ITEM || !widget_isshown(child))
+            continue;
+
+        if (child->anchor)
             return child;
 
-        if (child->type == WIDGET_TYPE_ITEM && !first)
+        if (!first)
             first = child;
 
     }
@@ -2908,7 +2912,7 @@ static unsigned int collectfocusable(struct widget *widget, struct widget **list
 
         struct widget *child = current->data;
 
-        if (child->attributes.display == ATTR_DISPLAY_NONE)
+        if (!widget_isshown(child))
             continue;
 
         if (count < NUM_FOCUSABLE && isfocusable(child))
@@ -2969,7 +2973,7 @@ static unsigned int collectitems(struct widget *widget, struct widget **list, un
 
         struct widget *child = current->data;
 
-        if (child->attributes.display == ATTR_DISPLAY_NONE)
+        if (!widget_isshown(child))
             continue;
 
         if (count < NUM_FOCUSABLE && child->type == WIDGET_TYPE_ITEM && child->attributes.mode != ATTR_MODE_DISABLED)
@@ -4596,6 +4600,7 @@ static void onwmunmap(struct message *message)
 
     }
 
+    record_removesource(message->source);
     purge(message->source);
     redraw(1);
 

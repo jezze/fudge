@@ -19,6 +19,7 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent);
 struct list_item *pool_nextsource(struct list_item *current, unsigned int source);
 struct widget *pool_getwidgetbyid(unsigned int source, char *id);
 void pool_setparent(struct widget *widget);
+void pool_attach(struct widget *widget, struct widget *parent);
 void pool_setorphans(void);
 unsigned int pool_gettextlength(struct widget *widget);
 struct widget *pool_gettextat(struct widget *widget, unsigned int index);

@@ -11,12 +11,14 @@
 #define WIDGET_TYPE_SWATCH              16
 #define WIDGET_TYPE_CYCLE               18
 #define WIDGET_TYPE_TAB                 20
+#define WIDGET_TYPE_EACH                21
 
 struct widget_attributes
 {
 
     unsigned int checked;
     unsigned int color;
+    unsigned int data;
     unsigned int display;
     unsigned int flow;
     unsigned int halign;
@@ -49,6 +51,8 @@ struct widget
     unsigned int source;
     unsigned int type;
     unsigned int destroyed;
+    unsigned int raw;
+    unsigned int instance;
     struct widget *parent;
     unsigned int markstart;
     unsigned int markend;
@@ -98,7 +102,10 @@ unsigned int widget_isdragable(struct widget *widget);
 unsigned int widget_isresizable(struct widget *widget);
 unsigned int widget_islink(struct widget *widget);
 unsigned int widget_isinteractive(struct widget *widget);
+unsigned int widget_istemplate(struct widget *widget);
+unsigned int widget_isshown(struct widget *widget);
 unsigned int widget_ishidden(struct widget *widget);
+void widget_copyattributes(struct widget *widget, struct widget *from);
 unsigned int widget_iseditable(struct widget *widget);
 unsigned int widget_isscrollable(struct widget *widget);
 unsigned int widget_hasscrollbar(struct widget *widget);

@@ -6,6 +6,7 @@
 #include "widget.h"
 #include "strpool.h"
 #include "pool.h"
+#include "record.h"
 #include "parser.h"
 
 #define NONE    1
@@ -13,10 +14,14 @@
 #define DELETE  3
 #define INSERT  4
 #define UPDATE  5
+#define RECORD  6
+#define UNSET   7
 
-#define NUM_COMMANDS                    5
-#define NUM_WIDGETS                     13
-#define NUM_ATTRIBUTES                  25
+#define NUM_COMMANDS                    7
+#define NAME_SIZE                       256
+#define TEMPLATE_SIZE                   4096
+#define NUM_WIDGETS                     14
+#define NUM_ATTRIBUTES                  26
 
 static struct util_token commands[NUM_COMMANDS] =
 {
@@ -24,7 +29,9 @@ static struct util_token commands[NUM_COMMANDS] =
     {COMMENT, "#"},
     {DELETE, "-"},
     {INSERT, "+"},
-    {UPDATE, "="}
+    {UPDATE, "="},
+    {RECORD, "@"},
+    {UNSET, "@-"}
 };
 
 static struct util_token widgets[NUM_WIDGETS] =
@@ -32,6 +39,7 @@ static struct util_token widgets[NUM_WIDGETS] =
     {WIDGET_TYPE_BOX, "box"},
     {WIDGET_TYPE_BUTTON, "button"},
     {WIDGET_TYPE_CYCLE, "cycle"},
+    {WIDGET_TYPE_EACH, "each"},
     {WIDGET_TYPE_FILL, "fill"},
     {WIDGET_TYPE_ITEM, "item"},
     {WIDGET_TYPE_LAYOUT, "layout"},
@@ -48,6 +56,7 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
 {
     {ATTR_CHECKED, "checked"},
     {ATTR_COLOR, "color"},
+    {ATTR_DATA, "data"},
     {ATTR_DISPLAY, "display"},
     {ATTR_FLOW, "flow"},
     {ATTR_HALIGN, "halign"},
@@ -83,6 +92,7 @@ struct state
     unsigned int linebreak;
     unsigned int quoted;
     unsigned int errors;
+    unsigned int instance;
 
 };
 
@@ -272,6 +282,9 @@ static void parseattributes(struct state *state, struct widget *widget)
             if (issamelabel(widget, attribute, value))
                 continue;
 
+            if (state->instance && (attribute == ATTR_ID || attribute == ATTR_IN))
+                continue;
+
             widget_setattribute(widget, attribute, value);
 
             widget->changed = 1;
@@ -359,6 +372,309 @@ static void parsedelete(struct state *state, unsigned int source)
 
 }
 
+static void saveraw(struct widget *widget, char *text, unsigned int count)
+{
+
+    static char raw[TEMPLATE_SIZE];
+
+    if (!buffer_findbyte(text, count, '{') || count >= TEMPLATE_SIZE)
+        return;
+
+    buffer_write(raw, TEMPLATE_SIZE, text, count, 0);
+
+    raw[count] = '\0';
+    widget->raw = strpool_updatestring(widget->raw, raw);
+
+}
+
+static unsigned int substitute(char *out, unsigned int size, char *raw, struct dataentry *record)
+{
+
+    unsigned int count = 0;
+    unsigned int i = 0;
+
+    while (raw[i])
+    {
+
+        unsigned int length = (raw[i] == '{') ? buffer_findbyte(raw + i + 1, cstring_length(raw + i + 1), '}') : 0;
+
+        if (length && raw[i + 1 + length] == '}')
+        {
+
+            char *value = record_getfield(record, raw + i + 1, length);
+            unsigned int j;
+
+            for (j = 0; value[j]; j++)
+                count += (value[j] == '"') ? buffer_write(out, size, "\"\\\"\"", 4, count) : buffer_write(out, size, value + j, 1, count);
+
+            i += length + 2;
+
+        }
+
+        else
+        {
+
+            count += buffer_write(out, size, raw + i, 1, count);
+            i++;
+
+        }
+
+    }
+
+    return count;
+
+}
+
+static void applyrecord(struct widget *widget, struct widget *template, struct dataentry *record)
+{
+
+    static char text[TEMPLATE_SIZE];
+
+    widget_copyattributes(widget, template);
+
+    if (template->raw)
+    {
+
+        struct state state;
+
+        state.data = text;
+        state.count = substitute(text, TEMPLATE_SIZE, strpool_getstring(template->raw), record);
+        state.offset = 0;
+        state.line = 0;
+        state.linebreak = 0;
+        state.quoted = 0;
+        state.errors = 0;
+        state.instance = 1;
+
+        parseattributes(&state, widget);
+
+    }
+
+    widget->changed = 1;
+
+}
+
+static struct widget *clone(struct widget *template, struct widget *parent, struct dataentry *record)
+{
+
+    struct widget *widget = pool_create(template->source, template->type, "", "");
+    struct list_item *current = 0;
+
+    if (!widget)
+        return 0;
+
+    pool_attach(widget, parent);
+    applyrecord(widget, template, record);
+
+    while ((current = pool_nextin(current, template)))
+        clone(current->data, widget, record);
+
+    return widget;
+
+}
+
+static void refresh(struct widget *widget, struct widget *template, struct dataentry *record)
+{
+
+    struct list_item *current = 0;
+    struct list_item *other = 0;
+
+    applyrecord(widget, template, record);
+
+    while ((current = pool_nextin(current, widget)) && (other = pool_nextin(other, template)))
+        refresh(current->data, other->data, record);
+
+}
+
+static unsigned int isinstanceof(struct widget *widget, char *key)
+{
+
+    return widget->instance && !widget->destroyed && cstring_match(strpool_getstring(widget->instance), key);
+
+}
+
+static void fill(struct widget *each, struct dataentry *record)
+{
+
+    char *key = record_getkey(record);
+    struct list_item *template = 0;
+    struct list_item *instance = 0;
+    unsigned int found = 0;
+
+    while ((instance = pool_nextin(instance, each)))
+        found = found || isinstanceof(instance->data, key);
+
+    while ((template = pool_nextin(template, each)))
+    {
+
+        struct widget *root = template->data;
+
+        if (!widget_istemplate(root))
+            continue;
+
+        if (found)
+        {
+
+            while ((instance = pool_nextin(instance, each)) && !isinstanceof(instance->data, key));
+
+            if (instance)
+                refresh(instance->data, root, record);
+
+        }
+
+        else
+        {
+
+            struct widget *widget = clone(root, each, record);
+
+            if (widget)
+                widget->instance = strpool_updatestring(0, key);
+
+        }
+
+    }
+
+}
+
+static unsigned int iseachof(struct widget *widget, unsigned int source, char *set)
+{
+
+    return widget->type == WIDGET_TYPE_EACH && widget->source == source && !widget->destroyed && cstring_match(strpool_getstring(widget->attributes.data), set);
+
+}
+
+static void empty(unsigned int source, char *set, char *key)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->instance && widget->parent && iseachof(widget->parent, source, set) && (!key || isinstanceof(widget, key)))
+        {
+
+            widget->destroyed = 1;
+
+            deletechildren(widget);
+
+        }
+
+    }
+
+}
+
+static void parserecord(struct state *state, unsigned int source)
+{
+
+    char set[NAME_SIZE];
+    char key[NAME_SIZE];
+    struct dataentry *record;
+    struct list_item *current = 0;
+
+    readword(state, set, NAME_SIZE);
+
+    if (state->linebreak)
+    {
+
+        fail(state);
+
+        return;
+
+    }
+
+    readword(state, key, NAME_SIZE);
+
+    record = record_find(source, set, key);
+
+    if (!record)
+        record = record_create(source, set, key);
+
+    if (!record)
+    {
+
+        fail(state);
+
+        return;
+
+    }
+
+    while (!state->errors && !state->linebreak)
+    {
+
+        char name[NAME_SIZE];
+
+        readword(state, name, NAME_SIZE);
+
+        if (state->linebreak)
+            fail(state);
+        else
+            record_setfield(record, name, (readword(state, strbuffer, 4096)) ? strbuffer : "");
+
+    }
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        if (iseachof(current->data, source, set))
+            fill(current->data, record);
+
+    }
+
+}
+
+static void rewind(unsigned int source, char *set)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (iseachof(widget, source, set))
+        {
+
+            for (; widget; widget = widget->parent)
+                widget->scroll = util_position(0, 0);
+
+        }
+
+    }
+
+}
+
+static void parseunset(struct state *state, unsigned int source)
+{
+
+    char set[NAME_SIZE];
+    char key[NAME_SIZE];
+
+    readword(state, set, NAME_SIZE);
+
+    if (state->linebreak)
+    {
+
+        empty(source, set, 0);
+        record_remove(source, set, 0);
+        rewind(source, set);
+
+        return;
+
+    }
+
+    readword(state, key, NAME_SIZE);
+    empty(source, set, key);
+    record_remove(source, set, key);
+
+    while (!state->linebreak)
+        readword(state, strbuffer, 4096);
+
+}
+
 static void parseinsert(struct state *state, unsigned int source, char *in)
 {
 
@@ -370,9 +686,21 @@ static void parseinsert(struct state *state, unsigned int source, char *in)
         struct widget *widget = pool_create(source, type, "", in);
 
         if (widget)
+        {
+
+            unsigned int start = state->offset;
+
             parseattributes(state, widget);
+            saveraw(widget, state->data + start, state->offset - start);
+
+        }
+
         else
+        {
+
             fail(state);
+
+        }
 
     }
 
@@ -443,6 +771,16 @@ static void parse(struct state *state, unsigned int source, char *in)
 
             break;
 
+        case RECORD:
+            parserecord(state, source);
+
+            break;
+
+        case UNSET:
+            parseunset(state, source);
+
+            break;
+
         default:
             fail(state);
 
@@ -466,6 +804,7 @@ void parser_parse(unsigned int source, char *in, unsigned int count, void *data)
     state.linebreak = 0;
     state.quoted = 0;
     state.errors = 0;
+    state.instance = 0;
 
     parse(&state, source, in);
     pool_setorphans();

@@ -6,6 +6,8 @@
 #include "widget.h"
 #include "strpool.h"
 
+#define WIDGET_COPYSIZE                 4096
+
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -19,6 +21,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_COLOR:
         widget->attributes.color = attr_update(ATTR_COLOR, value, widget->attributes.color);
+
+        break;
+
+    case ATTR_DATA:
+        widget->attributes.data = attr_update(ATTR_DATA, value, widget->attributes.data);
 
         break;
 
@@ -147,6 +154,7 @@ void widget_unsetattributes(struct widget *widget)
 
     widget_setattribute(widget, ATTR_CHECKED, 0);
     widget_setattribute(widget, ATTR_COLOR, 0);
+    widget_setattribute(widget, ATTR_DATA, 0);
     widget_setattribute(widget, ATTR_DISPLAY, 0);
     widget_setattribute(widget, ATTR_FLOW, 0);
     widget_setattribute(widget, ATTR_HALIGN, 0);
@@ -258,13 +266,75 @@ unsigned int widget_isinteractive(struct widget *widget)
 
 }
 
+unsigned int widget_istemplate(struct widget *widget)
+{
+
+    return widget->parent && widget->parent->type == WIDGET_TYPE_EACH && !widget->instance;
+
+}
+
+unsigned int widget_isshown(struct widget *widget)
+{
+
+    return widget->attributes.display != ATTR_DISPLAY_NONE && !widget_istemplate(widget);
+
+}
+
 unsigned int widget_ishidden(struct widget *widget)
 {
 
-    while (widget && widget->attributes.display != ATTR_DISPLAY_NONE)
+    while (widget && widget_isshown(widget))
         widget = widget->parent;
 
     return widget != 0;
+
+}
+
+static void copyattribute(struct widget *widget, unsigned int attribute, unsigned int index)
+{
+
+    static char buffer[WIDGET_COPYSIZE];
+    unsigned int length = strpool_getcstringlength(index);
+
+    if (length >= WIDGET_COPYSIZE)
+        length = WIDGET_COPYSIZE - 1;
+
+    buffer_write(buffer, WIDGET_COPYSIZE, strpool_getstring(index), length, 0);
+
+    buffer[length] = '\0';
+
+    widget_setattribute(widget, attribute, (index) ? buffer : 0);
+
+}
+
+void widget_copyattributes(struct widget *widget, struct widget *from)
+{
+
+    widget->attributes.checked = from->attributes.checked;
+    widget->attributes.color = from->attributes.color;
+    widget->attributes.display = from->attributes.display;
+    widget->attributes.flow = from->attributes.flow;
+    widget->attributes.halign = from->attributes.halign;
+    widget->attributes.height = from->attributes.height;
+    widget->attributes.mimetype = from->attributes.mimetype;
+    widget->attributes.mode = from->attributes.mode;
+    widget->attributes.overflow = from->attributes.overflow;
+    widget->attributes.padding = from->attributes.padding;
+    widget->attributes.spacing = from->attributes.spacing;
+    widget->attributes.span = from->attributes.span;
+    widget->attributes.valign = from->attributes.valign;
+    widget->attributes.weight = from->attributes.weight;
+    widget->attributes.width = from->attributes.width;
+    widget->attributes.wrap = from->attributes.wrap;
+
+    copyattribute(widget, ATTR_DATA, from->attributes.data);
+    copyattribute(widget, ATTR_LABEL, from->attributes.label);
+    copyattribute(widget, ATTR_ONCHANGE, from->attributes.onchange);
+    copyattribute(widget, ATTR_ONCLICK, from->attributes.onclick);
+    copyattribute(widget, ATTR_ONENTER, from->attributes.onenter);
+    copyattribute(widget, ATTR_ONRESIZE, from->attributes.onresize);
+    copyattribute(widget, ATTR_ONSELECT, from->attributes.onselect);
+    copyattribute(widget, ATTR_SOURCE, from->attributes.source);
 
 }
 
@@ -331,6 +401,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
 
     attributes->checked = 0;
     attributes->color = 0;
+    attributes->data = 0;
     attributes->display = ATTR_DISPLAY_BLOCK;
     attributes->flow = ATTR_FLOW_DEFAULT;
     attributes->halign = ATTR_HALIGN_LEFT;
@@ -400,6 +471,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->source = source;
     widget->type = type;
     widget->destroyed = 0;
+    widget->raw = 0;
+    widget->instance = 0;
     widget->parent = 0;
     widget->markstart = 0;
     widget->markend = 0;

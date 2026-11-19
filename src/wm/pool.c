@@ -147,6 +147,18 @@ void pool_setparent(struct widget *widget)
 
 }
 
+void pool_attach(struct widget *widget, struct widget *parent)
+{
+
+    if (widget->parent)
+        list_remove(&children[widget->parent - entries], &siblings[widget - entries]);
+
+    widget->parent = parent;
+
+    list_insert(&children[parent - entries], &siblings[widget - entries], findnextsibling(widget));
+
+}
+
 void pool_setorphans(void)
 {
 
@@ -363,6 +375,9 @@ void pool_destroy(struct widget *widget)
         child->parent = 0;
 
     }
+
+    widget->raw = strpool_updatestring(widget->raw, 0);
+    widget->instance = strpool_updatestring(widget->instance, 0);
 
     widget_unsetattributes(widget);
     list_move(&freelist, &widgetlist, finditem(widget));

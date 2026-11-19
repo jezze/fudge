@@ -241,7 +241,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         struct util_size climit;
         struct util_size csize;
 
-        if (child->attributes.display == ATTR_DISPLAY_NONE)
+        if (!widget_isshown(child))
             continue;
 
         startchild(child, &flow);
@@ -387,7 +387,7 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
         struct widget *child = current->data;
         struct util_region cplacement;
 
-        if (child->attributes.display == ATTR_DISPLAY_NONE)
+        if (!widget_isshown(child))
         {
 
             if (!measure)
@@ -490,7 +490,7 @@ static unsigned int hasspans(struct widget *widget)
 
         struct widget *child = current->data;
 
-        if (child->attributes.span && child->attributes.display != ATTR_DISPLAY_NONE)
+        if (child->attributes.span && widget_isshown(child))
             return 1;
 
     }
@@ -1388,6 +1388,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
     setupcall(WIDGET_TYPE_TAB, getsizechildren, 0, rendertab);
+    setupcall(WIDGET_TYPE_EACH, getsizechildren, 0, renderlayout);
     setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
     setupcall(WIDGET_TYPE_MEDIA, getsizemedia, 0, rendermedia);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
