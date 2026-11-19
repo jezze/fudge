@@ -1,5 +1,0 @@
-{
-  devices: [
-    { device: audio:0 volume: 100 }
-  ]
-}

@@ -1,5 +1,0 @@
-{
-  devices: [
-    { device: keyboard:0 map: "initrd:data/keys/en_US.mq" }
-  ]
-}
