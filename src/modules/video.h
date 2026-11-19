@@ -5,6 +5,7 @@ struct video_interface
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
+    unsigned int connected;
     unsigned int preferredwidth;
     unsigned int preferredheight;
     unsigned long framebuffer;

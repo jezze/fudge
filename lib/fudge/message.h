@@ -288,6 +288,7 @@ struct message_videoinfo
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
+    unsigned int connected;
 
 };
 

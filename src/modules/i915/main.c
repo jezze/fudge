@@ -730,6 +730,7 @@ static unsigned int enablehdmi(void)
         return fail("DDI B buffer idle");
 
     pipeb.on = 1;
+    secondinterface.connected = 1;
     pipeb.activewidth = hdmi.mode.hactive;
     pipeb.activeheight = hdmi.mode.vactive;
     secondinterface.preferredwidth = hdmi.mode.hactive;
@@ -746,6 +747,7 @@ static void disablehdmi(void)
     unsigned int enable = I915_DPLL_ENABLE + hdmi.pll * 4;
 
     pipeb.on = 0;
+    secondinterface.connected = 0;
 
     writereg(I915_PLANE_CTL_1_B, 0);
     writereg(I915_PLANE_SURF_1_B, 0);
@@ -1066,6 +1068,7 @@ static void driver_init(unsigned int id)
     secondinterface.width = I915_SECONDWIDTH;
     secondinterface.height = I915_SECONDHEIGHT;
     secondinterface.bpp = 4;
+    secondinterface.connected = 0;
     secondinterface.checkmode = secondinterface_checkmode;
 
 }

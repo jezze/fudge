@@ -36,6 +36,7 @@ static unsigned int oninfo(struct video_interface *interface, unsigned int sourc
         videoinfo.width = interface->width;
         videoinfo.height = interface->height;
         videoinfo.bpp = interface->bpp;
+        videoinfo.connected = interface->connected;
 
         return kernel_placereply(source, interface->resource.inode, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo);
 
@@ -226,6 +227,7 @@ void video_initinterface(struct video_interface *interface, unsigned long frameb
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
+    interface->connected = 1;
     interface->preferredwidth = PREFERREDWIDTH;
     interface->preferredheight = PREFERREDHEIGHT;
     interface->framebuffer = framebuffer;
