@@ -24,7 +24,6 @@
 #define ATTR_WIDTH                      25
 #define ATTR_VALUE                      26
 #define ATTR_ONRESIZE                   27
-#define ATTR_STYLE                      28
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_DISPLAY_FIXED              2
@@ -46,10 +45,6 @@
 #define ATTR_MODE_DISABLED              3
 #define ATTR_OVERFLOW_NONE              0
 #define ATTR_OVERFLOW_SCROLL            1
-#define ATTR_STYLE_DEFAULT              0
-#define ATTR_STYLE_CYCLE                1
-#define ATTR_STYLE_SWITCH               2
-#define ATTR_STYLE_TAB                  3
 #define ATTR_VALIGN_TOP                 0
 #define ATTR_VALIGN_MIDDLE              1
 #define ATTR_VALIGN_BOTTOM              2

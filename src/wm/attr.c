@@ -5,7 +5,6 @@
 
 #define NUM_DISPLAYS                    4
 #define NUM_MODES                       4
-#define NUM_STYLES                      4
 
 static struct util_token displays[NUM_DISPLAYS] =
 {
@@ -49,14 +48,6 @@ static struct util_token overflows[2] =
 {
     {ATTR_OVERFLOW_NONE, "none"},
     {ATTR_OVERFLOW_SCROLL, "scroll"}
-};
-
-static struct util_token styles[NUM_STYLES] =
-{
-    {ATTR_STYLE_DEFAULT, "default"},
-    {ATTR_STYLE_CYCLE, "cycle"},
-    {ATTR_STYLE_SWITCH, "switch"},
-    {ATTR_STYLE_TAB, "tab"}
 };
 
 static struct util_token valigns[3] =
@@ -163,9 +154,6 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     case ATTR_SPAN:
         return getnum(value, 10);
-
-    case ATTR_STYLE:
-        return util_getkey(styles, NUM_STYLES, value);
 
     case ATTR_VALIGN:
         return util_getkey(valigns, 3, value);

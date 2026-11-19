@@ -118,11 +118,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case ATTR_STYLE:
-        widget->attributes.style = attr_update(ATTR_STYLE, value, widget->attributes.style);
-
-        break;
-
     case ATTR_VALIGN:
         widget->attributes.valign = attr_update(ATTR_VALIGN, value, widget->attributes.valign);
 
@@ -176,7 +171,6 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_SOURCE, 0);
     widget_setattribute(widget, ATTR_SPACING, 0);
     widget_setattribute(widget, ATTR_SPAN, 0);
-    widget_setattribute(widget, ATTR_STYLE, 0);
     widget_setattribute(widget, ATTR_VALIGN, 0);
     widget_setattribute(widget, ATTR_VALUE, 0);
     widget_setattribute(widget, ATTR_WEIGHT, 0);
@@ -365,7 +359,6 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->source = 0;
     attributes->spacing = 0;
     attributes->span = 0;
-    attributes->style = ATTR_STYLE_DEFAULT;
     attributes->valign = ATTR_VALIGN_TOP;
     attributes->value = 0;
     attributes->weight = ATTR_WEIGHT_NORMAL;
