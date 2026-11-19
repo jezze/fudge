@@ -22,7 +22,6 @@
 #define ATTR_ONCHANGE                   23
 #define ATTR_HEIGHT                     24
 #define ATTR_WIDTH                      25
-#define ATTR_VALUE                      26
 #define ATTR_ONRESIZE                   27
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
