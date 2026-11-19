@@ -824,10 +824,10 @@ static void loadconfig(void)
     config.networks.count = 0;
     config.networks.selected = 0;
 
-    loadlines(option_getstring("config"), ".displays", "{width} {height} {bpp} {device}", loaddisplay);
-    loadlines(option_getstring("config"), ".keyboards", "{device} {map}", loadkeyboard);
-    loadlines(option_getstring("config"), ".mice", "{device} {speed}", loadmouse);
-    loadlines(option_getstring("config"), ".touchpads", "{device} {doubletap}", loadtouchpad);
+    loadlines(option_getstring("config"), ".display", "{width} {height} {bpp} {device}", loaddisplay);
+    loadlines(option_getstring("config"), ".keyboard", "{device} {map}", loadkeyboard);
+    loadlines(option_getstring("config"), ".mouse", "{device} {speed}", loadmouse);
+    loadlines(option_getstring("config"), ".touchpad", "{device} {doubletap}", loadtouchpad);
     finddisplays();
     finddevices(&config.keyboards, "keyboard");
     finddevices(&config.mice, "mouse");
@@ -849,7 +849,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
     unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n    transparency: %s\n    cursor: %s\n  }\n", config.layout, config.themepath, config.background, config.transparency, config.cursor);
-    count += cstring_write_fmt(data, size, count, "  displays:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  display:\n  [\n");
 
     for (i = 0; i < config.ndisplays; i++)
     {
@@ -861,7 +861,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n  keyboards:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  ]\n  keyboard:\n  [\n");
 
     for (i = 0; i < config.keyboards.count; i++)
     {
@@ -871,7 +871,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n  mice:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  ]\n  mouse:\n  [\n");
 
     for (i = 0; i < config.mice.count; i++)
     {
@@ -881,7 +881,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n  touchpads:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  ]\n  touchpad:\n  [\n");
 
     for (i = 0; i < config.touchpads.count; i++)
     {

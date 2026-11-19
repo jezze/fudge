@@ -697,11 +697,11 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"cursor {cursor}\" %s", config));
     configlines("displays", 8);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .displays -format \"display {width} {height} {bpp} {device}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .display -format \"display {width} {height} {bpp} {device}\" %s", config));
     configlines("inputs", 6);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboards -format \"keyboard {device} {map}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mice -format \"mouse {device} {speed}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .touchpads -format \"touchpad {device} {doubletap}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {device} {map}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {device} {speed}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .touchpad -format \"touchpad {device} {doubletap}\" %s", config));
     loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
     loadreference(data, config, ".bindings", ".bindings", "binding {key} {mod} {action} {command}");
