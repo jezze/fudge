@@ -1491,6 +1491,15 @@ static void networkfield(char *id, char *label, char *value)
 
 }
 
+static unsigned int writenetworkrows(char *data, unsigned int size, unsigned int offset, char *type)
+{
+
+    char *display = (cstring_match(type, "dynamic")) ? "none" : "block";
+
+    return cstring_write_fmt(data, size, offset, "= network-address-row display \"%s\"\n= network-route-row display \"%s\"\n= network-netmask-row display \"%s\"\n= network-dns-row display \"%s\"\n", display, display, display, display);
+
+}
+
 static void rendernetwork(void)
 {
 
@@ -1503,14 +1512,12 @@ static void rendernetwork(void)
         return;
 
     choice("network-type", "Type", device->type, networktypes, NUM_NETWORKTYPES);
-
-    if (cstring_match(device->type, "dynamic"))
-        return;
-
     networkfield("network-address", "Address", device->address);
     networkfield("network-route", "Router", device->route);
     networkfield("network-netmask", "Netmask", device->netmask);
     networkfield("network-dns", "DNS", device->dns);
+
+    outcount += writenetworkrows(out, MESSAGE_SIZE, outcount, device->type);
 
 }
 
@@ -1780,7 +1787,13 @@ static void onwmevent(struct message *message)
             setchoice(kv_getstring(event, "id="), kv_getstring(event, "value="));
 
             if (cstring_match(kv_getstring(event, "id="), "network-type"))
-                renderarea("network");
+            {
+
+                char data[256];
+
+                channel_send(0, message->source, MESSAGE_TYPE_WMRENDERDATA, writenetworkrows(data, 256, 0, kv_getstring(event, "value=")), data);
+
+            }
 
             channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
 
