@@ -469,6 +469,8 @@ static void loadicons(void)
 {
 
     loadicon(BLIT_ICON_ARROWDOWN, "arrowdown");
+    loadicon(BLIT_ICON_ARROWLEFT, "arrowleft");
+    loadicon(BLIT_ICON_ARROWRIGHT, "arrowright");
     loadicon(BLIT_ICON_HAMBURGER, "hamburger");
     loadicon(BLIT_ICON_MINIMIZE, "minimize");
     loadicon(BLIT_ICON_X, "x");
@@ -995,6 +997,20 @@ static struct widget *getparent(struct widget *widget)
 {
 
     return (widget->parent && widget->parent->source == widget->source) ? widget->parent : 0;
+
+}
+
+static unsigned int isdropdown(struct widget *widget)
+{
+
+    return widget->type == WIDGET_TYPE_SELECT && widget->attributes.style != ATTR_STYLE_CYCLE;
+
+}
+
+static unsigned int iscycle(struct widget *widget)
+{
+
+    return widget->type == WIDGET_TYPE_SELECT && widget->attributes.style == ATTR_STYLE_CYCLE;
 
 }
 
@@ -1754,7 +1770,7 @@ static void setfocus(struct widget *widget)
 
         damageall(state.focusedwidget);
 
-        if (state.focusedwidget->type == WIDGET_TYPE_SELECT)
+        if (isdropdown(state.focusedwidget))
         {
 
             bumpchildren(state.focusedwidget);
@@ -3066,6 +3082,55 @@ static void chooseitem(struct widget *select)
 
 }
 
+static void stepcycle(struct widget *select, unsigned int forward)
+{
+
+    static struct widget *list[NUM_FOCUSABLE];
+    unsigned int count = collectitems(select, list, 0);
+    char *label = strpool_getstring(select->attributes.label);
+    struct widget *item;
+    unsigned int current;
+
+    if (!count)
+        return;
+
+    for (current = 0; current < count; current++)
+    {
+
+        struct widget *text = gettextchild(list[current]);
+
+        if (text && cstring_match(strpool_getstring(text->attributes.label), label))
+            break;
+
+    }
+
+    if (current == count)
+        current = (forward) ? 0 : count - 1;
+    else
+        current = (current + ((forward) ? 1 : count - 1)) % count;
+
+    item = list[current];
+
+    sendselect(item);
+
+    if (item->attributes.onclick)
+        sendevent(item->source, 1, item->attributes.onclick, "");
+
+}
+
+static void clickcycle(struct widget *select)
+{
+
+    struct util_region rprev = render_getcyclearrow(select, 0);
+    struct util_region rnext = render_getcyclearrow(select, 1);
+
+    if (util_region_intersects(&rprev, state.mouseposition.x, state.mouseposition.y))
+        stepcycle(select, 0);
+    else if (util_region_intersects(&rnext, state.mouseposition.x, state.mouseposition.y))
+        stepcycle(select, 1);
+
+}
+
 static unsigned int markall(struct widget *widget)
 {
 
@@ -3275,14 +3340,21 @@ static void onkeypress(struct message *message)
         if (id && (!binding || !dobinding(binding)))
         {
 
-            if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && (id == KEYS_KEY_CURSORUP || id == KEYS_KEY_CURSORDOWN))
+            if (state.focusedwidget && iscycle(state.focusedwidget) && (id == KEYS_KEY_CURSORLEFT || id == KEYS_KEY_CURSORRIGHT))
+            {
+
+                stepcycle(state.focusedwidget, id == KEYS_KEY_CURSORRIGHT);
+
+            }
+
+            else if (state.focusedwidget && isdropdown(state.focusedwidget) && (id == KEYS_KEY_CURSORUP || id == KEYS_KEY_CURSORDOWN))
             {
 
                 stepitem(state.focusedwidget, id == KEYS_KEY_CURSORDOWN);
 
             }
 
-            else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && id == KEYS_KEY_ENTER)
+            else if (state.focusedwidget && isdropdown(state.focusedwidget) && id == KEYS_KEY_ENTER)
             {
 
                 chooseitem(state.focusedwidget);
@@ -3859,6 +3931,9 @@ static void pressbutton(unsigned int button)
 
                 if (!item || !(state.keys.mod & (KEYS_MOD_SHIFT | KEYS_MOD_CTRL)))
                     clickwidget(interactivewidget);
+
+                if (iscycle(interactivewidget))
+                    clickcycle(interactivewidget);
 
                 if (interactivewidget->type == WIDGET_TYPE_BOX)
                 {

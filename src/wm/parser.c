@@ -16,7 +16,7 @@
 
 #define NUM_COMMANDS                    5
 #define NUM_WIDGETS                     13
-#define NUM_ATTRIBUTES                  26
+#define NUM_ATTRIBUTES                  27
 
 static struct util_token commands[NUM_COMMANDS] =
 {
@@ -67,6 +67,7 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
     {ATTR_SOURCE, "source"},
     {ATTR_SPACING, "spacing"},
     {ATTR_SPAN, "span"},
+    {ATTR_STYLE, "style"},
     {ATTR_VALIGN, "valign"},
     {ATTR_VALUE, "value"},
     {ATTR_WEIGHT, "weight"},

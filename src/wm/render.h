@@ -6,6 +6,7 @@
 struct util_size render_getwindowminsize(struct widget *widget, struct util_size *limit);
 struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit);
 struct util_region render_getcursor(struct widget *widget, unsigned int index);
+struct util_region render_getcyclearrow(struct widget *widget, unsigned int forward);
 struct util_region render_getwindowbutton(struct widget *widget, unsigned int button);
 struct util_region render_getsliderknob(struct widget *widget);
 void render_setstate(struct widget *hover, struct widget *focus, struct widget *window);

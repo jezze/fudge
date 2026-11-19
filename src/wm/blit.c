@@ -291,6 +291,20 @@ void blit_iconarrowdown(struct blit_display *display, struct util_region *region
 
 }
 
+void blit_iconarrowleft(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    bliticon(display, &icons[BLIT_ICON_ARROWLEFT], region, line, x0, x2, cmap);
+
+}
+
+void blit_iconarrowright(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    bliticon(display, &icons[BLIT_ICON_ARROWRIGHT], region, line, x0, x2, cmap);
+
+}
+
 void blit_iconcursor(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 

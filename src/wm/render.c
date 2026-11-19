@@ -784,7 +784,8 @@ static struct util_size getsizepanel(struct widget *widget, struct util_size *li
 static struct util_size getsizeselect(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size padding = util_size((CONFIG_FRAME_WIDTH + render_unit(5)) * 3 + CONFIG_SELECT_ARROW_WIDTH, (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2);
+    unsigned int arrows = (widget->attributes.style == ATTR_STYLE_CYCLE) ? 2 : 1;
+    struct util_size padding = util_size((CONFIG_FRAME_WIDTH + render_unit(5)) * (2 + arrows) + CONFIG_SELECT_ARROW_WIDTH * arrows, (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2);
     struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size_union(&label, &padding);
@@ -828,7 +829,7 @@ static void placeselect(struct widget *widget)
 
     widget->cplacement = util_region(widget->placement.position.x, top, util_max(right - widget->placement.position.x, 0), util_max(bottom - top, 0));
 
-    if (!isfocused(widget))
+    if (!isfocused(widget) || widget->attributes.style == ATTR_STYLE_CYCLE)
         widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
     widget->cclip = widget->clip;
@@ -1026,7 +1027,36 @@ static void renderpanel(struct blit_display *display, struct widget *widget, int
 
 }
 
-static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+struct util_region render_getcyclearrow(struct widget *widget, unsigned int forward)
+{
+
+    int width = (CONFIG_FRAME_WIDTH + render_unit(5)) * 2 + CONFIG_SELECT_ARROW_WIDTH;
+    int x = (forward) ? widget->placement.position.x + (int)widget->placement.size.w - width : widget->placement.position.x;
+
+    return util_region(x, widget->placement.position.y, width, widget->placement.size.h);
+
+}
+
+static void rendercycle(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    struct util_region rprev = render_getcyclearrow(widget, 0);
+    struct util_region rnext = render_getcyclearrow(widget, 1);
+    struct util_size padding = util_size(rprev.size.w, CONFIG_FRAME_HEIGHT + render_unit(3));
+    struct palette *palette = getpalette(PALETTE_SELECT, getshade(widget));
+    int textx0 = util_max(x0, rprev.position.x + (int)rprev.size.w);
+    int textx2 = util_min(x2, rnext.position.x);
+
+    blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
+    blit_iconarrowleft(display, &rprev, line, x0, x2, palette->icon);
+    blit_iconarrowright(display, &rnext, line, x0, x2, palette->icon);
+
+    if (textx2 > textx0)
+        textrender(display, widget, &widget->placement, palette->text, textx0, textx2, 0, &padding, 0, line);
+
+}
+
+static void renderdropdown(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
     struct util_size padding = util_size(CONFIG_FRAME_WIDTH + render_unit(5), CONFIG_FRAME_HEIGHT + render_unit(3));
@@ -1040,6 +1070,16 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     if (textx2 > x0)
         textrender(display, widget, &widget->placement, palette->text, x0, textx2, 0, &padding, 0, line);
+
+}
+
+static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    if (widget->attributes.style == ATTR_STYLE_CYCLE)
+        rendercycle(display, widget, line, x0, x2);
+    else
+        renderdropdown(display, widget, line, x0, x2);
 
 }
 
