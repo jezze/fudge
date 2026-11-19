@@ -1135,12 +1135,27 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
 }
 
+static void rendertab(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    struct util_region open = util_region(widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h + CONFIG_FRAME_HEIGHT);
+
+    if (widget->selected)
+        blit_frame(display, &open, line, x0, x2, getpalette(PALETTE_PANEL, SHADE_NORMAL)->frame);
+    else
+        blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_BOX, getshade(widget))->frame);
+
+}
+
 static void renderitem(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
     unsigned int *cmapbody = getpalette(PALETTE_ITEM, (widget->selected) ? SHADE_FOCUS : getshade(widget))->frame;
 
-    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
+    if (widget->attributes.style == ATTR_STYLE_TAB)
+        rendertab(display, widget, line, x0, x2);
+    else
+        blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 
 }
 

@@ -5,7 +5,7 @@
 
 #define NUM_DISPLAYS                    4
 #define NUM_MODES                       4
-#define NUM_STYLES                      3
+#define NUM_STYLES                      4
 
 static struct util_token displays[NUM_DISPLAYS] =
 {
@@ -55,7 +55,8 @@ static struct util_token styles[NUM_STYLES] =
 {
     {ATTR_STYLE_DEFAULT, "default"},
     {ATTR_STYLE_CYCLE, "cycle"},
-    {ATTR_STYLE_SWITCH, "switch"}
+    {ATTR_STYLE_SWITCH, "switch"},
+    {ATTR_STYLE_TAB, "tab"}
 };
 
 static struct util_token valigns[3] =
