@@ -11,6 +11,7 @@
 #define WIDGET_TYPE_CHECKBOX            13
 #define WIDGET_TYPE_SWATCH              16
 #define WIDGET_TYPE_SLIDER              17
+#define WIDGET_TYPE_CYCLE               18
 
 struct widget_attributes
 {

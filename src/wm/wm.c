@@ -1000,20 +1000,6 @@ static struct widget *getparent(struct widget *widget)
 
 }
 
-static unsigned int isdropdown(struct widget *widget)
-{
-
-    return widget->type == WIDGET_TYPE_SELECT && widget->attributes.style != ATTR_STYLE_CYCLE;
-
-}
-
-static unsigned int iscycle(struct widget *widget)
-{
-
-    return widget->type == WIDGET_TYPE_SELECT && widget->attributes.style == ATTR_STYLE_CYCLE;
-
-}
-
 static struct widget *getitem(struct widget *widget)
 {
 
@@ -1085,6 +1071,7 @@ static unsigned int getmousetype(int x, int y)
 
         case WIDGET_TYPE_BUTTON:
         case WIDGET_TYPE_CHECKBOX:
+        case WIDGET_TYPE_CYCLE:
         case WIDGET_TYPE_ITEM:
         case WIDGET_TYPE_SELECT:
         case WIDGET_TYPE_SLIDER:
@@ -1770,7 +1757,7 @@ static void setfocus(struct widget *widget)
 
         damageall(state.focusedwidget);
 
-        if (isdropdown(state.focusedwidget))
+        if (state.focusedwidget->type == WIDGET_TYPE_SELECT)
         {
 
             bumpchildren(state.focusedwidget);
@@ -2497,7 +2484,7 @@ static struct widget *getselect(struct widget *widget)
     while (widget && widget->type != WIDGET_TYPE_WINDOW)
     {
 
-        if (widget->type == WIDGET_TYPE_SELECT)
+        if (widget->type == WIDGET_TYPE_SELECT || widget->type == WIDGET_TYPE_CYCLE)
             return widget;
 
         widget = getparent(widget);
@@ -2921,7 +2908,7 @@ static unsigned int isfocusable(struct widget *widget)
     if (widget->attributes.mode == ATTR_MODE_DISABLED)
         return 0;
 
-    if (getselect(widget) && widget->type != WIDGET_TYPE_SELECT)
+    if (getselect(widget) && getselect(widget) != widget)
         return 0;
 
     if (parent && parent->type == WIDGET_TYPE_ITEM)
@@ -2932,6 +2919,7 @@ static unsigned int isfocusable(struct widget *widget)
 
     case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHECKBOX:
+    case WIDGET_TYPE_CYCLE:
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_SLIDER:
         return 1;
@@ -3340,21 +3328,21 @@ static void onkeypress(struct message *message)
         if (id && (!binding || !dobinding(binding)))
         {
 
-            if (state.focusedwidget && iscycle(state.focusedwidget) && (id == KEYS_KEY_CURSORLEFT || id == KEYS_KEY_CURSORRIGHT))
+            if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_CYCLE && (id == KEYS_KEY_CURSORLEFT || id == KEYS_KEY_CURSORRIGHT))
             {
 
                 stepcycle(state.focusedwidget, id == KEYS_KEY_CURSORRIGHT);
 
             }
 
-            else if (state.focusedwidget && isdropdown(state.focusedwidget) && (id == KEYS_KEY_CURSORUP || id == KEYS_KEY_CURSORDOWN))
+            else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && (id == KEYS_KEY_CURSORUP || id == KEYS_KEY_CURSORDOWN))
             {
 
                 stepitem(state.focusedwidget, id == KEYS_KEY_CURSORDOWN);
 
             }
 
-            else if (state.focusedwidget && isdropdown(state.focusedwidget) && id == KEYS_KEY_ENTER)
+            else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && id == KEYS_KEY_ENTER)
             {
 
                 chooseitem(state.focusedwidget);
@@ -3932,7 +3920,7 @@ static void pressbutton(unsigned int button)
                 if (!item || !(state.keys.mod & (KEYS_MOD_SHIFT | KEYS_MOD_CTRL)))
                     clickwidget(interactivewidget);
 
-                if (iscycle(interactivewidget))
+                if (interactivewidget->type == WIDGET_TYPE_CYCLE)
                     clickcycle(interactivewidget);
 
                 if (interactivewidget->type == WIDGET_TYPE_BOX)

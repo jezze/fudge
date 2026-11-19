@@ -402,19 +402,19 @@ static void addcheckbox(char *row, char *id, unsigned int checked, char *onclick
 
 }
 
-static void addselect(char *id, char *value, struct entry *options, unsigned int count)
+static void addcycle(char *id, char *value, struct entry *options, unsigned int count)
 {
 
     unsigned int i;
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ select id \"%s\" in \"%s-value\" span \"1\" style \"cycle\" halign \"center\" label \"%s\"\n+ panel id \"%s-list\" in \"%s\" flow \"vertical-stretch\" padding \"1\"\n", id, id, getlabel(options, count, value), id, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ cycle id \"%s\" in \"%s-value\" span \"1\" label \"%s\"\n", id, id, getlabel(options, count, value));
 
     for (i = 0; i < count; i++)
     {
 
         reserve();
 
-        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-%u\" in \"%s-list\" padding \"4\" onclick \"q=choose&id=%s&value=%s&label=%s\"\n+ text in \"%s-%u\" label \"%s\"\n", id, &i, id, id, options[i].value, options[i].label, id, &i, options[i].label);
+        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-%u\" in \"%s\" onclick \"q=choose&id=%s&value=%s&label=%s\"\n+ text in \"%s-%u\" label \"%s\"\n", id, &i, id, id, options[i].value, options[i].label, id, &i, options[i].label);
 
     }
 
@@ -425,7 +425,7 @@ static void choice(char *id, char *label, char *value, struct entry *options, un
 
     beginrow(id);
     addlabel(id, label);
-    addselect(id, value, options, count);
+    addcycle(id, value, options, count);
 
 }
 

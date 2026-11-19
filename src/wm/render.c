@@ -781,11 +781,20 @@ static struct util_size getsizepanel(struct widget *widget, struct util_size *li
 
 }
 
+static struct util_size getsizecycle(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+{
+
+    struct util_size padding = util_size((CONFIG_FRAME_WIDTH + render_unit(5)) * 4 + CONFIG_SELECT_ARROW_WIDTH * 2, (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2);
+    struct util_size label = textsize(widget, limit, rowstart);
+
+    return util_size_union(&label, &padding);
+
+}
+
 static struct util_size getsizeselect(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    unsigned int arrows = (widget->attributes.style == ATTR_STYLE_CYCLE) ? 2 : 1;
-    struct util_size padding = util_size((CONFIG_FRAME_WIDTH + render_unit(5)) * (2 + arrows) + CONFIG_SELECT_ARROW_WIDTH * arrows, (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2);
+    struct util_size padding = util_size((CONFIG_FRAME_WIDTH + render_unit(5)) * 3 + CONFIG_SELECT_ARROW_WIDTH, (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2);
     struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size_union(&label, &padding);
@@ -820,6 +829,13 @@ static void placepanel(struct widget *widget)
 
 }
 
+static void placecycle(struct widget *widget)
+{
+
+    widget->cclip = util_region(0, 0, 0, 0);
+
+}
+
 static void placeselect(struct widget *widget)
 {
 
@@ -829,7 +845,7 @@ static void placeselect(struct widget *widget)
 
     widget->cplacement = util_region(widget->placement.position.x, top, util_max(right - widget->placement.position.x, 0), util_max(bottom - top, 0));
 
-    if (!isfocused(widget) || widget->attributes.style == ATTR_STYLE_CYCLE)
+    if (!isfocused(widget))
         widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
     widget->cclip = widget->clip;
@@ -1078,7 +1094,7 @@ static void rendercycle(struct blit_display *display, struct widget *widget, int
 
 }
 
-static void renderdropdown(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
     struct util_size padding = util_size(CONFIG_FRAME_WIDTH + render_unit(5), CONFIG_FRAME_HEIGHT + render_unit(3));
@@ -1092,16 +1108,6 @@ static void renderdropdown(struct blit_display *display, struct widget *widget, 
 
     if (textx2 > x0)
         textrender(display, widget, &widget->placement, palette->text, x0, textx2, 0, &padding, 0, line);
-
-}
-
-static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    if (widget->attributes.style == ATTR_STYLE_CYCLE)
-        rendercycle(display, widget, line, x0, x2);
-    else
-        renderdropdown(display, widget, line, x0, x2);
 
 }
 
@@ -1452,6 +1458,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_BOX, getsizebox, placebox, renderbox);
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, 0, renderbutton);
     setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, 0, rendercheckbox);
+    setupcall(WIDGET_TYPE_CYCLE, getsizecycle, placecycle, rendercycle);
     setupcall(WIDGET_TYPE_FILL, getsizefixed, 0, renderfill);
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
