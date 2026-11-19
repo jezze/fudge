@@ -703,7 +703,14 @@ static struct util_size getsizebutton(struct widget *widget, struct util_size *l
 static struct util_size getsizecheckbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return util_size((widget->attributes.style == ATTR_STYLE_SWITCH) ? CONFIG_SWITCH_WIDTH : CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
+    return util_size(CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
+
+}
+
+static struct util_size getsizeswitch(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+{
+
+    return util_size(CONFIG_SWITCH_WIDTH, CONFIG_CHECKBOX_HEIGHT);
 
 }
 
@@ -930,7 +937,7 @@ static void renderswitch(struct blit_display *display, struct widget *widget, in
 
 }
 
-static void rendertick(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+static void rendercheckbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
     struct util_region box = util_region(widget->placement.position.x + ((int)widget->placement.size.w - CONFIG_CHECKBOX_WIDTH) / 2, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_CHECKBOX_HEIGHT) / 2, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
@@ -940,16 +947,6 @@ static void rendertick(struct blit_display *display, struct widget *widget, int 
 
     if (widget->attributes.checked)
         blit_iconx(display, &box, line, x0, x2, palette->icon);
-
-}
-
-static void rendercheckbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    if (widget->attributes.style == ATTR_STYLE_SWITCH)
-        renderswitch(display, widget, line, x0, x2);
-    else
-        rendertick(display, widget, line, x0, x2);
 
 }
 
@@ -1462,6 +1459,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_FILL, getsizefixed, 0, renderfill);
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
+    setupcall(WIDGET_TYPE_SWITCH, getsizeswitch, 0, renderswitch);
     setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
     setupcall(WIDGET_TYPE_MEDIA, getsizemedia, 0, rendermedia);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);

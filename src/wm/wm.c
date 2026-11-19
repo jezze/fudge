@@ -1075,6 +1075,7 @@ static unsigned int getmousetype(int x, int y)
         case WIDGET_TYPE_ITEM:
         case WIDGET_TYPE_SELECT:
         case WIDGET_TYPE_SLIDER:
+        case WIDGET_TYPE_SWITCH:
             return BLIT_MOUSE_HAND;
 
         case WIDGET_TYPE_TEXT:
@@ -2560,6 +2561,7 @@ static void clickwidget(struct widget *widget)
     {
 
     case WIDGET_TYPE_CHECKBOX:
+    case WIDGET_TYPE_SWITCH:
         if (state.mousebuttonleft)
         {
 
@@ -2922,6 +2924,7 @@ static unsigned int isfocusable(struct widget *widget)
     case WIDGET_TYPE_CYCLE:
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_SLIDER:
+    case WIDGET_TYPE_SWITCH:
         return 1;
 
     case WIDGET_TYPE_TEXT:

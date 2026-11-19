@@ -395,10 +395,10 @@ static char *getlabel(struct entry *options, unsigned int count, char *value)
 
 }
 
-static void addcheckbox(char *row, char *id, unsigned int checked, char *onclick)
+static void addswitch(char *row, char *id, unsigned int checked, char *onclick)
 {
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ checkbox id \"%s\" in \"%s-value\" style \"switch\" checked \"%u\" onclick \"%s\"\n", id, row, &checked, onclick);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ switch id \"%s\" in \"%s-value\" checked \"%u\" onclick \"%s\"\n", id, row, &checked, onclick);
 
 }
 
@@ -1304,7 +1304,7 @@ static void enabledfield(char *kind, unsigned int enabled)
     cstring_write_fmt(onclick, 64, 0, "q=enable&kind=%s&value=\\0", kind);
     beginrow(id);
     addlabel(id, "Enabled");
-    addcheckbox(id, checkbox, enabled, onclick);
+    addswitch(id, checkbox, enabled, onclick);
 
 }
 

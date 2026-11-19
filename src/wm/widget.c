@@ -261,6 +261,7 @@ unsigned int widget_isinteractive(struct widget *widget)
     case WIDGET_TYPE_BOX:
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_SLIDER:
+    case WIDGET_TYPE_SWITCH:
     case WIDGET_TYPE_ITEM:
     case WIDGET_TYPE_WINDOW:
         return 1;
