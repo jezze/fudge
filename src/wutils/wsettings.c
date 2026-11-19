@@ -24,7 +24,7 @@
 #define NUM_LAYOUTS                     2
 #define NUM_LANGUAGES                   3
 #define NUM_TIMEZONES                   8
-#define NUM_RESOLUTIONS                 11
+#define NUM_RESOLUTIONS                 12
 #define NUM_TRANSPARENCIES              2
 #define NUM_CURSORS                     4
 #define NUM_DOUBLETAPS                  2
@@ -112,6 +112,7 @@ static struct entry networktypes[NUM_NETWORKTYPES] = {
 };
 
 static struct entry resolutions[NUM_RESOLUTIONS] = {
+    {"0x0x32", "Preferred"},
     {"320x200x32", "320x200x32"},
     {"320x240x32", "320x240x32"},
     {"640x480x32", "640x480x32"},
@@ -672,36 +673,23 @@ static void finddisplays(void)
     {
 
         char name[DEVICENAME];
-        unsigned int video;
 
         cstring_write_fmt(name, DEVICENAME, 0, "video:%u\\0", &i);
 
-        video = channel_lookup(name);
-
-        if (!video)
+        if (!channel_lookup(name))
             break;
 
         if (!hasdisplay(name))
         {
 
             struct display *display = &config.displays[config.ndisplays];
-            struct message_videoinfo videoinfo;
 
             copystring(display->device, DEVICENAME, name, cstring_length(name));
 
             display->enabled = 0;
-            display->width = 1920;
-            display->height = 1080;
+            display->width = 0;
+            display->height = 0;
             display->bpp = 4;
-
-            if (channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0) && channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo))
-            {
-
-                display->width = videoinfo.width;
-                display->height = videoinfo.height;
-                display->bpp = videoinfo.bpp;
-
-            }
 
             config.ndisplays++;
 
