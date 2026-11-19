@@ -278,10 +278,10 @@
     { name: cycle-hover-text          value: E8FFFFFF }
     { name: cycle-hover-icon          value: E8FFFFFF }
     { name: cycle-focus-shadow        value: E8101010 }
-    { name: cycle-focus-body          value: E8805050 }
-    { name: cycle-focus-dark          value: E8805050 }
-    { name: cycle-focus-light         value: E8E0B0B0 }
-    { name: cycle-focus-text          value: E8FFFFFF }
+    { name: cycle-focus-body          value: E82A2A2A }
+    { name: cycle-focus-dark          value: E8101010 }
+    { name: cycle-focus-light         value: E8888888 }
+    { name: cycle-focus-text          value: E8E0E0E0 }
     { name: cycle-focus-icon          value: E8FFFFFF }
     { name: cycle-disabled-shadow     value: E8101010 }
     { name: cycle-disabled-body       value: E82A2A2A }
