@@ -20,5 +20,5 @@
   [
     { device: touch:0 doubletap: drag }
   ]
-  bindings: "initrd:data/config/wm-bindings.mq"
+  binding: "initrd:data/config/wm-bindings.mq"
 }

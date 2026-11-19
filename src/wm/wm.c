@@ -704,7 +704,7 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .touchpad -format \"touchpad {device} {doubletap}\" %s", config));
     loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
-    loadreference(data, config, ".bindings", ".bindings", "binding {key} {mod} {action} {command}");
+    loadreference(data, config, ".binding", ".binding", "binding {key} {mod} {action} {command}");
 
 }
 

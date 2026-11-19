@@ -225,13 +225,13 @@ static struct
     struct devices keyboard;
     struct devices mouse;
     struct devices touchpad;
-    struct devices audios;
-    struct devices networks;
+    struct devices audio;
+    struct devices network;
     char transparency[8];
     char cursor[8];
-    char bindingspath[256];
+    char bindingpath[256];
     char themepath[256];
-    struct binding bindings[NUM_BINDINGS];
+    struct binding binding[NUM_BINDINGS];
     unsigned int nbindings;
     struct color colors[NUM_COLORS];
     unsigned int ncolors;
@@ -540,7 +540,7 @@ static void loadaudio(char *line, unsigned int length)
 
     char name[DEVICENAME];
     char volume[16];
-    struct device *device = adddevice(&config.audios, getword(line, length, 0, name, DEVICENAME), 1);
+    struct device *device = adddevice(&config.audio, getword(line, length, 0, name, DEVICENAME), 1);
 
     if (device && cstring_length(getword(line, length, 1, volume, 16)))
         copystring(device->volume, 16, volume, cstring_length(volume));
@@ -585,7 +585,7 @@ static void loadnetwork(char *line, unsigned int length)
 
     char name[DEVICENAME];
     char type[16];
-    struct device *device = adddevice(&config.networks, getfield(line, length, 0, name, DEVICENAME), 1);
+    struct device *device = adddevice(&config.network, getfield(line, length, 0, name, DEVICENAME), 1);
 
     if (device)
     {
@@ -690,7 +690,7 @@ static void finddisplays(void)
 static void loadbinding(char *line, unsigned int length)
 {
 
-    struct binding *binding = &config.bindings[config.nbindings];
+    struct binding *binding = &config.binding[config.nbindings];
 
     if (config.nbindings < NUM_BINDINGS)
     {
@@ -789,9 +789,9 @@ static void loadconfig(void)
     if (!config.cursor[0])
         copystring(config.cursor, 8, "100", 3);
 
-    count = query(data, 256, option_getstring("config"), ".bindings", 0);
+    count = query(data, 256, option_getstring("config"), ".binding", 0);
 
-    getword(data, count, 0, config.bindingspath, 256);
+    getword(data, count, 0, config.bindingpath, 256);
 
     count = query(data, 256, option_getstring("config"), ".general.theme", 0);
 
@@ -807,10 +807,10 @@ static void loadconfig(void)
     config.mouse.selected = 0;
     config.touchpad.count = 0;
     config.touchpad.selected = 0;
-    config.audios.count = 0;
-    config.audios.selected = 0;
-    config.networks.count = 0;
-    config.networks.selected = 0;
+    config.audio.count = 0;
+    config.audio.selected = 0;
+    config.network.count = 0;
+    config.network.selected = 0;
 
     loadlines(option_getstring("config"), ".display", "{width} {height} {bpp} {device}", loaddisplay);
     loadlines(option_getstring("config"), ".keyboard", "{device} {map}", loadkeyboard);
@@ -821,11 +821,11 @@ static void loadconfig(void)
     finddevices(&config.mouse, "mouse");
     finddevices(&config.touchpad, "touch");
     loadlines(option_getstring("audio-config"), ".devices", "{device} {volume}", loadaudio);
-    finddevices(&config.audios, "audio");
+    finddevices(&config.audio, "audio");
     loadlines(option_getstring("network-config"), ".networks", "{device}|{type}|{address}|{route}|{netmask}|{dns}", loadnetwork);
-    finddevices(&config.networks, "ethernet");
+    finddevices(&config.network, "ethernet");
 
-    loadlines(config.bindingspath, ".bindings", "{key} {mod} {action} {command}", loadbinding);
+    loadlines(config.bindingpath, ".binding", "{key} {mod} {action} {command}", loadbinding);
     loadlines(config.themepath, ".colors", "{name} {value}", loadcolor);
 
 }
@@ -880,7 +880,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
     }
 
     count += cstring_write_fmt(data, size, count, "  ]\n");
-    count += cstring_write_fmt(data, size, count, "  bindings: \"%s\"\n}\n", config.bindingspath);
+    count += cstring_write_fmt(data, size, count, "  binding: \"%s\"\n}\n", config.bindingpath);
 
     return count;
 
@@ -894,11 +894,11 @@ static unsigned int writeaudio(char *data, unsigned int size)
 
     count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
-    for (i = 0; i < config.audios.count; i++)
+    for (i = 0; i < config.audio.count; i++)
     {
 
-        if (config.audios.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s volume: %s }\n", config.audios.list[i].name, config.audios.list[i].volume);
+        if (config.audio.list[i].enabled)
+            count += cstring_write_fmt(data, size, count, "    { device: %s volume: %s }\n", config.audio.list[i].name, config.audio.list[i].volume);
 
     }
 
@@ -923,10 +923,10 @@ static unsigned int writenetwork(char *data, unsigned int size)
 
     count += cstring_write_fmt(data, size, count, "{\n  networks: [\n");
 
-    for (i = 0; i < config.networks.count; i++)
+    for (i = 0; i < config.network.count; i++)
     {
 
-        struct device *device = &config.networks.list[i];
+        struct device *device = &config.network.list[i];
 
         if (cstring_match(device->type, "dynamic"))
             count += cstring_write_fmt(data, size, count, "    {\n      device: %s\n      type: %s\n    }\n", device->name, device->type);
@@ -949,11 +949,11 @@ static unsigned int writeaudiolines(char *data, unsigned int size)
 
     count += cstring_write_fmt(data, size, count, "devices\n");
 
-    for (i = 0; i < config.audios.count; i++)
+    for (i = 0; i < config.audio.count; i++)
     {
 
-        if (config.audios.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "device %s %s\n", config.audios.list[i].name, config.audios.list[i].volume);
+        if (config.audio.list[i].enabled)
+            count += cstring_write_fmt(data, size, count, "device %s %s\n", config.audio.list[i].name, config.audio.list[i].volume);
 
     }
 
@@ -967,12 +967,12 @@ static unsigned int writebindings(char *data, unsigned int size)
     unsigned int count = 0;
     unsigned int i;
 
-    count += cstring_write_fmt(data, size, count, "{\n  bindings:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "{\n  binding:\n  [\n");
 
     for (i = 0; i < config.nbindings; i++)
     {
 
-        struct binding *binding = &config.bindings[i];
+        struct binding *binding = &config.binding[i];
 
         if (!cstring_length(binding->key) || !cstring_length(binding->action))
             continue;
@@ -1072,7 +1072,7 @@ static unsigned int writelines(char *data, unsigned int size)
     for (i = 0; i < config.nbindings; i++)
     {
 
-        struct binding *binding = &config.bindings[i];
+        struct binding *binding = &config.binding[i];
 
         if (cstring_length(binding->key) && cstring_length(binding->action))
             count += cstring_write_fmt(data, size, count, "binding %s %s %s %s\n", binding->key, (cstring_length(binding->mod)) ? binding->mod : "none", binding->action, binding->command);
@@ -1160,8 +1160,8 @@ static void setchoice(char *id, char *value)
         copystring(config.timezone, 32, value, cstring_length(value));
     else if (cstring_match(id, "keyboard-layout") && getselected(&config.keyboard))
         copystring(getselected(&config.keyboard)->map, 256, value, cstring_length(value));
-    else if (cstring_match(id, "network-type") && getselected(&config.networks))
-        copystring(getselected(&config.networks)->type, 16, value, cstring_length(value));
+    else if (cstring_match(id, "network-type") && getselected(&config.network))
+        copystring(getselected(&config.network)->type, 16, value, cstring_length(value));
     else if (cstring_match(id, "touchpad-doubletap") && getselected(&config.touchpad))
         copystring(getselected(&config.touchpad)->doubletap, 16, value, cstring_length(value));
     else if (cstring_match(id, "display-resolution") && config.selecteddisplay < config.ndisplays)
@@ -1178,10 +1178,10 @@ static void setfield(char *id, char *value)
 
     unsigned int length = cstring_length(value);
 
-    if (buffer_match(id, "network-", 8) && getselected(&config.networks))
+    if (buffer_match(id, "network-", 8) && getselected(&config.network))
     {
 
-        struct device *device = getselected(&config.networks);
+        struct device *device = getselected(&config.network);
 
         if (cstring_match(id, "network-address"))
             copystring(device->address, 32, value, length);
@@ -1211,8 +1211,8 @@ static void setfield(char *id, char *value)
     else if (cstring_match(id, "audio-volume-box"))
     {
 
-        if (getselected(&config.audios))
-            copystring(getselected(&config.audios)->volume, 16, value, length);
+        if (getselected(&config.audio))
+            copystring(getselected(&config.audio)->volume, 16, value, length);
 
     }
 
@@ -1234,7 +1234,7 @@ static void setfield(char *id, char *value)
         if (index < config.nbindings)
         {
 
-            struct binding *binding = &config.bindings[index];
+            struct binding *binding = &config.binding[index];
 
             if (cstring_match(part, "key"))
                 copystring(binding->key, 32, value, length);
@@ -1463,7 +1463,7 @@ static void rendertouchpad(void)
 static unsigned int getvolumevalue(void)
 {
 
-    struct device *device = getselected(&config.audios);
+    struct device *device = getselected(&config.audio);
     unsigned int volume = (device) ? cstring_read_value(device->volume, cstring_length(device->volume), 10) : 0;
 
     if (volume > VOLUME_FULL)
@@ -1476,11 +1476,11 @@ static unsigned int getvolumevalue(void)
 static void renderaudio(void)
 {
 
-    struct device *device = getselected(&config.audios);
+    struct device *device = getselected(&config.audio);
     unsigned int value = getvolumevalue();
 
     beginarea("Audio");
-    renderdevicechoice(&config.audios, "audio");
+    renderdevicechoice(&config.audio, "audio");
 
     if (!device)
         return;
@@ -1506,10 +1506,10 @@ static void networkfield(char *id, char *label, char *value)
 static void rendernetwork(void)
 {
 
-    struct device *device = getselected(&config.networks);
+    struct device *device = getselected(&config.network);
 
     beginarea("Network");
-    renderdevicechoice(&config.networks, "network");
+    renderdevicechoice(&config.network, "network");
 
     if (!device)
         return;
@@ -1539,7 +1539,7 @@ static void renderbindings(void)
     for (i = 0; i < config.nbindings; i++)
     {
 
-        struct binding *binding = &config.bindings[i];
+        struct binding *binding = &config.binding[i];
         char row[32];
         char id[64];
 
@@ -1707,10 +1707,10 @@ static struct devices *getdevices(char *kind)
         return &config.touchpad;
 
     if (cstring_match(kind, "audio"))
-        return &config.audios;
+        return &config.audio;
 
     if (cstring_match(kind, "network"))
-        return &config.networks;
+        return &config.network;
 
     return 0;
 
@@ -1863,7 +1863,7 @@ static void onwmevent(struct message *message)
         {
 
             unsigned int volume = (kv_getvalue(event, "value=", 10) * VOLUME_FULL + 0x7FFF) / 0xFFFF;
-            struct device *device = getselected(&config.audios);
+            struct device *device = getselected(&config.audio);
 
             if (device)
             {
@@ -1893,7 +1893,7 @@ static void onwmevent(struct message *message)
 
             static char data[0x8000];
 
-            if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingspath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)) && savefile(option_getstring("audio-config"), data, writeaudio(data, 0x8000)) && savefile(option_getstring("localization-config"), data, writelocalization(data, 0x8000)) && savefile(option_getstring("network-config"), data, writenetwork(data, 0x8000)))
+            if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingpath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)) && savefile(option_getstring("audio-config"), data, writeaudio(data, 0x8000)) && savefile(option_getstring("localization-config"), data, writelocalization(data, 0x8000)) && savefile(option_getstring("network-config"), data, writenetwork(data, 0x8000)))
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"disabled\"\n");
 
         }

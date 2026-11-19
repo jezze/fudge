@@ -1,5 +1,5 @@
 {
-  bindings:
+  binding:
   [
     { key: q mod: alt+shift action: close }
     { key: p mod: alt+shift action: run command: "initrd:bin/wshell" }
