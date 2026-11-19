@@ -17,6 +17,7 @@
 #define STATE_GRABBED       1
 #define TEXTBOX_SIZE        4096
 #define EVENTDATA_SIZE      512
+#define RENDERFILE_SIZE     4096
 #define LAYOUT_DEFAULT      0
 #define LAYOUT_TILING       1
 #define NUM_FOCUSABLE       256
@@ -4353,10 +4354,9 @@ static void onwmgrab(struct message *message)
 
 }
 
-static void render(unsigned int source, unsigned int count, void *data)
+static void finishrender(unsigned int source)
 {
 
-    parser_parse(source, "root", count, data);
     pool_loadresources();
     placewindows(source);
     purge(source);
@@ -4368,6 +4368,14 @@ static void render(unsigned int source, unsigned int count, void *data)
         setfocus(0);
 
     redraw(1);
+
+}
+
+static void render(unsigned int source, unsigned int count, void *data)
+{
+
+    parser_parse(source, "root", count, data);
+    finishrender(source);
 
 }
 
@@ -4491,12 +4499,46 @@ static void onwmread(struct message *message)
 
 }
 
+static void parsefile(unsigned int source, char *path)
+{
+
+    char data[RENDERFILE_SIZE];
+    unsigned int target = fs_auth(path);
+    unsigned int id = (target) ? fs_walk(1, target, 0, path) : 0;
+    unsigned int offset = 0;
+    unsigned int kept = 0;
+    unsigned int count;
+
+    while (id && (count = fs_read(1, target, id, data + kept, RENDERFILE_SIZE - kept, offset)))
+    {
+
+        unsigned int total = kept + count;
+        unsigned int length = buffer_lastbyte(data, total, '\n');
+        unsigned int i;
+
+        if (!length && total == RENDERFILE_SIZE)
+            length = total;
+
+        parser_parse(source, "root", length, data);
+
+        kept = total - length;
+        offset += count;
+
+        for (i = 0; i < kept; i++)
+            data[i] = data[length + i];
+
+    }
+
+    if (kept)
+        parser_parse(source, "root", kept, data);
+
+}
+
 static void onwmrenderfile(struct message *message)
 {
 
-    char data[4096];
-
-    render(message->source, fs_read_path(1, message->data, data, 4096), data);
+    parsefile(message->source, message->data);
+    finishrender(message->source);
 
 }
 
@@ -4563,11 +4605,10 @@ static void setupwidgets(void)
 {
 
     char *data0 = "+ layout id \"root\" flow \"stretch\"\n";
-    char data1[4096];
     unsigned int i;
 
     parser_parse(0, "", cstring_length(data0), data0);
-    parser_parse(0, "root", fs_read_path(1, "initrd:data/alfi/wm.alfi", data1, 4096), data1);
+    parsefile(0, "initrd:data/alfi/wm.alfi");
     pool_loadresources();
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
