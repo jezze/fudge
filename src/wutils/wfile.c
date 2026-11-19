@@ -460,9 +460,9 @@ static void onmain(struct message *message)
         channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
         if (saver)
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Save As\"\n- copy\n- cut\n- paste\n- delete\n+ box id \"namebox\" in \"bottom\" mode \"edit\" padding \"3\" span \"1\" onchange \"q=name&name=\" onenter \"q=save&name=\"\n+ text id \"name\" in \"namebox\"\n+ button in \"bottom\" label \"Save\" onclick \"q=save\"\n");
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Save As\"\n= browse display \"none\"\n= saveas display \"block\"\n");
         else if (opener)
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Open\"\n- copy\n- cut\n- paste\n- delete\n+ button id \"open\" in \"bottom\" mode \"disabled\" label \"Open\" onclick \"q=open\"\n");
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Open\"\n= browse display \"none\"\n= openas display \"block\"\n");
 
         sendvolumes(wm);
         changepath(wm, "initrd:");
