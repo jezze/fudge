@@ -8,7 +8,6 @@
 #define WIDGET_TYPE_TEXT                9
 #define WIDGET_TYPE_ITEM                11
 #define WIDGET_TYPE_WINDOW              12
-#define WIDGET_TYPE_CHECKBOX            13
 #define WIDGET_TYPE_SWATCH              16
 #define WIDGET_TYPE_CYCLE               18
 #define WIDGET_TYPE_TAB                 20

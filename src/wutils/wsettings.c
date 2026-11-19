@@ -2,8 +2,8 @@
 #include <abi.h>
 #include "kv.h"
 
-#define NUM_WIDGETS                     15
-#define NUM_RULES                       17
+#define NUM_WIDGETS                     14
+#define NUM_RULES                       16
 #define NUM_SHADES                      4
 #define NUM_PARTS                       6
 #define SHADE_NORMAL                    1
@@ -160,7 +160,6 @@ struct rule
 static struct entry widgets[NUM_WIDGETS] = {
     {"box", "Box"},
     {"button", "Button"},
-    {"checkbox", "Checkbox"},
     {"cycle", "Cycle"},
     {"item", "Item"},
     {"link", "Link"},
@@ -178,7 +177,6 @@ static struct entry widgets[NUM_WIDGETS] = {
 static struct rule rules[NUM_RULES] = {
     {"box", "box", SHADE_ALL, PART_FRAME},
     {"button", "button", SHADE_ALL, PART_FRAME | PART_TEXT},
-    {"checkbox", "checkbox", SHADE_ALL, PART_FRAME | PART_ICON},
     {"cycle", "cycle", SHADE_ALL, PART_FRAME | PART_TEXT | PART_ICON},
     {"item", "item", SHADE_ALL, PART_FRAME},
     {"link", "link", SHADE_NORMAL, PART_TEXT},

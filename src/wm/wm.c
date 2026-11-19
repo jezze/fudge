@@ -1068,7 +1068,6 @@ static unsigned int getmousetype(int x, int y)
         {
 
         case WIDGET_TYPE_BUTTON:
-        case WIDGET_TYPE_CHECKBOX:
         case WIDGET_TYPE_CYCLE:
         case WIDGET_TYPE_ITEM:
         case WIDGET_TYPE_SELECT:
@@ -2534,21 +2533,6 @@ static void clickwidget(struct widget *widget)
     switch (widget->type)
     {
 
-    case WIDGET_TYPE_CHECKBOX:
-        if (state.mousebuttonleft)
-        {
-
-            widget->attributes.checked = !widget->attributes.checked;
-
-            damage(widget);
-
-            if (widget->attributes.onclick)
-                sendevent(widget->source, 1, widget->attributes.onclick, (widget->attributes.checked) ? "1" : "0");
-
-        }
-
-        return;
-
     case WIDGET_TYPE_ITEM:
         if (state.mousebuttonleft)
             sendselect(widget);
@@ -2893,7 +2877,6 @@ static unsigned int isfocusable(struct widget *widget)
     {
 
     case WIDGET_TYPE_BUTTON:
-    case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_CYCLE:
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_TAB:

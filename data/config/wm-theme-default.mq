@@ -25,30 +25,6 @@
     { name: button-disabled-light     value: E8888888 }
     { name: button-disabled-text      value: E8A0A0A0 }
     { name: button-disabled-icon      value: E8FFFFFF }
-    { name: checkbox-normal-shadow    value: E8101010 }
-    { name: checkbox-normal-body      value: E8484848 }
-    { name: checkbox-normal-dark      value: E8404040 }
-    { name: checkbox-normal-light     value: E8888888 }
-    { name: checkbox-normal-text      value: E8E0E0E0 }
-    { name: checkbox-normal-icon      value: E8FFFFFF }
-    { name: checkbox-hover-shadow     value: E8101010 }
-    { name: checkbox-hover-body       value: E8505050 }
-    { name: checkbox-hover-dark       value: E8484848 }
-    { name: checkbox-hover-light      value: E8888888 }
-    { name: checkbox-hover-text       value: E8E0E0E0 }
-    { name: checkbox-hover-icon       value: E8FFFFFF }
-    { name: checkbox-focus-shadow     value: E8101010 }
-    { name: checkbox-focus-body       value: E8585858 }
-    { name: checkbox-focus-dark       value: E8505050 }
-    { name: checkbox-focus-light      value: E8888888 }
-    { name: checkbox-focus-text       value: E8E0E0E0 }
-    { name: checkbox-focus-icon       value: E8FFFFFF }
-    { name: checkbox-disabled-shadow  value: E8101010 }
-    { name: checkbox-disabled-body    value: E8484848 }
-    { name: checkbox-disabled-dark    value: E8404040 }
-    { name: checkbox-disabled-light   value: E8888888 }
-    { name: checkbox-disabled-text    value: E8E0E0E0 }
-    { name: checkbox-disabled-icon    value: E8FFFFFF }
     { name: box-normal-shadow         value: E8101010 }
     { name: box-normal-body           value: E82A2A2A }
     { name: box-normal-dark           value: E8101010 }

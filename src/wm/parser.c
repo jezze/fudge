@@ -15,7 +15,7 @@
 #define UPDATE  5
 
 #define NUM_COMMANDS                    5
-#define NUM_WIDGETS                     14
+#define NUM_WIDGETS                     13
 #define NUM_ATTRIBUTES                  25
 
 static struct util_token commands[NUM_COMMANDS] =
@@ -31,7 +31,6 @@ static struct util_token widgets[NUM_WIDGETS] =
 {
     {WIDGET_TYPE_BOX, "box"},
     {WIDGET_TYPE_BUTTON, "button"},
-    {WIDGET_TYPE_CHECKBOX, "checkbox"},
     {WIDGET_TYPE_CYCLE, "cycle"},
     {WIDGET_TYPE_FILL, "fill"},
     {WIDGET_TYPE_ITEM, "item"},

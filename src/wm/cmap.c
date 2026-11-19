@@ -2,7 +2,7 @@
 #include <abi.h>
 #include "cmap.h"
 
-static char *palettes[NUM_PALETTES] = {"button", "checkbox", "box", "item", "link", "mouse", "panel", "select", "swatch", "text", "window", "cycle", "tab", "tabchecked"};
+static char *palettes[NUM_PALETTES] = {"button", "box", "item", "link", "mouse", "panel", "select", "swatch", "text", "window", "cycle", "tab", "tabchecked"};
 static char *shades[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
 static char *parts[NUM_PARTS] = {"shadow", "body", "dark", "light", "text", "icon"};
 static unsigned int values[NUM_PALETTES * NUM_SHADES * NUM_PARTS];

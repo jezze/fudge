@@ -700,13 +700,6 @@ static struct util_size getsizebutton(struct widget *widget, struct util_size *l
 
 }
 
-static struct util_size getsizecheckbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    return util_size(CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
-
-}
-
 static struct util_size getsizechildren(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -908,19 +901,6 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
     blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
     textrender(display, widget, &widget->placement, palette->text, x0, x2, 0, &padding, 0, line);
-
-}
-
-static void rendercheckbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    struct util_region box = util_region(widget->placement.position.x + ((int)widget->placement.size.w - CONFIG_CHECKBOX_WIDTH) / 2, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_CHECKBOX_HEIGHT) / 2, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
-    struct palette *palette = getpalette(PALETTE_CHECKBOX, getshade(widget));
-
-    blit_frame(display, &box, line, x0, x2, palette->frame);
-
-    if (widget->attributes.checked)
-        blit_iconx(display, &box, line, x0, x2, palette->icon);
 
 }
 
@@ -1403,7 +1383,6 @@ void render_init(void)
 
     setupcall(WIDGET_TYPE_BOX, getsizebox, placebox, renderbox);
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, 0, renderbutton);
-    setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, 0, rendercheckbox);
     setupcall(WIDGET_TYPE_CYCLE, getsizecycle, placecycle, rendercycle);
     setupcall(WIDGET_TYPE_FILL, getsizefixed, 0, renderfill);
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);

@@ -244,7 +244,6 @@ unsigned int widget_isinteractive(struct widget *widget)
         return widget_islink(widget);
 
     case WIDGET_TYPE_BUTTON:
-    case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_CYCLE:
     case WIDGET_TYPE_BOX:
     case WIDGET_TYPE_SELECT:
