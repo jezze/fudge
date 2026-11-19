@@ -382,7 +382,9 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
     flow.rowstart = zeroposition;
     flow.pending = 0;
 
-    if (widget->type == WIDGET_TYPE_EACH)
+    if (widget->type == WIDGET_TYPE_EACH && direction == DIRECTION_HORIZONTAL)
+        flow.offset.x = widget->rowfirst * widget->rowstride;
+    else if (widget->type == WIDGET_TYPE_EACH)
         flow.offset.y = widget->rowfirst * widget->rowstride;
 
     while ((current = pool_nextin(current, widget)))
@@ -720,8 +722,12 @@ static struct util_size getsizeeach(struct widget *widget, struct util_size *lim
     {
 
         unsigned int records = record_count(widget->source, strpool_getstring(widget->attributes.data));
+        unsigned int length = widget->rowstride * records + render_unit(widget->attributes.padding) * 2;
 
-        size.h = util_min(widget->rowstride * records + render_unit(widget->attributes.padding) * 2, limit->h);
+        if (getdirection(widget->attributes.flow) == DIRECTION_HORIZONTAL)
+            size.w = util_min(length, limit->w);
+        else
+            size.h = util_min(length, limit->h);
 
     }
 

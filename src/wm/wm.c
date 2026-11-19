@@ -2967,6 +2967,34 @@ static void placeroots(void)
 
 }
 
+static unsigned int ishorizontal(struct widget *widget)
+{
+
+    return widget->attributes.flow == ATTR_FLOW_HORIZONTAL || widget->attributes.flow == ATTR_FLOW_HORIZONTALSTRETCH;
+
+}
+
+static unsigned int isvertical(struct widget *widget)
+{
+
+    return widget->attributes.flow == ATTR_FLOW_VERTICAL || widget->attributes.flow == ATTR_FLOW_VERTICALSTRETCH;
+
+}
+
+static int getstart(struct widget *widget, unsigned int horizontal)
+{
+
+    return (horizontal) ? widget->placement.position.x : widget->placement.position.y;
+
+}
+
+static int getend(struct widget *widget, unsigned int horizontal)
+{
+
+    return getstart(widget, horizontal) + (int)((horizontal) ? widget->placement.size.w : widget->placement.size.h);
+
+}
+
 static unsigned int getstride(struct widget *each)
 {
 
@@ -3002,10 +3030,10 @@ static unsigned int getstride(struct widget *each)
     }
 
     if (next)
-        return next->placement.position.y - first->placement.position.y;
+        return getstart(next, ishorizontal(each)) - getstart(first, ishorizontal(each));
 
     if (last)
-        return last->placement.position.y + last->placement.size.h - first->placement.position.y + render_unit(each->attributes.spacing);
+        return getend(last, ishorizontal(each)) - getstart(first, ishorizontal(each)) + render_unit(each->attributes.spacing);
 
     return each->rowstride;
 
@@ -3015,22 +3043,24 @@ static unsigned int bindeach(struct widget *each)
 {
 
     unsigned int records = record_count(each->source, getset(each));
-    unsigned int vertical = each->attributes.flow == ATTR_FLOW_VERTICAL || each->attributes.flow == ATTR_FLOW_VERTICALSTRETCH;
-    unsigned int stride = (vertical) ? getstride(each) : 0;
+    unsigned int horizontal = ishorizontal(each);
+    unsigned int recycled = horizontal || isvertical(each);
+    unsigned int stride = (recycled) ? getstride(each) : 0;
     struct util_region view = util_region_intersection(&each->placement, &each->clip);
+    unsigned int length = (horizontal) ? view.size.w : view.size.h;
     unsigned int changed = stride != each->rowstride;
     unsigned int first = 0;
-    unsigned int count = (records && vertical) ? 1 : records;
+    unsigned int count = (records && recycled) ? 1 : records;
 
     each->rowstride = stride;
 
-    if (stride && view.size.h)
+    if (stride && length)
     {
 
-        unsigned int top = (view.position.y - each->placement.position.y) / stride;
+        unsigned int offset = (unsigned int)(((horizontal) ? view.position.x : view.position.y) - getstart(each, horizontal)) / stride;
 
-        first = (top) ? top - 1 : 0;
-        count = view.size.h / stride + 3;
+        first = (offset) ? offset - 1 : 0;
+        count = length / stride + 3;
 
     }
 
