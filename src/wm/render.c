@@ -7,6 +7,7 @@
 #include "widget.h"
 #include "strpool.h"
 #include "pool.h"
+#include "record.h"
 #include "blit.h"
 #include "cmap.h"
 #include "render.h"
@@ -381,6 +382,9 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
     flow.rowstart = zeroposition;
     flow.pending = 0;
 
+    if (widget->type == WIDGET_TYPE_EACH)
+        flow.offset.y = widget->rowfirst * widget->rowstride;
+
     while ((current = pool_nextin(current, widget)))
     {
 
@@ -704,6 +708,24 @@ static struct util_size getsizechildren(struct widget *widget, struct util_size 
 {
 
     return childrengetsize(widget, limit);
+
+}
+
+static struct util_size getsizeeach(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+{
+
+    struct util_size size = getsizechildren(widget, limit, rowstart);
+
+    if (widget->rowstride)
+    {
+
+        unsigned int records = record_count(widget->source, strpool_getstring(widget->attributes.data));
+
+        size.h = util_min(widget->rowstride * records + render_unit(widget->attributes.padding) * 2, limit->h);
+
+    }
+
+    return size;
 
 }
 
@@ -1388,7 +1410,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
     setupcall(WIDGET_TYPE_TAB, getsizechildren, 0, rendertab);
-    setupcall(WIDGET_TYPE_EACH, getsizechildren, 0, renderlayout);
+    setupcall(WIDGET_TYPE_EACH, getsizeeach, 0, renderlayout);
     setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
     setupcall(WIDGET_TYPE_MEDIA, getsizemedia, 0, rendermedia);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);

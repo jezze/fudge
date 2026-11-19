@@ -11,6 +11,8 @@ struct dataentry
     unsigned int source;
     unsigned int set;
     unsigned int key;
+    unsigned int selected;
+    unsigned int anchor;
     unsigned int names[RECORD_FIELDS];
     unsigned int values[RECORD_FIELDS];
 
@@ -52,6 +54,8 @@ static void copyrecord(struct dataentry *out, struct dataentry *in)
     out->source = in->source;
     out->set = in->set;
     out->key = in->key;
+    out->selected = in->selected;
+    out->anchor = in->anchor;
 
     for (i = 0; i < RECORD_FIELDS; i++)
     {
@@ -109,6 +113,8 @@ struct dataentry *record_create(unsigned int source, char *set, char *key)
     record->source = source;
     record->set = strpool_updatestring(0, set);
     record->key = strpool_updatestring(0, key);
+    record->selected = 0;
+    record->anchor = 0;
 
     for (i = 0; i < RECORD_FIELDS; i++)
     {
@@ -149,6 +155,62 @@ struct dataentry *record_next(struct dataentry *current, unsigned int source, ch
     }
 
     return 0;
+
+}
+
+struct dataentry *record_at(unsigned int source, char *set, unsigned int index)
+{
+
+    struct dataentry *record = 0;
+
+    while ((record = record_next(record, source, set)) && index)
+        index--;
+
+    return record;
+
+}
+
+unsigned int record_count(unsigned int source, char *set)
+{
+
+    struct dataentry *record = 0;
+    unsigned int count = 0;
+
+    while ((record = record_next(record, source, set)))
+        count++;
+
+    return count;
+
+}
+
+unsigned int record_isselected(struct dataentry *record)
+{
+
+    return record->selected;
+
+}
+
+void record_select(struct dataentry *record, unsigned int selected)
+{
+
+    record->selected = selected;
+
+}
+
+unsigned int record_isanchor(struct dataentry *record)
+{
+
+    return record->anchor;
+
+}
+
+void record_setanchor(struct dataentry *record, unsigned int source, char *set)
+{
+
+    struct dataentry *current = 0;
+
+    while ((current = record_next(current, source, set)))
+        current->anchor = (current == record);
 
 }
 

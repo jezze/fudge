@@ -19,6 +19,8 @@
 #define TEXTBOX_SIZE        4096
 #define EVENTDATA_SIZE      512
 #define RENDERFILE_SIZE     4096
+#define BIND_PASSES         3
+#define FOLLOW_KEYSIZE      256
 #define LAYOUT_DEFAULT      0
 #define LAYOUT_TILING       1
 #define NUM_FOCUSABLE       256
@@ -1346,14 +1348,14 @@ static void launch(char *command)
 
 }
 
-static void sendevent(unsigned int source, unsigned int type, unsigned int action, char *text)
+static void sendtextevent(unsigned int source, unsigned int type, char *action, char *text)
 {
 
     if (source)
     {
 
         struct {struct message_wmevent wmevent; char data[EVENTDATA_SIZE];} message;
-        unsigned int count = cstring_write_fmt(message.data, EVENTDATA_SIZE - 1, 0, "%s", strpool_getstring(action));
+        unsigned int count = cstring_write_fmt(message.data, EVENTDATA_SIZE - 1, 0, "%s", action);
 
         count += buffer_write(message.data, EVENTDATA_SIZE - 1, text, utf8_fit(text, cstring_length(text), EVENTDATA_SIZE - 1 - count), count);
         message.data[count] = '\0';
@@ -1367,12 +1369,196 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
     else
     {
 
-        char *cmd = strpool_getstring(action);
-
-        if (buffer_match(cmd, "run=", 4))
-            launch(cmd + 4);
+        if (buffer_match(action, "run=", 4))
+            launch(action + 4);
 
     }
+
+}
+
+static void sendevent(unsigned int source, unsigned int type, unsigned int action, char *text)
+{
+
+    sendtextevent(source, type, strpool_getstring(action), text);
+
+}
+
+static struct widget *getlist(struct widget *item)
+{
+
+    struct widget *parent = getparent(item);
+
+    return (parent && parent->type == WIDGET_TYPE_EACH && item->instance) ? parent : 0;
+
+}
+
+static char *getset(struct widget *each)
+{
+
+    return strpool_getstring(each->attributes.data);
+
+}
+
+static struct dataentry *getrecord(struct widget *item)
+{
+
+    return record_find(item->source, getset(getlist(item)), strpool_getstring(item->instance));
+
+}
+
+static unsigned int iscopyof(struct widget *widget, struct dataentry *record)
+{
+
+    return widget->instance && widget_isshown(widget) && cstring_match(strpool_getstring(widget->instance), record_getkey(record));
+
+}
+
+static struct widget *getcopy(struct widget *each, struct dataentry *record)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, each)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_ITEM && iscopyof(child, record))
+            return child;
+
+    }
+
+    return 0;
+
+}
+
+static struct widget *gettemplateitem(struct widget *each)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, each)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_ITEM && widget_istemplate(child))
+            return child;
+
+    }
+
+    return 0;
+
+}
+
+static void selectrecord(struct widget *each, struct dataentry *record, unsigned int selected)
+{
+
+    struct widget *copy = getcopy(each, record);
+    char *text = (selected) ? "1" : "0";
+
+    if (record_isselected(record) == selected)
+        return;
+
+    record_select(record, selected);
+
+    if (copy)
+    {
+
+        copy->selected = selected;
+
+        damage(copy);
+
+        if (copy->attributes.onselect)
+            sendevent(copy->source, 1, copy->attributes.onselect, text);
+
+    }
+
+    else
+    {
+
+        struct widget *template = gettemplateitem(each);
+
+        if (template && template->attributes.onselect)
+        {
+
+            char action[EVENTDATA_SIZE];
+
+            parser_substitute(action, EVENTDATA_SIZE, strpool_getstring(template->attributes.onselect), record);
+            sendtextevent(each->source, 1, action, text);
+
+        }
+
+    }
+
+}
+
+static void anchorrecord(struct widget *each, struct dataentry *record)
+{
+
+    struct list_item *current = 0;
+
+    record_setanchor(record, each->source, getset(each));
+
+    while ((current = pool_nextin(current, each)))
+    {
+
+        struct widget *child = current->data;
+
+        child->anchor = iscopyof(child, record);
+
+    }
+
+}
+
+static void selectrecords(struct widget *item, unsigned int range, unsigned int toggle)
+{
+
+    struct widget *each = getlist(item);
+    struct dataentry *target = getrecord(item);
+    struct dataentry *anchor = 0;
+    struct dataentry *record = 0;
+    unsigned int inside = 0;
+
+    if (!target)
+        return;
+
+    while (range && (record = record_next(record, each->source, getset(each))) && !anchor)
+        anchor = (record_isanchor(record)) ? record : 0;
+
+    if (toggle)
+    {
+
+        selectrecord(each, target, !record_isselected(target));
+
+    }
+
+    else
+    {
+
+        record = 0;
+
+        while ((record = record_next(record, each->source, getset(each))))
+        {
+
+            unsigned int edge = (record == target) + (record == anchor);
+
+            if (!anchor)
+                selectrecord(each, record, record == target);
+            else if (edge)
+                selectrecord(each, record, 1);
+            else
+                selectrecord(each, record, inside);
+
+            if (anchor && edge)
+                inside = !inside && edge == 1;
+
+        }
+
+    }
+
+    if (!anchor)
+        anchorrecord(each, target);
 
 }
 
@@ -1400,10 +1586,11 @@ static void notifyselection(struct widget *parent)
     {
 
         struct list_item *current = 0;
+        struct dataentry *record = 0;
         unsigned int count = 0;
         char text[16];
 
-        while ((current = pool_nextin(current, parent)))
+        while (parent->type != WIDGET_TYPE_EACH && (current = pool_nextin(current, parent)))
         {
 
             struct widget *child = current->data;
@@ -1412,6 +1599,9 @@ static void notifyselection(struct widget *parent)
                 count++;
 
         }
+
+        while (parent->type == WIDGET_TYPE_EACH && (record = record_next(record, parent->source, getset(parent))))
+            count += record_isselected(record);
 
         cstring_write_fmt(text, 16, 0, "%u\\0", &count);
         sendevent(parent->source, 1, parent->attributes.onselect, text);
@@ -1425,6 +1615,16 @@ static void setanchor(struct widget *item)
 
     struct widget *parent = getparent(item);
     struct list_item *current = 0;
+
+    if (getlist(item))
+    {
+
+        if (getrecord(item))
+            anchorrecord(getlist(item), getrecord(item));
+
+        return;
+
+    }
 
     while (parent && (current = pool_nextin(current, parent)))
     {
@@ -1445,6 +1645,16 @@ static void selectitem(struct widget *item)
     struct widget *parent = getparent(item);
     struct list_item *current = 0;
 
+    if (getlist(item))
+    {
+
+        selectrecords(item, 0, 0);
+        notifyselection(parent);
+
+        return;
+
+    }
+
     while (parent && (current = pool_nextin(current, parent)))
     {
 
@@ -1463,6 +1673,16 @@ static void selectitem(struct widget *item)
 static void toggleitem(struct widget *item)
 {
 
+    if (getlist(item))
+    {
+
+        selectrecords(item, 0, 1);
+        notifyselection(getparent(item));
+
+        return;
+
+    }
+
     setselected(item, !item->selected);
     setanchor(item);
     notifyselection(getparent(item));
@@ -1475,6 +1695,16 @@ static void selectrange(struct widget *item)
     struct widget *parent = getparent(item);
     struct list_item *current = 0;
     unsigned int inside = 0;
+
+    if (getlist(item))
+    {
+
+        selectrecords(item, 1, 0);
+        notifyselection(parent);
+
+        return;
+
+    }
 
     while (parent && (current = pool_nextin(current, parent)))
     {
@@ -2737,6 +2967,227 @@ static void placeroots(void)
 
 }
 
+static unsigned int getstride(struct widget *each)
+{
+
+    struct list_item *current = 0;
+    struct widget *first = 0;
+    struct widget *last = 0;
+    struct widget *next = 0;
+    unsigned int roots = 0;
+    unsigned int copies = 0;
+
+    while ((current = pool_nextin(current, each)))
+        roots += widget_istemplate(current->data);
+
+    while (roots && (current = pool_nextin(current, each)) && !next)
+    {
+
+        struct widget *child = current->data;
+
+        if (!child->instance || !widget_isshown(child))
+            continue;
+
+        if (copies == 0)
+            first = child;
+
+        if (copies == roots - 1)
+            last = child;
+
+        if (copies == roots)
+            next = child;
+
+        copies++;
+
+    }
+
+    if (next)
+        return next->placement.position.y - first->placement.position.y;
+
+    if (last)
+        return last->placement.position.y + last->placement.size.h - first->placement.position.y + render_unit(each->attributes.spacing);
+
+    return each->rowstride;
+
+}
+
+static unsigned int bindeach(struct widget *each)
+{
+
+    unsigned int records = record_count(each->source, getset(each));
+    unsigned int vertical = each->attributes.flow == ATTR_FLOW_VERTICAL || each->attributes.flow == ATTR_FLOW_VERTICALSTRETCH;
+    unsigned int stride = (vertical) ? getstride(each) : 0;
+    struct util_region view = util_region_intersection(&each->placement, &each->clip);
+    unsigned int changed = stride != each->rowstride;
+    unsigned int first = 0;
+    unsigned int count = (records && vertical) ? 1 : records;
+
+    each->rowstride = stride;
+
+    if (stride && view.size.h)
+    {
+
+        unsigned int top = (view.position.y - each->placement.position.y) / stride;
+
+        first = (top) ? top - 1 : 0;
+        count = view.size.h / stride + 3;
+
+    }
+
+    if (first > records)
+        first = records;
+
+    if (count > records - first)
+        count = records - first;
+
+    if (each->rebind || first != each->rowfirst || count != each->rowcount)
+        changed = parser_bind(each, first, count) || changed;
+
+    return changed;
+
+}
+
+static unsigned int bindeaches(void)
+{
+
+    struct list_item *current = 0;
+    unsigned int changed = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_EACH && !widget->destroyed && !widget_ishidden(widget))
+            changed = bindeach(widget) || changed;
+
+    }
+
+    return changed;
+
+}
+
+static struct widget *getcopyroot(struct widget *widget)
+{
+
+    while (widget && !(widget->instance && getlist(widget)))
+        widget = getparent(widget);
+
+    return widget;
+
+}
+
+static struct widget *walkcopy(struct widget *widget, struct widget *target, unsigned int *index)
+{
+
+    struct list_item *current = 0;
+
+    if (widget == target || !*index)
+        return widget;
+
+    (*index)--;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *found = walkcopy(current->data, target, index);
+
+        if (found)
+            return found;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int countto(struct widget *widget, struct widget *target, unsigned int *index)
+{
+
+    struct list_item *current = 0;
+
+    if (widget == target)
+        return 1;
+
+    (*index)++;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        if (countto(current->data, target, index))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static void restorefocus(struct widget *each, char *key, unsigned int index)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, each)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->instance && widget_isshown(child) && cstring_match(strpool_getstring(child->instance), key))
+        {
+
+            struct widget *widget = walkcopy(child, 0, &index);
+
+            if (widget != state.focusedwidget)
+                setfocus(widget);
+
+            return;
+
+        }
+
+    }
+
+    setfocus(0);
+
+}
+
+static void bindall(struct util_region *area)
+{
+
+    struct widget *root = (state.focusedwidget) ? getcopyroot(state.focusedwidget) : 0;
+    struct widget *each = (root) ? getlist(root) : 0;
+    char key[FOLLOW_KEYSIZE];
+    unsigned int index = 0;
+    unsigned int passes;
+
+    if (root)
+    {
+
+        cstring_write_fmt(key, FOLLOW_KEYSIZE, 0, "%s\\0", strpool_getstring(root->instance));
+        countto(root, state.focusedwidget, &index);
+
+    }
+
+    for (passes = 0; passes < BIND_PASSES && bindeaches(); passes++)
+    {
+
+        render_place(state.rootwidget, &state.video[0].blit.region, area);
+        placeroots();
+
+    }
+
+    if (passes)
+    {
+
+        if (each)
+            restorefocus(each, key, index);
+
+        sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
+
+    }
+
+}
+
 static void redraw(unsigned int relayout)
 {
 
@@ -2753,6 +3204,7 @@ static void redraw(unsigned int relayout)
 
             render_place(state.rootwidget, &state.video[0].blit.region, &area);
             placeroots();
+            bindall(&area);
             reportsizes();
             damagechanged();
             render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));

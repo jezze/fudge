@@ -53,6 +53,10 @@ struct widget
     unsigned int destroyed;
     unsigned int raw;
     unsigned int instance;
+    unsigned int rowfirst;
+    unsigned int rowcount;
+    unsigned int rowstride;
+    unsigned int rebind;
     struct widget *parent;
     unsigned int markstart;
     unsigned int markend;

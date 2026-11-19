@@ -473,6 +473,10 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->destroyed = 0;
     widget->raw = 0;
     widget->instance = 0;
+    widget->rowfirst = 0;
+    widget->rowcount = 0;
+    widget->rowstride = 0;
+    widget->rebind = 0;
     widget->parent = 0;
     widget->markstart = 0;
     widget->markend = 0;

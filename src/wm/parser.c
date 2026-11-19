@@ -499,10 +499,8 @@ static void fill(struct widget *each, struct dataentry *record)
     char *key = record_getkey(record);
     struct list_item *template = 0;
     struct list_item *instance = 0;
-    unsigned int found = 0;
 
-    while ((instance = pool_nextin(instance, each)))
-        found = found || isinstanceof(instance->data, key);
+    each->rebind = 1;
 
     while ((template = pool_nextin(template, each)))
     {
@@ -512,27 +510,129 @@ static void fill(struct widget *each, struct dataentry *record)
         if (!widget_istemplate(root))
             continue;
 
-        if (found)
+        while ((instance = pool_nextin(instance, each)) && !(isinstanceof(instance->data, key) && widget_isshown(instance->data)));
+
+        if (!instance)
+            return;
+
+        refresh(instance->data, root, record);
+
+    }
+
+}
+
+static struct list_item *nextcopy(struct widget *each, struct list_item *current)
+{
+
+    while ((current = pool_nextin(current, each)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->instance)
+            return current;
+
+    }
+
+    return 0;
+
+}
+
+static void bindgroup(struct widget *each, struct list_item **instance, struct dataentry *record, unsigned int *changed)
+{
+
+    char *key = record_getkey(record);
+    struct list_item *template = 0;
+
+    while ((template = pool_nextin(template, each)))
+    {
+
+        struct widget *root = template->data;
+        struct list_item *next;
+        struct widget *widget;
+
+        if (!widget_istemplate(root))
+            continue;
+
+        next = nextcopy(each, *instance);
+
+        if (!next)
         {
 
-            while ((instance = pool_nextin(instance, each)) && !isinstanceof(instance->data, key));
+            widget = clone(root, each, record);
 
-            if (instance)
-                refresh(instance->data, root, record);
+            if (!widget)
+                return;
+
+            widget->instance = strpool_updatestring(0, "");
+            next = nextcopy(each, *instance);
 
         }
 
-        else
+        *instance = next;
+        widget = next->data;
+
+        if (!isinstanceof(widget, key) || !widget_isshown(widget))
         {
 
-            struct widget *widget = clone(root, each, record);
+            refresh(widget, root, record);
 
-            if (widget)
-                widget->instance = strpool_updatestring(0, key);
+            widget->instance = strpool_updatestring(widget->instance, key);
+            *changed = 1;
+
+        }
+
+        widget->selected = record_isselected(record);
+        widget->anchor = record_isanchor(record);
+
+    }
+
+}
+
+unsigned int parser_bind(struct widget *each, unsigned int first, unsigned int count)
+{
+
+    char *set = strpool_getstring(each->attributes.data);
+    struct dataentry *record = record_at(each->source, set, first);
+    struct list_item *instance = 0;
+    unsigned int changed = each->rowfirst != first || each->rowcount != count;
+    unsigned int i;
+
+    for (i = 0; i < count && record; i++, record = record_next(record, each->source, set))
+        bindgroup(each, &instance, record, &changed);
+
+    while ((instance = pool_nextin(instance, each)))
+    {
+
+        struct widget *widget = instance->data;
+
+        if (widget->instance && widget_isshown(widget))
+        {
+
+            widget->attributes.display = ATTR_DISPLAY_NONE;
+            widget->changed = 1;
+            changed = 1;
 
         }
 
     }
+
+    each->rowfirst = first;
+    each->rowcount = i;
+    each->rebind = 0;
+
+    return changed;
+
+}
+
+unsigned int parser_substitute(char *out, unsigned int size, char *text, struct dataentry *record)
+{
+
+    unsigned int count = substitute(out, size - 1, text, record);
+
+    out[count] = '\0';
+
+    return count;
 
 }
 
@@ -543,24 +643,18 @@ static unsigned int iseachof(struct widget *widget, unsigned int source, char *s
 
 }
 
-static void empty(unsigned int source, char *set, char *key)
+static void empty(unsigned int source, char *set)
 {
 
     struct list_item *current = 0;
 
-    while ((current = pool_next(current)))
+    while ((current = pool_nextsource(current, source)))
     {
 
         struct widget *widget = current->data;
 
-        if (widget->instance && widget->parent && iseachof(widget->parent, source, set) && (!key || isinstanceof(widget, key)))
-        {
-
-            widget->destroyed = 1;
-
-            deletechildren(widget);
-
-        }
+        if (iseachof(widget, source, set))
+            widget->rebind = 1;
 
     }
 
@@ -658,7 +752,7 @@ static void parseunset(struct state *state, unsigned int source)
     if (state->linebreak)
     {
 
-        empty(source, set, 0);
+        empty(source, set);
         record_remove(source, set, 0);
         rewind(source, set);
 
@@ -667,7 +761,7 @@ static void parseunset(struct state *state, unsigned int source)
     }
 
     readword(state, key, NAME_SIZE);
-    empty(source, set, key);
+    empty(source, set);
     record_remove(source, set, key);
 
     while (!state->linebreak)
