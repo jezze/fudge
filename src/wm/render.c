@@ -241,6 +241,9 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         struct util_size climit;
         struct util_size csize;
 
+        if (child->attributes.display == ATTR_DISPLAY_NONE)
+            continue;
+
         startchild(child, &flow);
 
         climit = util_size_sub(&inner, flow.offset.x, flow.offset.y);
@@ -346,6 +349,21 @@ static struct util_region getplacement(struct widget *widget, struct widget *chi
 
 static void place(struct widget *widget, struct util_region *placement, struct util_region *clip);
 
+static void hide(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+
+    widget->placement = util_region(0, 0, 0, 0);
+    widget->cplacement = widget->placement;
+    widget->clip = widget->placement;
+    widget->cclip = widget->placement;
+
+    while ((current = pool_nextin(current, widget)))
+        hide(current->data);
+
+}
+
 static struct placeinfo placechildren(struct widget *widget, struct util_size *span, unsigned int measure)
 {
 
@@ -368,6 +386,16 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 
         struct widget *child = current->data;
         struct util_region cplacement;
+
+        if (child->attributes.display == ATTR_DISPLAY_NONE)
+        {
+
+            if (!measure)
+                hide(child);
+
+            continue;
+
+        }
 
         startchild(child, &flow);
 
@@ -462,7 +490,7 @@ static unsigned int hasspans(struct widget *widget)
 
         struct widget *child = current->data;
 
-        if (child->attributes.span)
+        if (child->attributes.span && child->attributes.display != ATTR_DISPLAY_NONE)
             return 1;
 
     }

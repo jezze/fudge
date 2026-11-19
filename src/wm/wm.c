@@ -2945,6 +2945,9 @@ static unsigned int collectfocusable(struct widget *widget, struct widget **list
 
         struct widget *child = current->data;
 
+        if (child->attributes.display == ATTR_DISPLAY_NONE)
+            continue;
+
         if (count < NUM_FOCUSABLE && isfocusable(child))
             list[count++] = child;
 
@@ -3002,6 +3005,9 @@ static unsigned int collectitems(struct widget *widget, struct widget **list, un
     {
 
         struct widget *child = current->data;
+
+        if (child->attributes.display == ATTR_DISPLAY_NONE)
+            continue;
 
         if (count < NUM_FOCUSABLE && child->type == WIDGET_TYPE_ITEM && child->attributes.mode != ATTR_MODE_DISABLED)
             list[count++] = child;
@@ -4382,6 +4388,13 @@ static void render(unsigned int source, unsigned int count, void *data)
     pool_loadresources();
     placewindows(source);
     purge(source);
+
+    if (state.hoverwidget && widget_ishidden(state.hoverwidget))
+        sethover(0);
+
+    if (state.focusedwidget && widget_ishidden(state.focusedwidget))
+        setfocus(0);
+
     redraw(1);
 
 }

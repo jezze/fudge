@@ -264,6 +264,16 @@ unsigned int widget_isinteractive(struct widget *widget)
 
 }
 
+unsigned int widget_ishidden(struct widget *widget)
+{
+
+    while (widget && widget->attributes.display != ATTR_DISPLAY_NONE)
+        widget = widget->parent;
+
+    return widget != 0;
+
+}
+
 unsigned int widget_iseditable(struct widget *widget)
 {
 
