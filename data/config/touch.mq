@@ -1,0 +1,5 @@
+{
+  devices: [
+    { device: touch:0 doubletap: drag }
+  ]
+}

@@ -7,18 +7,5 @@
     transparency: on
     cursor: 100
   }
-  keyboard:
-  [
-    { device: keyboard:0 map: "initrd:data/keys/en_US.mq" }
-  ]
-  mouse:
-  [
-    { device: mouse:0 speed: 4 }
-    { device: mouse:1 speed: 4 }
-  ]
-  touch:
-  [
-    { device: touch:0 doubletap: drag }
-  ]
   binding: "initrd:data/config/wm-bindings.mq"
 }

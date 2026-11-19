@@ -773,11 +773,11 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"cursor {cursor}\" %s", config));
     configlines("videos", 6);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .video -format \"video {width} {height} {bpp} {device} {enabled}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"video {width} {height} {bpp} {device} {enabled}\" %s", option_getstring("video-config")));
     configlines("inputs", 6);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {device} {map}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {device} {speed}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .touch -format \"touch {device} {doubletap}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"keyboard {device} {map}\" %s", option_getstring("keyboard-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"mouse {device} {speed}\" %s", option_getstring("mouse-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap}\" %s", option_getstring("touch-config")));
     loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
     loadreference(data, config, ".binding", ".binding", "binding {key} {mod} {action} {command}");
@@ -4521,6 +4521,10 @@ void init(void)
     render_init();
     option_add("service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
+    option_add("video-config", "initrd:data/config/video.mq");
+    option_add("keyboard-config", "initrd:data/config/keyboard.mq");
+    option_add("mouse-config", "initrd:data/config/mouse.mq");
+    option_add("touch-config", "initrd:data/config/touch.mq");
     option_add("clock-service", "clock:0");
     option_add("timer-service", "timer:0");
     option_add("clipboard", "mem:clipboard");

@@ -817,10 +817,10 @@ static void loadconfig(void)
     config.network.count = 0;
     config.network.selected = 0;
 
-    loadlines(option_getstring("config"), ".video", "{width} {height} {bpp} {device} {enabled}", loadvideo);
-    loadlines(option_getstring("config"), ".keyboard", "{device} {map}", loadkeyboard);
-    loadlines(option_getstring("config"), ".mouse", "{device} {speed}", loadmouse);
-    loadlines(option_getstring("config"), ".touch", "{device} {doubletap}", loadtouch);
+    loadlines(option_getstring("video-config"), ".devices", "{width} {height} {bpp} {device} {enabled}", loadvideo);
+    loadlines(option_getstring("keyboard-config"), ".devices", "{device} {map}", loadkeyboard);
+    loadlines(option_getstring("mouse-config"), ".devices", "{device} {speed}", loadmouse);
+    loadlines(option_getstring("touch-config"), ".devices", "{device} {doubletap}", loadtouch);
     findvideos();
     finddevices(&config.keyboard, "keyboard");
     finddevices(&config.mouse, "mouse");
@@ -839,10 +839,21 @@ static unsigned int writeconfig(char *data, unsigned int size)
 {
 
     unsigned int count = 0;
-    unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n    transparency: %s\n    cursor: %s\n  }\n", config.layout, config.themepath, config.background, config.transparency, config.cursor);
-    count += cstring_write_fmt(data, size, count, "  video:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  binding: \"%s\"\n}\n", config.bindingpath);
+
+    return count;
+
+}
+
+static unsigned int writevideo(char *data, unsigned int size)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.nvideos; i++)
     {
@@ -854,7 +865,19 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n  keyboard:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  ]\n}\n");
+
+    return count;
+
+}
+
+static unsigned int writekeyboard(char *data, unsigned int size)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.keyboard.count; i++)
     {
@@ -864,7 +887,19 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n  mouse:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  ]\n}\n");
+
+    return count;
+
+}
+
+static unsigned int writemouse(char *data, unsigned int size)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.mouse.count; i++)
     {
@@ -874,7 +909,19 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n  touch:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  ]\n}\n");
+
+    return count;
+
+}
+
+static unsigned int writetouch(char *data, unsigned int size)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.touch.count; i++)
     {
@@ -884,8 +931,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n");
-    count += cstring_write_fmt(data, size, count, "  binding: \"%s\"\n}\n", config.bindingpath);
+    count += cstring_write_fmt(data, size, count, "  ]\n}\n");
 
     return count;
 
@@ -1905,7 +1951,7 @@ static void onwmevent(struct message *message)
 
             static char data[0x8000];
 
-            if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingpath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)) && savefile(option_getstring("audio-config"), data, writeaudio(data, 0x8000)) && savefile(option_getstring("localization-config"), data, writelocalization(data, 0x8000)) && savefile(option_getstring("network-config"), data, writenetwork(data, 0x8000)))
+            if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(option_getstring("video-config"), data, writevideo(data, 0x8000)) && savefile(option_getstring("keyboard-config"), data, writekeyboard(data, 0x8000)) && savefile(option_getstring("mouse-config"), data, writemouse(data, 0x8000)) && savefile(option_getstring("touch-config"), data, writetouch(data, 0x8000)) && savefile(config.bindingpath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)) && savefile(option_getstring("audio-config"), data, writeaudio(data, 0x8000)) && savefile(option_getstring("localization-config"), data, writelocalization(data, 0x8000)) && savefile(option_getstring("network-config"), data, writenetwork(data, 0x8000)))
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"disabled\"\n");
 
         }
@@ -1954,6 +2000,10 @@ void init(void)
 
     option_add("wm-service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
+    option_add("video-config", "initrd:data/config/video.mq");
+    option_add("keyboard-config", "initrd:data/config/keyboard.mq");
+    option_add("mouse-config", "initrd:data/config/mouse.mq");
+    option_add("touch-config", "initrd:data/config/touch.mq");
     option_add("audio-config", "initrd:data/config/audio.mq");
     option_add("localization-config", "initrd:data/config/localization.mq");
     option_add("network-config", "initrd:data/config/network.mq");
