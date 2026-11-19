@@ -29,11 +29,11 @@
 #define NUM_CURSORS                     4
 #define NUM_DOUBLETAPS                  2
 #define NUM_NETWORKTYPES                2
+#define NUM_SPEEDS                      16
+#define NUM_VOLUMES                     11
 #define NUM_VIDEOS                      4
 #define NUM_DEVICES                     8
 #define DEVICENAME                      32
-#define MOUSE_FASTEST                   16
-#define VOLUME_FULL                     100
 
 struct entry
 {
@@ -104,6 +104,39 @@ static struct entry keymaps[NUM_KEYMAPS] = {
 static struct entry doubletaps[NUM_DOUBLETAPS] = {
     {"drag", "Drag"},
     {"right", "Right click"}
+};
+
+static struct entry speeds[NUM_SPEEDS] = {
+    {"1", "1"},
+    {"2", "2"},
+    {"3", "3"},
+    {"4", "4"},
+    {"5", "5"},
+    {"6", "6"},
+    {"7", "7"},
+    {"8", "8"},
+    {"9", "9"},
+    {"10", "10"},
+    {"11", "11"},
+    {"12", "12"},
+    {"13", "13"},
+    {"14", "14"},
+    {"15", "15"},
+    {"16", "16"}
+};
+
+static struct entry volumes[NUM_VOLUMES] = {
+    {"0", "0%"},
+    {"10", "10%"},
+    {"20", "20%"},
+    {"30", "30%"},
+    {"40", "40%"},
+    {"50", "50%"},
+    {"60", "60%"},
+    {"70", "70%"},
+    {"80", "80%"},
+    {"90", "90%"},
+    {"100", "100%"}
 };
 
 static struct entry networktypes[NUM_NETWORKTYPES] = {
@@ -352,7 +385,7 @@ static void beginrow(char *id)
 static void addlabel(char *id, char *label)
 {
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"%s-row\" valign \"middle\" span \"1\" label \"%s\"\n+ layout id \"%s-value\" in \"%s-row\" flow \"horizontal-stretch\" spacing \"2\" span \"2\"\n", id, label, id, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ panel id \"%s-label\" in \"%s-row\" flow \"stretch\" padding \"3\" span \"1\"\n+ text in \"%s-label\" valign \"middle\" label \"%s\"\n+ layout id \"%s-value\" in \"%s-row\" flow \"horizontal-stretch\" spacing \"2\" span \"2\"\n", id, id, id, label, id, id);
 
 }
 
@@ -400,13 +433,6 @@ static char *getlabel(struct entry *options, unsigned int count, char *value)
     }
 
     return value;
-
-}
-
-static void addswitch(char *row, char *id, unsigned int checked, char *onclick)
-{
-
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ switch id \"%s\" in \"%s-value\" checked \"%u\" onclick \"%s\"\n", id, row, &checked, onclick);
 
 }
 
@@ -1189,6 +1215,10 @@ static void setchoice(char *id, char *value)
         copystring(config.transparency, 8, value, cstring_length(value));
     else if (cstring_match(id, "mouse-cursor"))
         copystring(config.cursor, 8, value, cstring_length(value));
+    else if (cstring_match(id, "mouse-speed") && getselected(&config.mouse))
+        copystring(getselected(&config.mouse)->speed, 16, value, cstring_length(value));
+    else if (cstring_match(id, "audio-volume") && getselected(&config.audio))
+        copystring(getselected(&config.audio)->volume, 16, value, cstring_length(value));
 
 }
 
@@ -1224,22 +1254,6 @@ static void setfield(char *id, char *value)
     {
 
         copystring(config.background, 256, value, length);
-
-    }
-
-    else if (cstring_match(id, "audio-volume-box"))
-    {
-
-        if (getselected(&config.audio))
-            copystring(getselected(&config.audio)->volume, 16, value, length);
-
-    }
-
-    else if (cstring_match(id, "mouse-speed-box"))
-    {
-
-        if (getselected(&config.mouse))
-            copystring(getselected(&config.mouse)->speed, 16, value, length);
 
     }
 
@@ -1304,15 +1318,14 @@ static void enabledfield(char *kind, unsigned int enabled)
 {
 
     char id[32];
-    char checkbox[32];
-    char onclick[64];
 
     cstring_write_fmt(id, 32, 0, "%s-enabled\\0", kind);
-    cstring_write_fmt(checkbox, 32, 0, "%s-enabled-box\\0", kind);
-    cstring_write_fmt(onclick, 64, 0, "q=enable&kind=%s&value=\\0", kind);
     beginrow(id);
     addlabel(id, "Enabled");
-    addswitch(id, checkbox, enabled, onclick);
+
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ cycle id \"%s\" in \"%s-value\" span \"1\" label \"%s\"\n", id, id, (enabled) ? "On" : "Off");
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-0\" in \"%s\" onclick \"q=enable&kind=%s&value=0\"\n+ text in \"%s-0\" label \"Off\"\n", id, id, kind, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-1\" in \"%s\" onclick \"q=enable&kind=%s&value=1\"\n+ text in \"%s-1\" label \"On\"\n", id, id, kind, id);
 
 }
 
@@ -1422,27 +1435,10 @@ static void renderkeyboard(void)
 
 }
 
-static unsigned int getspeedvalue(void)
-{
-
-    struct device *device = getselected(&config.mouse);
-    unsigned int speed = (device) ? cstring_read_value(device->speed, cstring_length(device->speed), 10) : 1;
-
-    if (speed < 1)
-        speed = 1;
-
-    if (speed > MOUSE_FASTEST)
-        speed = MOUSE_FASTEST;
-
-    return (speed - 1) * 0xFFFF / (MOUSE_FASTEST - 1);
-
-}
-
 static void rendermouse(void)
 {
 
     struct device *device = getselected(&config.mouse);
-    unsigned int value = getspeedvalue();
 
     beginarea("Mouse");
     renderdevicechoice(&config.mouse, "mouse");
@@ -1451,11 +1447,7 @@ static void rendermouse(void)
     {
 
         enabledfield("mouse", device->enabled);
-        beginrow("mouse-speed");
-        addlabel("mouse-speed", "Speed");
-
-        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ slider id \"mouse-speed\" in \"mouse-speed-value\" span \"3\" value \"%u\" onchange \"q=speed&value=\"\n", &value);
-        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"mouse-speed-box\" in \"mouse-speed-value\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=mouse-speed-box&value=\"\n+ text id \"mouse-speed-text\" in \"mouse-speed-box\" halign \"right\" label \"%s\"\n", device->speed);
+        choice("mouse-speed", "Speed", device->speed, speeds, NUM_SPEEDS);
 
     }
 
@@ -1479,24 +1471,10 @@ static void rendertouch(void)
 
 }
 
-static unsigned int getvolumevalue(void)
-{
-
-    struct device *device = getselected(&config.audio);
-    unsigned int volume = (device) ? cstring_read_value(device->volume, cstring_length(device->volume), 10) : 0;
-
-    if (volume > VOLUME_FULL)
-        volume = VOLUME_FULL;
-
-    return volume * 0xFFFF / VOLUME_FULL;
-
-}
-
 static void renderaudio(void)
 {
 
     struct device *device = getselected(&config.audio);
-    unsigned int value = getvolumevalue();
 
     beginarea("Audio");
     renderdevicechoice(&config.audio, "audio");
@@ -1505,11 +1483,7 @@ static void renderaudio(void)
         return;
 
     enabledfield("audio", device->enabled);
-    beginrow("audio-volume");
-    addlabel("audio-volume", "Volume");
-
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ slider id \"audio-volume\" in \"audio-volume-value\" span \"3\" value \"%u\" onchange \"q=volume&value=\"\n", &value);
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"audio-volume-box\" in \"audio-volume-value\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=audio-volume-box&value=\"\n+ text id \"audio-volume-text\" in \"audio-volume-box\" halign \"right\" label \"%s\"\n", device->volume);
+    choice("audio-volume", "Volume", device->volume, volumes, NUM_VOLUMES);
 
 }
 
@@ -1824,24 +1798,6 @@ static void onwmevent(struct message *message)
 
             setfield(id, kv_getstring(event, "value="));
 
-            if (cstring_match(id, "mouse-speed-box"))
-            {
-
-                unsigned int value = getspeedvalue();
-
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= mouse-speed value \"%u\"\n", &value);
-
-            }
-
-            if (cstring_match(id, "audio-volume-box"))
-            {
-
-                unsigned int value = getvolumevalue();
-
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= audio-volume value \"%u\"\n", &value);
-
-            }
-
             channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"normal\"\n");
 
         }
@@ -1864,39 +1820,7 @@ static void onwmevent(struct message *message)
             else if (devices && getselected(devices))
                 getselected(devices)->enabled = enabled;
 
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"normal\"\n");
-
-        }
-
-        else if (kv_match(event, "q=speed"))
-        {
-
-            unsigned int speed = 1 + kv_getvalue(event, "value=", 10) * (MOUSE_FASTEST - 1) / 0xFFFF;
-            struct device *device = getselected(&config.mouse);
-
-            if (device)
-            {
-
-                cstring_write_fmt(device->speed, 16, 0, "%u\\0", &speed);
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= mouse-speed-text label \"%s\"\n= save mode \"normal\"\n", device->speed);
-
-            }
-
-        }
-
-        else if (kv_match(event, "q=volume"))
-        {
-
-            unsigned int volume = (kv_getvalue(event, "value=", 10) * VOLUME_FULL + 0x7FFF) / 0xFFFF;
-            struct device *device = getselected(&config.audio);
-
-            if (device)
-            {
-
-                cstring_write_fmt(device->volume, 16, 0, "%u\\0", &volume);
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= audio-volume-text label \"%s\"\n= save mode \"normal\"\n", device->volume);
-
-            }
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= %s-enabled label \"%s\"\n= save mode \"normal\"\n", kind, (enabled) ? "On" : "Off");
 
         }
 
