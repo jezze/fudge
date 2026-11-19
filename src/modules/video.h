@@ -5,6 +5,8 @@ struct video_interface
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
+    unsigned int preferredwidth;
+    unsigned int preferredheight;
     unsigned long framebuffer;
     unsigned int (*setcmap)(unsigned int count, void *data);
     void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp);

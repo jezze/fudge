@@ -732,6 +732,8 @@ static unsigned int enablehdmi(void)
     pipeb.on = 1;
     pipeb.activewidth = hdmi.mode.hactive;
     pipeb.activeheight = hdmi.mode.vactive;
+    secondinterface.preferredwidth = hdmi.mode.hactive;
+    secondinterface.preferredheight = hdmi.mode.vactive;
     setplane();
 
     return 1;
@@ -1074,6 +1076,8 @@ static void driver_reset(unsigned int id)
 
     pipea.activewidth = (readreg(I915_TRANS_HTOTAL_A) & 0xFFFF) + 1;
     pipea.activeheight = (readreg(I915_TRANS_VTOTAL_A) & 0xFFFF) + 1;
+    videointerface.preferredwidth = pipea.activewidth;
+    videointerface.preferredheight = pipea.activeheight;
 
     if (checkfirmware())
     {

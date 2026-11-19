@@ -4432,8 +4432,6 @@ void init(void)
 
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     keys_init(&state.plainkeys, KEYS_LAYOUT_QWERTY_US, (void *)0);
-    state.displays[0].videoconf.width = 1920;
-    state.displays[0].videoconf.height = 1080;
     state.displays[0].videoconf.bpp = 4;
     cstring_write_fmt(state.displays[0].device, DEVICENAME, 0, "video:0\\0");
     state.ndisplays = 1;

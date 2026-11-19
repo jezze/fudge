@@ -2,6 +2,9 @@
 #include <kernel.h>
 #include "video.h"
 
+#define PREFERREDWIDTH                  1920
+#define PREFERREDHEIGHT                 1080
+
 static struct unitsrv unitsrv;
 
 static unsigned int oninfo(struct video_interface *interface, unsigned int source)
@@ -49,7 +52,10 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
     if (interface->setmode && videoconf)
     {
 
-        interface->setmode(videoconf->width, videoconf->height, videoconf->bpp);
+        if (videoconf->width && videoconf->height)
+            interface->setmode(videoconf->width, videoconf->height, videoconf->bpp);
+        else
+            interface->setmode(interface->preferredwidth, interface->preferredheight, videoconf->bpp);
 
         return MESSAGE_OK;
 
@@ -138,6 +144,8 @@ void video_initinterface(struct video_interface *interface, unsigned long frameb
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
+    interface->preferredwidth = PREFERREDWIDTH;
+    interface->preferredheight = PREFERREDHEIGHT;
     interface->framebuffer = framebuffer;
     interface->setcmap = setcmap;
     interface->setmode = setmode;
