@@ -48,6 +48,7 @@
 #define ATTR_OVERFLOW_SCROLL            1
 #define ATTR_STYLE_DEFAULT              0
 #define ATTR_STYLE_CYCLE                1
+#define ATTR_STYLE_SWITCH               2
 #define ATTR_VALIGN_TOP                 0
 #define ATTR_VALIGN_MIDDLE              1
 #define ATTR_VALIGN_BOTTOM              2

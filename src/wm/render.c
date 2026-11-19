@@ -703,7 +703,7 @@ static struct util_size getsizebutton(struct widget *widget, struct util_size *l
 static struct util_size getsizecheckbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return util_size(CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
+    return util_size((widget->attributes.style == ATTR_STYLE_SWITCH) ? CONFIG_SWITCH_WIDTH : CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
 
 }
 
@@ -902,7 +902,19 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
 }
 
-static void rendercheckbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+static void renderswitch(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    struct util_region track = util_region(widget->placement.position.x + ((int)widget->placement.size.w - CONFIG_SWITCH_WIDTH) / 2, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_CHECKBOX_HEIGHT) / 2, CONFIG_SWITCH_WIDTH, CONFIG_CHECKBOX_HEIGHT);
+    struct util_region knob = util_region(track.position.x + ((widget->attributes.checked) ? CONFIG_SWITCH_WIDTH - CONFIG_CHECKBOX_WIDTH : 0), track.position.y, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
+    unsigned int shade = getshade(widget);
+
+    blit_frame(display, &track, line, x0, x2, getpalette(PALETTE_BOX, (shade == SHADE_DISABLED) ? SHADE_DISABLED : SHADE_NORMAL)->frame);
+    blit_frame(display, &knob, line, x0, x2, getpalette(PALETTE_CHECKBOX, shade)->frame);
+
+}
+
+static void rendertick(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
     struct util_region box = util_region(widget->placement.position.x + ((int)widget->placement.size.w - CONFIG_CHECKBOX_WIDTH) / 2, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_CHECKBOX_HEIGHT) / 2, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
@@ -912,6 +924,16 @@ static void rendercheckbox(struct blit_display *display, struct widget *widget, 
 
     if (widget->attributes.checked)
         blit_iconx(display, &box, line, x0, x2, palette->icon);
+
+}
+
+static void rendercheckbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    if (widget->attributes.style == ATTR_STYLE_SWITCH)
+        renderswitch(display, widget, line, x0, x2);
+    else
+        rendertick(display, widget, line, x0, x2);
 
 }
 
