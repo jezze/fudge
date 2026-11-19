@@ -20,17 +20,36 @@
 #define REG_COMMAND_VIRTHEIGHT          0x0007
 #define REG_COMMAND_XOFF                0x0008
 #define REG_COMMAND_YOFF                0x0009
+#define REG_COMMAND_MEMORY              0x000A
+#define REG_COMMAND_ENABLE_GETCAPS      0x02
 #define REG_DATA                        0x01CF
 
 static struct base_driver driver;
 static struct video_interface videointerface;
 static unsigned int framebuffer;
+static struct {unsigned int width; unsigned int height; unsigned int memory;} limits;
 
 static void setreg(unsigned short index, unsigned short data)
 {
 
     io_outw(REG_COMMAND, index);
     io_outw(REG_DATA, data);
+
+}
+
+static unsigned short getreg(unsigned short index)
+{
+
+    io_outw(REG_COMMAND, index);
+
+    return io_inw(REG_DATA);
+
+}
+
+static unsigned int videointerface_checkmode(unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    return bpp == 4 && width <= limits.width && height <= limits.height && width * height * bpp <= limits.memory;
 
 }
 
@@ -55,6 +74,8 @@ static void driver_init(unsigned int id)
 
     video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
 
+    videointerface.checkmode = videointerface_checkmode;
+
 }
 
 static unsigned int driver_match(unsigned int type, unsigned int id)
@@ -67,7 +88,19 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
+    unsigned short enable;
+
     framebuffer = pci_getbar(id, 0);
+    enable = getreg(REG_COMMAND_ENABLE);
+
+    setreg(REG_COMMAND_ENABLE, enable | REG_COMMAND_ENABLE_GETCAPS);
+
+    limits.width = getreg(REG_COMMAND_XRES);
+    limits.height = getreg(REG_COMMAND_YRES);
+
+    setreg(REG_COMMAND_ENABLE, enable);
+
+    limits.memory = getreg(REG_COMMAND_MEMORY) * 0x10000;
 
 }
 

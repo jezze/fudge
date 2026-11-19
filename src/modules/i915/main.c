@@ -913,10 +913,17 @@ static unsigned int checkfirmware(void)
 
 }
 
+static unsigned int videointerface_checkmode(unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    return mmio && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width <= pipea.activewidth && height <= pipea.activeheight && !(width % 16);
+
+}
+
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
-    if (mmio && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width <= pipea.activewidth && height <= pipea.activeheight && !(width % 16))
+    if (videointerface_checkmode(width, height, bpp))
     {
 
         unsigned int surface = readreg(I915_PLANE_SURF_1_A);
@@ -932,10 +939,17 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 
 }
 
+static unsigned int secondinterface_checkmode(unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    return secondsize && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width * height * 4 <= secondsize && !(width % 16);
+
+}
+
 static void secondinterface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
-    if (secondsize && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width * height * 4 <= secondsize && !(width % 16))
+    if (secondinterface_checkmode(width, height, bpp))
     {
 
         secondinterface.width = width;
@@ -1045,12 +1059,14 @@ static void driver_init(unsigned int id)
     videointerface.width = framebuffer->width;
     videointerface.height = framebuffer->height;
     videointerface.bpp = 4;
+    videointerface.checkmode = videointerface_checkmode;
 
     video_initinterface(&secondinterface, I915_SECONDMAP, 0, secondinterface_setmode);
 
     secondinterface.width = I915_SECONDWIDTH;
     secondinterface.height = I915_SECONDHEIGHT;
     secondinterface.bpp = 4;
+    secondinterface.checkmode = secondinterface_checkmode;
 
 }
 

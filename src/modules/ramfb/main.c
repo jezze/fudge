@@ -136,6 +136,13 @@ static unsigned int write(unsigned short key, void *buffer, unsigned int count)
 
 }
 
+static unsigned int videointerface_checkmode(unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    return bpp == BPP && width * height * BPP <= ARCH_FRAMEBUFFER_SIZE;
+
+}
+
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -164,6 +171,8 @@ static void driver_init(unsigned int id)
 {
 
     video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
+
+    videointerface.checkmode = videointerface_checkmode;
 
 }
 

@@ -77,6 +77,9 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     case MESSAGE_TYPE_VIDEOINFO:
         return checksize(data, count, sizeof (struct message_videoinfo));
 
+    case MESSAGE_TYPE_VIDEOMODERESPONSE:
+        return checksize(data, count, sizeof (struct message_videomodes));
+
     case MESSAGE_TYPE_BLOCKINFO:
         return checksize(data, count, sizeof (struct message_blockinfo));
 

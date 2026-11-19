@@ -14,6 +14,7 @@
 #define MESSAGE_BATTERY_CRITICAL        0x04
 #define MESSAGE_BATTERY_MILLIWATTS      0
 #define MESSAGE_BATTERY_MILLIAMPS       1
+#define MESSAGE_VIDEOMODES              16
 #define MESSAGE_STATUS_OK               0x00
 #define MESSAGE_STATUS_ERROR            0x01
 #define MESSAGE_STATUS_ABORTED          0x02
@@ -62,6 +63,8 @@
 #define MESSAGE_TYPE_POWEROFF           0x3B
 #define MESSAGE_TYPE_REBOOT             0x3C
 #define MESSAGE_TYPE_BATTERYINFO        0x3D
+#define MESSAGE_TYPE_VIDEOMODEREQUEST   0x3E
+#define MESSAGE_TYPE_VIDEOMODERESPONSE  0x3F
 #define MESSAGE_TYPE_WALKREQUEST        0x40
 #define MESSAGE_TYPE_WALKRESPONSE       0x41
 #define MESSAGE_TYPE_READREQUEST        0x42
@@ -285,6 +288,14 @@ struct message_videoinfo
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
+
+};
+
+struct message_videomodes
+{
+
+    unsigned int count;
+    struct message_videoconf modes[MESSAGE_VIDEOMODES];
 
 };
 

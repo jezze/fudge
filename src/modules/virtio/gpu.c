@@ -299,6 +299,13 @@ static void flush(unsigned int x, unsigned int y, unsigned int width, unsigned i
 
 }
 
+static unsigned int videointerface_checkmode(unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    return bpp == BPP && width * height * BPP <= ARCH_FRAMEBUFFER_SIZE;
+
+}
+
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -352,6 +359,7 @@ static void driver_init(unsigned int id)
     video_initinterface(&videointerface, FRAMEBUFFER, 0, videointerface_setmode);
 
     videointerface.flush = videointerface_flush;
+    videointerface.checkmode = videointerface_checkmode;
 
 }
 

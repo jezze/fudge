@@ -13,7 +13,7 @@
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
-#define NUM_EVENTS                      78
+#define NUM_EVENTS                      80
 
 static struct job job;
 static char script[SCRIPTSIZE];
@@ -265,6 +265,8 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"videocmap", MESSAGE_TYPE_VIDEOCMAP},
     {"videoconf", MESSAGE_TYPE_VIDEOCONF},
     {"videoinfo", MESSAGE_TYPE_VIDEOINFO},
+    {"videomoderequest", MESSAGE_TYPE_VIDEOMODEREQUEST},
+    {"videomoderesponse", MESSAGE_TYPE_VIDEOMODERESPONSE},
     {"blockinfo", MESSAGE_TYPE_BLOCKINFO},
     {"blockreadrequest", MESSAGE_TYPE_BLOCKREADREQUEST},
     {"blockreadresponse", MESSAGE_TYPE_BLOCKREADRESPONSE},

@@ -4,8 +4,22 @@
 
 #define PREFERREDWIDTH                  1920
 #define PREFERREDHEIGHT                 1080
+#define MODES                           11
 
 static struct unitsrv unitsrv;
+static struct message_videoconf modes[MODES] = {
+    {320, 200, 4},
+    {320, 240, 4},
+    {640, 480, 4},
+    {800, 600, 4},
+    {1024, 768, 4},
+    {1280, 720, 4},
+    {1280, 1024, 4},
+    {1366, 768, 4},
+    {1600, 900, 4},
+    {1920, 1080, 4},
+    {2560, 1440, 4}
+};
 
 static unsigned int oninfo(struct video_interface *interface, unsigned int source)
 {
@@ -25,6 +39,68 @@ static unsigned int oninfo(struct video_interface *interface, unsigned int sourc
     }
 
     return MESSAGE_FAILED;
+
+}
+
+static void addmode(struct message_videomodes *videomodes, unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    unsigned int i;
+    unsigned int j;
+
+    if (!width || !height || videomodes->count >= MESSAGE_VIDEOMODES)
+        return;
+
+    for (i = 0; i < videomodes->count; i++)
+    {
+
+        struct message_videoconf *mode = &videomodes->modes[i];
+
+        if (mode->width == width && mode->height == height && mode->bpp == bpp)
+            return;
+
+        if (mode->width > width || (mode->width == width && mode->height > height))
+            break;
+
+    }
+
+    for (j = videomodes->count; j > i; j--)
+        buffer_copy(&videomodes->modes[j], &videomodes->modes[j - 1], sizeof (struct message_videoconf));
+
+    videomodes->modes[i].width = width;
+    videomodes->modes[i].height = height;
+    videomodes->modes[i].bpp = bpp;
+    videomodes->count++;
+
+}
+
+static unsigned int onvideomoderequest(struct video_interface *interface, unsigned int source)
+{
+
+    struct message_videomodes videomodes;
+    unsigned int i;
+
+    buffer_clear(&videomodes, sizeof (struct message_videomodes));
+
+    if (interface->checkmode)
+    {
+
+        for (i = 0; i < MODES; i++)
+        {
+
+            if (interface->checkmode(modes[i].width, modes[i].height, modes[i].bpp))
+                addmode(&videomodes, modes[i].width, modes[i].height, modes[i].bpp);
+
+        }
+
+        if (interface->checkmode(interface->preferredwidth, interface->preferredheight, 4))
+            addmode(&videomodes, interface->preferredwidth, interface->preferredheight, 4);
+
+    }
+
+    addmode(&videomodes, interface->width, interface->height, interface->bpp);
+
+    return kernel_placereply(source, interface->resource.inode, MESSAGE_TYPE_VIDEOMODERESPONSE, sizeof (struct message_videomodes), &videomodes);
 
 }
 
@@ -114,6 +190,9 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         case MESSAGE_TYPE_VIDEOFLUSH:
             return onvideoflush(interface, source, count, data);
 
+        case MESSAGE_TYPE_VIDEOMODEREQUEST:
+            return onvideomoderequest(interface, source);
+
         }
 
     }
@@ -150,6 +229,7 @@ void video_initinterface(struct video_interface *interface, unsigned long frameb
     interface->setcmap = setcmap;
     interface->setmode = setmode;
     interface->flush = 0;
+    interface->checkmode = 0;
 
 }
 

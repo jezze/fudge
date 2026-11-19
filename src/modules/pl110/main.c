@@ -26,6 +26,13 @@ static struct base_driver driver;
 static struct video_interface videointerface;
 static volatile unsigned int *regs = (volatile unsigned int *)REGISTERS;
 
+static unsigned int videointerface_checkmode(unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    return bpp == BPP && width <= MAXWIDTH && height <= MAXHEIGHT && !(width % 16) && width * height * BPP <= ARCH_FRAMEBUFFER_SIZE;
+
+}
+
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -69,6 +76,8 @@ static void driver_init(unsigned int id)
 {
 
     video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
+
+    videointerface.checkmode = videointerface_checkmode;
 
 }
 
