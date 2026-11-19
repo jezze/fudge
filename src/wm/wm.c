@@ -1076,6 +1076,7 @@ static unsigned int getmousetype(int x, int y)
         case WIDGET_TYPE_SELECT:
         case WIDGET_TYPE_SLIDER:
         case WIDGET_TYPE_SWITCH:
+        case WIDGET_TYPE_TAB:
             return BLIT_MOUSE_HAND;
 
         case WIDGET_TYPE_TEXT:
@@ -2554,6 +2555,30 @@ static void grabslider(struct widget *widget)
 
 }
 
+static void checktab(struct widget *tab)
+{
+
+    struct widget *parent = getparent(tab);
+    struct list_item *current = 0;
+
+    while (parent && (current = pool_nextin(current, parent)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TAB && child->attributes.checked != (child == tab))
+        {
+
+            child->attributes.checked = (child == tab);
+
+            damage(child);
+
+        }
+
+    }
+
+}
+
 static void clickwidget(struct widget *widget)
 {
 
@@ -2585,6 +2610,12 @@ static void clickwidget(struct widget *widget)
     case WIDGET_TYPE_ITEM:
         if (state.mousebuttonleft)
             sendselect(widget);
+
+        break;
+
+    case WIDGET_TYPE_TAB:
+        if (state.mousebuttonleft)
+            checktab(widget);
 
         break;
 
@@ -2925,6 +2956,7 @@ static unsigned int isfocusable(struct widget *widget)
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_SLIDER:
     case WIDGET_TYPE_SWITCH:
+    case WIDGET_TYPE_TAB:
         return 1;
 
     case WIDGET_TYPE_TEXT:

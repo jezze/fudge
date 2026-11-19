@@ -1143,7 +1143,7 @@ static void rendertab(struct blit_display *display, struct widget *widget, int l
 
     struct util_region open = util_region(widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h + CONFIG_FRAME_HEIGHT);
 
-    if (widget->selected)
+    if (widget->attributes.checked)
         blit_frame(display, &open, line, x0, x2, getpalette(PALETTE_PANEL, SHADE_NORMAL)->frame);
     else
         blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_BOX, getshade(widget))->frame);
@@ -1155,10 +1155,7 @@ static void renderitem(struct blit_display *display, struct widget *widget, int 
 
     unsigned int *cmapbody = getpalette(PALETTE_ITEM, (widget->selected) ? SHADE_FOCUS : getshade(widget))->frame;
 
-    if (widget->attributes.style == ATTR_STYLE_TAB)
-        rendertab(display, widget, line, x0, x2);
-    else
-        blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
+    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 
 }
 
@@ -1460,6 +1457,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
     setupcall(WIDGET_TYPE_SWITCH, getsizeswitch, 0, renderswitch);
+    setupcall(WIDGET_TYPE_TAB, getsizechildren, 0, rendertab);
     setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
     setupcall(WIDGET_TYPE_MEDIA, getsizemedia, 0, rendermedia);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);

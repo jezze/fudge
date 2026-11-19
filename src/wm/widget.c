@@ -262,6 +262,7 @@ unsigned int widget_isinteractive(struct widget *widget)
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_SLIDER:
     case WIDGET_TYPE_SWITCH:
+    case WIDGET_TYPE_TAB:
     case WIDGET_TYPE_ITEM:
     case WIDGET_TYPE_WINDOW:
         return 1;
@@ -393,6 +394,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
         break;
 
     case WIDGET_TYPE_ITEM:
+    case WIDGET_TYPE_TAB:
         attributes->flow = ATTR_FLOW_HORIZONTALSTRETCH;
 
         break;

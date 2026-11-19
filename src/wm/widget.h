@@ -13,6 +13,7 @@
 #define WIDGET_TYPE_SLIDER              17
 #define WIDGET_TYPE_CYCLE               18
 #define WIDGET_TYPE_SWITCH              19
+#define WIDGET_TYPE_TAB                 20
 
 struct widget_attributes
 {
