@@ -4,7 +4,7 @@
 
 #define PREFERREDWIDTH                  1920
 #define PREFERREDHEIGHT                 1080
-#define MODES                           11
+#define MODES                           14
 
 static struct unitsrv unitsrv;
 static struct message_videoconf modes[MODES] = {
@@ -18,7 +18,10 @@ static struct message_videoconf modes[MODES] = {
     {1366, 768, 4},
     {1600, 900, 4},
     {1920, 1080, 4},
-    {2560, 1440, 4}
+    {1920, 1200, 4},
+    {2560, 1440, 4},
+    {2560, 1600, 4},
+    {3840, 2160, 4}
 };
 
 static unsigned int oninfo(struct video_interface *interface, unsigned int source)
