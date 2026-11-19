@@ -9,7 +9,12 @@
 #define PALETTE_SWATCH                  8
 #define PALETTE_TEXT                    9
 #define PALETTE_WINDOW                  10
-#define NUM_PALETTES                    11
+#define PALETTE_CYCLE                   11
+#define PALETTE_SWITCH                  12
+#define PALETTE_SWITCHKNOB              13
+#define PALETTE_TAB                     14
+#define PALETTE_TABCHECKED              15
+#define NUM_PALETTES                    16
 #define SHADE_NORMAL                    0
 #define SHADE_HOVER                     1
 #define SHADE_FOCUS                     2

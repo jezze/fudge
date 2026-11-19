@@ -2,8 +2,8 @@
 #include <abi.h>
 #include "kv.h"
 
-#define NUM_WIDGETS                     13
-#define NUM_RULES                       14
+#define NUM_WIDGETS                     16
+#define NUM_RULES                       19
 #define NUM_SHADES                      4
 #define NUM_PARTS                       6
 #define SHADE_NORMAL                    1
@@ -128,12 +128,15 @@ static struct entry widgets[NUM_WIDGETS] = {
     {"box", "Box"},
     {"button", "Button"},
     {"checkbox", "Checkbox"},
+    {"cycle", "Cycle"},
     {"item", "Item"},
     {"link", "Link"},
     {"mouse", "Mouse"},
     {"panel", "Panel"},
     {"select", "Select"},
     {"swatch", "Swatch"},
+    {"switch", "Switch"},
+    {"tab", "Tab"},
     {"text", "Text"},
     {"window", "Window"},
     {"scrollbar", "Scrollbar (shared with button)"},
@@ -144,12 +147,17 @@ static struct rule rules[NUM_RULES] = {
     {"box", "box", SHADE_ALL, PART_FRAME},
     {"button", "button", SHADE_ALL, PART_FRAME | PART_TEXT},
     {"checkbox", "checkbox", SHADE_ALL, PART_FRAME | PART_ICON},
+    {"cycle", "cycle", SHADE_ALL, PART_FRAME | PART_TEXT | PART_ICON},
     {"item", "item", SHADE_ALL, PART_FRAME},
     {"link", "link", SHADE_NORMAL, PART_TEXT},
     {"mouse", "mouse", SHADE_NORMAL, PART_SHADOW | PART_BODY | PART_LIGHT},
     {"panel", "panel", SHADE_NORMAL, PART_FRAME},
     {"select", "select", SHADE_ALL, PART_FRAME | PART_TEXT | PART_ICON},
     {"swatch", "swatch", SHADE_NORMAL, PART_FRAME},
+    {"switch", "switch", SHADE_ALL, PART_FRAME},
+    {"switch", "switchknob", SHADE_ALL, PART_FRAME},
+    {"tab", "tab", SHADE_ALL, PART_FRAME},
+    {"tab", "tabchecked", SHADE_ALL, PART_FRAME},
     {"text", "text", SHADE_NORMAL, PART_TEXT},
     {"window", "window", SHADE_NORMAL, PART_FRAME | PART_TEXT | PART_ICON},
     {"window", "window", SHADE_HOVER, PART_ICON},

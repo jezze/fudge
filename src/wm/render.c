@@ -932,8 +932,8 @@ static void renderswitch(struct blit_display *display, struct widget *widget, in
     struct util_region knob = util_region(track.position.x + ((widget->attributes.checked) ? CONFIG_SWITCH_WIDTH - CONFIG_CHECKBOX_WIDTH : 0), track.position.y, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
     unsigned int shade = getshade(widget);
 
-    blit_frame(display, &track, line, x0, x2, getpalette(PALETTE_BOX, (shade == SHADE_DISABLED) ? SHADE_DISABLED : SHADE_NORMAL)->frame);
-    blit_frame(display, &knob, line, x0, x2, getpalette(PALETTE_CHECKBOX, shade)->frame);
+    blit_frame(display, &track, line, x0, x2, getpalette(PALETTE_SWITCH, shade)->frame);
+    blit_frame(display, &knob, line, x0, x2, getpalette(PALETTE_SWITCHKNOB, shade)->frame);
 
 }
 
@@ -1078,7 +1078,7 @@ static void rendercycle(struct blit_display *display, struct widget *widget, int
     struct util_region rprev = render_getcyclearrow(widget, 0);
     struct util_region rnext = render_getcyclearrow(widget, 1);
     struct util_size padding = util_size(rprev.size.w, CONFIG_FRAME_HEIGHT + render_unit(3));
-    struct palette *palette = getpalette(PALETTE_SELECT, getshade(widget));
+    struct palette *palette = getpalette(PALETTE_CYCLE, getshade(widget));
     int textx0 = util_max(x0, rprev.position.x + (int)rprev.size.w);
     int textx2 = util_min(x2, rnext.position.x);
 
@@ -1144,9 +1144,9 @@ static void rendertab(struct blit_display *display, struct widget *widget, int l
     struct util_region open = util_region(widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h + CONFIG_FRAME_HEIGHT);
 
     if (widget->attributes.checked)
-        blit_frame(display, &open, line, x0, x2, getpalette(PALETTE_PANEL, SHADE_NORMAL)->frame);
+        blit_frame(display, &open, line, x0, x2, getpalette(PALETTE_TABCHECKED, getshade(widget))->frame);
     else
-        blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_BOX, getshade(widget))->frame);
+        blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_TAB, getshade(widget))->frame);
 
 }
 
