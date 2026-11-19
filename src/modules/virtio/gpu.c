@@ -10,6 +10,8 @@
 #define FRAMEBUFFER                     0xA0000000
 #define RESOURCE                        1
 #define POLLS                           0x1000000
+#define SCANOUTS                        16
+#define CMD_GETDISPLAYINFO              0x0100
 #define CMD_RESOURCECREATE2D            0x0101
 #define CMD_RESOURCEUNREF               0x0102
 #define CMD_SETSCANOUT                  0x0103
@@ -17,6 +19,7 @@
 #define CMD_TRANSFERTOHOST2D            0x0105
 #define CMD_RESOURCEATTACHBACKING       0x0106
 #define RESPONSE_OKNODATA               0x1100
+#define RESPONSE_OKDISPLAYINFO          0x1101
 #define FORMAT_B8G8R8X8                 2
 #define FORMAT_X8R8G8B8                 4
 
@@ -39,6 +42,23 @@ struct rect
     unsigned int y;
     unsigned int width;
     unsigned int height;
+
+};
+
+struct displaymode
+{
+
+    struct rect rect;
+    unsigned int enabled;
+    unsigned int flags;
+
+};
+
+struct displayinfo
+{
+
+    struct header header;
+    struct displaymode modes[SCANOUTS];
 
 };
 
@@ -113,7 +133,7 @@ static struct spinlock spinlock;
 static struct virtio_queue queue;
 static unsigned char memory[VIRTIO_QUEUEMEMORY];
 static struct virtio_device device;
-static struct header response;
+static struct displayinfo response;
 static unsigned int ready;
 static unsigned int created;
 
@@ -136,15 +156,15 @@ static void setrect(struct rect *rect, unsigned int x, unsigned int y, unsigned 
 
 }
 
-static unsigned int command(void *request, unsigned int count)
+static unsigned int exchange(void *request, unsigned int count, unsigned int size)
 {
 
     unsigned int i;
 
-    response.type = 0;
+    response.header.type = 0;
 
     virtio_setdesc(&queue, 0, request, count, VIRTIO_DESC_NEXT, 1);
-    virtio_setdesc(&queue, 1, &response, sizeof (struct header), VIRTIO_DESC_WRITE, 0);
+    virtio_setdesc(&queue, 1, &response, size, VIRTIO_DESC_WRITE, 0);
     virtio_push(&queue, 0);
     virtio_notify(&queue);
 
@@ -155,7 +175,31 @@ static unsigned int command(void *request, unsigned int count)
 
     virtio_pop(&queue);
 
-    return virtio_le32(response.type) == RESPONSE_OKNODATA;
+    return virtio_le32(response.header.type);
+
+}
+
+static unsigned int command(void *request, unsigned int count)
+{
+
+    return exchange(request, count, sizeof (struct header)) == RESPONSE_OKNODATA;
+
+}
+
+static void getdisplayinfo(void)
+{
+
+    struct header request;
+
+    setheader(&request, CMD_GETDISPLAYINFO);
+
+    if (exchange(&request, sizeof (struct header), sizeof (struct displayinfo)) == RESPONSE_OKDISPLAYINFO && response.modes[0].enabled && response.modes[0].rect.width && response.modes[0].rect.height)
+    {
+
+        videointerface.preferredwidth = virtio_le32(response.modes[0].rect.width);
+        videointerface.preferredheight = virtio_le32(response.modes[0].rect.height);
+
+    }
 
 }
 
@@ -342,6 +386,7 @@ static void driver_attach(unsigned int id)
         return;
 
     virtio_setstatus(&device, VIRTIO_STATUS_DRIVEROK);
+    getdisplayinfo();
     video_registerinterface(&videointerface);
 
 }
