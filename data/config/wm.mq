@@ -7,11 +7,6 @@
     transparency: on
     cursor: 100
   }
-  display:
-  [
-    { device: video:0 width: 1920 height: 1080 bpp: 4 }
-    { device: video:1 width: 1920 height: 1080 bpp: 4 }
-  ]
   keyboard:
   [
     { device: keyboard:0 map: "initrd:data/keys/en_US.mq" }
