@@ -216,7 +216,7 @@ static unsigned int getcommand(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(commands, NUM_COMMANDS, strbuffer) : 0;
+    return (count) ? util_getkey(commands, NUM_COMMANDS, strbuffer) : NONE;
 
 }
 
