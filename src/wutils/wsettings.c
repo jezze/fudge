@@ -171,6 +171,7 @@ struct display
 {
 
     char device[DEVICENAME];
+    unsigned int configured;
     unsigned int enabled;
     unsigned int width;
     unsigned int height;
@@ -446,11 +447,13 @@ static void loaddisplay(char *line, unsigned int length)
     {
 
         struct display *display = &config.display[config.ndisplays];
+        char enabled[8];
 
         display->width = getnumber(line, length, 0);
         display->height = getnumber(line, length, 1);
         display->bpp = getnumber(line, length, 2);
-        display->enabled = 1;
+        display->configured = 1;
+        display->enabled = !cstring_match(getword(line, length, 4, enabled, 8), "off");
 
         if (!cstring_length(getword(line, length, 3, display->device, DEVICENAME)))
             cstring_write_fmt(display->device, DEVICENAME, 0, "video:%u\\0", &config.ndisplays);
@@ -661,20 +664,22 @@ static void finddisplays(void)
     {
 
         char name[DEVICENAME];
+        unsigned int video;
 
         cstring_write_fmt(name, DEVICENAME, 0, "video:%u\\0", &i);
 
-        if (!channel_lookup(name))
-            break;
+        video = channel_lookup(name);
 
-        if (!hasdisplay(name))
+        if (video && !hasdisplay(name))
         {
 
             struct display *display = &config.display[config.ndisplays];
+            struct message_videoinfo videoinfo;
 
             copystring(display->device, DEVICENAME, name, cstring_length(name));
 
-            display->enabled = 0;
+            display->configured = 0;
+            display->enabled = channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0) && channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.connected;
             display->width = 0;
             display->height = 0;
             display->bpp = 4;
@@ -812,7 +817,7 @@ static void loadconfig(void)
     config.network.count = 0;
     config.network.selected = 0;
 
-    loadlines(option_getstring("config"), ".display", "{width} {height} {bpp} {device}", loaddisplay);
+    loadlines(option_getstring("config"), ".display", "{width} {height} {bpp} {device} {enabled}", loaddisplay);
     loadlines(option_getstring("config"), ".keyboard", "{device} {map}", loadkeyboard);
     loadlines(option_getstring("config"), ".mouse", "{device} {speed}", loadmouse);
     loadlines(option_getstring("config"), ".touchpad", "{device} {doubletap}", loadtouchpad);
@@ -844,8 +849,8 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
         struct display *display = &config.display[i];
 
-        if (display->enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s width: %u height: %u bpp: %u }\n", display->device, &display->width, &display->height, &display->bpp);
+        if (display->configured)
+            count += cstring_write_fmt(data, size, count, "    { device: %s width: %u height: %u bpp: %u enabled: %s }\n", display->device, &display->width, &display->height, &display->bpp, (display->enabled) ? "on" : "off");
 
     }
 
@@ -1033,8 +1038,8 @@ static unsigned int writelines(char *data, unsigned int size)
 
         struct display *display = &config.display[i];
 
-        if (display->enabled)
-            count += cstring_write_fmt(data, size, count, "display %u %u %u %s\n", &display->width, &display->height, &display->bpp, display->device);
+        if (display->configured)
+            count += cstring_write_fmt(data, size, count, "display %u %u %u %s %s\n", &display->width, &display->height, &display->bpp, display->device, (display->enabled) ? "on" : "off");
 
     }
 
@@ -1146,6 +1151,7 @@ static void setresolution(struct display *display, char *value)
     display->width = width;
     display->height = cstring_read_value(height, buffer_findbyte(height, cstring_length(height), 'x'), 10);
     display->bpp = cstring_read_value(bits, cstring_length(bits), 10) / 8;
+    display->configured = 1;
 
 }
 
@@ -1835,7 +1841,13 @@ static void onwmevent(struct message *message)
             struct devices *devices = getdevices(kind);
 
             if (cstring_match(kind, "display") && config.selecteddisplay < config.ndisplays)
+            {
+
                 config.display[config.selecteddisplay].enabled = enabled;
+                config.display[config.selecteddisplay].configured = 1;
+
+            }
+
             else if (devices && getselected(devices))
                 getselected(devices)->enabled = enabled;
 
