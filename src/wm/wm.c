@@ -71,6 +71,15 @@ struct display
 
 };
 
+struct displayconfig
+{
+
+    struct message_videoconf videoconf;
+    unsigned int enabled;
+    char device[DEVICENAME];
+
+};
+
 struct input
 {
 
@@ -128,6 +137,8 @@ struct state
     struct display display[DISPLAYS];
     struct widget *roots[DISPLAYS];
     unsigned int ndisplays;
+    struct displayconfig displayconfig[DISPLAYS];
+    unsigned int ndisplayconfigs;
     struct inputs inputs;
     struct linked linked;
     struct keymap keymaps[KEYMAPS];
@@ -165,6 +176,68 @@ static char *fontb[FONTS] = {
     "initrd:data/font/ter-116b.pcf",
     "initrd:data/font/ter-118b.pcf",
 };
+
+static struct displayconfig *finddisplayconfig(char *device)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < state.ndisplayconfigs; i++)
+    {
+
+        if (cstring_match(state.displayconfig[i].device, device))
+            return &state.displayconfig[i];
+
+    }
+
+    return 0;
+
+}
+
+static void adddisplay(char *device, struct message_videoconf *videoconf)
+{
+
+    struct display *display = &state.display[state.ndisplays];
+
+    cstring_write_fmt(display->device, DEVICENAME, 0, "%s\\0", device);
+
+    display->videoconf.width = videoconf->width;
+    display->videoconf.height = videoconf->height;
+    display->videoconf.bpp = videoconf->bpp;
+    state.ndisplays++;
+
+}
+
+static void selectdisplays(void)
+{
+
+    struct message_videoconf preferred;
+    unsigned int i;
+
+    preferred.width = 0;
+    preferred.height = 0;
+    preferred.bpp = 4;
+    state.ndisplays = 0;
+
+    for (i = 0; i < DISPLAYS; i++)
+    {
+
+        char device[DEVICENAME];
+        struct displayconfig *config;
+
+        cstring_write_fmt(device, DEVICENAME, 0, "video:%u\\0", &i);
+
+        config = finddisplayconfig(device);
+
+        if (channel_lookup(device) && (!config || config->enabled))
+            adddisplay(device, (config) ? &config->videoconf : &preferred);
+
+    }
+
+    if (!state.ndisplays)
+        adddisplay("video:0", &preferred);
+
+}
 
 static void setupvideo(unsigned int video)
 {
@@ -542,30 +615,33 @@ static void configline(char *line, unsigned int length)
     else if (count == 8 && buffer_match(word, "displays", 8))
     {
 
-        state.ndisplays = 0;
+        state.ndisplayconfigs = 0;
 
     }
 
     else if (count == 7 && buffer_match(word, "display", 7))
     {
 
-        if (state.ndisplays < DISPLAYS)
+        if (state.ndisplayconfigs < DISPLAYS)
         {
 
-            struct display *display = &state.display[state.ndisplays];
+            struct displayconfig *config = &state.displayconfig[state.ndisplayconfigs];
             unsigned int deviceoffset = findword(rest, length, 3);
             unsigned int devicelength = measureword(rest, length, deviceoffset);
+            unsigned int enabledoffset = findword(rest, length, 4);
+            unsigned int enabledlength = measureword(rest, length, enabledoffset);
 
-            display->videoconf.width = getnumber(rest, length, 0, 10, display->videoconf.width);
-            display->videoconf.height = getnumber(rest, length, 1, 10, display->videoconf.height);
-            display->videoconf.bpp = getnumber(rest, length, 2, 10, display->videoconf.bpp);
+            config->videoconf.width = getnumber(rest, length, 0, 10, 0);
+            config->videoconf.height = getnumber(rest, length, 1, 10, 0);
+            config->videoconf.bpp = getnumber(rest, length, 2, 10, 4);
+            config->enabled = !(enabledlength == 3 && buffer_match(rest + enabledoffset, "off", 3));
 
             if (devicelength && devicelength < DEVICENAME)
-                cstring_write_fmt(display->device, DEVICENAME, 0, "%w\\0", rest + deviceoffset, &devicelength);
+                cstring_write_fmt(config->device, DEVICENAME, 0, "%w\\0", rest + deviceoffset, &devicelength);
             else
-                cstring_write_fmt(display->device, DEVICENAME, 0, "video:%u\\0", &state.ndisplays);
+                cstring_write_fmt(config->device, DEVICENAME, 0, "video:%u\\0", &state.ndisplayconfigs);
 
-            state.ndisplays++;
+            state.ndisplayconfigs++;
 
         }
 
@@ -697,7 +773,7 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"cursor {cursor}\" %s", config));
     configlines("displays", 8);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .display -format \"display {width} {height} {bpp} {device}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .display -format \"display {width} {height} {bpp} {device} {enabled}\" %s", config));
     configlines("inputs", 6);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {device} {map}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {device} {speed}\" %s", config));
@@ -3378,8 +3454,7 @@ static void onmain(struct message *message)
     loadcursors();
     loadicons();
 
-    if (!state.ndisplays)
-        state.ndisplays = 1;
+    selectdisplays();
 
     state.display[0].video = channel_lookup(state.display[0].device);
 
@@ -4047,7 +4122,7 @@ static void setupdisplay(unsigned int index, struct message_videoinfo *videoinfo
 
 }
 
-static void removedisplay(unsigned int index)
+static void hidedisplay(unsigned int index)
 {
 
     struct display *display = &state.display[index];
@@ -4066,7 +4141,14 @@ static void removedisplay(unsigned int index)
 
     }
 
-    display->video = 0;
+}
+
+static void removedisplay(unsigned int index)
+{
+
+    hidedisplay(index);
+
+    state.display[index].video = 0;
 
 }
 
@@ -4075,8 +4157,7 @@ static void applyconfig(struct message_videoconf *videoconf, unsigned int video)
 
     unsigned int i;
 
-    if (!state.ndisplays)
-        state.ndisplays = 1;
+    selectdisplays();
 
     state.display[0].video = channel_lookup(state.display[0].device);
 
@@ -4130,10 +4211,12 @@ static void onvideoinfo(struct message *message)
 
         struct util_region area;
 
-        if (!videoinfo.framebuffer)
-            return;
+        if (videoinfo.framebuffer && videoinfo.connected)
+            setupdisplay(index, &videoinfo);
+        else
+            hidedisplay(index);
 
-        setupdisplay(index, &videoinfo);
+        arrangedisplays();
 
         area = getarea();
 
@@ -4432,9 +4515,6 @@ void init(void)
 
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     keys_init(&state.plainkeys, KEYS_LAYOUT_QWERTY_US, (void *)0);
-    state.display[0].videoconf.bpp = 4;
-    cstring_write_fmt(state.display[0].device, DEVICENAME, 0, "video:0\\0");
-    state.ndisplays = 1;
     state.cursorscale = 100;
     pool_setup();
     setupwidgets();
