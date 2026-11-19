@@ -61,6 +61,7 @@ struct device
 
     char name[DEVICENAME];
     unsigned int target;
+    unsigned int enabled;
     unsigned int volume;
     unsigned int rate;
     unsigned int pending;
@@ -406,40 +407,93 @@ static struct device *finddevice(unsigned int target)
 
 }
 
+static unsigned int findconfigured(char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < configured.count; i++)
+    {
+
+        if (cstring_match(configured.list[i].name, name))
+            return i;
+
+    }
+
+    return configured.count;
+
+}
+
+/* device <name> [volume] [on|off]; a device listed again keeps its place */
+static void adddevice(char *rest, unsigned int length)
+{
+
+    unsigned int nameend = buffer_findbyte(rest, length, ' ');
+    unsigned int volumestart = (nameend < length) ? nameend + 1 : length;
+    unsigned int volumeend = volumestart + buffer_findbyte(rest + volumestart, length - volumestart, ' ');
+    unsigned int enabledstart = (volumeend < length) ? volumeend + 1 : length;
+    char name[DEVICENAME];
+    struct device *device;
+    unsigned int index;
+
+    if (!nameend || nameend >= DEVICENAME)
+        return;
+
+    cstring_write_fmt(name, DEVICENAME, 0, "%w\\0", rest, &nameend);
+
+    index = findconfigured(name);
+
+    if (index == DEVICES)
+        return;
+
+    if (index == configured.count)
+        configured.count++;
+
+    device = &configured.list[index];
+
+    buffer_clear(device, sizeof (struct device));
+    cstring_write_fmt(device->name, DEVICENAME, 0, "%s\\0", name);
+
+    device->volume = (volumeend > volumestart) ? cstring_read_value(rest + volumestart, volumeend - volumestart, 10) : VOLUME_FULL;
+    device->enabled = !(length - enabledstart == 3 && buffer_match(rest + enabledstart, "off", 3));
+
+    if (device->volume > VOLUME_FULL)
+        device->volume = VOLUME_FULL;
+
+}
+
+/* devices present but not in the config get the defaults */
+static void adddefaults(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < DEVICES; i++)
+    {
+
+        char name[DEVICENAME];
+
+        cstring_write_fmt(name, DEVICENAME, 0, "audio:%u\\0", &i);
+
+        if (!channel_lookup(name))
+            break;
+
+        if (findconfigured(name) == configured.count)
+            adddevice(name, cstring_length(name));
+
+    }
+
+}
+
 static void configline(char *line, unsigned int length)
 {
 
     unsigned int namelength = buffer_findbyte(line, length, ' ');
 
     if (namelength == 7 && length == 7 && buffer_match(line, "devices", 7))
-    {
-
         configured.count = 0;
-
-    }
-
-    else if (namelength == 6 && buffer_match(line, "device", 6) && configured.count < DEVICES)
-    {
-
-        struct device *device = &configured.list[configured.count];
-        char *rest = line + 7;
-        unsigned int restlength = (length > 7) ? length - 7 : 0;
-        unsigned int nameend = buffer_findbyte(rest, restlength, ' ');
-
-        if (!nameend || nameend >= DEVICENAME)
-            return;
-
-        buffer_clear(device, sizeof (struct device));
-        cstring_write_fmt(device->name, DEVICENAME, 0, "%w\\0", rest, &nameend);
-
-        device->volume = (nameend < restlength) ? cstring_read_value(rest + nameend + 1, restlength - nameend - 1, 10) : VOLUME_FULL;
-
-        if (device->volume > VOLUME_FULL)
-            device->volume = VOLUME_FULL;
-
-        configured.count++;
-
-    }
+    else if (namelength == 6 && length > 7 && buffer_match(line, "device", 6))
+        adddevice(line + 7, length - 7);
 
 }
 
@@ -473,7 +527,7 @@ static void applyconfig(void)
     for (i = 0; i < configured.count; i++)
     {
 
-        unsigned int target = channel_lookup(configured.list[i].name);
+        unsigned int target = (configured.list[i].enabled) ? channel_lookup(configured.list[i].name) : 0;
         struct device *old = (target) ? finddevice(target) : 0;
         struct device *device = &next.list[next.count];
 
@@ -519,6 +573,7 @@ static void onconfig(struct message *message)
 {
 
     configlines(message->data, message->length);
+    adddefaults();
     applyconfig();
 
 }
@@ -620,7 +675,8 @@ static void onmain(struct message *message)
     struct message_timerinfo timerinfo;
 
     configlines("devices", 7);
-    configlines(data, system_feed(0, 0, data, 0x1000, "mq -query .devices -format \"device {device} {volume}\" %s", option_getstring("config")));
+    configlines(data, system_feed(0, 0, data, 0x1000, "mq -query .devices -format \"device {device} {volume} {enabled}\" %s", option_getstring("config")));
+    adddefaults();
     applyconfig();
 
     if (!devices.count)

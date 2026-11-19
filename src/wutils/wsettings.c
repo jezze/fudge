@@ -514,42 +514,6 @@ static struct device *getselected(struct devices *devices)
 
 }
 
-static void loadkeyboard(char *line, unsigned int length)
-{
-
-    char name[DEVICENAME];
-    char map[256];
-    struct device *device = adddevice(&config.keyboard, getword(line, length, 0, name, DEVICENAME), 1);
-
-    if (device && cstring_length(getword(line, length, 1, map, 256)))
-        copystring(device->map, 256, map, cstring_length(map));
-
-}
-
-static void loadmouse(char *line, unsigned int length)
-{
-
-    char name[DEVICENAME];
-    char speed[16];
-    struct device *device = adddevice(&config.mouse, getword(line, length, 0, name, DEVICENAME), 1);
-
-    if (device && cstring_length(getword(line, length, 1, speed, 16)))
-        copystring(device->speed, 16, speed, cstring_length(speed));
-
-}
-
-static void loadaudio(char *line, unsigned int length)
-{
-
-    char name[DEVICENAME];
-    char volume[16];
-    struct device *device = adddevice(&config.audio, getword(line, length, 0, name, DEVICENAME), 1);
-
-    if (device && cstring_length(getword(line, length, 1, volume, 16)))
-        copystring(device->volume, 16, volume, cstring_length(volume));
-
-}
-
 static char *getfield(char *data, unsigned int count, unsigned int index, char *field, unsigned int size)
 {
 
@@ -583,6 +547,45 @@ static char *getfield(char *data, unsigned int count, unsigned int index, char *
 
 }
 
+static void loadkeyboard(char *line, unsigned int length)
+{
+
+    char name[DEVICENAME];
+    char map[256];
+    char enabled[8];
+    struct device *device = adddevice(&config.keyboard, getfield(line, length, 0, name, DEVICENAME), !cstring_match(getfield(line, length, 2, enabled, 8), "off"));
+
+    if (device && cstring_length(getfield(line, length, 1, map, 256)))
+        copystring(device->map, 256, map, cstring_length(map));
+
+}
+
+static void loadmouse(char *line, unsigned int length)
+{
+
+    char name[DEVICENAME];
+    char speed[16];
+    char enabled[8];
+    struct device *device = adddevice(&config.mouse, getfield(line, length, 0, name, DEVICENAME), !cstring_match(getfield(line, length, 2, enabled, 8), "off"));
+
+    if (device && cstring_length(getfield(line, length, 1, speed, 16)))
+        copystring(device->speed, 16, speed, cstring_length(speed));
+
+}
+
+static void loadaudio(char *line, unsigned int length)
+{
+
+    char name[DEVICENAME];
+    char volume[16];
+    char enabled[8];
+    struct device *device = adddevice(&config.audio, getfield(line, length, 0, name, DEVICENAME), !cstring_match(getfield(line, length, 2, enabled, 8), "off"));
+
+    if (device && cstring_length(getfield(line, length, 1, volume, 16)))
+        copystring(device->volume, 16, volume, cstring_length(volume));
+
+}
+
 static void loadnetwork(char *line, unsigned int length)
 {
 
@@ -610,9 +613,10 @@ static void loadtouch(char *line, unsigned int length)
 
     char name[DEVICENAME];
     char doubletap[16];
-    struct device *device = adddevice(&config.touch, getword(line, length, 0, name, DEVICENAME), 1);
+    char enabled[8];
+    struct device *device = adddevice(&config.touch, getfield(line, length, 0, name, DEVICENAME), !cstring_match(getfield(line, length, 2, enabled, 8), "off"));
 
-    if (device && cstring_length(getword(line, length, 1, doubletap, 16)))
+    if (device && cstring_length(getfield(line, length, 1, doubletap, 16)))
         copystring(device->doubletap, 16, doubletap, cstring_length(doubletap));
 
 }
@@ -632,7 +636,7 @@ static void finddevices(struct devices *devices, char *kind)
         if (!channel_lookup(name))
             break;
 
-        adddevice(devices, name, 0);
+        adddevice(devices, name, 1);
 
     }
 
@@ -818,14 +822,14 @@ static void loadconfig(void)
     config.network.selected = 0;
 
     loadlines(option_getstring("video-config"), ".devices", "{width} {height} {bpp} {device} {enabled}", loadvideo);
-    loadlines(option_getstring("keyboard-config"), ".devices", "{device} {map}", loadkeyboard);
-    loadlines(option_getstring("mouse-config"), ".devices", "{device} {speed}", loadmouse);
-    loadlines(option_getstring("touch-config"), ".devices", "{device} {doubletap}", loadtouch);
+    loadlines(option_getstring("keyboard-config"), ".devices", "{device}|{map}|{enabled}", loadkeyboard);
+    loadlines(option_getstring("mouse-config"), ".devices", "{device}|{speed}|{enabled}", loadmouse);
+    loadlines(option_getstring("touch-config"), ".devices", "{device}|{doubletap}|{enabled}", loadtouch);
     findvideos();
     finddevices(&config.keyboard, "keyboard");
     finddevices(&config.mouse, "mouse");
     finddevices(&config.touch, "touch");
-    loadlines(option_getstring("audio-config"), ".devices", "{device} {volume}", loadaudio);
+    loadlines(option_getstring("audio-config"), ".devices", "{device}|{volume}|{enabled}", loadaudio);
     finddevices(&config.audio, "audio");
     loadlines(option_getstring("network-config"), ".networks", "{device}|{type}|{address}|{route}|{netmask}|{dns}", loadnetwork);
     finddevices(&config.network, "ethernet");
@@ -880,12 +884,7 @@ static unsigned int writekeyboard(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.keyboard.count; i++)
-    {
-
-        if (config.keyboard.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s map: \"%s\" }\n", config.keyboard.list[i].name, config.keyboard.list[i].map);
-
-    }
+        count += cstring_write_fmt(data, size, count, "    { device: %s map: \"%s\" enabled: %s }\n", config.keyboard.list[i].name, config.keyboard.list[i].map, (config.keyboard.list[i].enabled) ? "on" : "off");
 
     count += cstring_write_fmt(data, size, count, "  ]\n}\n");
 
@@ -902,12 +901,7 @@ static unsigned int writemouse(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.mouse.count; i++)
-    {
-
-        if (config.mouse.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s speed: %s }\n", config.mouse.list[i].name, config.mouse.list[i].speed);
-
-    }
+        count += cstring_write_fmt(data, size, count, "    { device: %s speed: %s enabled: %s }\n", config.mouse.list[i].name, config.mouse.list[i].speed, (config.mouse.list[i].enabled) ? "on" : "off");
 
     count += cstring_write_fmt(data, size, count, "  ]\n}\n");
 
@@ -924,12 +918,7 @@ static unsigned int writetouch(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.touch.count; i++)
-    {
-
-        if (config.touch.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s }\n", config.touch.list[i].name, config.touch.list[i].doubletap);
-
-    }
+        count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s enabled: %s }\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off");
 
     count += cstring_write_fmt(data, size, count, "  ]\n}\n");
 
@@ -946,12 +935,7 @@ static unsigned int writeaudio(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.audio.count; i++)
-    {
-
-        if (config.audio.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s volume: %s }\n", config.audio.list[i].name, config.audio.list[i].volume);
-
-    }
+        count += cstring_write_fmt(data, size, count, "    { device: %s volume: %s enabled: %s }\n", config.audio.list[i].name, config.audio.list[i].volume, (config.audio.list[i].enabled) ? "on" : "off");
 
     count += cstring_write_fmt(data, size, count, "  ]\n}\n");
 
@@ -1001,12 +985,7 @@ static unsigned int writeaudiolines(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "devices\n");
 
     for (i = 0; i < config.audio.count; i++)
-    {
-
-        if (config.audio.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "device %s %s\n", config.audio.list[i].name, config.audio.list[i].volume);
-
-    }
+        count += cstring_write_fmt(data, size, count, "device %s %s %s\n", config.audio.list[i].name, config.audio.list[i].volume, (config.audio.list[i].enabled) ? "on" : "off");
 
     return count;
 
@@ -1092,28 +1071,13 @@ static unsigned int writelines(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "inputs\n");
 
     for (i = 0; i < config.keyboard.count; i++)
-    {
-
-        if (config.keyboard.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "keyboard %s %s\n", config.keyboard.list[i].name, config.keyboard.list[i].map);
-
-    }
+        count += cstring_write_fmt(data, size, count, "keyboard %s %s %s\n", config.keyboard.list[i].name, config.keyboard.list[i].map, (config.keyboard.list[i].enabled) ? "on" : "off");
 
     for (i = 0; i < config.mouse.count; i++)
-    {
-
-        if (config.mouse.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "mouse %s %s\n", config.mouse.list[i].name, config.mouse.list[i].speed);
-
-    }
+        count += cstring_write_fmt(data, size, count, "mouse %s %s %s\n", config.mouse.list[i].name, config.mouse.list[i].speed, (config.mouse.list[i].enabled) ? "on" : "off");
 
     for (i = 0; i < config.touch.count; i++)
-    {
-
-        if (config.touch.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "touch %s %s\n", config.touch.list[i].name, config.touch.list[i].doubletap);
-
-    }
+        count += cstring_write_fmt(data, size, count, "touch %s %s %s\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off");
 
     for (i = 0; i < config.ncolors; i++)
         count += cstring_write_fmt(data, size, count, "color %s %s\n", config.colors[i].name, config.colors[i].value);

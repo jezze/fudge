@@ -39,6 +39,7 @@
 #define DOUBLETAP_DRAG      0
 #define DOUBLETAP_RIGHT     1
 #define DEVICENAME          32
+#define KEYMAP_DEFAULT      "initrd:data/keys/en_US.mq"
 #define TOUCH_PADCOUNTS     1600
 #define TOUCH_WHEELCOUNTS   24
 #define TOUCH_TAPTICKS      12
@@ -85,6 +86,7 @@ struct input
 
     char name[DEVICENAME];
     unsigned int type;
+    unsigned int enabled;
     unsigned int target;
     unsigned int speed;
     unsigned int doubletap;
@@ -319,6 +321,24 @@ static unsigned int measureword(char *data, unsigned int count, unsigned int sta
 
 }
 
+/* fields are separated by single spaces, so an empty one keeps the later ones in place */
+static unsigned int findfield(char *data, unsigned int count, unsigned int index)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count && index; i++)
+    {
+
+        if (data[i] == ' ')
+            index--;
+
+    }
+
+    return (index) ? count : i;
+
+}
+
 static unsigned int getnumber(char *data, unsigned int count, unsigned int index, unsigned int base, unsigned int fallback)
 {
 
@@ -511,13 +531,13 @@ static void loadkeymap(struct keymap *keymap, char *path)
 }
 
 /* the nth keyboard keeps its map in the nth slot, reloaded only when its path changes */
-static unsigned int getkeymap(char *path)
+static unsigned int getkeymap(unsigned int index, char *path)
 {
 
     unsigned int slot = 0;
     unsigned int i;
 
-    for (i = 0; i + 1 < state.inputs.count; i++)
+    for (i = 0; i < index; i++)
     {
 
         if (state.inputs.list[i].type == INPUT_KEYBOARD)
@@ -535,55 +555,126 @@ static unsigned int getkeymap(char *path)
 
 }
 
+static unsigned int findinputname(char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < state.inputs.count; i++)
+    {
+
+        if (cstring_match(state.inputs.list[i].name, name))
+            return i;
+
+    }
+
+    return state.inputs.count;
+
+}
+
+/* a device listed again (a config sent in several messages) keeps its place */
 static void addinput(unsigned int type, char *rest, unsigned int length)
 {
 
-    unsigned int nameoffset = findword(rest, length, 0);
+    unsigned int nameoffset = findfield(rest, length, 0);
     unsigned int namelength = measureword(rest, length, nameoffset);
-    unsigned int valueoffset = findword(rest, length, 1);
+    unsigned int valueoffset = findfield(rest, length, 1);
     unsigned int valuelength = measureword(rest, length, valueoffset);
+    unsigned int enabledoffset = findfield(rest, length, 2);
+    unsigned int enabledlength = measureword(rest, length, enabledoffset);
+    char name[DEVICENAME];
+    struct input *input;
+    unsigned int index;
 
-    if (state.inputs.count < INPUTS && namelength && namelength < DEVICENAME)
+    if (!namelength || namelength >= DEVICENAME)
+        return;
+
+    cstring_write_fmt(name, DEVICENAME, 0, "%w\\0", rest + nameoffset, &namelength);
+
+    index = findinputname(name);
+
+    if (index == INPUTS)
+        return;
+
+    if (index == state.inputs.count)
+        state.inputs.count++;
+
+    input = &state.inputs.list[index];
+
+    buffer_clear(input, sizeof (struct input));
+    cstring_write_fmt(input->name, DEVICENAME, 0, "%s\\0", name);
+
+    input->type = type;
+    input->enabled = !(enabledlength == 3 && buffer_match(rest + enabledoffset, "off", 3));
+    input->speed = MOUSE_NORMAL;
+    input->keymap = KEYMAPS;
+
+    switch (type)
     {
 
-        struct input *input = &state.inputs.list[state.inputs.count++];
-
-        buffer_clear(input, sizeof (struct input));
-        cstring_write_fmt(input->name, DEVICENAME, 0, "%w\\0", rest + nameoffset, &namelength);
-
-        input->type = type;
-        input->speed = MOUSE_NORMAL;
-        input->keymap = KEYMAPS;
-
-        switch (type)
+    case INPUT_KEYBOARD:
+        if (valuelength && valuelength < 256)
         {
 
-        case INPUT_KEYBOARD:
-            if (valuelength && valuelength < 256)
-            {
+            char path[256];
 
-                char path[256];
-
-                cstring_write_fmt(path, 256, 0, "%w\\0", rest + valueoffset, &valuelength);
-                input->keymap = getkeymap(path);
-
-            }
-
-            break;
-
-        case INPUT_MOUSE:
-            input->speed = util_clamp(getnumber(rest, length, 1, 10, MOUSE_NORMAL), 1, MOUSE_FASTEST);
-
-            break;
-
-        case INPUT_TOUCH:
-            input->doubletap = (valuelength == 5 && buffer_match(rest + valueoffset, "right", 5)) ? DOUBLETAP_RIGHT : DOUBLETAP_DRAG;
-
-            break;
+            cstring_write_fmt(path, 256, 0, "%w\\0", rest + valueoffset, &valuelength);
+            input->keymap = getkeymap(index, path);
 
         }
 
+        else
+        {
+
+            input->keymap = getkeymap(index, KEYMAP_DEFAULT);
+
+        }
+
+        break;
+
+    case INPUT_MOUSE:
+        input->speed = util_clamp((valuelength) ? cstring_read_value(rest + valueoffset, valuelength, 10) : MOUSE_NORMAL, 1, MOUSE_FASTEST);
+
+        break;
+
+    case INPUT_TOUCH:
+        input->doubletap = (valuelength == 5 && buffer_match(rest + valueoffset, "right", 5)) ? DOUBLETAP_RIGHT : DOUBLETAP_DRAG;
+
+        break;
+
     }
+
+}
+
+/* devices present but not in the config get the defaults */
+static void adddefaultinputs(unsigned int type, char *kind)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < INPUTS; i++)
+    {
+
+        char name[DEVICENAME];
+
+        cstring_write_fmt(name, DEVICENAME, 0, "%s:%u\\0", kind, &i);
+
+        if (!channel_lookup(name))
+            break;
+
+        if (findinputname(name) == state.inputs.count)
+            addinput(type, name, cstring_length(name));
+
+    }
+
+}
+
+static void adddefaults(void)
+{
+
+    adddefaultinputs(INPUT_KEYBOARD, "keyboard");
+    adddefaultinputs(INPUT_MOUSE, "mouse");
+    adddefaultinputs(INPUT_TOUCH, "touch");
 
 }
 
@@ -775,9 +866,10 @@ static void loadconfig(char *config)
     configlines("videos", 6);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"video {width} {height} {bpp} {device} {enabled}\" %s", option_getstring("video-config")));
     configlines("inputs", 6);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"keyboard {device} {map}\" %s", option_getstring("keyboard-config")));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"mouse {device} {speed}\" %s", option_getstring("mouse-config")));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap}\" %s", option_getstring("touch-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"keyboard {device} {map} {enabled}\" %s", option_getstring("keyboard-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"mouse {device} {speed} {enabled}\" %s", option_getstring("mouse-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap} {enabled}\" %s", option_getstring("touch-config")));
+    adddefaults();
     loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
     loadreference(data, config, ".binding", ".binding", "binding {key} {mod} {action} {command}");
@@ -831,7 +923,7 @@ static void applyinputs(void)
 
         struct input *input = &state.inputs.list[i];
 
-        input->target = channel_lookup(input->name);
+        input->target = (input->enabled) ? channel_lookup(input->name) : 0;
 
         if (input->target && !islinked(&linked, input->target))
             linked.targets[linked.count++] = input->target;
@@ -4308,6 +4400,7 @@ static void onconfig(struct message *message)
     unsigned int channel = state.video[0].channel;
 
     configlines(message->data, message->length);
+    adddefaults();
     loadcursors();
 
     if (channel)
