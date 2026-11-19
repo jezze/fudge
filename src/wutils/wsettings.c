@@ -29,7 +29,7 @@
 #define NUM_CURSORS                     4
 #define NUM_DOUBLETAPS                  2
 #define NUM_NETWORKTYPES                2
-#define NUM_DISPLAYS                    4
+#define NUM_VIDEOS                      4
 #define NUM_DEVICES                     8
 #define DEVICENAME                      32
 #define MOUSE_FASTEST                   16
@@ -167,7 +167,7 @@ struct binding
 
 };
 
-struct display
+struct video
 {
 
     char device[DEVICENAME];
@@ -220,12 +220,12 @@ static struct
     char background[256];
     char language[32];
     char timezone[32];
-    struct display display[NUM_DISPLAYS];
-    unsigned int ndisplays;
-    unsigned int selecteddisplay;
+    struct video video[NUM_VIDEOS];
+    unsigned int nvideos;
+    unsigned int selectedvideo;
     struct devices keyboard;
     struct devices mouse;
-    struct devices touchpad;
+    struct devices touch;
     struct devices audio;
     struct devices network;
     char transparency[8];
@@ -440,25 +440,25 @@ static unsigned int getnumber(char *data, unsigned int count, unsigned int index
 
 }
 
-static void loaddisplay(char *line, unsigned int length)
+static void loadvideo(char *line, unsigned int length)
 {
 
-    if (config.ndisplays < NUM_DISPLAYS)
+    if (config.nvideos < NUM_VIDEOS)
     {
 
-        struct display *display = &config.display[config.ndisplays];
+        struct video *video = &config.video[config.nvideos];
         char enabled[8];
 
-        display->width = getnumber(line, length, 0);
-        display->height = getnumber(line, length, 1);
-        display->bpp = getnumber(line, length, 2);
-        display->configured = 1;
-        display->enabled = !cstring_match(getword(line, length, 4, enabled, 8), "off");
+        video->width = getnumber(line, length, 0);
+        video->height = getnumber(line, length, 1);
+        video->bpp = getnumber(line, length, 2);
+        video->configured = 1;
+        video->enabled = !cstring_match(getword(line, length, 4, enabled, 8), "off");
 
-        if (!cstring_length(getword(line, length, 3, display->device, DEVICENAME)))
-            cstring_write_fmt(display->device, DEVICENAME, 0, "video:%u\\0", &config.ndisplays);
+        if (!cstring_length(getword(line, length, 3, video->device, DEVICENAME)))
+            cstring_write_fmt(video->device, DEVICENAME, 0, "video:%u\\0", &config.nvideos);
 
-        config.ndisplays++;
+        config.nvideos++;
 
     }
 
@@ -605,12 +605,12 @@ static void loadnetwork(char *line, unsigned int length)
 
 }
 
-static void loadtouchpad(char *line, unsigned int length)
+static void loadtouch(char *line, unsigned int length)
 {
 
     char name[DEVICENAME];
     char doubletap[16];
-    struct device *device = adddevice(&config.touchpad, getword(line, length, 0, name, DEVICENAME), 1);
+    struct device *device = adddevice(&config.touch, getword(line, length, 0, name, DEVICENAME), 1);
 
     if (device && cstring_length(getword(line, length, 1, doubletap, 16)))
         copystring(device->doubletap, 16, doubletap, cstring_length(doubletap));
@@ -638,15 +638,15 @@ static void finddevices(struct devices *devices, char *kind)
 
 }
 
-static unsigned int hasdisplay(char *name)
+static unsigned int hasvideo(char *name)
 {
 
     unsigned int i;
 
-    for (i = 0; i < config.ndisplays; i++)
+    for (i = 0; i < config.nvideos; i++)
     {
 
-        if (cstring_match(config.display[i].device, name))
+        if (cstring_match(config.video[i].device, name))
             return 1;
 
     }
@@ -655,36 +655,36 @@ static unsigned int hasdisplay(char *name)
 
 }
 
-static void finddisplays(void)
+static void findvideos(void)
 {
 
     unsigned int i;
 
-    for (i = 0; i < NUM_DISPLAYS && config.ndisplays < NUM_DISPLAYS; i++)
+    for (i = 0; i < NUM_VIDEOS && config.nvideos < NUM_VIDEOS; i++)
     {
 
         char name[DEVICENAME];
-        unsigned int video;
+        unsigned int channel;
 
         cstring_write_fmt(name, DEVICENAME, 0, "video:%u\\0", &i);
 
-        video = channel_lookup(name);
+        channel = channel_lookup(name);
 
-        if (video && !hasdisplay(name))
+        if (channel && !hasvideo(name))
         {
 
-            struct display *display = &config.display[config.ndisplays];
+            struct video *video = &config.video[config.nvideos];
             struct message_videoinfo videoinfo;
 
-            copystring(display->device, DEVICENAME, name, cstring_length(name));
+            copystring(video->device, DEVICENAME, name, cstring_length(name));
 
-            display->configured = 0;
-            display->enabled = channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0) && channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.connected;
-            display->width = 0;
-            display->height = 0;
-            display->bpp = 4;
+            video->configured = 0;
+            video->enabled = channel_send(1, channel, MESSAGE_TYPE_INFO, 0, 0) && channel_wait(1, channel, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.connected;
+            video->width = 0;
+            video->height = 0;
+            video->bpp = 4;
 
-            config.ndisplays++;
+            config.nvideos++;
 
         }
 
@@ -804,27 +804,27 @@ static void loadconfig(void)
 
     config.nbindings = 0;
     config.ncolors = 0;
-    config.ndisplays = 0;
-    config.selecteddisplay = 0;
+    config.nvideos = 0;
+    config.selectedvideo = 0;
     config.keyboard.count = 0;
     config.keyboard.selected = 0;
     config.mouse.count = 0;
     config.mouse.selected = 0;
-    config.touchpad.count = 0;
-    config.touchpad.selected = 0;
+    config.touch.count = 0;
+    config.touch.selected = 0;
     config.audio.count = 0;
     config.audio.selected = 0;
     config.network.count = 0;
     config.network.selected = 0;
 
-    loadlines(option_getstring("config"), ".display", "{width} {height} {bpp} {device} {enabled}", loaddisplay);
+    loadlines(option_getstring("config"), ".video", "{width} {height} {bpp} {device} {enabled}", loadvideo);
     loadlines(option_getstring("config"), ".keyboard", "{device} {map}", loadkeyboard);
     loadlines(option_getstring("config"), ".mouse", "{device} {speed}", loadmouse);
-    loadlines(option_getstring("config"), ".touchpad", "{device} {doubletap}", loadtouchpad);
-    finddisplays();
+    loadlines(option_getstring("config"), ".touch", "{device} {doubletap}", loadtouch);
+    findvideos();
     finddevices(&config.keyboard, "keyboard");
     finddevices(&config.mouse, "mouse");
-    finddevices(&config.touchpad, "touch");
+    finddevices(&config.touch, "touch");
     loadlines(option_getstring("audio-config"), ".devices", "{device} {volume}", loadaudio);
     finddevices(&config.audio, "audio");
     loadlines(option_getstring("network-config"), ".networks", "{device}|{type}|{address}|{route}|{netmask}|{dns}", loadnetwork);
@@ -842,15 +842,15 @@ static unsigned int writeconfig(char *data, unsigned int size)
     unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n    transparency: %s\n    cursor: %s\n  }\n", config.layout, config.themepath, config.background, config.transparency, config.cursor);
-    count += cstring_write_fmt(data, size, count, "  display:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  video:\n  [\n");
 
-    for (i = 0; i < config.ndisplays; i++)
+    for (i = 0; i < config.nvideos; i++)
     {
 
-        struct display *display = &config.display[i];
+        struct video *video = &config.video[i];
 
-        if (display->configured)
-            count += cstring_write_fmt(data, size, count, "    { device: %s width: %u height: %u bpp: %u enabled: %s }\n", display->device, &display->width, &display->height, &display->bpp, (display->enabled) ? "on" : "off");
+        if (video->configured)
+            count += cstring_write_fmt(data, size, count, "    { device: %s width: %u height: %u bpp: %u enabled: %s }\n", video->device, &video->width, &video->height, &video->bpp, (video->enabled) ? "on" : "off");
 
     }
 
@@ -874,13 +874,13 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n  touchpad:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  ]\n  touch:\n  [\n");
 
-    for (i = 0; i < config.touchpad.count; i++)
+    for (i = 0; i < config.touch.count; i++)
     {
 
-        if (config.touchpad.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s }\n", config.touchpad.list[i].name, config.touchpad.list[i].doubletap);
+        if (config.touch.list[i].enabled)
+            count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s }\n", config.touch.list[i].name, config.touch.list[i].doubletap);
 
     }
 
@@ -1031,15 +1031,15 @@ static unsigned int writelines(char *data, unsigned int size)
     unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "layout %s\nbackground %s\n", config.layout, config.background);
-    count += cstring_write_fmt(data, size, count, "transparency %s\ncursor %s\ndisplays\n", config.transparency, config.cursor);
+    count += cstring_write_fmt(data, size, count, "transparency %s\ncursor %s\nvideos\n", config.transparency, config.cursor);
 
-    for (i = 0; i < config.ndisplays; i++)
+    for (i = 0; i < config.nvideos; i++)
     {
 
-        struct display *display = &config.display[i];
+        struct video *video = &config.video[i];
 
-        if (display->configured)
-            count += cstring_write_fmt(data, size, count, "display %u %u %u %s %s\n", &display->width, &display->height, &display->bpp, display->device, (display->enabled) ? "on" : "off");
+        if (video->configured)
+            count += cstring_write_fmt(data, size, count, "video %u %u %u %s %s\n", &video->width, &video->height, &video->bpp, video->device, (video->enabled) ? "on" : "off");
 
     }
 
@@ -1061,11 +1061,11 @@ static unsigned int writelines(char *data, unsigned int size)
 
     }
 
-    for (i = 0; i < config.touchpad.count; i++)
+    for (i = 0; i < config.touch.count; i++)
     {
 
-        if (config.touchpad.list[i].enabled)
-            count += cstring_write_fmt(data, size, count, "touchpad %s %s\n", config.touchpad.list[i].name, config.touchpad.list[i].doubletap);
+        if (config.touch.list[i].enabled)
+            count += cstring_write_fmt(data, size, count, "touch %s %s\n", config.touch.list[i].name, config.touch.list[i].doubletap);
 
     }
 
@@ -1141,17 +1141,17 @@ static unsigned int savefile(char *path, char *data, unsigned int count)
 
 }
 
-static void setresolution(struct display *display, char *value)
+static void setresolution(struct video *video, char *value)
 {
 
     unsigned int width = cstring_read_value(value, buffer_findbyte(value, cstring_length(value), 'x'), 10);
     char *height = value + buffer_findbyte(value, cstring_length(value), 'x') + 1;
     char *bits = height + buffer_findbyte(height, cstring_length(height), 'x') + 1;
 
-    display->width = width;
-    display->height = cstring_read_value(height, buffer_findbyte(height, cstring_length(height), 'x'), 10);
-    display->bpp = cstring_read_value(bits, cstring_length(bits), 10) / 8;
-    display->configured = 1;
+    video->width = width;
+    video->height = cstring_read_value(height, buffer_findbyte(height, cstring_length(height), 'x'), 10);
+    video->bpp = cstring_read_value(bits, cstring_length(bits), 10) / 8;
+    video->configured = 1;
 
 }
 
@@ -1168,10 +1168,10 @@ static void setchoice(char *id, char *value)
         copystring(getselected(&config.keyboard)->map, 256, value, cstring_length(value));
     else if (cstring_match(id, "network-type") && getselected(&config.network))
         copystring(getselected(&config.network)->type, 16, value, cstring_length(value));
-    else if (cstring_match(id, "touchpad-doubletap") && getselected(&config.touchpad))
-        copystring(getselected(&config.touchpad)->doubletap, 16, value, cstring_length(value));
-    else if (cstring_match(id, "display-resolution") && config.selecteddisplay < config.ndisplays)
-        setresolution(&config.display[config.selecteddisplay], value);
+    else if (cstring_match(id, "touch-doubletap") && getselected(&config.touch))
+        copystring(getselected(&config.touch)->doubletap, 16, value, cstring_length(value));
+    else if (cstring_match(id, "video-resolution") && config.selectedvideo < config.nvideos)
+        setresolution(&config.video[config.selectedvideo], value);
     else if (cstring_match(id, "general-transparency"))
         copystring(config.transparency, 8, value, cstring_length(value));
     else if (cstring_match(id, "mouse-cursor"))
@@ -1328,14 +1328,14 @@ static unsigned int loadresolutions(char *device)
 {
 
     struct message_videomodes videomodes;
-    unsigned int video = channel_lookup(device);
+    unsigned int channel = channel_lookup(device);
     unsigned int count = 0;
 
     resolutions[count].value = "0x0x32";
     resolutions[count].label = "Preferred";
     count++;
 
-    if (video && channel_send(1, video, MESSAGE_TYPE_VIDEOMODEREQUEST, 0, 0) && channel_wait(1, video, MESSAGE_TYPE_VIDEOMODERESPONSE, sizeof (struct message_videomodes), &videomodes))
+    if (channel && channel_send(1, channel, MESSAGE_TYPE_VIDEOMODEREQUEST, 0, 0) && channel_wait(1, channel, MESSAGE_TYPE_VIDEOMODERESPONSE, sizeof (struct message_videomodes), &videomodes))
     {
 
         unsigned int i;
@@ -1360,34 +1360,34 @@ static unsigned int loadresolutions(char *device)
 
 }
 
-static void renderdisplay(void)
+static void rendervideo(void)
 {
 
-    struct entry options[NUM_DISPLAYS];
+    struct entry options[NUM_VIDEOS];
     unsigned int i;
 
-    beginarea("Display");
+    beginarea("Video");
 
-    for (i = 0; i < config.ndisplays; i++)
+    for (i = 0; i < config.nvideos; i++)
     {
 
-        options[i].value = config.display[i].device;
-        options[i].label = config.display[i].device;
+        options[i].value = config.video[i].device;
+        options[i].label = config.video[i].device;
 
     }
 
-    devicechoice("display-device", (config.selecteddisplay < config.ndisplays) ? config.display[config.selecteddisplay].device : "", options, config.ndisplays);
+    devicechoice("video-device", (config.selectedvideo < config.nvideos) ? config.video[config.selectedvideo].device : "", options, config.nvideos);
 
-    if (config.selecteddisplay < config.ndisplays)
+    if (config.selectedvideo < config.nvideos)
     {
 
-        struct display *display = &config.display[config.selecteddisplay];
+        struct video *video = &config.video[config.selectedvideo];
         char resolution[64];
-        unsigned int bits = display->bpp * 8;
+        unsigned int bits = video->bpp * 8;
 
-        cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &display->width, &display->height, &bits);
-        enabledfield("display", display->enabled);
-        choice("display-resolution", "Resolution", resolution, resolutions, loadresolutions(display->device));
+        cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &video->width, &video->height, &bits);
+        enabledfield("video", video->enabled);
+        choice("video-resolution", "Resolution", resolution, resolutions, loadresolutions(video->device));
 
     }
 
@@ -1450,19 +1450,19 @@ static void rendermouse(void)
 
 }
 
-static void rendertouchpad(void)
+static void rendertouch(void)
 {
 
-    struct device *device = getselected(&config.touchpad);
+    struct device *device = getselected(&config.touch);
 
-    beginarea("Touchpad");
-    renderdevicechoice(&config.touchpad, "touchpad");
-
-    if (device)
-        enabledfield("touchpad", device->enabled);
+    beginarea("Touch");
+    renderdevicechoice(&config.touch, "touch");
 
     if (device)
-        choice("touchpad-doubletap", "Double click", device->doubletap, doubletaps, NUM_DOUBLETAPS);
+        enabledfield("touch", device->enabled);
+
+    if (device)
+        choice("touch-doubletap", "Double click", device->doubletap, doubletaps, NUM_DOUBLETAPS);
 
 }
 
@@ -1622,14 +1622,14 @@ static void renderarea(char *name)
 
     if (cstring_match(name, "localization"))
         renderlocalization();
-    else if (cstring_match(name, "display"))
-        renderdisplay();
+    else if (cstring_match(name, "video"))
+        rendervideo();
     else if (cstring_match(name, "keyboard"))
         renderkeyboard();
     else if (cstring_match(name, "mouse"))
         rendermouse();
-    else if (cstring_match(name, "touchpad"))
-        rendertouchpad();
+    else if (cstring_match(name, "touch"))
+        rendertouch();
     else if (cstring_match(name, "audio"))
         renderaudio();
     else if (cstring_match(name, "network"))
@@ -1709,8 +1709,8 @@ static struct devices *getdevices(char *kind)
     if (cstring_match(kind, "mouse"))
         return &config.mouse;
 
-    if (cstring_match(kind, "touchpad"))
-        return &config.touchpad;
+    if (cstring_match(kind, "touch"))
+        return &config.touch;
 
     if (cstring_match(kind, "audio"))
         return &config.audio;
@@ -1727,24 +1727,24 @@ static unsigned int selectdevice(char *id, char *name)
 
     unsigned int i;
 
-    if (cstring_match(id, "display-device"))
+    if (cstring_match(id, "video-device"))
     {
 
-        for (i = 0; i < config.ndisplays; i++)
+        for (i = 0; i < config.nvideos; i++)
         {
 
-            if (cstring_match(config.display[i].device, name))
-                config.selecteddisplay = i;
+            if (cstring_match(config.video[i].device, name))
+                config.selectedvideo = i;
 
         }
 
-        renderarea("display");
+        renderarea("video");
 
         return 1;
 
     }
 
-    if (cstring_match(id, "keyboard-device") || cstring_match(id, "mouse-device") || cstring_match(id, "touchpad-device") || cstring_match(id, "audio-device") || cstring_match(id, "network-device"))
+    if (cstring_match(id, "keyboard-device") || cstring_match(id, "mouse-device") || cstring_match(id, "touch-device") || cstring_match(id, "audio-device") || cstring_match(id, "network-device"))
     {
 
         char kind[16];
@@ -1840,11 +1840,11 @@ static void onwmevent(struct message *message)
             unsigned int enabled = kv_getvalue(event, "value=", 10);
             struct devices *devices = getdevices(kind);
 
-            if (cstring_match(kind, "display") && config.selecteddisplay < config.ndisplays)
+            if (cstring_match(kind, "video") && config.selectedvideo < config.nvideos)
             {
 
-                config.display[config.selecteddisplay].enabled = enabled;
-                config.display[config.selecteddisplay].configured = 1;
+                config.video[config.selectedvideo].enabled = enabled;
+                config.video[config.selectedvideo].configured = 1;
 
             }
 

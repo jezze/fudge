@@ -29,8 +29,8 @@
 #define CLOCK_TIMER         1
 #define ROOT                1
 #define ROOTRECORDS         2
-#define DISPLAYS            4
-#define ANYDISPLAY          DISPLAYS
+#define VIDEOS              4
+#define ANYVIDEO            VIDEOS
 #define INPUTS              16
 #define KEYMAPS             4
 #define INPUT_KEYBOARD      1
@@ -61,17 +61,17 @@ struct statresult
 
 };
 
-struct display
+struct video
 {
 
     struct message_videoconf videoconf;
     struct blit_display blit;
-    unsigned int video;
+    unsigned int channel;
     char device[DEVICENAME];
 
 };
 
-struct displayconfig
+struct videoconfig
 {
 
     struct message_videoconf videoconf;
@@ -134,11 +134,11 @@ struct state
     struct keys keys;
     unsigned int layout;
     unsigned int windows;
-    struct display display[DISPLAYS];
-    struct widget *roots[DISPLAYS];
-    unsigned int ndisplays;
-    struct displayconfig displayconfig[DISPLAYS];
-    unsigned int ndisplayconfigs;
+    struct video video[VIDEOS];
+    struct widget *roots[VIDEOS];
+    unsigned int nvideos;
+    struct videoconfig videoconfig[VIDEOS];
+    unsigned int nvideoconfigs;
     struct inputs inputs;
     struct linked linked;
     struct keymap keymaps[KEYMAPS];
@@ -177,16 +177,16 @@ static char *fontb[FONTS] = {
     "initrd:data/font/ter-118b.pcf",
 };
 
-static struct displayconfig *finddisplayconfig(char *device)
+static struct videoconfig *findvideoconfig(char *device)
 {
 
     unsigned int i;
 
-    for (i = 0; i < state.ndisplayconfigs; i++)
+    for (i = 0; i < state.nvideoconfigs; i++)
     {
 
-        if (cstring_match(state.displayconfig[i].device, device))
-            return &state.displayconfig[i];
+        if (cstring_match(state.videoconfig[i].device, device))
+            return &state.videoconfig[i];
 
     }
 
@@ -194,21 +194,21 @@ static struct displayconfig *finddisplayconfig(char *device)
 
 }
 
-static void adddisplay(char *device, struct message_videoconf *videoconf)
+static void addvideo(char *device, struct message_videoconf *videoconf)
 {
 
-    struct display *display = &state.display[state.ndisplays];
+    struct video *video = &state.video[state.nvideos];
 
-    cstring_write_fmt(display->device, DEVICENAME, 0, "%s\\0", device);
+    cstring_write_fmt(video->device, DEVICENAME, 0, "%s\\0", device);
 
-    display->videoconf.width = videoconf->width;
-    display->videoconf.height = videoconf->height;
-    display->videoconf.bpp = videoconf->bpp;
-    state.ndisplays++;
+    video->videoconf.width = videoconf->width;
+    video->videoconf.height = videoconf->height;
+    video->videoconf.bpp = videoconf->bpp;
+    state.nvideos++;
 
 }
 
-static void selectdisplays(void)
+static void selectvideos(void)
 {
 
     struct message_videoconf preferred;
@@ -217,59 +217,59 @@ static void selectdisplays(void)
     preferred.width = 0;
     preferred.height = 0;
     preferred.bpp = 4;
-    state.ndisplays = 0;
+    state.nvideos = 0;
 
-    for (i = 0; i < DISPLAYS; i++)
+    for (i = 0; i < VIDEOS; i++)
     {
 
         char device[DEVICENAME];
-        struct displayconfig *config;
+        struct videoconfig *config;
 
         cstring_write_fmt(device, DEVICENAME, 0, "video:%u\\0", &i);
 
-        config = finddisplayconfig(device);
+        config = findvideoconfig(device);
 
         if (channel_lookup(device) && (!config || config->enabled))
-            adddisplay(device, (config) ? &config->videoconf : &preferred);
+            addvideo(device, (config) ? &config->videoconf : &preferred);
 
     }
 
-    if (!state.ndisplays)
-        adddisplay("video:0", &preferred);
+    if (!state.nvideos)
+        addvideo("video:0", &preferred);
 
 }
 
-static void setupvideo(unsigned int video)
+static void configurevideo(unsigned int channel)
 {
 
     unsigned char black[768];
 
     buffer_clear(black, 768);
-    channel_send(0, video, MESSAGE_TYPE_VIDEOCMAP, 768, &black);
-    channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.display[0].videoconf);
-    channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0);
-    channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+    channel_send(0, channel, MESSAGE_TYPE_VIDEOCMAP, 768, &black);
+    channel_send(0, channel, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.video[0].videoconf);
+    channel_send(1, channel, MESSAGE_TYPE_INFO, 0, 0);
+    channel_wait(1, channel, MESSAGE_TYPE_VIDEOINFO, 0, 0);
 
 }
 
-static void setupdisplays(void)
+static void setupvideos(void)
 {
 
     unsigned int i;
 
-    for (i = 1; i < state.ndisplays; i++)
+    for (i = 1; i < state.nvideos; i++)
     {
 
-        unsigned int video = channel_lookup(state.display[i].device);
+        unsigned int channel = channel_lookup(state.video[i].device);
 
-        state.display[i].video = video;
+        state.video[i].channel = channel;
 
-        if (video)
+        if (channel)
         {
 
-            channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.display[i].videoconf);
-            channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0);
-            channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+            channel_send(0, channel, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.video[i].videoconf);
+            channel_send(1, channel, MESSAGE_TYPE_INFO, 0, 0);
+            channel_wait(1, channel, MESSAGE_TYPE_VIDEOINFO, 0, 0);
 
         }
 
@@ -354,7 +354,7 @@ static void loadbackground(char *path, unsigned int length)
 
             parser_parse(0, "root", cstring_write_fmt(data, 128, 0, "= background mimetype \"image/raw\" %s", size), data);
 
-            for (i = 1; i < DISPLAYS; i++)
+            for (i = 1; i < VIDEOS; i++)
                 parser_parse(0, "root", cstring_write_fmt(data, 128, 0, "= background%u mimetype \"image/raw\" %s", &i, size), data);
 
             pool_loadresources();
@@ -612,20 +612,20 @@ static void configline(char *line, unsigned int length)
 
     }
 
-    else if (count == 8 && buffer_match(word, "displays", 8))
+    else if (count == 6 && buffer_match(word, "videos", 6))
     {
 
-        state.ndisplayconfigs = 0;
+        state.nvideoconfigs = 0;
 
     }
 
-    else if (count == 7 && buffer_match(word, "display", 7))
+    else if (count == 5 && buffer_match(word, "video", 5))
     {
 
-        if (state.ndisplayconfigs < DISPLAYS)
+        if (state.nvideoconfigs < VIDEOS)
         {
 
-            struct displayconfig *config = &state.displayconfig[state.ndisplayconfigs];
+            struct videoconfig *config = &state.videoconfig[state.nvideoconfigs];
             unsigned int deviceoffset = findword(rest, length, 3);
             unsigned int devicelength = measureword(rest, length, deviceoffset);
             unsigned int enabledoffset = findword(rest, length, 4);
@@ -639,9 +639,9 @@ static void configline(char *line, unsigned int length)
             if (devicelength && devicelength < DEVICENAME)
                 cstring_write_fmt(config->device, DEVICENAME, 0, "%w\\0", rest + deviceoffset, &devicelength);
             else
-                cstring_write_fmt(config->device, DEVICENAME, 0, "video:%u\\0", &state.ndisplayconfigs);
+                cstring_write_fmt(config->device, DEVICENAME, 0, "video:%u\\0", &state.nvideoconfigs);
 
-            state.ndisplayconfigs++;
+            state.nvideoconfigs++;
 
         }
 
@@ -668,7 +668,7 @@ static void configline(char *line, unsigned int length)
 
     }
 
-    else if (count == 8 && buffer_match(word, "touchpad", 8))
+    else if (count == 5 && buffer_match(word, "touch", 5))
     {
 
         addinput(INPUT_TOUCH, rest, length);
@@ -682,8 +682,8 @@ static void configline(char *line, unsigned int length)
 
         state.opaque = (length >= 3 && buffer_match(rest, "off", 3));
 
-        for (i = 0; i < DISPLAYS; i++)
-            state.display[i].blit.opaque = state.opaque;
+        for (i = 0; i < VIDEOS; i++)
+            state.video[i].blit.opaque = state.opaque;
 
     }
 
@@ -772,12 +772,12 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"background {background}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"cursor {cursor}\" %s", config));
-    configlines("displays", 8);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .display -format \"display {width} {height} {bpp} {device} {enabled}\" %s", config));
+    configlines("videos", 6);
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .video -format \"video {width} {height} {bpp} {device} {enabled}\" %s", config));
     configlines("inputs", 6);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {device} {map}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {device} {speed}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .touchpad -format \"touchpad {device} {doubletap}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .touch -format \"touch {device} {doubletap}\" %s", config));
     loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
     loadreference(data, config, ".binding", ".binding", "binding {key} {mod} {action} {command}");
@@ -1056,7 +1056,7 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 static struct util_region getactiveregion(void)
 {
 
-    return state.display[state.active].blit.region;
+    return state.video[state.active].blit.region;
 
 }
 
@@ -1066,12 +1066,12 @@ static struct util_region getarea(void)
     struct util_region area = util_region(0, 0, 0, 0);
     unsigned int i;
 
-    for (i = 0; i < DISPLAYS; i++)
+    for (i = 0; i < VIDEOS; i++)
     {
 
-        struct util_region *region = &state.display[i].blit.region;
+        struct util_region *region = &state.video[i].blit.region;
 
-        if (state.display[i].blit.framebuffer)
+        if (state.video[i].blit.framebuffer)
         {
 
             area.size.w = util_max(area.size.w, region->position.x + region->size.w);
@@ -1085,38 +1085,38 @@ static struct util_region getarea(void)
 
 }
 
-static unsigned int finddisplayat(int x, int y)
+static unsigned int findvideoat(int x, int y)
 {
 
     unsigned int i;
 
-    for (i = 0; i < DISPLAYS; i++)
+    for (i = 0; i < VIDEOS; i++)
     {
 
-        struct util_region *region = &state.display[i].blit.region;
+        struct util_region *region = &state.video[i].blit.region;
 
-        if (state.display[i].blit.framebuffer && x >= region->position.x && x < region->position.x + (int)region->size.w && y >= region->position.y && y < region->position.y + (int)region->size.h)
+        if (state.video[i].blit.framebuffer && x >= region->position.x && x < region->position.x + (int)region->size.w && y >= region->position.y && y < region->position.y + (int)region->size.h)
             return i;
 
     }
 
-    return DISPLAYS;
+    return VIDEOS;
 
 }
 
-static unsigned int getdisplayat(int x, int y)
+static unsigned int getvideoat(int x, int y)
 {
 
-    unsigned int display = finddisplayat(x, y);
+    unsigned int video = findvideoat(x, y);
 
-    return (display == DISPLAYS) ? 0 : display;
+    return (video == VIDEOS) ? 0 : video;
 
 }
 
-static unsigned int getdisplayof(struct widget *widget)
+static unsigned int getvideoof(struct widget *widget)
 {
 
-    return getdisplayat(widget->position.x + (int)widget->size.w / 2, widget->position.y + (int)widget->size.h / 2);
+    return getvideoat(widget->position.x + (int)widget->size.w / 2, widget->position.y + (int)widget->size.h / 2);
 
 }
 
@@ -1125,16 +1125,16 @@ static void update(void)
 
     unsigned int i;
 
-    for (i = 0; i < DISPLAYS; i++)
+    for (i = 0; i < VIDEOS; i++)
     {
 
-        struct display *display = &state.display[i];
+        struct video *video = &state.video[i];
         struct util_region updated;
 
-        if (!display->blit.framebuffer)
+        if (!video->blit.framebuffer)
             continue;
 
-        updated = render_update(&display->blit);
+        updated = render_update(&video->blit);
 
         if (updated.size.w && updated.size.h)
         {
@@ -1146,7 +1146,7 @@ static void update(void)
             videoflush.width = updated.size.w;
             videoflush.height = updated.size.h;
 
-            channel_send(0, display->video, MESSAGE_TYPE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
+            channel_send(0, video->channel, MESSAGE_TYPE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
 
         }
 
@@ -1760,7 +1760,7 @@ static void placewindows(unsigned int source)
 
 }
 
-static struct widget *getadjacentwindow(unsigned int serial, int direction, unsigned int display)
+static struct widget *getadjacentwindow(unsigned int serial, int direction, unsigned int video)
 {
 
     struct list_item *current = 0;
@@ -1773,7 +1773,7 @@ static struct widget *getadjacentwindow(unsigned int serial, int direction, unsi
         struct widget *widget = current->data;
         int d = ((int)widget->serial - (int)serial) * direction;
 
-        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && d > 0 && (!nearest || d < distance) && (display == ANYDISPLAY || getdisplayof(widget) == display))
+        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && d > 0 && (!nearest || d < distance) && (video == ANYVIDEO || getvideoof(widget) == video))
         {
 
             nearest = widget;
@@ -1844,18 +1844,18 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int w, uns
 
 }
 
-static unsigned int getadjacentdisplay(int direction)
+static unsigned int getadjacentvideo(int direction)
 {
 
     unsigned int i;
 
-    for (i = 1; i < DISPLAYS; i++)
+    for (i = 1; i < VIDEOS; i++)
     {
 
-        unsigned int display = (state.active + ((direction > 0) ? i : DISPLAYS - i)) % DISPLAYS;
+        unsigned int video = (state.active + ((direction > 0) ? i : VIDEOS - i)) % VIDEOS;
 
-        if (state.display[display].blit.framebuffer)
-            return display;
+        if (state.video[video].blit.framebuffer)
+            return video;
 
     }
 
@@ -1863,34 +1863,34 @@ static unsigned int getadjacentdisplay(int direction)
 
 }
 
-static void switchdisplay(unsigned int display)
+static void switchvideo(unsigned int video)
 {
 
     struct util_region region;
 
-    if (display == state.active)
+    if (video == state.active)
         return;
 
-    state.active = display;
+    state.active = video;
     region = getactiveregion();
     state.mouseposition.x = region.position.x + region.size.w / 2;
     state.mouseposition.y = region.position.y + region.size.h / 2;
 
-    setfocuswindow(getadjacentwindow(state.windows + 1, -1, display));
+    setfocuswindow(getadjacentwindow(state.windows + 1, -1, video));
     setfocus(0);
 
 }
 
-static void movetodisplay(unsigned int display)
+static void movetovideo(unsigned int video)
 {
 
     struct widget *window = state.focusedwindow;
 
-    if (window && display != state.active)
+    if (window && video != state.active)
     {
 
-        struct util_region from = state.display[getdisplayof(window)].blit.region;
-        struct util_region to = state.display[display].blit.region;
+        struct util_region from = state.video[getvideoof(window)].blit.region;
+        struct util_region to = state.video[video].blit.region;
         unsigned int w = util_min(window->size.w, to.size.w);
         unsigned int h = util_min(window->size.h, to.size.h);
         int x = util_clamp(to.position.x + window->position.x - from.position.x, to.position.x, to.position.x + (int)(to.size.w - w));
@@ -1900,20 +1900,20 @@ static void movetodisplay(unsigned int display)
 
         window->serial = ++state.windows;
 
-        switchdisplay(display);
+        switchvideo(video);
 
     }
 
 }
 
-static void tiledisplay(unsigned int display)
+static void tilevideo(unsigned int video)
 {
 
-    struct util_region region = state.display[display].blit.region;
-    struct widget *menu = (display) ? 0 : pool_getwidgetbyid(0, "menu");
+    struct util_region region = state.video[video].blit.region;
+    struct widget *menu = (video) ? 0 : pool_getwidgetbyid(0, "menu");
     int top = (menu) ? menu->placement.position.y + (int)menu->placement.size.h : region.position.y;
     unsigned int w = region.size.w / 2;
-    struct widget *first = getadjacentwindow(state.windows + 1, -1, display);
+    struct widget *first = getadjacentwindow(state.windows + 1, -1, video);
 
     if (first)
     {
@@ -1923,12 +1923,12 @@ static void tiledisplay(unsigned int display)
         unsigned int count = 0;
         unsigned int i = 0;
 
-        for (widget = getadjacentwindow(first->serial, -1, display); widget; widget = getadjacentwindow(widget->serial, -1, display))
+        for (widget = getadjacentwindow(first->serial, -1, video); widget; widget = getadjacentwindow(widget->serial, -1, video))
             count++;
 
         placewindow(first, region.position.x, top, w, h);
 
-        for (widget = getadjacentwindow(first->serial, -1, display); widget; widget = getadjacentwindow(widget->serial, -1, display), i++)
+        for (widget = getadjacentwindow(first->serial, -1, video); widget; widget = getadjacentwindow(widget->serial, -1, video), i++)
             placewindow(widget, region.position.x + w, top + h * i / count, region.size.w - w, h * (i + 1) / count - h * i / count);
 
     }
@@ -1940,11 +1940,11 @@ static void tilewindows(void)
 
     unsigned int i;
 
-    for (i = 0; i < DISPLAYS; i++)
+    for (i = 0; i < VIDEOS; i++)
     {
 
-        if (state.display[i].blit.framebuffer)
-            tiledisplay(i);
+        if (state.video[i].blit.framebuffer)
+            tilevideo(i);
 
     }
 
@@ -2671,11 +2671,11 @@ static void placeroots(void)
 
     unsigned int i;
 
-    for (i = 1; i < DISPLAYS; i++)
+    for (i = 1; i < VIDEOS; i++)
     {
 
-        if (state.roots[i] && state.display[i].blit.framebuffer)
-            render_place(state.roots[i], &state.display[i].blit.region, &state.display[i].blit.region);
+        if (state.roots[i] && state.video[i].blit.framebuffer)
+            render_place(state.roots[i], &state.video[i].blit.region, &state.video[i].blit.region);
 
     }
 
@@ -2684,7 +2684,7 @@ static void placeroots(void)
 static void redraw(unsigned int relayout)
 {
 
-    if (state.state == STATE_NORMAL && state.display[0].blit.framebuffer)
+    if (state.state == STATE_NORMAL && state.video[0].blit.framebuffer)
     {
 
         if (relayout)
@@ -2695,7 +2695,7 @@ static void redraw(unsigned int relayout)
             if (state.layout == LAYOUT_TILING)
                 tilewindows();
 
-            render_place(state.rootwidget, &state.display[0].blit.region, &area);
+            render_place(state.rootwidget, &state.video[0].blit.region, &area);
             placeroots();
             reportsizes();
             damagechanged();
@@ -2714,7 +2714,7 @@ static void draw(void)
 
     unsigned int i;
 
-    if (state.drawpending && state.state == STATE_NORMAL && state.display[0].blit.framebuffer)
+    if (state.drawpending && state.state == STATE_NORMAL && state.video[0].blit.framebuffer)
         update();
 
     state.drawpending = 0;
@@ -3032,23 +3032,23 @@ static unsigned int dobinding(struct bind_binding *binding)
 
         break;
 
-    case BIND_ACTION_NEXTDISPLAY:
-        switchdisplay(getadjacentdisplay(1));
+    case BIND_ACTION_NEXTVIDEO:
+        switchvideo(getadjacentvideo(1));
 
         break;
 
-    case BIND_ACTION_PREVIOUSDISPLAY:
-        switchdisplay(getadjacentdisplay(-1));
+    case BIND_ACTION_PREVIOUSVIDEO:
+        switchvideo(getadjacentvideo(-1));
 
         break;
 
-    case BIND_ACTION_MOVENEXTDISPLAY:
-        movetodisplay(getadjacentdisplay(1));
+    case BIND_ACTION_MOVENEXTVIDEO:
+        movetovideo(getadjacentvideo(1));
 
         break;
 
-    case BIND_ACTION_MOVEPREVIOUSDISPLAY:
-        movetodisplay(getadjacentdisplay(-1));
+    case BIND_ACTION_MOVEPREVIOUSVIDEO:
+        movetovideo(getadjacentvideo(-1));
 
         break;
 
@@ -3454,9 +3454,9 @@ static void onmain(struct message *message)
     loadcursors();
     loadicons();
 
-    selectdisplays();
+    selectvideos();
 
-    state.display[0].video = channel_lookup(state.display[0].device);
+    state.video[0].channel = channel_lookup(state.video[0].device);
 
     if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
     {
@@ -3468,8 +3468,8 @@ static void onmain(struct message *message)
     }
 
     applyinputs();
-    setupvideo(state.display[0].video);
-    setupdisplays();
+    configurevideo(state.video[0].channel);
+    setupvideos();
 
     state.clock = channel_lookup(option_getstring("clock-service"));
     state.timer = channel_lookup(option_getstring("timer-service"));
@@ -3559,10 +3559,10 @@ static void releasebutton(unsigned int button)
 static void movemouse(int x, int y, unsigned int buttons)
 {
 
-    unsigned int display = finddisplayat(x, y);
+    unsigned int video = findvideoat(x, y);
     unsigned int relayout;
 
-    if (display == DISPLAYS)
+    if (video == VIDEOS)
     {
 
         struct util_region region = getactiveregion();
@@ -3575,7 +3575,7 @@ static void movemouse(int x, int y, unsigned int buttons)
     else
     {
 
-        state.active = display;
+        state.active = video;
 
     }
 
@@ -3690,7 +3690,7 @@ static void onmousemove(struct message *message)
 
 }
 
-/* an absolute position covers the first display, the built-in screen a touchscreen sits on */
+/* an absolute position covers the first video, the built-in screen a touchscreen sits on */
 static void onmouseposition(struct message *message)
 {
 
@@ -3699,7 +3699,7 @@ static void onmouseposition(struct message *message)
     if (mouseposition)
     {
 
-        struct util_region region = (state.display[0].blit.framebuffer) ? state.display[0].blit.region : getarea();
+        struct util_region region = (state.video[0].blit.framebuffer) ? state.video[0].blit.region : getarea();
         int x = region.position.x + (int)((unsigned int)mouseposition->x * (region.size.w - 1) / 65535);
         int y = region.position.y + (int)((unsigned int)mouseposition->y * (region.size.h - 1) / 65535);
 
@@ -4027,20 +4027,20 @@ static void ontouchcontact(struct message *message)
 
 }
 
-static unsigned int finddisplay(unsigned int video)
+static unsigned int findvideo(unsigned int channel)
 {
 
     unsigned int i;
 
-    for (i = 0; i < DISPLAYS; i++)
+    for (i = 0; i < VIDEOS; i++)
     {
 
-        if (state.display[i].video == video)
+        if (state.video[i].channel == channel)
             return i;
 
     }
 
-    return DISPLAYS;
+    return VIDEOS;
 
 }
 
@@ -4053,8 +4053,8 @@ static int getorigin(unsigned int index)
     for (i = 0; i < index; i++)
     {
 
-        if (state.display[i].blit.framebuffer)
-            x += state.display[i].blit.region.size.w;
+        if (state.video[i].blit.framebuffer)
+            x += state.video[i].blit.region.size.w;
 
     }
 
@@ -4081,10 +4081,10 @@ static void movewindows(struct util_region *from, int x, int y)
 
 }
 
-static void movedisplay(unsigned int index, int x)
+static void movevideo(unsigned int index, int x)
 {
 
-    struct blit_display *blit = &state.display[index].blit;
+    struct blit_display *blit = &state.video[index].blit;
 
     if (blit->framebuffer && blit->region.position.x != x)
     {
@@ -4099,42 +4099,42 @@ static void movedisplay(unsigned int index, int x)
 
 }
 
-static void arrangedisplays(void)
+static void arrangevideos(void)
 {
 
     unsigned int i;
 
-    for (i = 1; i < DISPLAYS; i++)
-        movedisplay(i, getorigin(i));
+    for (i = 1; i < VIDEOS; i++)
+        movevideo(i, getorigin(i));
 
 }
 
-static void setupdisplay(unsigned int index, struct message_videoinfo *videoinfo)
+static void setupvideo(unsigned int index, struct message_videoinfo *videoinfo)
 {
 
-    struct blit_display *blit = &state.display[index].blit;
+    struct blit_display *blit = &state.video[index].blit;
     int x = getorigin(index);
 
-    movedisplay(index, x);
+    movevideo(index, x);
     blit_initdisplay(blit, (void *)(unsigned long)videoinfo->framebuffer, x, 0, videoinfo->width, videoinfo->height, videoinfo->bpp, linebuffer);
 
     blit->opaque = state.opaque;
 
 }
 
-static void hidedisplay(unsigned int index)
+static void hidevideo(unsigned int index)
 {
 
-    struct display *display = &state.display[index];
+    struct video *video = &state.video[index];
 
-    if (display->blit.framebuffer)
+    if (video->blit.framebuffer)
     {
 
-        struct util_region from = display->blit.region;
+        struct util_region from = video->blit.region;
 
         movewindows(&from, -from.position.x, -from.position.y);
 
-        display->blit.framebuffer = 0;
+        video->blit.framebuffer = 0;
 
         if (state.active == index)
             state.active = 0;
@@ -4143,41 +4143,41 @@ static void hidedisplay(unsigned int index)
 
 }
 
-static void removedisplay(unsigned int index)
+static void removevideo(unsigned int index)
 {
 
-    hidedisplay(index);
+    hidevideo(index);
 
-    state.display[index].video = 0;
+    state.video[index].channel = 0;
 
 }
 
-static void applyconfig(struct message_videoconf *videoconf, unsigned int video)
+static void applyconfig(struct message_videoconf *videoconf, unsigned int channel)
 {
 
     unsigned int i;
 
-    selectdisplays();
+    selectvideos();
 
-    state.display[0].video = channel_lookup(state.display[0].device);
+    state.video[0].channel = channel_lookup(state.video[0].device);
 
     applyinputs();
-    setupdisplays();
+    setupvideos();
 
-    for (i = 1; i < DISPLAYS; i++)
+    for (i = 1; i < VIDEOS; i++)
     {
 
-        if (i >= state.ndisplays || !state.display[i].video)
-            removedisplay(i);
+        if (i >= state.nvideos || !state.video[i].channel)
+            removevideo(i);
 
     }
 
-    arrangedisplays();
+    arrangevideos();
 
-    if (state.display[0].video != video || videoconf->width != state.display[0].videoconf.width || videoconf->height != state.display[0].videoconf.height || videoconf->bpp != state.display[0].videoconf.bpp)
+    if (state.video[0].channel != channel || videoconf->width != state.video[0].videoconf.width || videoconf->height != state.video[0].videoconf.height || videoconf->bpp != state.video[0].videoconf.bpp)
     {
 
-        setupvideo(state.display[0].video);
+        configurevideo(state.video[0].channel);
 
     }
 
@@ -4197,13 +4197,13 @@ static void onvideoinfo(struct message *message)
 {
 
     struct message_videoinfo videoinfo;
-    unsigned int index = finddisplay(message->source);
+    unsigned int index = findvideo(message->source);
     unsigned int factor;
     unsigned int lineheight;
 
     buffer_copy(&videoinfo, message->data, sizeof (struct message_videoinfo));
 
-    if (index == DISPLAYS || videoinfo.width > LINEBUFFER)
+    if (index == VIDEOS || videoinfo.width > LINEBUFFER)
         return;
 
     if (index)
@@ -4212,11 +4212,11 @@ static void onvideoinfo(struct message *message)
         struct util_region area;
 
         if (videoinfo.framebuffer && videoinfo.connected)
-            setupdisplay(index, &videoinfo);
+            setupvideo(index, &videoinfo);
         else
-            hidedisplay(index);
+            hidevideo(index);
 
-        arrangedisplays();
+        arrangevideos();
 
         area = getarea();
 
@@ -4230,8 +4230,8 @@ static void onvideoinfo(struct message *message)
     factor = util_min(videoinfo.height / 320, FONTS - 1);
     lineheight = 12 + factor * 4;
 
-    setupdisplay(0, &videoinfo);
-    arrangedisplays();
+    setupvideo(0, &videoinfo);
+    arrangevideos();
     pool_loadfont(0, fontn[factor]);
     pool_setfont(0, lineheight);
     pool_loadfont(1, fontb[factor]);
@@ -4249,7 +4249,7 @@ static void onvideoinfo(struct message *message)
         struct util_region area = getarea();
 
         render_damage(0, 0, area.size.w, area.size.h);
-        render_place(state.rootwidget, &state.display[0].blit.region, &area);
+        render_place(state.rootwidget, &state.video[0].blit.region, &area);
         placeroots();
 
     }
@@ -4304,14 +4304,14 @@ static void onwmrenderdata(struct message *message)
 static void onconfig(struct message *message)
 {
 
-    struct message_videoconf videoconf = state.display[0].videoconf;
-    unsigned int video = state.display[0].video;
+    struct message_videoconf videoconf = state.video[0].videoconf;
+    unsigned int channel = state.video[0].channel;
 
     configlines(message->data, message->length);
     loadcursors();
 
-    if (video)
-        applyconfig(&videoconf, video);
+    if (channel)
+        applyconfig(&videoconf, channel);
 
 }
 
@@ -4458,7 +4458,7 @@ static void onwmungrab(struct message *message)
 
     bindinput(1);
     channel_send(0, message->source, MESSAGE_TYPE_WMACK, 0, 0);
-    setupvideo(state.display[0].video);
+    configurevideo(state.video[0].channel);
 
 }
 
@@ -4494,7 +4494,7 @@ static void setupwidgets(void)
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
 
-    for (i = 1; i < DISPLAYS; i++)
+    for (i = 1; i < VIDEOS; i++)
     {
 
         char data2[128];

@@ -11,10 +11,10 @@
 #define BIND_ACTION_COPY                11
 #define BIND_ACTION_CUT                 12
 #define BIND_ACTION_PASTE               13
-#define BIND_ACTION_NEXTDISPLAY         14
-#define BIND_ACTION_PREVIOUSDISPLAY     15
-#define BIND_ACTION_MOVENEXTDISPLAY     16
-#define BIND_ACTION_MOVEPREVIOUSDISPLAY 17
+#define BIND_ACTION_NEXTVIDEO           14
+#define BIND_ACTION_PREVIOUSVIDEO       15
+#define BIND_ACTION_MOVENEXTVIDEO       16
+#define BIND_ACTION_MOVEPREVIOUSVIDEO   17
 #define BIND_COMMANDSIZE                128
 
 struct bind_binding

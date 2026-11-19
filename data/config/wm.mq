@@ -16,7 +16,7 @@
     { device: mouse:0 speed: 4 }
     { device: mouse:1 speed: 4 }
   ]
-  touchpad:
+  touch:
   [
     { device: touch:0 doubletap: drag }
   ]
