@@ -11,7 +11,6 @@
 #define WIDGET_TYPE_CHECKBOX            13
 #define WIDGET_TYPE_SWATCH              16
 #define WIDGET_TYPE_CYCLE               18
-#define WIDGET_TYPE_SWITCH              19
 #define WIDGET_TYPE_TAB                 20
 
 struct widget_attributes

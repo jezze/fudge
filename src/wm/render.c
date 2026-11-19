@@ -707,13 +707,6 @@ static struct util_size getsizecheckbox(struct widget *widget, struct util_size 
 
 }
 
-static struct util_size getsizeswitch(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    return util_size(CONFIG_SWITCH_WIDTH, CONFIG_CHECKBOX_HEIGHT);
-
-}
-
 static struct util_size getsizechildren(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -915,18 +908,6 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
     blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
     textrender(display, widget, &widget->placement, palette->text, x0, x2, 0, &padding, 0, line);
-
-}
-
-static void renderswitch(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    struct util_region track = util_region(widget->placement.position.x + ((int)widget->placement.size.w - CONFIG_SWITCH_WIDTH) / 2, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_CHECKBOX_HEIGHT) / 2, CONFIG_SWITCH_WIDTH, CONFIG_CHECKBOX_HEIGHT);
-    struct util_region knob = util_region(track.position.x + ((widget->attributes.checked) ? CONFIG_SWITCH_WIDTH - CONFIG_CHECKBOX_WIDTH : 0), track.position.y, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
-    unsigned int shade = getshade(widget);
-
-    blit_frame(display, &track, line, x0, x2, getpalette(PALETTE_SWITCH, shade)->frame);
-    blit_frame(display, &knob, line, x0, x2, getpalette(PALETTE_SWITCHKNOB, shade)->frame);
 
 }
 
@@ -1427,7 +1408,6 @@ void render_init(void)
     setupcall(WIDGET_TYPE_FILL, getsizefixed, 0, renderfill);
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
-    setupcall(WIDGET_TYPE_SWITCH, getsizeswitch, 0, renderswitch);
     setupcall(WIDGET_TYPE_TAB, getsizechildren, 0, rendertab);
     setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
     setupcall(WIDGET_TYPE_MEDIA, getsizemedia, 0, rendermedia);
