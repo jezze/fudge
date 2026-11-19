@@ -768,11 +768,11 @@ static void loadconfig(void)
     char data[256];
     unsigned int count;
 
-    count = query(data, 256, option_getstring("config"), ".general.layout", 0);
+    count = query(data, 256, option_getstring("config"), ".layout", 0);
 
     getword(data, count, 0, config.layout, 32);
 
-    count = query(data, 256, option_getstring("config"), ".general.background", 0);
+    count = query(data, 256, option_getstring("config"), ".background", 0);
 
     getword(data, count, 0, config.background, 256);
 
@@ -784,14 +784,14 @@ static void loadconfig(void)
 
     getword(data, count, 0, config.timezone, 32);
 
-    count = query(data, 256, option_getstring("config"), ".general.transparency", 0);
+    count = query(data, 256, option_getstring("config"), ".transparency", 0);
 
     getword(data, count, 0, config.transparency, 8);
 
     if (!cstring_match(config.transparency, "off"))
         copystring(config.transparency, 8, "on", 2);
 
-    count = query(data, 256, option_getstring("config"), ".general.cursor", 0);
+    count = query(data, 256, option_getstring("config"), ".cursor", 0);
 
     getword(data, count, 0, config.cursor, 8);
 
@@ -802,7 +802,7 @@ static void loadconfig(void)
 
     getword(data, count, 0, config.bindingpath, 256);
 
-    count = query(data, 256, option_getstring("config"), ".general.theme", 0);
+    count = query(data, 256, option_getstring("config"), ".theme", 0);
 
     getword(data, count, 0, config.themepath, 256);
 
@@ -842,12 +842,7 @@ static void loadconfig(void)
 static unsigned int writeconfig(char *data, unsigned int size)
 {
 
-    unsigned int count = 0;
-
-    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n    transparency: %s\n    cursor: %s\n  }\n", config.layout, config.themepath, config.background, config.transparency, config.cursor);
-    count += cstring_write_fmt(data, size, count, "  binding: \"%s\"\n}\n", config.bindingpath);
-
-    return count;
+    return cstring_write_fmt(data, size, 0, "{\n  layout: %s\n  theme: \"%s\"\n  background: \"%s\"\n  transparency: %s\n  cursor: %s\n  binding: \"%s\"\n}\n", config.layout, config.themepath, config.background, config.transparency, config.cursor, config.bindingpath);
 
 }
 

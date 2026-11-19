@@ -859,10 +859,10 @@ static void loadconfig(char *config)
 
     static char data[0x4000];
 
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"layout {layout}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"background {background}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"transparency {transparency}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"cursor {cursor}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query . -format \"layout {layout}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query . -format \"background {background}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query . -format \"transparency {transparency}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query . -format \"cursor {cursor}\" %s", config));
     configlines("videos", 6);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"video {width} {height} {bpp} {device} {enabled}\" %s", option_getstring("video-config")));
     configlines("inputs", 6);
@@ -870,7 +870,7 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"mouse {device} {speed} {enabled}\" %s", option_getstring("mouse-config")));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap} {enabled}\" %s", option_getstring("touch-config")));
     adddefaults();
-    loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
+    loadreference(data, config, ".theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
     loadreference(data, config, ".binding", ".binding", "binding {key} {mod} {action} {command}");
 
