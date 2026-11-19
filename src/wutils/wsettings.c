@@ -24,7 +24,7 @@
 #define NUM_LAYOUTS                     2
 #define NUM_LANGUAGES                   3
 #define NUM_TIMEZONES                   8
-#define NUM_RESOLUTIONS                 12
+#define NUM_RESOLUTIONS                 (1 + MESSAGE_VIDEOMODES)
 #define NUM_TRANSPARENCIES              2
 #define NUM_CURSORS                     4
 #define NUM_DOUBLETAPS                  2
@@ -111,20 +111,8 @@ static struct entry networktypes[NUM_NETWORKTYPES] = {
     {"dynamic", "Dynamic"}
 };
 
-static struct entry resolutions[NUM_RESOLUTIONS] = {
-    {"0x0x32", "Preferred"},
-    {"320x200x32", "320x200x32"},
-    {"320x240x32", "320x240x32"},
-    {"640x480x32", "640x480x32"},
-    {"800x600x32", "800x600x32"},
-    {"1024x768x32", "1024x768x32"},
-    {"1280x720x32", "1280x720x32"},
-    {"1280x1024x32", "1280x1024x32"},
-    {"1366x768x32", "1366x768x32"},
-    {"1600x900x32", "1600x900x32"},
-    {"1920x1080x32", "1920x1080x32"},
-    {"2560x1440x32", "2560x1440x32"}
-};
+static struct entry resolutions[NUM_RESOLUTIONS];
+static char resolutionvalues[NUM_RESOLUTIONS][32];
 
 struct rule
 {
@@ -1330,6 +1318,42 @@ static void renderdevicechoice(struct devices *devices, char *kind)
 
 }
 
+static unsigned int loadresolutions(char *device)
+{
+
+    struct message_videomodes videomodes;
+    unsigned int video = channel_lookup(device);
+    unsigned int count = 0;
+
+    resolutions[count].value = "0x0x32";
+    resolutions[count].label = "Preferred";
+    count++;
+
+    if (video && channel_send(1, video, MESSAGE_TYPE_VIDEOMODEREQUEST, 0, 0) && channel_wait(1, video, MESSAGE_TYPE_VIDEOMODERESPONSE, sizeof (struct message_videomodes), &videomodes))
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < videomodes.count && count < NUM_RESOLUTIONS; i++)
+        {
+
+            struct message_videoconf *mode = &videomodes.modes[i];
+            unsigned int bits = mode->bpp * 8;
+
+            cstring_write_fmt(resolutionvalues[count], 32, 0, "%ux%ux%u\\0", &mode->width, &mode->height, &bits);
+
+            resolutions[count].value = resolutionvalues[count];
+            resolutions[count].label = resolutionvalues[count];
+            count++;
+
+        }
+
+    }
+
+    return count;
+
+}
+
 static void renderdisplay(void)
 {
 
@@ -1357,7 +1381,7 @@ static void renderdisplay(void)
 
         cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &display->width, &display->height, &bits);
         enabledfield("display", display->enabled);
-        choice("display-resolution", "Resolution", resolution, resolutions, NUM_RESOLUTIONS);
+        choice("display-resolution", "Resolution", resolution, resolutions, loadresolutions(display->device));
 
     }
 
