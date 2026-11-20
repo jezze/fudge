@@ -488,13 +488,6 @@ static void refresh(struct widget *widget, struct widget *template, struct datae
 
 }
 
-static unsigned int isinstanceof(struct widget *widget, char *key)
-{
-
-    return widget->instance && !widget->destroyed && cstring_match(strpool_getstring(widget->instance), key);
-
-}
-
 static void fill(struct widget *each, struct dataentry *record)
 {
 
@@ -512,7 +505,7 @@ static void fill(struct widget *each, struct dataentry *record)
         if (!widget_istemplate(root))
             continue;
 
-        while ((instance = pool_nextin(instance, each)) && !(isinstanceof(instance->data, key) && widget_isshown(instance->data)));
+        while ((instance = pool_nextin(instance, each)) && !(widget_iscopyof(instance->data, key) && widget_isshown(instance->data)));
 
         if (!instance)
             return;
@@ -586,7 +579,7 @@ static void bindgroup(struct widget *each, struct list_item **instance, struct d
         *instance = next;
         widget = next->data;
 
-        if (!isinstanceof(widget, key) || !widget_isshown(widget))
+        if (!widget_iscopyof(widget, key) || !widget_isshown(widget))
         {
 
             refresh(widget, root, record);
@@ -606,7 +599,7 @@ static void bindgroup(struct widget *each, struct list_item **instance, struct d
 static unsigned int bindrange(struct widget *each, unsigned int first, unsigned int count)
 {
 
-    char *set = strpool_getstring(each->attributes.data);
+    char *set = widget_getdata(each);
     struct dataentry *record = record_at(each->source, set, first);
     struct list_item *instance = 0;
     unsigned int changed = each->rowfirst != first || each->rowcount != count;
@@ -636,20 +629,6 @@ static unsigned int bindrange(struct widget *each, unsigned int first, unsigned 
     each->rebind = 0;
 
     return changed;
-
-}
-
-static unsigned int ishorizontal(struct widget *widget)
-{
-
-    return widget->attributes.flow == ATTR_FLOW_HORIZONTAL || widget->attributes.flow == ATTR_FLOW_HORIZONTALSTRETCH;
-
-}
-
-static unsigned int isvertical(struct widget *widget)
-{
-
-    return widget->attributes.flow == ATTR_FLOW_VERTICAL || widget->attributes.flow == ATTR_FLOW_VERTICALSTRETCH;
 
 }
 
@@ -685,6 +664,7 @@ static unsigned int inscroller(struct widget *widget)
 static unsigned int getstride(struct widget *each)
 {
 
+    unsigned int horizontal = render_getdirection(each->attributes.flow) == RENDER_DIRECTION_HORIZONTAL;
     struct list_item *current = 0;
     struct widget *first = 0;
     struct widget *last = 0;
@@ -717,10 +697,10 @@ static unsigned int getstride(struct widget *each)
     }
 
     if (next)
-        return getstart(next, ishorizontal(each)) - getstart(first, ishorizontal(each));
+        return getstart(next, horizontal) - getstart(first, horizontal);
 
     if (last)
-        return getend(last, ishorizontal(each)) - getstart(first, ishorizontal(each)) + render_unit(each->attributes.spacing);
+        return getend(last, horizontal) - getstart(first, horizontal) + render_unit(each->attributes.spacing);
 
     return each->rowstride;
 
@@ -729,9 +709,10 @@ static unsigned int getstride(struct widget *each)
 static unsigned int bindeach(struct widget *each)
 {
 
-    unsigned int records = record_count(each->source, strpool_getstring(each->attributes.data));
-    unsigned int horizontal = ishorizontal(each);
-    unsigned int recycled = (horizontal || isvertical(each)) && inscroller(each);
+    unsigned int records = record_count(each->source, widget_getdata(each));
+    unsigned int direction = render_getdirection(each->attributes.flow);
+    unsigned int horizontal = direction == RENDER_DIRECTION_HORIZONTAL;
+    unsigned int recycled = direction != RENDER_DIRECTION_NONE && inscroller(each);
     unsigned int stride = (recycled) ? getstride(each) : 0;
     struct util_region view = util_region_intersection(&each->placement, &each->clip);
     unsigned int length = (horizontal) ? view.size.w : view.size.h;
@@ -798,7 +779,7 @@ unsigned int parser_substitute(char *out, unsigned int size, char *text, struct 
 static unsigned int iseachof(struct widget *widget, unsigned int source, char *set)
 {
 
-    return widget->type == WIDGET_TYPE_EACH && widget->source == source && !widget->destroyed && cstring_match(strpool_getstring(widget->attributes.data), set);
+    return widget->type == WIDGET_TYPE_EACH && widget->source == source && !widget->destroyed && cstring_match(widget_getdata(widget), set);
 
 }
 

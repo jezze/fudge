@@ -107,6 +107,8 @@ unsigned int widget_isresizable(struct widget *widget);
 unsigned int widget_islink(struct widget *widget);
 unsigned int widget_isinteractive(struct widget *widget);
 unsigned int widget_istemplate(struct widget *widget);
+unsigned int widget_iscopyof(struct widget *widget, char *key);
+char *widget_getdata(struct widget *widget);
 unsigned int widget_isshown(struct widget *widget);
 unsigned int widget_ishidden(struct widget *widget);
 void widget_copyattributes(struct widget *widget, struct widget *from);

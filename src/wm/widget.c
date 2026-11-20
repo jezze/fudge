@@ -273,6 +273,20 @@ unsigned int widget_istemplate(struct widget *widget)
 
 }
 
+unsigned int widget_iscopyof(struct widget *widget, char *key)
+{
+
+    return widget->instance && !widget->destroyed && cstring_match(strpool_getstring(widget->instance), key);
+
+}
+
+char *widget_getdata(struct widget *widget)
+{
+
+    return strpool_getstring(widget->attributes.data);
+
+}
+
 unsigned int widget_isshown(struct widget *widget)
 {
 

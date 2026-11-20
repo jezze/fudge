@@ -13,9 +13,6 @@
 #include "render.h"
 
 #define INFINITY                        0xFFFF
-#define DIRECTION_NONE                  0
-#define DIRECTION_HORIZONTAL            1
-#define DIRECTION_VERTICAL              2
 #define STRETCH_NONE                    0
 #define STRETCH_HORIZONTAL              1
 #define STRETCH_VERTICAL                2
@@ -132,7 +129,7 @@ static struct palette *getpalette(unsigned int palette, unsigned int shade)
 
 }
 
-static unsigned int getdirection(unsigned int flow)
+unsigned int render_getdirection(unsigned int flow)
 {
 
     switch (flow)
@@ -140,15 +137,15 @@ static unsigned int getdirection(unsigned int flow)
 
     case ATTR_FLOW_HORIZONTAL:
     case ATTR_FLOW_HORIZONTALSTRETCH:
-        return DIRECTION_HORIZONTAL;
+        return RENDER_DIRECTION_HORIZONTAL;
 
     case ATTR_FLOW_VERTICAL:
     case ATTR_FLOW_VERTICALSTRETCH:
-        return DIRECTION_VERTICAL;
+        return RENDER_DIRECTION_VERTICAL;
 
     }
 
-    return DIRECTION_NONE;
+    return RENDER_DIRECTION_NONE;
 
 }
 
@@ -179,12 +176,12 @@ static void advance(struct widget *widget, struct widget *child, unsigned int di
     switch (direction)
     {
 
-    case DIRECTION_HORIZONTAL:
+    case RENDER_DIRECTION_HORIZONTAL:
         flow->offset.x += size->w + render_unit(widget->attributes.spacing);
 
         break;
 
-    case DIRECTION_VERTICAL:
+    case RENDER_DIRECTION_VERTICAL:
         if (child->attributes.display == ATTR_DISPLAY_INLINE)
         {
 
@@ -224,7 +221,7 @@ static void startchild(struct widget *child, struct flow *flow)
 static struct util_size childrengetsize(struct widget *widget, struct util_size *limit)
 {
 
-    unsigned int direction = getdirection(widget->attributes.flow);
+    unsigned int direction = render_getdirection(widget->attributes.flow);
     unsigned int padding = render_unit(widget->attributes.padding);
     struct util_size inner = util_size_sub(limit, padding * 2, padding * 2);
     struct flow flow;
@@ -259,12 +256,12 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
             switch (direction)
             {
 
-            case DIRECTION_HORIZONTAL:
+            case RENDER_DIRECTION_HORIZONTAL:
                 csize.w = 0;
 
                 break;
 
-            case DIRECTION_VERTICAL:
+            case RENDER_DIRECTION_VERTICAL:
                 csize.h = 0;
 
                 break;
@@ -301,17 +298,17 @@ static struct util_region getplacement(struct widget *widget, struct widget *chi
     if (child->attributes.span)
     {
 
-        unsigned int direction = getdirection(widget->attributes.flow);
+        unsigned int direction = render_getdirection(widget->attributes.flow);
 
         switch (direction)
         {
 
-        case DIRECTION_HORIZONTAL:
+        case RENDER_DIRECTION_HORIZONTAL:
             placement.size.w = child->attributes.span * span->w;
 
             break;
 
-        case DIRECTION_VERTICAL:
+        case RENDER_DIRECTION_VERTICAL:
             placement.size.h = child->attributes.span * span->h;
 
             break;
@@ -368,7 +365,7 @@ static void hide(struct widget *widget)
 static struct placeinfo placechildren(struct widget *widget, struct util_size *span, unsigned int measure)
 {
 
-    unsigned int direction = getdirection(widget->attributes.flow);
+    unsigned int direction = render_getdirection(widget->attributes.flow);
     struct flow flow;
     struct list_item *current = 0;
     struct placeinfo info;
@@ -382,7 +379,7 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
     flow.rowstart = zeroposition;
     flow.pending = 0;
 
-    if (widget->type == WIDGET_TYPE_EACH && direction == DIRECTION_HORIZONTAL)
+    if (widget->type == WIDGET_TYPE_EACH && direction == RENDER_DIRECTION_HORIZONTAL)
         flow.offset.x = widget->rowfirst * widget->rowstride;
     else if (widget->type == WIDGET_TYPE_EACH)
         flow.offset.y = widget->rowfirst * widget->rowstride;
@@ -724,7 +721,7 @@ static struct util_size getsizeeach(struct widget *widget, struct util_size *lim
         unsigned int records = record_count(widget->source, strpool_getstring(widget->attributes.data));
         unsigned int length = widget->rowstride * records + render_unit(widget->attributes.padding) * 2;
 
-        if (getdirection(widget->attributes.flow) == DIRECTION_HORIZONTAL)
+        if (render_getdirection(widget->attributes.flow) == RENDER_DIRECTION_HORIZONTAL)
             size.w = util_min(length, limit->w);
         else
             size.h = util_min(length, limit->h);

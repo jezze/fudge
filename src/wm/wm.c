@@ -1392,24 +1392,17 @@ static struct widget *getlist(struct widget *item)
 
 }
 
-static char *getset(struct widget *each)
-{
-
-    return strpool_getstring(each->attributes.data);
-
-}
-
 static struct dataentry *getrecord(struct widget *item)
 {
 
-    return record_find(item->source, getset(getlist(item)), strpool_getstring(item->instance));
+    return record_find(item->source, widget_getdata(getlist(item)), strpool_getstring(item->instance));
 
 }
 
 static unsigned int iscopyof(struct widget *widget, struct dataentry *record)
 {
 
-    return widget->instance && widget_isshown(widget) && cstring_match(strpool_getstring(widget->instance), record_getkey(record));
+    return widget_isshown(widget) && widget_iscopyof(widget, record_getkey(record));
 
 }
 
@@ -1498,7 +1491,7 @@ static void anchorrecord(struct widget *each, struct dataentry *record)
 
     struct list_item *current = 0;
 
-    record_setanchor(record, each->source, getset(each));
+    record_setanchor(record, each->source, widget_getdata(each));
 
     while ((current = pool_nextin(current, each)))
     {
@@ -1523,7 +1516,7 @@ static void selectrecords(struct widget *item, unsigned int range, unsigned int 
     if (!target)
         return;
 
-    while (range && (record = record_next(record, each->source, getset(each))) && !anchor)
+    while (range && (record = record_next(record, each->source, widget_getdata(each))) && !anchor)
         anchor = (record_isanchor(record)) ? record : 0;
 
     if (toggle)
@@ -1538,7 +1531,7 @@ static void selectrecords(struct widget *item, unsigned int range, unsigned int 
 
         record = 0;
 
-        while ((record = record_next(record, each->source, getset(each))))
+        while ((record = record_next(record, each->source, widget_getdata(each))))
         {
 
             unsigned int edge = (record == target) + (record == anchor);
@@ -1600,7 +1593,7 @@ static void notifyselection(struct widget *parent)
 
         }
 
-        while (parent->type == WIDGET_TYPE_EACH && (record = record_next(record, parent->source, getset(parent))))
+        while (parent->type == WIDGET_TYPE_EACH && (record = record_next(record, parent->source, widget_getdata(parent))))
             count += record_isselected(record);
 
         cstring_write_fmt(text, 16, 0, "%u\\0", &count);
@@ -3391,7 +3384,7 @@ static void chooseitem(struct widget *select)
 static void stepcycle(struct widget *cycle, unsigned int forward)
 {
 
-    char *set = getset(cycle);
+    char *set = widget_getdata(cycle);
     char *label = strpool_getstring(cycle->attributes.label);
     unsigned int count = record_count(cycle->source, set);
     struct dataentry *record = 0;

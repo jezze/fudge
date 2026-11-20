@@ -1,3 +1,6 @@
+#define RENDER_DIRECTION_NONE           0
+#define RENDER_DIRECTION_HORIZONTAL     1
+#define RENDER_DIRECTION_VERTICAL       2
 #define RENDER_WINDOWBUTTON_TITLE       0
 #define RENDER_WINDOWBUTTON_MENU        1
 #define RENDER_WINDOWBUTTON_MINIMIZE    2
@@ -5,6 +8,7 @@
 
 struct util_size render_getwindowminsize(struct widget *widget, struct util_size *limit);
 struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit);
+unsigned int render_getdirection(unsigned int flow);
 struct util_region render_getcursor(struct widget *widget, unsigned int index);
 struct util_region render_getcyclearrow(struct widget *widget, unsigned int forward);
 struct util_region render_getwindowbutton(struct widget *widget, unsigned int button);
