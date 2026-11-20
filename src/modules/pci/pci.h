@@ -151,6 +151,7 @@
 #define PCI_CONFIG_PIN                  0x3D
 #define PCI_CONFIG_GRANT                0x3E
 #define PCI_CONFIG_LATENCY              0x3F
+#define PCI_COMMAND_MEMORY              0x0002
 #define PCI_COMMAND_MASTER              0x0004
 #define PCI_COMMAND_INTXDISABLE         0x0400
 #define PCI_STATUS_CAPABILITIES         0x0010

@@ -886,7 +886,13 @@ static unsigned int setup(unsigned int id)
     }
 
     if (!((read16(REG_GCAP) >> REG_GCAP_OSSSHIFT) & 0xF))
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "hda: no output streams");
+
         return 0;
+
+    }
 
     stream.index = (read16(REG_GCAP) >> REG_GCAP_ISSSHIFT) & 0xF;
     stream.base = REG_SD + stream.index * REG_SDSIZE;
@@ -943,10 +949,18 @@ static void driver_reset(unsigned int id)
     unsigned long address = pci_getbar(id, 0);
 
     if (!address)
+    {
+
+        debug_fmt(DEBUG_WARNING, __FILE__, __LINE__, "hda: no registers");
+
         return;
+
+    }
 
     mmio = mapregisters(address);
 
+    /* firmware may leave a device it didn't use with decoding off, then every register reads all ones */
+    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) | PCI_COMMAND_MEMORY);
     pci_setmaster(id);
 
     if (!setup(id))
