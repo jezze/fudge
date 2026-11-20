@@ -938,6 +938,121 @@ char *html_getattribute(struct html_document *document, unsigned int node, char 
 
 }
 
+static unsigned int addvalue(struct html_document *document, char *value)
+{
+
+    unsigned int offset = document->textcount;
+
+    if (!addbytes(document, value, cstring_length(value)) || !endstring(document))
+        return 0;
+
+    return offset;
+
+}
+
+static struct html_attribute *findattribute(struct html_document *document, unsigned int node, char *name)
+{
+
+    struct html_node *element = &document->nodes[node];
+    unsigned int i;
+
+    for (i = 0; i < element->attributes; i++)
+    {
+
+        struct html_attribute *attribute = &document->attributes[element->attribute + i];
+
+        if (cstring_match(html_getstring(document, attribute->name), name))
+            return attribute;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int html_setattribute(struct html_document *document, unsigned int node, char *name, char *value)
+{
+
+    struct html_node *element = &document->nodes[node];
+    struct html_attribute *attribute = findattribute(document, node, name);
+    unsigned int offset;
+
+    if (attribute)
+    {
+
+        offset = addvalue(document, value);
+
+        if (offset)
+            attribute->value = offset;
+
+        return offset != 0;
+
+    }
+
+    if (document->attributecount + element->attributes + 1 > HTML_ATTRIBUTES)
+        return 0;
+
+    if (element->attributes && element->attribute + element->attributes != document->attributecount)
+    {
+
+        buffer_copy(&document->attributes[document->attributecount], &document->attributes[element->attribute], sizeof (struct html_attribute) * element->attributes);
+
+        element->attribute = document->attributecount;
+        document->attributecount += element->attributes;
+
+    }
+
+    if (!element->attributes)
+        element->attribute = document->attributecount;
+
+    attribute = &document->attributes[document->attributecount];
+    attribute->name = addname(document, name, cstring_length(name));
+    attribute->value = addvalue(document, value);
+
+    if (!attribute->name || !attribute->value)
+        return 0;
+
+    document->attributecount++;
+    element->attributes++;
+
+    return 1;
+
+}
+
+void html_removeattribute(struct html_document *document, unsigned int node, char *name)
+{
+
+    struct html_node *element = &document->nodes[node];
+    unsigned int found = 0;
+    unsigned int i;
+
+    for (i = 0; i < element->attributes; i++)
+    {
+
+        struct html_attribute *attribute = &document->attributes[element->attribute + i];
+
+        if (found)
+        {
+
+            document->attributes[element->attribute + i - 1].name = attribute->name;
+            document->attributes[element->attribute + i - 1].value = attribute->value;
+
+        }
+
+        else if (cstring_match(html_getstring(document, attribute->name), name))
+        {
+
+            found = 1;
+
+        }
+
+    }
+
+    if (found)
+        element->attributes--;
+
+}
+
 unsigned int html_gettitle(struct html_document *document)
 {
 
