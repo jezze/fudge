@@ -92,7 +92,7 @@ static char *home =
     "<h1>Browser</h1>"
     "<p>Type an address in the bar above and press Enter. Addresses can be files, such as <code>root:data/html/index.html</code>, or pages over <code>http://</code>.</p>"
     "<ul><li><a href=\"initrd:data/help.txt\">initrd:data/help.txt</a></li><li><a href=\"root:data/html/index.html\">root:data/html/index.html</a> (needs the root disk)</li></ul>"
-    "<p>HTML and CSS are shown. JavaScript, images and https are not supported yet.</p>"
+    "<p>HTML, CSS and PNG images are shown. JavaScript and https are not supported yet.</p>"
     "</body></html>";
 
 static char lower(char c)
