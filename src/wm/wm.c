@@ -1348,7 +1348,7 @@ static void launch(char *command)
 
 }
 
-static void sendtextevent(unsigned int source, unsigned int type, char *action, char *text)
+static void sendtextevent(unsigned int source, char *action, char *text)
 {
 
     if (source)
@@ -1359,7 +1359,7 @@ static void sendtextevent(unsigned int source, unsigned int type, char *action, 
 
         count += buffer_write(message.data, EVENTDATA_SIZE - 1, text, utf8_fit(text, cstring_length(text), EVENTDATA_SIZE - 1 - count), count);
         message.data[count] = '\0';
-        message.wmevent.type = type;
+        message.wmevent.type = 1;
         message.wmevent.length = count + 1;
 
         channel_send(0, source, MESSAGE_TYPE_WMEVENT, sizeof (struct message_wmevent) + message.wmevent.length, &message);
@@ -1376,10 +1376,10 @@ static void sendtextevent(unsigned int source, unsigned int type, char *action, 
 
 }
 
-static void sendevent(unsigned int source, unsigned int type, unsigned int action, char *text)
+static void sendevent(unsigned int source, unsigned int action, char *text)
 {
 
-    sendtextevent(source, type, strpool_getstring(action), text);
+    sendtextevent(source, strpool_getstring(action), text);
 
 }
 
@@ -1463,7 +1463,7 @@ static void selectrecord(struct widget *each, struct dataentry *record, unsigned
         damage(copy);
 
         if (copy->attributes.onselect)
-            sendevent(copy->source, 1, copy->attributes.onselect, text);
+            sendevent(copy->source, copy->attributes.onselect, text);
 
     }
 
@@ -1478,7 +1478,7 @@ static void selectrecord(struct widget *each, struct dataentry *record, unsigned
             char action[EVENTDATA_SIZE];
 
             parser_substitute(action, EVENTDATA_SIZE, strpool_getstring(template->attributes.onselect), record);
-            sendtextevent(each->source, 1, action, text);
+            sendtextevent(each->source, action, text);
 
         }
 
@@ -1566,7 +1566,7 @@ static void setselected(struct widget *item, unsigned int selected)
         damage(item);
 
         if (item->attributes.onselect)
-            sendevent(item->source, 1, item->attributes.onselect, (selected) ? "1" : "0");
+            sendevent(item->source, item->attributes.onselect, (selected) ? "1" : "0");
 
     }
 
@@ -1597,7 +1597,7 @@ static void notifyselection(struct widget *parent)
             count += record_isselected(record);
 
         cstring_write_fmt(text, 16, 0, "%u\\0", &count);
-        sendevent(parent->source, 1, parent->attributes.onselect, text);
+        sendevent(parent->source, parent->attributes.onselect, text);
 
     }
 
@@ -2427,7 +2427,7 @@ static void notifychange(struct widget *widget)
     {
 
         copytexts(widget);
-        sendevent(widget->source, 1, widget->attributes.onchange, textbuffer);
+        sendevent(widget->source, widget->attributes.onchange, textbuffer);
 
     }
 
@@ -2458,7 +2458,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
         {
 
             copytexts(widget);
-            sendevent(widget->source, 1, widget->attributes.onenter, textbuffer);
+            sendevent(widget->source, widget->attributes.onenter, textbuffer);
 
             return;
 
@@ -2724,7 +2724,7 @@ static void sendselect(struct widget *item)
     struct widget *text = gettextchild(item);
 
     if (select && select->attributes.onselect)
-        sendevent(select->source, 1, select->attributes.onselect, (text) ? strpool_getstring(text->attributes.label) : "");
+        sendevent(select->source, select->attributes.onselect, (text) ? strpool_getstring(text->attributes.label) : "");
 
 }
 
@@ -2798,7 +2798,7 @@ static void clickwidget(struct widget *widget)
     {
 
         if (widget->attributes.onclick)
-            sendevent(widget->source, 1, widget->attributes.onclick, "");
+            sendevent(widget->source, widget->attributes.onclick, "");
 
     }
 
@@ -2938,7 +2938,7 @@ static void reportsizes(void)
                 widget->rows = rows;
 
                 cstring_write_fmt(text, 64, 0, "&columns=%u&rows=%u\\0", &columns, &rows);
-                sendevent(widget->source, 1, widget->attributes.onresize, text);
+                sendevent(widget->source, widget->attributes.onresize, text);
 
             }
 
@@ -3377,7 +3377,7 @@ static void chooseitem(struct widget *select)
     sendselect(item);
 
     if (item->attributes.onclick)
-        sendevent(item->source, 1, item->attributes.onclick, "");
+        sendevent(item->source, item->attributes.onclick, "");
 
 }
 
@@ -3412,7 +3412,7 @@ static void stepcycle(struct widget *cycle, unsigned int forward)
         char action[EVENTDATA_SIZE];
 
         parser_substitute(action, EVENTDATA_SIZE, strpool_getstring(cycle->attributes.onclick), record);
-        sendtextevent(cycle->source, 1, action, "");
+        sendtextevent(cycle->source, action, "");
 
     }
 
@@ -3631,7 +3631,7 @@ static void onkeypress(struct message *message)
             else if (selecteditem && id == KEYS_KEY_ENTER && selecteditem->attributes.onenter)
             {
 
-                sendevent(selecteditem->source, 1, selecteditem->attributes.onenter, "");
+                sendevent(selecteditem->source, selecteditem->attributes.onenter, "");
 
             }
 
