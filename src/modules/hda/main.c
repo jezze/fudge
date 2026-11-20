@@ -126,6 +126,7 @@
 #define IDLE                            (RINGSIZE / 2)
 #define ALIGN                           128
 #define TIMEOUT                         100000
+#define TIMERIRQ                        0
 #define RESETHOLD                       2000
 
 struct bdlentry
@@ -189,7 +190,7 @@ static struct base_driver driver;
 static struct audio_interface audiointerface;
 static struct spinlock spinlock;
 static unsigned long mmio;
-static unsigned int irq;
+static unsigned int msi;
 static unsigned char memory[sizeof (struct dma) + ALIGN];
 static struct dma *dma;
 static struct link link;
@@ -721,6 +722,15 @@ static void handleirq(unsigned int line)
 
 }
 
+static void handletick(unsigned int line)
+{
+
+    spinlock_acquire(&spinlock);
+    update();
+    spinlock_release(&spinlock);
+
+}
+
 static unsigned int audiointerface_setformat(unsigned int rate, unsigned int channels, unsigned int bits)
 {
 
@@ -979,20 +989,44 @@ static void driver_reset(unsigned int id)
 
     }
 
-    irq = pci_getirq(id);
-
-    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) & ~PCI_COMMAND_INTXDISABLE);
-    pic_setroutine(irq, handleirq);
-    apic_setroutine(irq, handleirq);
-    write32(REG_INTCTL, REG_INTCTL_GIE | (1 << stream.index));
-
 }
 
 static void driver_attach(unsigned int id)
 {
 
     if (audiointerface.rate)
+    {
+
+        msi = apic_setmsiroutine(handleirq);
+
+        if (msi && !pci_setmsi(id, apic_getmsiaddress(), apic_getmsidata(msi)))
+        {
+
+            apic_unsetroutine(msi, handleirq);
+
+            msi = 0;
+
+        }
+
+        /* without msi the timer does the interrupt's work: firmware often routes the pin above what apic programs */
+        if (msi)
+        {
+
+            write32(REG_INTCTL, REG_INTCTL_GIE | (1 << stream.index));
+
+        }
+
+        else
+        {
+
+            pic_setroutine(TIMERIRQ, handletick);
+            apic_setroutine(TIMERIRQ, handletick);
+
+        }
+
         audio_registerinterface(&audiointerface);
+
+    }
 
 }
 
@@ -1004,8 +1038,25 @@ static void driver_detach(unsigned int id)
 
         audio_unregisterinterface(&audiointerface);
         write32(REG_INTCTL, 0);
-        pic_unsetroutine(irq, handleirq);
-        apic_unsetroutine(irq, handleirq);
+
+        if (msi)
+        {
+
+            pci_unsetmsi(id);
+            apic_unsetroutine(msi, handleirq);
+
+            msi = 0;
+
+        }
+
+        else
+        {
+
+            pic_unsetroutine(TIMERIRQ, handletick);
+            apic_unsetroutine(TIMERIRQ, handletick);
+
+        }
+
         spinlock_acquire(&spinlock);
         stopstream();
         spinlock_release(&spinlock);
