@@ -655,6 +655,21 @@ static int getend(struct widget *widget, unsigned int horizontal)
 
 }
 
+static unsigned int inscroller(struct widget *widget)
+{
+
+    while ((widget = widget->parent))
+    {
+
+        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int getstride(struct widget *each)
 {
 
@@ -704,7 +719,7 @@ static unsigned int bindeach(struct widget *each)
 
     unsigned int records = record_count(each->source, strpool_getstring(each->attributes.data));
     unsigned int horizontal = ishorizontal(each);
-    unsigned int recycled = horizontal || isvertical(each);
+    unsigned int recycled = (horizontal || isvertical(each)) && inscroller(each);
     unsigned int stride = (recycled) ? getstride(each) : 0;
     struct util_region view = util_region_intersection(&each->placement, &each->clip);
     unsigned int length = (horizontal) ? view.size.w : view.size.h;
