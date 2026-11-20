@@ -336,6 +336,7 @@ static void destroyraw(struct pool_rawresource *resource)
 {
 
     resource->used = 0;
+    resource->source = strpool_updatestring(resource->source, 0);
 
     if (resource->data && !ismapped(resource->target, resource->id))
         fs_munmap(1, resource->target, resource->id);
@@ -410,6 +411,7 @@ struct pool_rawresource *pool_createraw(struct widget *widget, char *source)
         resource->used = 1;
         resource->width = width;
         resource->height = height;
+        resource->source = strpool_updatestring(0, source);
         resource->target = fs_auth(source);
         resource->id = (resource->target) ? fs_walk(1, resource->target, 0, source) : 0;
 
@@ -577,7 +579,7 @@ static unsigned int isstale(struct widget *widget)
 
     struct pool_rawresource *resource = widget->resource;
 
-    return widget->attributes.mimetype == ATTR_MIMETYPE_RAW && (resource->width != widget->attributes.width || resource->height != widget->attributes.height);
+    return widget->attributes.mimetype == ATTR_MIMETYPE_RAW && (resource->width != widget->attributes.width || resource->height != widget->attributes.height || !cstring_match(strpool_getstring(resource->source), strpool_getstring(widget->attributes.source)));
 
 }
 
@@ -586,7 +588,7 @@ void pool_loadresources(void)
 
     struct list_item *current = 0;
 
-    /* a resized image is mapped again, after every stale user of the file has let go of the old mapping */
+    /* a resized or moved image is mapped again, after every stale user of the file has let go of the old mapping */
     while ((current = pool_next(current)))
     {
 
