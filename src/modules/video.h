@@ -13,7 +13,7 @@ struct video_interface
     void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp);
     void (*flush)(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
     unsigned int (*checkmode)(unsigned int width, unsigned int height, unsigned int bpp);
-
+    void (*detect)(void);
 
 };
 

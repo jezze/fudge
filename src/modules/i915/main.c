@@ -34,6 +34,7 @@ struct hdmi
     unsigned int ddc;
     unsigned int typec;
     unsigned int connected;
+    unsigned int changed;
     unsigned int pll;
     struct mode mode;
 
@@ -64,6 +65,7 @@ static unsigned char edid[I915_EDIDBUFFER];
 static unsigned char dividers[I915_DIVIDERS] = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 30, 32, 36, 40, 42, 44, 48, 52, 54, 56, 60, 64, 66, 68, 70, 72, 76, 78, 80, 84, 88, 90, 92, 96, 98};
 static struct mode cea1080 = {148500, 1920, 2008, 2052, 2200, 1080, 1084, 1089, 1125, I915_DDI_FUNC_VSYNCHIGH | I915_DDI_FUNC_HSYNCHIGH, 12};
 static struct hdmi hdmi;
+static struct spinlock spinlock;
 static unsigned long opregion;
 static unsigned int opregionsize;
 static char ports[I915_PORTS] = "ABCD???BCDAEEFFGGHHII";
@@ -822,31 +824,6 @@ static void probehdmi(void)
 
 }
 
-static void checkhdmi(void)
-{
-
-    if (isconnected(hdmi.port) == pipeb.on)
-        return;
-
-    if (pipeb.on)
-    {
-
-        disablehdmi();
-
-    }
-
-    else
-    {
-
-        probehdmi();
-
-        if (hdmi.connected)
-            enablehdmi();
-
-    }
-
-}
-
 static void handleirq(unsigned int irq)
 {
 
@@ -871,7 +848,7 @@ static void handleirq(unsigned int irq)
         writereg(I915_SHOTPLUG_CTL_DDI, readreg(I915_SHOTPLUG_CTL_DDI));
 
         if (status & (1u << (I915_SDEISR_COMBO + hdmi.port)))
-            checkhdmi();
+            hdmi.changed = 1;
 
     }
 
@@ -961,6 +938,30 @@ static void secondinterface_setmode(unsigned int width, unsigned int height, uns
             setsource(&pipeb, width, height, secondsurface);
 
     }
+
+}
+
+static void secondinterface_detect(void)
+{
+
+    spinlock_acquire(&spinlock);
+
+    if (pipeb.on && (hdmi.changed || !isconnected(hdmi.port)))
+        disablehdmi();
+
+    hdmi.changed = 0;
+
+    if (!pipeb.on && isconnected(hdmi.port))
+    {
+
+        probehdmi();
+
+        if (hdmi.connected)
+            enablehdmi();
+
+    }
+
+    spinlock_release(&spinlock);
 
 }
 
@@ -1070,6 +1071,7 @@ static void driver_init(unsigned int id)
     secondinterface.bpp = 4;
     secondinterface.connected = 0;
     secondinterface.checkmode = secondinterface_checkmode;
+    secondinterface.detect = secondinterface_detect;
 
 }
 

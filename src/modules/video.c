@@ -173,6 +173,9 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
         struct video_interface *interface = resource->data;
 
+        if (interface->detect && (event == MESSAGE_TYPE_INFO || event == MESSAGE_TYPE_VIDEOCONF || event == MESSAGE_TYPE_VIDEOMODEREQUEST))
+            interface->detect();
+
         switch (event)
         {
 
@@ -235,6 +238,7 @@ void video_initinterface(struct video_interface *interface, unsigned long frameb
     interface->setmode = setmode;
     interface->flush = 0;
     interface->checkmode = 0;
+    interface->detect = 0;
 
 }
 
