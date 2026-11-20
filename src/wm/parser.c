@@ -100,6 +100,20 @@ struct state
 
 static char strbuffer[4096];
 
+static void initstate(struct state *state, void *data, unsigned int count, unsigned int instance)
+{
+
+    state->data = data;
+    state->count = count;
+    state->offset = 0;
+    state->line = 0;
+    state->linebreak = 0;
+    state->quoted = 0;
+    state->errors = 0;
+    state->instance = instance;
+
+}
+
 static void fail(struct state *state)
 {
 
@@ -439,15 +453,7 @@ static void applyrecord(struct widget *widget, struct widget *template, struct d
 
         struct state state;
 
-        state.data = text;
-        state.count = substitute(text, TEMPLATE_SIZE, strpool_getstring(template->raw), record);
-        state.offset = 0;
-        state.line = 0;
-        state.linebreak = 0;
-        state.quoted = 0;
-        state.errors = 0;
-        state.instance = 1;
-
+        initstate(&state, text, substitute(text, TEMPLATE_SIZE, strpool_getstring(template->raw), record), 1);
         parseattributes(&state, widget);
 
     }
@@ -1031,15 +1037,7 @@ void parser_parse(unsigned int source, char *in, unsigned int count, void *data)
 
     struct state state;
 
-    state.data = data;
-    state.count = count;
-    state.offset = 0;
-    state.line = 0;
-    state.linebreak = 0;
-    state.quoted = 0;
-    state.errors = 0;
-    state.instance = 0;
-
+    initstate(&state, data, count, 0);
     parse(&state, source, in);
     pool_setorphans();
 
