@@ -536,6 +536,7 @@ static struct page loadhttp(char *url)
         char *encoding;
         char *redirect;
         unsigned int kind;
+        unsigned int chunked;
 
         if (!count)
         {
@@ -577,16 +578,18 @@ static struct page loadhttp(char *url)
 
         type = findheader(source, end, "content-type");
         encoding = findheader(source, end, "transfer-encoding");
+        chunked = encoding && matchprefix(encoding, headerlength(encoding), "chunked");
         kind = PAGE_HTML;
 
         if (type && !(matchprefix(type, headerlength(type), "text/html") || matchprefix(type, headerlength(type), "application/xhtml")))
             kind = (matchprefix(type, headerlength(type), "text/")) ? PAGE_TEXT : PAGE_OTHER;
 
+        /* the headers are overwritten by the body, so everything read from them comes first */
         count -= end;
 
         moveback(source, end, count);
 
-        if (encoding && matchprefix(encoding, headerlength(encoding), "chunked"))
+        if (chunked)
             count = dechunk(source, count);
 
         return page(count, kind);
