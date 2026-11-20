@@ -436,14 +436,14 @@ static void addcycle(char *id, char *value, struct entry *options, unsigned int 
 
     unsigned int i;
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ cycle id \"%s\" in \"%s-value\" span \"1\" label \"%s\"\n", id, id, getlabel(options, count, value));
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "@- %s\n+ cycle id \"%s\" in \"%s-value\" span \"1\" data \"%s\" onclick \"q=choose&id=%s&value={key}&label={label}\" label \"%s\"\n", id, id, id, id, id, getlabel(options, count, value));
 
     for (i = 0; i < count; i++)
     {
 
         reserve();
 
-        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-%u\" in \"%s\" onclick \"q=choose&id=%s&value=%s&label=%s\"\n+ text in \"%s-%u\" label \"%s\"\n", id, &i, id, id, options[i].value, options[i].label, id, &i, options[i].label);
+        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "@ %s \"%s\" label \"%s\"\n", id, options[i].value, options[i].label);
 
     }
 
@@ -1318,9 +1318,8 @@ static void enabledfield(char *kind, unsigned int enabled)
     beginrow(id);
     addlabel(id, "Enabled");
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ cycle id \"%s\" in \"%s-value\" span \"1\" label \"%s\"\n", id, id, (enabled) ? "On" : "Off");
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-0\" in \"%s\" onclick \"q=enable&kind=%s&value=0\"\n+ text in \"%s-0\" label \"Off\"\n", id, id, kind, id);
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-1\" in \"%s\" onclick \"q=enable&kind=%s&value=1\"\n+ text in \"%s-1\" label \"On\"\n", id, id, kind, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "@ onoff 0 label \"Off\"\n@ onoff 1 label \"On\"\n");
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ cycle id \"%s\" in \"%s-value\" span \"1\" data \"onoff\" onclick \"q=enable&kind=%s&value={key}\" label \"%s\"\n", id, id, kind, (enabled) ? "On" : "Off");
 
 }
 
