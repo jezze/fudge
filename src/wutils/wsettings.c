@@ -229,6 +229,16 @@ struct video
 
 };
 
+struct netconfig
+{
+
+    char address[32];
+    char route[32];
+    char netmask[32];
+    char dns[32];
+
+};
+
 struct device
 {
 
@@ -243,11 +253,9 @@ struct device
     char bottommiddle[8];
     char bottomright[8];
     char volume[16];
-    char address[32];
-    char route[32];
-    char netmask[32];
-    char dns[32];
     char type[16];
+    struct netconfig network;
+    struct netconfig lease;
 
 };
 
@@ -669,10 +677,30 @@ static void loadnetwork(char *line, unsigned int length)
         if (cstring_length(getfield(line, length, 1, type, 16)))
             copystring(device->type, 16, type, cstring_length(type));
 
-        getfield(line, length, 2, device->address, 32);
-        getfield(line, length, 3, device->route, 32);
-        getfield(line, length, 4, device->netmask, 32);
-        getfield(line, length, 5, device->dns, 32);
+        getfield(line, length, 2, device->network.address, 32);
+        getfield(line, length, 3, device->network.route, 32);
+        getfield(line, length, 4, device->network.netmask, 32);
+        getfield(line, length, 5, device->network.dns, 32);
+
+    }
+
+}
+
+static void loadlease(char *line, unsigned int length)
+{
+
+    char name[DEVICENAME];
+    unsigned int index = finddevice(&config.network, getfield(line, length, 0, name, DEVICENAME));
+
+    if (index < config.network.count)
+    {
+
+        struct device *device = &config.network.list[index];
+
+        getfield(line, length, 1, device->lease.address, 32);
+        getfield(line, length, 2, device->lease.route, 32);
+        getfield(line, length, 3, device->lease.netmask, 32);
+        getfield(line, length, 4, device->lease.dns, 32);
 
     }
 
@@ -927,6 +955,7 @@ static void loadconfig(void)
     finddevices(&config.audio, "audio");
     loadlines(option_getstring("network-config"), ".networks", "{device}|{type}|{address}|{route}|{netmask}|{dns}", loadnetwork);
     finddevices(&config.network, "ethernet");
+    loadlines(SYSTEM_LEASE, ".networks", "{device}|{address}|{route}|{netmask}|{dns}", loadlease);
 
     loadlines(config.bindingpath, ".binding", "{key} {mod} {action} {command}", loadbinding);
     loadlines(config.themepath, ".colors", "{name} {value}", loadcolor);
@@ -1054,8 +1083,8 @@ static unsigned int writenetwork(char *data, unsigned int size)
 
         if (cstring_match(device->type, "dynamic"))
             count += cstring_write_fmt(data, size, count, "    {\n      device: %s\n      type: %s\n    }\n", device->name, device->type);
-        else if (cstring_length(device->address))
-            count += cstring_write_fmt(data, size, count, "    {\n      device: %s\n      type: %s\n      address: %s\n      route: %s\n      netmask: %s\n      dns: %s\n    }\n", device->name, device->type, device->address, device->route, device->netmask, device->dns);
+        else if (cstring_length(device->network.address))
+            count += cstring_write_fmt(data, size, count, "    {\n      device: %s\n      type: %s\n      address: %s\n      route: %s\n      netmask: %s\n      dns: %s\n    }\n", device->name, device->type, device->network.address, device->network.route, device->network.netmask, device->network.dns);
 
     }
 
@@ -1309,13 +1338,13 @@ static void setfield(char *id, char *value)
         struct device *device = getselected(&config.network);
 
         if (cstring_match(id, "network-address"))
-            copystring(device->address, 32, value, length);
+            copystring(device->network.address, 32, value, length);
         else if (cstring_match(id, "network-route"))
-            copystring(device->route, 32, value, length);
+            copystring(device->network.route, 32, value, length);
         else if (cstring_match(id, "network-netmask"))
-            copystring(device->netmask, 32, value, length);
+            copystring(device->network.netmask, 32, value, length);
         else if (cstring_match(id, "network-dns"))
-            copystring(device->dns, 32, value, length);
+            copystring(device->network.dns, 32, value, length);
 
     }
 
@@ -1572,21 +1601,25 @@ static void renderaudio(void)
 
 }
 
-static void networkfield(char *id, char *label, char *value)
+static void networkfield(char *id, char *label)
 {
 
     beginrow(id);
     addlabel(id, label);
-    addtextbox(id, "value", id, value, 1, "left");
+
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s\" in \"%s-value\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=%s&value=\"\n+ text id \"%s-text\" in \"%s\" halign \"left\"\n", id, id, id, id, id);
 
 }
 
-static unsigned int writenetworkrows(char *data, unsigned int size, unsigned int offset, char *type)
+/* a dynamic network shows its lease in disabled boxes, a static one its own values to edit */
+static unsigned int writenetworkfields(char *data, unsigned int size, unsigned int offset, struct device *device)
 {
 
-    char *display = (cstring_match(type, "dynamic")) ? "none" : "block";
+    unsigned int dynamic = cstring_match(device->type, "dynamic");
+    struct netconfig *values = (dynamic) ? &device->lease : &device->network;
+    char *mode = (dynamic) ? "disabled" : "edit";
 
-    return cstring_write_fmt(data, size, offset, "= network-address-row display \"%s\"\n= network-route-row display \"%s\"\n= network-netmask-row display \"%s\"\n= network-dns-row display \"%s\"\n", display, display, display, display);
+    return cstring_write_fmt(data, size, offset, "= network-address mode \"%s\"\n= network-address-text label \"%s\"\n= network-route mode \"%s\"\n= network-route-text label \"%s\"\n= network-netmask mode \"%s\"\n= network-netmask-text label \"%s\"\n= network-dns mode \"%s\"\n= network-dns-text label \"%s\"\n", mode, values->address, mode, values->route, mode, values->netmask, mode, values->dns);
 
 }
 
@@ -1602,12 +1635,13 @@ static void rendernetwork(void)
         return;
 
     choice("network-type", "Type", device->type, networktypes, NUM_NETWORKTYPES);
-    networkfield("network-address", "Address", device->address);
-    networkfield("network-route", "Router", device->route);
-    networkfield("network-netmask", "Netmask", device->netmask);
-    networkfield("network-dns", "DNS", device->dns);
+    networkfield("network-address", "Address");
+    networkfield("network-route", "Router");
+    networkfield("network-netmask", "Netmask");
+    networkfield("network-dns", "DNS");
+    reserve();
 
-    outcount += writenetworkrows(out, MESSAGE_SIZE, outcount, device->type);
+    outcount += writenetworkfields(out, MESSAGE_SIZE, outcount, device);
 
 }
 
@@ -1876,12 +1910,12 @@ static void onwmevent(struct message *message)
 
             setchoice(kv_getstring(event, "id="), kv_getstring(event, "value="));
 
-            if (cstring_match(kv_getstring(event, "id="), "network-type"))
+            if (cstring_match(kv_getstring(event, "id="), "network-type") && getselected(&config.network))
             {
 
-                char data[256];
+                char data[512];
 
-                channel_send(0, message->source, MESSAGE_TYPE_WMRENDERDATA, writenetworkrows(data, 256, 0, kv_getstring(event, "value=")), data);
+                channel_send(0, message->source, MESSAGE_TYPE_WMRENDERDATA, writenetworkfields(data, 512, 0, getselected(&config.network)), data);
 
             }
 
