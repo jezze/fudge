@@ -567,6 +567,18 @@ static void bindgroup(struct widget *each, struct list_item **instance, struct d
                 return;
 
             widget->instance = strpool_updatestring(0, "");
+
+            if (!widget->instance)
+            {
+
+                widget->destroyed = 1;
+
+                deletechildren(widget);
+
+                return;
+
+            }
+
             next = nextcopy(each, *instance);
 
         }

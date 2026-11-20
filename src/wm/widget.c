@@ -269,7 +269,7 @@ unsigned int widget_isinteractive(struct widget *widget)
 unsigned int widget_istemplate(struct widget *widget)
 {
 
-    return widget->parent && widget->parent->type == WIDGET_TYPE_EACH && !widget->instance;
+    return widget->parent && widget->parent->type == WIDGET_TYPE_EACH && !widget->instance && !widget->destroyed;
 
 }
 
