@@ -693,6 +693,7 @@ static void loadtouch(char *line, unsigned int length)
 
     char name[DEVICENAME];
     char doubletap[16];
+    char speed[16];
     char enabled[8];
     struct device *device = adddevice(&config.touch, getfield(line, length, 0, name, DEVICENAME), !cstring_match(getfield(line, length, 2, enabled, 8), "off"));
 
@@ -706,6 +707,9 @@ static void loadtouch(char *line, unsigned int length)
         loadarea(device->bottomleft, line, length, 5);
         loadarea(device->bottommiddle, line, length, 6);
         loadarea(device->bottomright, line, length, 7);
+
+        if (cstring_length(getfield(line, length, 8, speed, 16)))
+            copystring(device->speed, 16, speed, cstring_length(speed));
 
     }
 
@@ -914,7 +918,7 @@ static void loadconfig(void)
     loadlines(option_getstring("video-config"), ".devices", "{width} {height} {bpp} {device} {enabled}", loadvideo);
     loadlines(option_getstring("keyboard-config"), ".devices", "{device}|{map}|{enabled}", loadkeyboard);
     loadlines(option_getstring("mouse-config"), ".devices", "{device}|{speed}|{enabled}|{scroll}|{invert}", loadmouse);
-    loadlines(option_getstring("touch-config"), ".devices", "{device}|{doubletap}|{enabled}|{scroll}|{invert}|{bottomleft}|{bottommiddle}|{bottomright}", loadtouch);
+    loadlines(option_getstring("touch-config"), ".devices", "{device}|{doubletap}|{enabled}|{scroll}|{invert}|{bottomleft}|{bottommiddle}|{bottomright}|{speed}", loadtouch);
     findvideos();
     finddevices(&config.keyboard, "keyboard");
     finddevices(&config.mouse, "mouse");
@@ -1003,7 +1007,7 @@ static unsigned int writetouch(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.touch.count; i++)
-        count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s enabled: %s scroll: %s invert: %s bottomleft: %s bottommiddle: %s bottomright: %s }\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off", config.touch.list[i].scroll, config.touch.list[i].invert, config.touch.list[i].bottomleft, config.touch.list[i].bottommiddle, config.touch.list[i].bottomright);
+        count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s enabled: %s scroll: %s invert: %s bottomleft: %s bottommiddle: %s bottomright: %s speed: %s }\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off", config.touch.list[i].scroll, config.touch.list[i].invert, config.touch.list[i].bottomleft, config.touch.list[i].bottommiddle, config.touch.list[i].bottomright, config.touch.list[i].speed);
 
     count += cstring_write_fmt(data, size, count, "  ]\n}\n");
 
@@ -1162,7 +1166,7 @@ static unsigned int writelines(char *data, unsigned int size)
         count += cstring_write_fmt(data, size, count, "mouse %s %s %s %s %s\n", config.mouse.list[i].name, config.mouse.list[i].speed, (config.mouse.list[i].enabled) ? "on" : "off", config.mouse.list[i].scroll, config.mouse.list[i].invert);
 
     for (i = 0; i < config.touch.count; i++)
-        count += cstring_write_fmt(data, size, count, "touch %s %s %s %s %s %s %s %s\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off", config.touch.list[i].scroll, config.touch.list[i].invert, config.touch.list[i].bottomleft, config.touch.list[i].bottommiddle, config.touch.list[i].bottomright);
+        count += cstring_write_fmt(data, size, count, "touch %s %s %s %s %s %s %s %s %s\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off", config.touch.list[i].scroll, config.touch.list[i].invert, config.touch.list[i].bottomleft, config.touch.list[i].bottommiddle, config.touch.list[i].bottomright, config.touch.list[i].speed);
 
     for (i = 0; i < config.ncolors; i++)
         count += cstring_write_fmt(data, size, count, "color %s %s\n", config.colors[i].name, config.colors[i].value);
@@ -1287,6 +1291,8 @@ static void setchoice(char *id, char *value)
         copystring(getselected(&config.touch)->bottommiddle, 8, value, cstring_length(value));
     else if (cstring_match(id, "touch-bottomright") && getselected(&config.touch))
         copystring(getselected(&config.touch)->bottomright, 8, value, cstring_length(value));
+    else if (cstring_match(id, "touch-speed") && getselected(&config.touch))
+        copystring(getselected(&config.touch)->speed, 16, value, cstring_length(value));
     else if (cstring_match(id, "audio-volume") && getselected(&config.audio))
         copystring(getselected(&config.audio)->volume, 16, value, cstring_length(value));
 
@@ -1516,7 +1522,7 @@ static void rendermouse(void)
     {
 
         enabledfield("mouse", device->enabled);
-        choice("mouse-speed", "Speed", device->speed, speeds, NUM_SPEEDS);
+        choice("mouse-speed", "Movement speed", device->speed, speeds, NUM_SPEEDS);
         choice("mouse-scroll", "Scroll speed", device->scroll, speeds, NUM_SPEEDS);
         choice("mouse-invert", "Invert scroll", device->invert, inverts, NUM_INVERTS);
 
@@ -1539,6 +1545,7 @@ static void rendertouch(void)
 
         enabledfield("touch", device->enabled);
         choice("touch-doubletap", "Double click", device->doubletap, doubletaps, NUM_DOUBLETAPS);
+        choice("touch-speed", "Movement speed", device->speed, speeds, NUM_SPEEDS);
         choice("touch-scroll", "Scroll speed", device->scroll, speeds, NUM_SPEEDS);
         choice("touch-invert", "Invert scroll", device->invert, inverts, NUM_INVERTS);
         choice("touch-bottomleft", "Bottom left", device->bottomleft, areas, NUM_AREAS);

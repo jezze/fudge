@@ -190,7 +190,7 @@ struct state
 };
 
 static struct state state;
-static struct {struct touchcontact contacts[TOUCH_CONTACTS]; unsigned int pointer; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int pressed; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; unsigned int secondtap; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
+static struct {struct touchcontact contacts[TOUCH_CONTACTS]; unsigned int pointer; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int pressed; unsigned int speed; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; unsigned int secondtap; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
 static unsigned int linebuffer[LINEBUFFER];
 static char *fontn[FONTS] = {
     "initrd:data/font/ter-112n.pcf",
@@ -638,6 +638,16 @@ static unsigned int readarea(char *rest, unsigned int length, unsigned int field
 
 }
 
+static unsigned int readspeed(char *rest, unsigned int length, unsigned int field)
+{
+
+    unsigned int offset = findfield(rest, length, field);
+    unsigned int count = measureword(rest, length, offset);
+
+    return util_clamp((count) ? cstring_read_value(rest + offset, count, 10) : MOUSE_NORMAL, 1, MOUSE_FASTEST);
+
+}
+
 static void addinput(unsigned int type, char *rest, unsigned int length)
 {
 
@@ -704,7 +714,7 @@ static void addinput(unsigned int type, char *rest, unsigned int length)
         break;
 
     case INPUT_MOUSE:
-        input->speed = util_clamp((valuelength) ? cstring_read_value(rest + valueoffset, valuelength, 10) : MOUSE_NORMAL, 1, MOUSE_FASTEST);
+        input->speed = readspeed(rest, length, 1);
 
         break;
 
@@ -713,6 +723,7 @@ static void addinput(unsigned int type, char *rest, unsigned int length)
         input->areas[0] = readarea(rest, length, 5, 1);
         input->areas[1] = readarea(rest, length, 6, 3);
         input->areas[2] = readarea(rest, length, 7, 2);
+        input->speed = readspeed(rest, length, 8);
 
         break;
 
@@ -942,7 +953,7 @@ static void loadconfig(char *config)
     configlines("inputs", 6);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"keyboard {device} {map} {enabled}\" %s", option_getstring("keyboard-config")));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"mouse {device} {speed} {enabled} {scroll} {invert}\" %s", option_getstring("mouse-config")));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap} {enabled} {scroll} {invert} {bottomleft} {bottommiddle} {bottomright}\" %s", option_getstring("touch-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap} {enabled} {scroll} {invert} {bottomleft} {bottommiddle} {bottomright} {speed}\" %s", option_getstring("touch-config")));
     adddefaults();
     loadreference(data, config, ".theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
@@ -4381,7 +4392,7 @@ static void flushtouch(void)
         int x = util_clamp(touch.motionx, -127, 127);
         int y = util_clamp(touch.motiony, -127, 127);
 
-        moverelative(x, y, getbuttons(), MOUSE_NORMAL);
+        moverelative(x, y, getbuttons(), touch.speed);
 
         touch.motionx -= x;
         touch.motiony -= y;
@@ -4495,6 +4506,8 @@ static void ontouchcontact(struct message *message)
 
     if (!contact)
         return;
+
+    touch.speed = (input) ? input->speed : MOUSE_NORMAL;
 
     if (contact->time != touch.time)
         flushtouch();
@@ -5237,6 +5250,7 @@ void init(void)
 {
 
     touch.pointer = TOUCH_CONTACTS;
+    touch.speed = MOUSE_NORMAL;
 
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     keys_init(&state.plainkeys, KEYS_LAYOUT_QWERTY_US, (void *)0);
