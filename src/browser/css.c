@@ -133,6 +133,27 @@ struct lengthvalue
 
 };
 
+struct quantity
+{
+
+    int milli;
+    unsigned int length;
+
+};
+
+struct evaluator
+{
+
+    struct context *context;
+    char *text;
+    unsigned int offset;
+    unsigned int count;
+    unsigned int fontsize;
+    unsigned int valid;
+    unsigned int depth;
+
+};
+
 struct colorvalue
 {
 
@@ -1235,6 +1256,308 @@ static struct lengthvalue lengthvalue(int value, unsigned int unit, unsigned int
 
 }
 
+static struct quantity quantity(int milli, unsigned int length)
+{
+
+    struct quantity result;
+
+    result.milli = milli;
+    result.length = length;
+
+    return result;
+
+}
+
+static int multiply(int a, int b)
+{
+
+    return a / 1000 * b + a % 1000 * b / 1000;
+
+}
+
+static int divide(int a, int b)
+{
+
+    if (!b)
+        return 0;
+
+    return a / b * 1000 + a % b * 1000 / b;
+
+}
+
+static void skipblank(struct evaluator *evaluator)
+{
+
+    while (evaluator->offset < evaluator->count && evaluator->text[evaluator->offset] == ' ')
+        evaluator->offset++;
+
+}
+
+static unsigned int nextis(struct evaluator *evaluator, char c)
+{
+
+    skipblank(evaluator);
+
+    if (evaluator->offset < evaluator->count && evaluator->text[evaluator->offset] == c)
+    {
+
+        evaluator->offset++;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+static struct quantity evaluatesum(struct evaluator *evaluator);
+
+static struct quantity evaluatefunction(struct evaluator *evaluator, unsigned int kind)
+{
+
+    struct quantity result = evaluatesum(evaluator);
+    unsigned int count = 1;
+
+    while (evaluator->valid && nextis(evaluator, ','))
+    {
+
+        struct quantity next = evaluatesum(evaluator);
+
+        if (next.length != result.length)
+            evaluator->valid = 0;
+
+        if (kind == 1 && next.milli < result.milli)
+            result.milli = next.milli;
+        else if (kind == 2 && next.milli > result.milli)
+            result.milli = next.milli;
+        else if (kind == 3 && count == 1)
+            result.milli = (next.milli > result.milli) ? next.milli : result.milli;
+        else if (kind == 3 && count == 2 && next.milli < result.milli)
+            result.milli = next.milli;
+
+        count++;
+
+    }
+
+    if (kind == 3 && count != 3)
+        evaluator->valid = 0;
+
+    if (!nextis(evaluator, ')'))
+        evaluator->valid = 0;
+
+    return result;
+
+}
+
+static struct quantity evaluatevalue(struct evaluator *evaluator)
+{
+
+    char *text;
+    unsigned int remaining;
+    struct number number;
+    unsigned int unit;
+
+    skipblank(evaluator);
+
+    text = evaluator->text + evaluator->offset;
+    remaining = evaluator->count - evaluator->offset;
+
+    if (evaluator->depth > 8 || !remaining)
+    {
+
+        evaluator->valid = 0;
+
+        return quantity(0, 0);
+
+    }
+
+    if (text[0] == '(' || (remaining > 5 && buffer_match(text, "calc(", 5)))
+    {
+
+        struct quantity result;
+
+        evaluator->offset += (text[0] == '(') ? 1 : 5;
+        evaluator->depth++;
+        result = evaluatesum(evaluator);
+        evaluator->depth--;
+
+        if (!nextis(evaluator, ')'))
+            evaluator->valid = 0;
+
+        return result;
+
+    }
+
+    if ((remaining > 4 && (buffer_match(text, "min(", 4) || buffer_match(text, "max(", 4))) || (remaining > 6 && buffer_match(text, "clamp(", 6)))
+    {
+
+        unsigned int kind = (text[1] == 'i') ? 1 : (text[1] == 'a') ? 2 : 3;
+        struct quantity result;
+
+        evaluator->offset += (kind == 3) ? 6 : 4;
+        evaluator->depth++;
+        result = evaluatefunction(evaluator, kind);
+        evaluator->depth--;
+
+        return result;
+
+    }
+
+    number = parsenumber(text, remaining);
+
+    if (!number.length)
+    {
+
+        evaluator->valid = 0;
+
+        return quantity(0, 0);
+
+    }
+
+    evaluator->offset += number.length;
+    text += number.length;
+    remaining -= number.length;
+
+    for (unit = 0; unit < remaining && cstring_isalpha(text[unit]); unit++);
+
+    evaluator->offset += unit;
+
+    if (!unit && remaining && text[0] == '%')
+        evaluator->valid = 0;
+
+    if (!unit)
+        return quantity(number.milli, 0);
+
+    if (matchword(text, unit, "px"))
+        return quantity(number.milli, 1);
+
+    if (matchword(text, unit, "em"))
+        return quantity(number.milli * (int)evaluator->fontsize, 1);
+
+    if (matchword(text, unit, "rem"))
+        return quantity(number.milli * (int)evaluator->context->rootsize, 1);
+
+    if (matchword(text, unit, "vw"))
+        return quantity(number.milli / 100 * (int)evaluator->context->width, 1);
+
+    if (matchword(text, unit, "vh"))
+        return quantity(number.milli / 100 * (int)evaluator->context->height, 1);
+
+    if (matchword(text, unit, "pt"))
+        return quantity(number.milli * 4 / 3, 1);
+
+    evaluator->valid = 0;
+
+    return quantity(0, 0);
+
+}
+
+static struct quantity evaluateproduct(struct evaluator *evaluator)
+{
+
+    struct quantity result = evaluatevalue(evaluator);
+
+    while (evaluator->valid)
+    {
+
+        struct quantity next;
+
+        if (nextis(evaluator, '*'))
+        {
+
+            next = evaluatevalue(evaluator);
+
+            if (result.length && next.length)
+                evaluator->valid = 0;
+
+            result.milli = multiply(result.milli, next.milli);
+            result.length = result.length || next.length;
+
+        }
+
+        else if (nextis(evaluator, '/'))
+        {
+
+            next = evaluatevalue(evaluator);
+
+            if (next.length)
+                evaluator->valid = 0;
+
+            result.milli = divide(result.milli, next.milli);
+
+        }
+
+        else
+        {
+
+            break;
+
+        }
+
+    }
+
+    return result;
+
+}
+
+static struct quantity evaluatesum(struct evaluator *evaluator)
+{
+
+    struct quantity result = evaluateproduct(evaluator);
+
+    while (evaluator->valid)
+    {
+
+        struct quantity next;
+        int sign;
+
+        if (nextis(evaluator, '+'))
+            sign = 1;
+        else if (nextis(evaluator, '-'))
+            sign = -1;
+        else
+            break;
+
+        next = evaluateproduct(evaluator);
+
+        if (next.length != result.length && (next.milli || result.milli))
+            evaluator->valid = 0;
+
+        result.milli += sign * next.milli;
+        result.length = result.length || next.length;
+
+    }
+
+    return result;
+
+}
+
+static struct lengthvalue evaluatelength(struct context *context, char *text, unsigned int length, unsigned int fontsize)
+{
+
+    struct evaluator evaluator;
+    struct quantity result;
+
+    evaluator.context = context;
+    evaluator.text = text;
+    evaluator.offset = 0;
+    evaluator.count = length;
+    evaluator.fontsize = fontsize;
+    evaluator.valid = 1;
+    evaluator.depth = 0;
+
+    result = evaluatevalue(&evaluator);
+
+    skipblank(&evaluator);
+
+    if (!evaluator.valid || evaluator.offset != length || (!result.length && result.milli))
+        return lengthvalue(0, CSS_UNIT_PX, 0);
+
+    return lengthvalue(roundmilli(result.milli), CSS_UNIT_PX, 1);
+
+}
+
 static struct lengthvalue parselength(struct context *context, char *text, unsigned int length, unsigned int fontsize)
 {
 
@@ -1247,6 +1570,9 @@ static struct lengthvalue parselength(struct context *context, char *text, unsig
 
     if (matchword(text, length, "none"))
         return lengthvalue(0, CSS_UNIT_NONE, 1);
+
+    if (length > 4 && (buffer_match(text, "calc(", 5) || buffer_match(text, "min(", 4) || buffer_match(text, "max(", 4) || buffer_match(text, "clamp(", 6)))
+        return evaluatelength(context, text, length, fontsize);
 
     number = parsenumber(text, length);
 
