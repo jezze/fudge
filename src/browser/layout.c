@@ -1753,6 +1753,38 @@ static unsigned int findanchor(struct layout *layout, unsigned int node)
 
 }
 
+unsigned int layout_findnode(struct layout *layout, int x, int y)
+{
+
+    unsigned int found = 0;
+    unsigned int node;
+    unsigned int i;
+
+    for (i = 0; i < layout->fragmentcount; i++)
+    {
+
+        struct layout_fragment *fragment = &layout->fragments[i];
+        int slop = fragment->h / 4;
+
+        if (x >= fragment->x && x < fragment->x + fragment->w && y >= fragment->y - slop && y < fragment->y + fragment->h + slop)
+            return (fragment->type == LAYOUT_FRAGMENT_TEXT) ? getnode(layout, fragment->node)->parent : fragment->node;
+
+    }
+
+    for (node = 1; node < layout->document->nodecount; node++)
+    {
+
+        struct layout_box *box = &layout->boxes[node];
+
+        if (box->placed && x >= box->x && x < box->x + box->w && y >= box->y && y < box->y + box->h)
+            found = node;
+
+    }
+
+    return found;
+
+}
+
 unsigned int layout_findlink(struct layout *layout, int x, int y)
 {
 

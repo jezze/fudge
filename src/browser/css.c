@@ -241,7 +241,7 @@ static struct namedcolor colors[COLORS] = {
 };
 static char *agent =
     "html,address,blockquote,body,center,dd,details,dialog,div,dl,dt,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,hr,legend,main,menu,nav,ol,p,pre,search,section,summary,ul,article,aside,caption,listing,plaintext,xmp,optgroup{display:block}"
-    "head,script,style,title,meta,link,base,template,option,datalist,param,area,map,[hidden],input[type=hidden]{display:none}"
+    "head,script,style,title,meta,link,base,template,option,datalist,param,area,map,noscript,[hidden],input[type=hidden]{display:none}"
     "li{display:list-item}"
     "table{display:table;border-spacing:2px}"
     "tr{display:table-row}"

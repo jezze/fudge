@@ -8,6 +8,7 @@
 #include "font.h"
 #include "layout.h"
 #include "paint.h"
+#include "js.h"
 #include "../wutils/kv.h"
 
 #define URLSIZE                         512
@@ -49,6 +50,7 @@ static struct html_document document;
 static struct css_sheet sheet;
 static struct css_style styles[HTML_NODES];
 static struct layout layout;
+static struct js_engine js;
 static struct font_face faces[FONT_FACES];
 static struct image images[IMAGES];
 static struct image heap;
@@ -94,7 +96,7 @@ static char *home =
     "<h1>Browser</h1>"
     "<p>Type an address in the bar above and press Enter. Addresses can be files, such as <code>root:data/html/index.html</code>, or pages over <code>http://</code>.</p>"
     "<ul><li><a href=\"initrd:data/help.txt\">initrd:data/help.txt</a></li><li><a href=\"root:data/html/index.html\">root:data/html/index.html</a> (needs the root disk)</li></ul>"
-    "<p>HTML, CSS and PNG images are shown. JavaScript and https are not supported yet.</p>"
+    "<p>HTML, CSS, PNG images and simple JavaScript are supported; https is not supported yet.</p>"
     "</body></html>";
 
 static char lower(char c)
@@ -1020,6 +1022,93 @@ static void pushhistory(char *url)
 
 }
 
+static unsigned int isscript(unsigned int node)
+{
+
+    char *type = html_getattribute(&document, node, "type");
+
+    if (document.nodes[node].tag != HTML_TAG_SCRIPT)
+        return 0;
+
+    return !type || !type[0] || matchsuffix(type, "javascript") || matchsuffix(type, "ecmascript");
+
+}
+
+static void runscripts(void)
+{
+
+    unsigned int count = document.nodecount;
+    unsigned int node;
+
+    js_reset(&js, &document, scheme == CSS_SCHEME_DARK);
+
+    for (node = 1; node < count; node++)
+    {
+
+        char *src;
+        char url[URLSIZE];
+
+        if (!isscript(node))
+            continue;
+
+        src = html_getattribute(&document, node, "src");
+
+        if (src)
+        {
+
+            if (resolve(url, URLSIZE, base, src) && issafe(url))
+            {
+
+                struct page script = load(url);
+
+                if (script.count)
+                    js_run(&js, source, script.count);
+
+            }
+
+        }
+
+        else if (document.nodes[node].first)
+        {
+
+            struct html_node *text = &document.nodes[document.nodes[node].first];
+
+            js_run(&js, html_getstring(&document, text->text), text->length);
+
+        }
+
+    }
+
+    js_dispatch(&js, 0, "DOMContentLoaded");
+    js_dispatch(&js, 0, "load");
+
+}
+
+static unsigned int clicknode(unsigned int node)
+{
+
+    unsigned int handled = 0;
+
+    while (node)
+    {
+
+        if (js_haslistener(&js, node, "click"))
+        {
+
+            js_dispatch(&js, node, "click");
+
+            handled = 1;
+
+        }
+
+        node = document.nodes[node].parent;
+
+    }
+
+    return handled;
+
+}
+
 static void navigate(char *url, unsigned int push)
 {
 
@@ -1102,6 +1191,7 @@ static void navigate(char *url, unsigned int push)
         html_parse(&document, source, loaded.count);
 
     loadstyles();
+    runscripts();
     loadpictures();
     showstate();
     render();
@@ -1224,7 +1314,9 @@ static void onwmevent(struct message *message)
         {
 
             scheme = (scheme == CSS_SCHEME_DARK) ? CSS_SCHEME_LIGHT : CSS_SCHEME_DARK;
+            js.dark = scheme == CSS_SCHEME_DARK;
 
+            js_dispatch(&js, JS_MEDIA, "change");
             showscheme();
             render();
 
@@ -1251,10 +1343,14 @@ static void onwmevent(struct message *message)
         else if (kv_match(event, "q=click"))
         {
 
-            unsigned int anchor = layout_findlink(&layout, kv_getvalue(event, "x=", 10), kv_getvalue(event, "y=", 10));
+            unsigned int x = kv_getvalue(event, "x=", 10);
+            unsigned int y = kv_getvalue(event, "y=", 10);
+            unsigned int anchor = layout_findlink(&layout, x, y);
             char url[URLSIZE];
 
-            if (anchor && resolve(url, URLSIZE, base, html_getattribute(&document, anchor, "href")))
+            if (clicknode(layout_findnode(&layout, x, y)))
+                render();
+            else if (anchor && resolve(url, URLSIZE, base, html_getattribute(&document, anchor, "href")))
                 navigate(url, 1);
 
         }

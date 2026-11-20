@@ -6,6 +6,7 @@ O:=\
     $(DIR_SRC)/browser/css.o \
     $(DIR_SRC)/browser/font.o \
     $(DIR_SRC)/browser/html.o \
+    $(DIR_SRC)/browser/js.o \
     $(DIR_SRC)/browser/layout.o \
     $(DIR_SRC)/browser/paint.o \
     $(DIR_SRC)/wutils/kv.o \
