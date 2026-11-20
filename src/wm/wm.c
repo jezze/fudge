@@ -49,7 +49,9 @@
 #define TOUCH_PADCOUNTS     1600
 #define TOUCH_WHEELCOUNTS   24
 #define TOUCH_TAPTICKS      12
-#define TOUCH_RIGHTAREA     5
+#define TOUCH_AREAHEIGHT    5
+#define TOUCH_AREAS         3
+#define TOUCH_CONTACTS      5
 #define LINEBUFFER          3840
 #define FLUSHES             16
 
@@ -99,7 +101,23 @@ struct input
     unsigned int scroll;
     unsigned int invert;
     unsigned int doubletap;
+    unsigned int areas[TOUCH_AREAS];
     unsigned int keymap;
+
+};
+
+struct touchcontact
+{
+
+    unsigned int active;
+    unsigned int id;
+    unsigned int area;
+    unsigned int zone;
+    unsigned int pressed;
+    unsigned int downtime;
+    unsigned int travel;
+    int lastx;
+    int lasty;
 
 };
 
@@ -172,7 +190,7 @@ struct state
 };
 
 static struct state state;
-static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int pressed; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; unsigned int secondtap; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
+static struct {struct touchcontact contacts[TOUCH_CONTACTS]; unsigned int pointer; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int pressed; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; unsigned int secondtap; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
 static unsigned int linebuffer[LINEBUFFER];
 static char *fontn[FONTS] = {
     "initrd:data/font/ter-112n.pcf",
@@ -598,6 +616,28 @@ static unsigned int isword(char *data, unsigned int count, char *word)
 
 }
 
+static unsigned int readarea(char *rest, unsigned int length, unsigned int field, unsigned int fallback)
+{
+
+    unsigned int offset = findfield(rest, length, field);
+    unsigned int count = measureword(rest, length, offset);
+
+    if (isword(rest + offset, count, "left"))
+        return 1;
+
+    if (isword(rest + offset, count, "right"))
+        return 2;
+
+    if (isword(rest + offset, count, "middle"))
+        return 3;
+
+    if (isword(rest + offset, count, "off"))
+        return 0;
+
+    return fallback;
+
+}
+
 static void addinput(unsigned int type, char *rest, unsigned int length)
 {
 
@@ -670,6 +710,9 @@ static void addinput(unsigned int type, char *rest, unsigned int length)
 
     case INPUT_TOUCH:
         input->doubletap = isword(rest + valueoffset, valuelength, "right") ? DOUBLETAP_RIGHT : DOUBLETAP_DRAG;
+        input->areas[0] = readarea(rest, length, 5, 1);
+        input->areas[1] = readarea(rest, length, 6, 3);
+        input->areas[2] = readarea(rest, length, 7, 2);
 
         break;
 
@@ -899,7 +942,7 @@ static void loadconfig(char *config)
     configlines("inputs", 6);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"keyboard {device} {map} {enabled}\" %s", option_getstring("keyboard-config")));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"mouse {device} {speed} {enabled} {scroll} {invert}\" %s", option_getstring("mouse-config")));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap} {enabled} {scroll} {invert}\" %s", option_getstring("touch-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap} {enabled} {scroll} {invert} {bottomleft} {bottommiddle} {bottomright}\" %s", option_getstring("touch-config")));
     adddefaults();
     loadreference(data, config, ".theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
@@ -4362,12 +4405,93 @@ static void clicktouch(unsigned int button)
 
 }
 
-/* one finger moves the pointer, two scroll; a short touch that barely moves is a tap, one finger a left click and two a right click; a touch soon after a one-finger tap either holds the left button until it lifts (drag, a quick second tap being a double click) or, set to right, makes that second tap a right click; pressing the surface is a right click in its bottom right corner (the lower fifth's right half) and a left click elsewhere */
+static unsigned int findcontact(unsigned int id, unsigned int active)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < TOUCH_CONTACTS; i++)
+    {
+
+        struct touchcontact *slot = &touch.contacts[i];
+
+        if (slot->active == active && (!active || slot->id == id))
+            return i;
+
+    }
+
+    return TOUCH_CONTACTS;
+
+}
+
+static unsigned int countfingers(void)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    for (i = 0; i < TOUCH_CONTACTS; i++)
+    {
+
+        if (touch.contacts[i].active && !touch.contacts[i].area)
+            count++;
+
+    }
+
+    return count;
+
+}
+
+static unsigned int gettoucharea(struct input *input, struct message_touchcontact *contact)
+{
+
+    if (!input || !contact->xmax || contact->y < contact->ymax - contact->ymax / TOUCH_AREAHEIGHT)
+        return 0;
+
+    return input->areas[util_min(contact->x * TOUCH_AREAS / (contact->xmax + 1), TOUCH_AREAS - 1)];
+
+}
+
+static unsigned int getpressed(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < TOUCH_CONTACTS; i++)
+    {
+
+        struct touchcontact *slot = &touch.contacts[i];
+
+        if (slot->active && slot->zone)
+            return slot->zone;
+
+    }
+
+    return 1;
+
+}
+
+static void endtap(unsigned int time, unsigned int fingers)
+{
+
+    clicktouch((fingers >= 2 || touch.secondtap) ? 2 : 1);
+
+    touch.tapped = fingers < 2 && !touch.secondtap;
+    touch.taptime = time;
+
+}
+
+/* fingers that touch down in a bottom area set to a button are kept apart: they never move the pointer, scroll or count as fingers, and pressing the surface clicks the button of the area such a finger rests in, else the left button, so another finger can move the pointer while one holds the button; such a finger that leaves the area while the surface is not pressed becomes an ordinary one, and a short touch of one alone is a tap; of the others, the first moves the pointer and two scroll; a short touch that barely moves is a tap, one finger a left click and two a right click; a touch soon after a one-finger tap either holds the left button until it lifts (drag, a quick second tap being a double click) or, set to right, makes that second tap a right click */
 static void ontouchcontact(struct message *message)
 {
 
     struct message_touchcontact *contact = message_validate(MESSAGE_TYPE_TOUCHCONTACT, message->data, message->length);
     struct input *input = findinput(message->source);
+    struct touchcontact *slot;
+    unsigned int index;
+    unsigned int zone;
+    int dx = 0;
+    int dy = 0;
 
     if (!contact)
         return;
@@ -4376,6 +4500,64 @@ static void ontouchcontact(struct message *message)
         flushtouch();
 
     touch.time = contact->time;
+    zone = gettoucharea(input, contact);
+    index = findcontact(contact->id, 1);
+
+    if (index == TOUCH_CONTACTS && contact->tip)
+    {
+
+        index = findcontact(0, 0);
+
+        if (index < TOUCH_CONTACTS)
+        {
+
+            slot = &touch.contacts[index];
+            slot->active = 1;
+            slot->id = contact->id;
+            slot->area = zone != 0;
+            slot->pressed = 0;
+            slot->downtime = contact->time;
+            slot->travel = 0;
+            slot->lastx = contact->x;
+            slot->lasty = contact->y;
+
+        }
+
+    }
+
+    if (contact->tip && contact->count == 1)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < TOUCH_CONTACTS; i++)
+        {
+
+            if (i != index)
+                touch.contacts[i].active = 0;
+
+        }
+
+        if (touch.pointer != index)
+            touch.pointer = TOUCH_CONTACTS;
+
+    }
+
+    if (index < TOUCH_CONTACTS)
+    {
+
+        slot = &touch.contacts[index];
+        dx = (int)contact->x - slot->lastx;
+        dy = (int)contact->y - slot->lasty;
+        slot->lastx = contact->x;
+        slot->lasty = contact->y;
+        slot->travel += ((dx < 0) ? -dx : dx) + ((dy < 0) ? -dy : dy);
+        slot->zone = zone;
+
+        if (slot->area && !zone && !touch.button)
+            slot->area = 0;
+
+    }
 
     if (contact->button != touch.button)
     {
@@ -4385,7 +4567,12 @@ static void ontouchcontact(struct message *message)
         if (contact->button)
         {
 
-            touch.pressed = (contact->x >= contact->xmax / 2 && contact->y >= contact->ymax - contact->ymax / TOUCH_RIGHTAREA) ? 2 : 1;
+            unsigned int i;
+
+            touch.pressed = getpressed();
+
+            for (i = 0; i < TOUCH_CONTACTS; i++)
+                touch.contacts[i].pressed = 1;
 
             pressbutton(touch.pressed);
 
@@ -4404,19 +4591,40 @@ static void ontouchcontact(struct message *message)
 
     }
 
-    if (!touch.active)
+    if (index == TOUCH_CONTACTS)
+        return;
+
+    slot = &touch.contacts[index];
+
+    if (!contact->tip)
+        slot->active = 0;
+
+    if (slot->area)
+    {
+
+        if (!contact->tip && !slot->pressed && !touch.button && touch.pointer == TOUCH_CONTACTS && !countfingers() && contact->time - slot->downtime <= TOUCH_TAPTICKS && slot->travel <= contact->xmax / 50u)
+        {
+
+            touch.secondtap = 0;
+
+            endtap(contact->time, 1);
+
+        }
+
+        return;
+
+    }
+
+    if (touch.pointer == TOUCH_CONTACTS)
     {
 
         if (contact->tip)
         {
 
-            touch.active = 1;
-            touch.id = contact->id;
-            touch.lastx = contact->x;
-            touch.lasty = contact->y;
+            touch.pointer = index;
             touch.downtime = contact->time;
             touch.travel = 0;
-            touch.fingers = (contact->count) ? contact->count : 1;
+            touch.fingers = countfingers();
             touch.accx = 0;
             touch.accy = 0;
             touch.accw = 0;
@@ -4442,20 +4650,15 @@ static void ontouchcontact(struct message *message)
 
     }
 
-    if (contact->count > touch.fingers)
-        touch.fingers = contact->count;
+    if (countfingers() > touch.fingers)
+        touch.fingers = countfingers();
 
-    if (contact->id != touch.id)
+    if (index != touch.pointer)
         return;
 
     if (contact->tip)
     {
 
-        int dx = (int)contact->x - touch.lastx;
-        int dy = (int)contact->y - touch.lasty;
-
-        touch.lastx = contact->x;
-        touch.lasty = contact->y;
         touch.travel += ((dx < 0) ? -dx : dx) + ((dy < 0) ? -dy : dy);
 
         if (touch.fingers >= 2)
@@ -4477,7 +4680,7 @@ static void ontouchcontact(struct message *message)
 
     }
 
-    touch.active = 0;
+    touch.pointer = TOUCH_CONTACTS;
 
     flushtouch();
 
@@ -4493,15 +4696,8 @@ static void ontouchcontact(struct message *message)
 
     }
 
-    if (contact->time - touch.downtime <= TOUCH_TAPTICKS && touch.travel <= contact->xmax / 50u && !touch.button)
-    {
-
-        clicktouch((touch.fingers >= 2 || touch.secondtap) ? 2 : 1);
-
-        touch.tapped = touch.fingers < 2 && !touch.secondtap;
-        touch.taptime = contact->time;
-
-    }
+    if (contact->time - touch.downtime <= TOUCH_TAPTICKS && touch.travel <= contact->xmax / 50u && !slot->pressed && !touch.button)
+        endtap(contact->time, touch.fingers);
 
 }
 
@@ -5039,6 +5235,8 @@ static void setupwidgets(void)
 
 void init(void)
 {
+
+    touch.pointer = TOUCH_CONTACTS;
 
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     keys_init(&state.plainkeys, KEYS_LAYOUT_QWERTY_US, (void *)0);

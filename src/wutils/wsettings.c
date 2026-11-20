@@ -29,6 +29,7 @@
 #define NUM_CURSORS                     4
 #define NUM_DOUBLETAPS                  2
 #define NUM_INVERTS                     2
+#define NUM_AREAS                       4
 #define NUM_NETWORKTYPES                2
 #define NUM_SPEEDS                      16
 #define NUM_VOLUMES                     11
@@ -110,6 +111,13 @@ static struct entry doubletaps[NUM_DOUBLETAPS] = {
 static struct entry inverts[NUM_INVERTS] = {
     {"off", "Off"},
     {"on", "On"}
+};
+
+static struct entry areas[NUM_AREAS] = {
+    {"left", "Left click"},
+    {"middle", "Middle click"},
+    {"right", "Right click"},
+    {"off", "Off"}
 };
 
 static struct entry speeds[NUM_SPEEDS] = {
@@ -231,6 +239,9 @@ struct device
     char scroll[16];
     char invert[8];
     char doubletap[16];
+    char bottomleft[8];
+    char bottommiddle[8];
+    char bottomright[8];
     char volume[16];
     char address[32];
     char route[32];
@@ -532,6 +543,9 @@ static struct device *adddevice(struct devices *devices, char *name, unsigned in
         copystring(device->scroll, 16, "4", 1);
         copystring(device->invert, 8, inverts[0].value, cstring_length(inverts[0].value));
         copystring(device->doubletap, 16, doubletaps[0].value, cstring_length(doubletaps[0].value));
+        copystring(device->bottomleft, 8, areas[0].value, cstring_length(areas[0].value));
+        copystring(device->bottommiddle, 8, areas[1].value, cstring_length(areas[1].value));
+        copystring(device->bottomright, 8, areas[2].value, cstring_length(areas[2].value));
         copystring(device->volume, 16, "100", 3);
         copystring(device->type, 16, networktypes[0].value, cstring_length(networktypes[0].value));
 
@@ -664,6 +678,16 @@ static void loadnetwork(char *line, unsigned int length)
 
 }
 
+static void loadarea(char *area, char *line, unsigned int length, unsigned int index)
+{
+
+    char value[8];
+
+    if (cstring_length(getfield(line, length, index, value, 8)))
+        copystring(area, 8, value, cstring_length(value));
+
+}
+
 static void loadtouch(char *line, unsigned int length)
 {
 
@@ -676,7 +700,14 @@ static void loadtouch(char *line, unsigned int length)
         copystring(device->doubletap, 16, doubletap, cstring_length(doubletap));
 
     if (device)
+    {
+
         loadscroll(device, line, length);
+        loadarea(device->bottomleft, line, length, 5);
+        loadarea(device->bottommiddle, line, length, 6);
+        loadarea(device->bottomright, line, length, 7);
+
+    }
 
 }
 
@@ -883,7 +914,7 @@ static void loadconfig(void)
     loadlines(option_getstring("video-config"), ".devices", "{width} {height} {bpp} {device} {enabled}", loadvideo);
     loadlines(option_getstring("keyboard-config"), ".devices", "{device}|{map}|{enabled}", loadkeyboard);
     loadlines(option_getstring("mouse-config"), ".devices", "{device}|{speed}|{enabled}|{scroll}|{invert}", loadmouse);
-    loadlines(option_getstring("touch-config"), ".devices", "{device}|{doubletap}|{enabled}|{scroll}|{invert}", loadtouch);
+    loadlines(option_getstring("touch-config"), ".devices", "{device}|{doubletap}|{enabled}|{scroll}|{invert}|{bottomleft}|{bottommiddle}|{bottomright}", loadtouch);
     findvideos();
     finddevices(&config.keyboard, "keyboard");
     finddevices(&config.mouse, "mouse");
@@ -972,7 +1003,7 @@ static unsigned int writetouch(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "{\n  devices: [\n");
 
     for (i = 0; i < config.touch.count; i++)
-        count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s enabled: %s scroll: %s invert: %s }\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off", config.touch.list[i].scroll, config.touch.list[i].invert);
+        count += cstring_write_fmt(data, size, count, "    { device: %s doubletap: %s enabled: %s scroll: %s invert: %s bottomleft: %s bottommiddle: %s bottomright: %s }\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off", config.touch.list[i].scroll, config.touch.list[i].invert, config.touch.list[i].bottomleft, config.touch.list[i].bottommiddle, config.touch.list[i].bottomright);
 
     count += cstring_write_fmt(data, size, count, "  ]\n}\n");
 
@@ -1131,7 +1162,7 @@ static unsigned int writelines(char *data, unsigned int size)
         count += cstring_write_fmt(data, size, count, "mouse %s %s %s %s %s\n", config.mouse.list[i].name, config.mouse.list[i].speed, (config.mouse.list[i].enabled) ? "on" : "off", config.mouse.list[i].scroll, config.mouse.list[i].invert);
 
     for (i = 0; i < config.touch.count; i++)
-        count += cstring_write_fmt(data, size, count, "touch %s %s %s %s %s\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off", config.touch.list[i].scroll, config.touch.list[i].invert);
+        count += cstring_write_fmt(data, size, count, "touch %s %s %s %s %s %s %s %s\n", config.touch.list[i].name, config.touch.list[i].doubletap, (config.touch.list[i].enabled) ? "on" : "off", config.touch.list[i].scroll, config.touch.list[i].invert, config.touch.list[i].bottomleft, config.touch.list[i].bottommiddle, config.touch.list[i].bottomright);
 
     for (i = 0; i < config.ncolors; i++)
         count += cstring_write_fmt(data, size, count, "color %s %s\n", config.colors[i].name, config.colors[i].value);
@@ -1250,6 +1281,12 @@ static void setchoice(char *id, char *value)
         copystring(getselected(&config.touch)->scroll, 16, value, cstring_length(value));
     else if (cstring_match(id, "touch-invert") && getselected(&config.touch))
         copystring(getselected(&config.touch)->invert, 8, value, cstring_length(value));
+    else if (cstring_match(id, "touch-bottomleft") && getselected(&config.touch))
+        copystring(getselected(&config.touch)->bottomleft, 8, value, cstring_length(value));
+    else if (cstring_match(id, "touch-bottommiddle") && getselected(&config.touch))
+        copystring(getselected(&config.touch)->bottommiddle, 8, value, cstring_length(value));
+    else if (cstring_match(id, "touch-bottomright") && getselected(&config.touch))
+        copystring(getselected(&config.touch)->bottomright, 8, value, cstring_length(value));
     else if (cstring_match(id, "audio-volume") && getselected(&config.audio))
         copystring(getselected(&config.audio)->volume, 16, value, cstring_length(value));
 
@@ -1504,6 +1541,9 @@ static void rendertouch(void)
         choice("touch-doubletap", "Double click", device->doubletap, doubletaps, NUM_DOUBLETAPS);
         choice("touch-scroll", "Scroll speed", device->scroll, speeds, NUM_SPEEDS);
         choice("touch-invert", "Invert scroll", device->invert, inverts, NUM_INVERTS);
+        choice("touch-bottomleft", "Bottom left", device->bottomleft, areas, NUM_AREAS);
+        choice("touch-bottommiddle", "Bottom middle", device->bottommiddle, areas, NUM_AREAS);
+        choice("touch-bottomright", "Bottom right", device->bottomright, areas, NUM_AREAS);
 
     }
 
