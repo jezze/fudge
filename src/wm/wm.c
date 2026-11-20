@@ -2713,7 +2713,7 @@ static struct widget *getselect(struct widget *widget)
     while (widget && widget->type != WIDGET_TYPE_WINDOW)
     {
 
-        if (widget->type == WIDGET_TYPE_SELECT || widget->type == WIDGET_TYPE_CYCLE)
+        if (widget->type == WIDGET_TYPE_SELECT)
             return widget;
 
         widget = getparent(widget);
@@ -3388,7 +3388,7 @@ static void chooseitem(struct widget *select)
 
 }
 
-static void steprecords(struct widget *cycle, unsigned int forward)
+static void stepcycle(struct widget *cycle, unsigned int forward)
 {
 
     char *set = getset(cycle);
@@ -3419,52 +3419,6 @@ static void steprecords(struct widget *cycle, unsigned int forward)
         sendtextevent(cycle->source, 1, action, "");
 
     }
-
-}
-
-static void stepitems(struct widget *select, unsigned int forward)
-{
-
-    static struct widget *list[NUM_FOCUSABLE];
-    unsigned int count = collectitems(select, list, 0);
-    char *label = strpool_getstring(select->attributes.label);
-    struct widget *item;
-    unsigned int current;
-
-    if (!count)
-        return;
-
-    for (current = 0; current < count; current++)
-    {
-
-        struct widget *text = gettextchild(list[current]);
-
-        if (text && cstring_match(strpool_getstring(text->attributes.label), label))
-            break;
-
-    }
-
-    if (current == count)
-        current = (forward) ? 0 : count - 1;
-    else
-        current = (current + ((forward) ? 1 : count - 1)) % count;
-
-    item = list[current];
-
-    sendselect(item);
-
-    if (item->attributes.onclick)
-        sendevent(item->source, 1, item->attributes.onclick, "");
-
-}
-
-static void stepcycle(struct widget *cycle, unsigned int forward)
-{
-
-    if (cycle->attributes.data)
-        steprecords(cycle, forward);
-    else
-        stepitems(cycle, forward);
 
 }
 

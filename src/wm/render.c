@@ -843,13 +843,6 @@ static void placepanel(struct widget *widget)
 
 }
 
-static void placecycle(struct widget *widget)
-{
-
-    widget->cclip = util_region(0, 0, 0, 0);
-
-}
-
 static void placeselect(struct widget *widget)
 {
 
@@ -1411,7 +1404,7 @@ void render_init(void)
 
     setupcall(WIDGET_TYPE_BOX, getsizebox, placebox, renderbox);
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, 0, renderbutton);
-    setupcall(WIDGET_TYPE_CYCLE, getsizecycle, placecycle, rendercycle);
+    setupcall(WIDGET_TYPE_CYCLE, getsizecycle, 0, rendercycle);
     setupcall(WIDGET_TYPE_FILL, getsizefixed, 0, renderfill);
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
