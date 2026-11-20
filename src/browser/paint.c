@@ -57,6 +57,38 @@ static void fill(struct paint_canvas *canvas, int x, int y, int w, int h, unsign
 
 }
 
+static int root(int value);
+
+static int cornerinset(int row, int height, int radius)
+{
+
+    int d;
+
+    if (radius <= 0)
+        return 0;
+
+    if (row >= height - radius)
+        row = height - 1 - row;
+
+    if (row >= radius || row < 0)
+        return 0;
+
+    d = radius * 2 - row * 2 - 1;
+
+    return radius - root(radius * radius * 4 - d * d) / 2;
+
+}
+
+static int getradius(struct css_style *style, struct layout_box *box)
+{
+
+    int limit = ((box->w < box->h) ? box->w : box->h) / 2;
+    int radius = (style->radius.unit == CSS_UNIT_PERCENT) ? limit * 2 * (style->radius.value / 10) / 10000 : style->radius.value;
+
+    return (radius > limit) ? limit : (radius < 0) ? 0 : radius;
+
+}
+
 static int sine(int angle)
 {
 
@@ -162,7 +194,7 @@ static unsigned int stopcolor(struct css_gradient *gradient, int t)
 
 }
 
-static void paintgradient(struct paint_canvas *canvas, struct css_gradient *gradient, struct layout_box *box)
+static void paintgradient(struct paint_canvas *canvas, struct css_gradient *gradient, struct layout_box *box, int radius)
 {
 
     int x0 = (box->x < 0) ? 0 : box->x;
@@ -194,8 +226,11 @@ static void paintgradient(struct paint_canvas *canvas, struct css_gradient *grad
     {
 
         unsigned int *row = canvas->pixels + j * canvas->width;
+        int inset = cornerinset(j - box->y, box->h, radius);
+        int start = (box->x + inset > x0) ? box->x + inset : x0;
+        int end = (box->x + box->w - inset < x1) ? box->x + box->w - inset : x1;
 
-        for (i = x0; i < x1; i++)
+        for (i = start; i < end; i++)
         {
 
             unsigned int color;
@@ -237,15 +272,75 @@ static void paintgradient(struct paint_canvas *canvas, struct css_gradient *grad
 static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct layout_box *box, struct css_style *style)
 {
 
-    fill(canvas, box->x, box->y, box->w, box->h, style->background);
+    int radius = getradius(style, box);
+    int bt = style->borderwidth[CSS_TOP];
+    int bb = style->borderwidth[CSS_BOTTOM];
+    int bl = style->borderwidth[CSS_LEFT];
+    int br = style->borderwidth[CSS_RIGHT];
+    int j;
+
+    if (!radius)
+    {
+
+        fill(canvas, box->x, box->y, box->w, box->h, style->background);
+
+        if (style->gradient)
+            paintgradient(canvas, &layout->gradients[style->gradient - 1], box, 0);
+
+        fill(canvas, box->x, box->y, box->w, bt, style->bordercolor[CSS_TOP]);
+        fill(canvas, box->x, box->y + box->h - bb, box->w, bb, style->bordercolor[CSS_BOTTOM]);
+        fill(canvas, box->x, box->y, bl, box->h, style->bordercolor[CSS_LEFT]);
+        fill(canvas, box->x + box->w - br, box->y, br, box->h, style->bordercolor[CSS_RIGHT]);
+
+        return;
+
+    }
+
+    for (j = 0; j < box->h; j++)
+    {
+
+        int inset = cornerinset(j, box->h, radius);
+
+        fill(canvas, box->x + inset, box->y + j, box->w - inset * 2, 1, style->background);
+
+    }
 
     if (style->gradient)
-        paintgradient(canvas, &layout->gradients[style->gradient - 1], box);
+        paintgradient(canvas, &layout->gradients[style->gradient - 1], box, radius);
 
-    fill(canvas, box->x, box->y, box->w, style->borderwidth[CSS_TOP], style->bordercolor[CSS_TOP]);
-    fill(canvas, box->x, box->y + box->h - style->borderwidth[CSS_BOTTOM], box->w, style->borderwidth[CSS_BOTTOM], style->bordercolor[CSS_BOTTOM]);
-    fill(canvas, box->x, box->y, style->borderwidth[CSS_LEFT], box->h, style->bordercolor[CSS_LEFT]);
-    fill(canvas, box->x + box->w - style->borderwidth[CSS_RIGHT], box->y, style->borderwidth[CSS_RIGHT], box->h, style->bordercolor[CSS_RIGHT]);
+    if (bt || bb || bl || br)
+    {
+
+        int innerheight = box->h - bt - bb;
+        int innerwidth = box->w - bl - br;
+        int innerradius = radius - ((bt > bl) ? bt : bl);
+
+        for (j = 0; j < box->h; j++)
+        {
+
+            int inset = cornerinset(j, box->h, radius);
+            int y = box->y + j;
+
+            if (j < bt || j >= box->h - bb || innerwidth <= 0)
+            {
+
+                fill(canvas, box->x + inset, y, box->w - inset * 2, 1, style->bordercolor[(j < bt) ? CSS_TOP : CSS_BOTTOM]);
+
+            }
+
+            else
+            {
+
+                int innerinset = cornerinset(j - bt, innerheight, innerradius);
+
+                fill(canvas, box->x + inset, y, bl + innerinset - inset, 1, style->bordercolor[CSS_LEFT]);
+                fill(canvas, box->x + box->w - br - innerinset, y, br + innerinset - inset, 1, style->bordercolor[CSS_RIGHT]);
+
+            }
+
+        }
+
+    }
 
 }
 

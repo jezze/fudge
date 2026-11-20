@@ -85,6 +85,7 @@ struct css_style
     struct css_length minwidth;
     struct css_length maxwidth;
     struct css_length minheight;
+    struct css_length radius;
 
 };
 
