@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <hash.h>
 #include "strpool.h"
 #include "record.h"
 
@@ -11,6 +12,7 @@ struct dataentry
     unsigned int source;
     unsigned int set;
     unsigned int key;
+    unsigned int hash;
     unsigned int selected;
     unsigned int anchor;
     unsigned int names[RECORD_FIELDS];
@@ -54,6 +56,7 @@ static void copyrecord(struct dataentry *out, struct dataentry *in)
     out->source = in->source;
     out->set = in->set;
     out->key = in->key;
+    out->hash = in->hash;
     out->selected = in->selected;
     out->anchor = in->anchor;
 
@@ -84,6 +87,7 @@ static void removeat(unsigned int index)
 struct dataentry *record_find(unsigned int source, char *set, char *key)
 {
 
+    unsigned int hash = djb_hash(cstring_length(key), key);
     unsigned int i;
 
     for (i = 0; i < nrecords; i++)
@@ -91,7 +95,7 @@ struct dataentry *record_find(unsigned int source, char *set, char *key)
 
         struct dataentry *record = &records[i];
 
-        if (ismatch(record, source, set) && cstring_match(strpool_getstring(record->key), key))
+        if (record->hash == hash && ismatch(record, source, set) && cstring_match(strpool_getstring(record->key), key))
             return record;
 
     }
@@ -113,6 +117,7 @@ struct dataentry *record_create(unsigned int source, char *set, char *key)
     record->source = source;
     record->set = strpool_updatestring(0, set);
     record->key = strpool_updatestring(0, key);
+    record->hash = djb_hash(cstring_length(key), key);
     record->selected = 0;
     record->anchor = 0;
 
@@ -280,6 +285,7 @@ void record_setfield(struct dataentry *record, char *name, char *value)
 void record_remove(unsigned int source, char *set, char *key)
 {
 
+    unsigned int hash = (key) ? djb_hash(cstring_length(key), key) : 0;
     unsigned int i = 0;
 
     while (i < nrecords)
@@ -287,7 +293,7 @@ void record_remove(unsigned int source, char *set, char *key)
 
         struct dataentry *record = &records[i];
 
-        if (ismatch(record, source, set) && (!key || cstring_match(strpool_getstring(record->key), key)))
+        if (ismatch(record, source, set) && (!key || (record->hash == hash && cstring_match(strpool_getstring(record->key), key))))
             removeat(i);
         else
             i++;
