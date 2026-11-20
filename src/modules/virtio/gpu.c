@@ -251,7 +251,7 @@ static unsigned int attach(unsigned long address, unsigned int length)
 
 }
 
-static unsigned int setscanout(unsigned int width, unsigned int height)
+static unsigned int setscanout(unsigned int width, unsigned int height, unsigned int resource)
 {
 
     struct scanout request;
@@ -260,7 +260,7 @@ static unsigned int setscanout(unsigned int width, unsigned int height)
     setrect(&request.rect, 0, 0, width, height);
 
     request.scanout = 0;
-    request.resource = virtio_le32(RESOURCE);
+    request.resource = virtio_le32(resource);
 
     return command(&request, sizeof (struct scanout));
 
@@ -317,7 +317,7 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
     if (created)
         unref();
 
-    created = create(width, height) && attach(ARCH_FRAMEBUFFER_BASE, width * height * BPP) && setscanout(width, height);
+    created = create(width, height) && attach(ARCH_FRAMEBUFFER_BASE, width * height * BPP) && setscanout(width, height, RESOURCE);
 
     spinlock_release(&spinlock);
 
@@ -331,6 +331,25 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
         arch_kmap(ARCH_FRAMEBUFFER_BASE, FRAMEBUFFER, width * height * BPP, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
 
     }
+
+}
+
+static void videointerface_disable(void)
+{
+
+    spinlock_acquire(&spinlock);
+
+    if (created)
+    {
+
+        setscanout(0, 0, 0);
+        unref();
+
+        created = 0;
+
+    }
+
+    spinlock_release(&spinlock);
 
 }
 
@@ -360,6 +379,7 @@ static void driver_init(unsigned int id)
 
     videointerface.flush = videointerface_flush;
     videointerface.checkmode = videointerface_checkmode;
+    videointerface.disable = videointerface_disable;
 
 }
 

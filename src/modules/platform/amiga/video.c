@@ -347,6 +347,14 @@ static void videointerface_flush(unsigned int x, unsigned int y, unsigned int wi
 
 }
 
+static void videointerface_disable(void)
+{
+
+    created = 0;
+    custom[REG_DMACON / 2] = REG_DMACON_BITPLANE | REG_DMACON_SPRITE;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
@@ -355,6 +363,7 @@ static void driver_init(unsigned int id)
     video_initinterface(&videointerface, FRAMEBUFFER, 0, videointerface_setmode);
 
     videointerface.flush = videointerface_flush;
+    videointerface.disable = videointerface_disable;
 
 }
 

@@ -180,6 +180,14 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 
 }
 
+static void videointerface_disable(void)
+{
+
+    io_inb(VGA_REG_FCCCTRL);
+    io_outb(VGA_REG_ARINDEX, 0);
+
+}
+
 static void driver_init(unsigned int id)
 {
 
@@ -192,6 +200,7 @@ static void driver_init(unsigned int id)
     videointerface.width = 80;
     videointerface.height = 25;
     videointerface.bpp = 2;
+    videointerface.disable = videointerface_disable;
 
 }
 

@@ -22,6 +22,9 @@
 #define REG_COMMAND_YOFF                0x0009
 #define REG_COMMAND_MEMORY              0x000A
 #define REG_COMMAND_ENABLE_GETCAPS      0x02
+#define REG_ARINDEX                     0x03C0
+#define REG_ARINDEX_PALETTE             0x20
+#define REG_STATUS                      0x03DA
 #define REG_DATA                        0x01CF
 
 static struct base_driver driver;
@@ -46,6 +49,14 @@ static unsigned short getreg(unsigned short index)
 
 }
 
+static void setscreen(unsigned int on)
+{
+
+    io_inb(REG_STATUS);
+    io_outb(REG_ARINDEX, (on) ? REG_ARINDEX_PALETTE : 0);
+
+}
+
 static unsigned int videointerface_checkmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -66,6 +77,14 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
     setreg(REG_COMMAND_YRES, videointerface.height);
     setreg(REG_COMMAND_BPP, videointerface.bpp * 8);
     setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
+    setscreen(1);
+
+}
+
+static void videointerface_disable(void)
+{
+
+    setscreen(0);
 
 }
 
@@ -75,6 +94,7 @@ static void driver_init(unsigned int id)
     video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
 
     videointerface.checkmode = videointerface_checkmode;
+    videointerface.disable = videointerface_disable;
 
 }
 

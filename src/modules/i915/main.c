@@ -908,6 +908,7 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 
         unsigned int surface = readreg(I915_PLANE_SURF_1_A);
 
+        modifyreg(I915_PLANE_CTL_1_A, 0, I915_PLANE_CTL_ENABLE);
         setsource(&pipea, width, height, surface);
 
         videointerface.width = width;
@@ -916,6 +917,17 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
     }
 
     arch_kmap(framebuffer->address, 0xA0000000, framebuffer->pitch * framebuffer->height, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
+
+}
+
+static void videointerface_disable(void)
+{
+
+    if (!mmio)
+        return;
+
+    modifyreg(I915_PLANE_CTL_1_A, I915_PLANE_CTL_ENABLE, 0);
+    writereg(I915_PLANE_SURF_1_A, readreg(I915_PLANE_SURF_1_A));
 
 }
 
@@ -1082,6 +1094,7 @@ static void driver_init(unsigned int id)
     videointerface.height = framebuffer->height;
     videointerface.bpp = 4;
     videointerface.checkmode = videointerface_checkmode;
+    videointerface.disable = videointerface_disable;
 
     video_initinterface(&secondinterface, I915_SECONDMAP, 0, secondinterface_setmode);
 

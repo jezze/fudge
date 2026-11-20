@@ -72,12 +72,21 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 
 }
 
+static void videointerface_disable(void)
+{
+
+    regs[REG_CONTROL / 4] = REG_CONTROL_ENABLE | REG_CONTROL_BPP24 | REG_CONTROL_TFT | REG_CONTROL_BGR;
+    regs[REG_CONTROL / 4] = 0;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
     video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
 
     videointerface.checkmode = videointerface_checkmode;
+    videointerface.disable = videointerface_disable;
 
 }
 
