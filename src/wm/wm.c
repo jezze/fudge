@@ -46,6 +46,7 @@
 #define TOUCH_PADCOUNTS     1600
 #define TOUCH_WHEELCOUNTS   24
 #define TOUCH_TAPTICKS      12
+#define TOUCH_RIGHTAREA     5
 #define LINEBUFFER          3840
 #define FLUSHES             16
 
@@ -166,7 +167,7 @@ struct state
 };
 
 static struct state state;
-static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; unsigned int secondtap; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
+static struct {unsigned int active; unsigned int id; int lastx; int lasty; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int pressed; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; unsigned int secondtap; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
 static unsigned int linebuffer[LINEBUFFER];
 static char *fontn[FONTS] = {
     "initrd:data/font/ter-112n.pcf",
@@ -4332,7 +4333,7 @@ static void clicktouch(unsigned int button)
 
 }
 
-/* one finger moves the pointer, two scroll; a short touch that barely moves is a tap, one finger a left click and two a right click; a touch soon after a one-finger tap either holds the left button until it lifts (drag, a quick second tap being a double click) or, set to right, makes that second tap a right click; the surface's own button is the left button */
+/* one finger moves the pointer, two scroll; a short touch that barely moves is a tap, one finger a left click and two a right click; a touch soon after a one-finger tap either holds the left button until it lifts (drag, a quick second tap being a double click) or, set to right, makes that second tap a right click; pressing the surface is a right click in its bottom right corner (the lower fifth's right half) and a left click elsewhere */
 static void ontouchcontact(struct message *message)
 {
 
@@ -4353,9 +4354,20 @@ static void ontouchcontact(struct message *message)
         flushtouch();
 
         if (contact->button)
-            pressbutton(1);
+        {
+
+            touch.pressed = (contact->x >= contact->xmax / 2 && contact->y >= contact->ymax - contact->ymax / TOUCH_RIGHTAREA) ? 2 : 1;
+
+            pressbutton(touch.pressed);
+
+        }
+
         else
-            releasebutton(1);
+        {
+
+            releasebutton(touch.pressed);
+
+        }
 
         touch.button = contact->button;
 
