@@ -377,25 +377,25 @@ static void closeopen(struct parser *parser, char *names, char *stops)
 
 }
 
-static void ensurehtml(struct parser *parser)
+static unsigned int ensurehtml(struct parser *parser)
 {
 
     struct html_document *document = parser->document;
 
-    if (!document->html)
+    if (document->html)
+        return 0;
+
+    document->html = newelement(document, "html");
+
+    if (document->html)
     {
 
-        document->html = newelement(document, "html");
-
-        if (document->html)
-        {
-
-            appendchild(document, 0, document->html);
-            push(parser, document->html);
-
-        }
+        appendchild(document, 0, document->html);
+        push(parser, document->html);
 
     }
+
+    return document->html;
 
 }
 
@@ -418,28 +418,28 @@ static void ensurehead(struct parser *parser)
 
 }
 
-static void ensurebody(struct parser *parser)
+static unsigned int ensurebody(struct parser *parser)
 {
 
     struct html_document *document = parser->document;
 
     ensurehtml(parser);
 
-    if (!document->body && document->html)
+    if (document->body || !document->html)
+        return 0;
+
+    parser->depth = 1;
+    document->body = newelement(document, "body");
+
+    if (document->body)
     {
 
-        parser->depth = 1;
-        document->body = newelement(document, "body");
-
-        if (document->body)
-        {
-
-            appendchild(document, document->html, document->body);
-            push(parser, document->body);
-
-        }
+        appendchild(document, document->html, document->body);
+        push(parser, document->body);
 
     }
+
+    return document->body;
 
 }
 
@@ -758,9 +758,9 @@ static void readstarttag(struct parser *parser)
     {
 
         if (!document->html)
-            ensurehtml(parser);
+            node = ensurehtml(parser);
 
-        readattributes(parser, 0);
+        readattributes(parser, node);
 
         return;
 
@@ -782,9 +782,9 @@ static void readstarttag(struct parser *parser)
     {
 
         if (!document->body)
-            ensurebody(parser);
+            node = ensurebody(parser);
 
-        readattributes(parser, 0);
+        readattributes(parser, node);
 
         return;
 
