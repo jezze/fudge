@@ -2783,6 +2783,9 @@ static void clickwidget(struct widget *widget)
 
         break;
 
+    case WIDGET_TYPE_CYCLE:
+        return;
+
     case WIDGET_TYPE_WINDOW:
         if (state.mousebuttonleft)
         {
@@ -3385,7 +3388,41 @@ static void chooseitem(struct widget *select)
 
 }
 
-static void stepcycle(struct widget *select, unsigned int forward)
+static void steprecords(struct widget *cycle, unsigned int forward)
+{
+
+    char *set = getset(cycle);
+    char *label = strpool_getstring(cycle->attributes.label);
+    unsigned int count = record_count(cycle->source, set);
+    struct dataentry *record = 0;
+    unsigned int current = 0;
+
+    if (!count)
+        return;
+
+    while ((record = record_next(record, cycle->source, set)) && !cstring_match(record_getfield(record, "label", 5), label))
+        current++;
+
+    if (current == count)
+        current = (forward) ? 0 : count - 1;
+    else
+        current = (current + ((forward) ? 1 : count - 1)) % count;
+
+    record = record_at(cycle->source, set, current);
+
+    if (record && cycle->attributes.onclick)
+    {
+
+        char action[EVENTDATA_SIZE];
+
+        parser_substitute(action, EVENTDATA_SIZE, strpool_getstring(cycle->attributes.onclick), record);
+        sendtextevent(cycle->source, 1, action, "");
+
+    }
+
+}
+
+static void stepitems(struct widget *select, unsigned int forward)
 {
 
     static struct widget *list[NUM_FOCUSABLE];
@@ -3418,6 +3455,16 @@ static void stepcycle(struct widget *select, unsigned int forward)
 
     if (item->attributes.onclick)
         sendevent(item->source, 1, item->attributes.onclick, "");
+
+}
+
+static void stepcycle(struct widget *cycle, unsigned int forward)
+{
+
+    if (cycle->attributes.data)
+        steprecords(cycle, forward);
+    else
+        stepitems(cycle, forward);
 
 }
 
