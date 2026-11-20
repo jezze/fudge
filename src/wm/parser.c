@@ -7,6 +7,8 @@
 #include "strpool.h"
 #include "pool.h"
 #include "record.h"
+#include "blit.h"
+#include "render.h"
 #include "parser.h"
 
 #define NONE    1
@@ -589,7 +591,7 @@ static void bindgroup(struct widget *each, struct list_item **instance, struct d
 
 }
 
-unsigned int parser_bind(struct widget *each, unsigned int first, unsigned int count)
+static unsigned int bindrange(struct widget *each, unsigned int first, unsigned int count)
 {
 
     char *set = strpool_getstring(each->attributes.data);
@@ -620,6 +622,136 @@ unsigned int parser_bind(struct widget *each, unsigned int first, unsigned int c
     each->rowfirst = first;
     each->rowcount = i;
     each->rebind = 0;
+
+    return changed;
+
+}
+
+static unsigned int ishorizontal(struct widget *widget)
+{
+
+    return widget->attributes.flow == ATTR_FLOW_HORIZONTAL || widget->attributes.flow == ATTR_FLOW_HORIZONTALSTRETCH;
+
+}
+
+static unsigned int isvertical(struct widget *widget)
+{
+
+    return widget->attributes.flow == ATTR_FLOW_VERTICAL || widget->attributes.flow == ATTR_FLOW_VERTICALSTRETCH;
+
+}
+
+static int getstart(struct widget *widget, unsigned int horizontal)
+{
+
+    return (horizontal) ? widget->placement.position.x : widget->placement.position.y;
+
+}
+
+static int getend(struct widget *widget, unsigned int horizontal)
+{
+
+    return getstart(widget, horizontal) + (int)((horizontal) ? widget->placement.size.w : widget->placement.size.h);
+
+}
+
+static unsigned int getstride(struct widget *each)
+{
+
+    struct list_item *current = 0;
+    struct widget *first = 0;
+    struct widget *last = 0;
+    struct widget *next = 0;
+    unsigned int roots = 0;
+    unsigned int copies = 0;
+
+    while ((current = pool_nextin(current, each)))
+        roots += widget_istemplate(current->data);
+
+    while (roots && (current = pool_nextin(current, each)) && !next)
+    {
+
+        struct widget *child = current->data;
+
+        if (!child->instance || !widget_isshown(child))
+            continue;
+
+        if (copies == 0)
+            first = child;
+
+        if (copies == roots - 1)
+            last = child;
+
+        if (copies == roots)
+            next = child;
+
+        copies++;
+
+    }
+
+    if (next)
+        return getstart(next, ishorizontal(each)) - getstart(first, ishorizontal(each));
+
+    if (last)
+        return getend(last, ishorizontal(each)) - getstart(first, ishorizontal(each)) + render_unit(each->attributes.spacing);
+
+    return each->rowstride;
+
+}
+
+static unsigned int bindeach(struct widget *each)
+{
+
+    unsigned int records = record_count(each->source, strpool_getstring(each->attributes.data));
+    unsigned int horizontal = ishorizontal(each);
+    unsigned int recycled = horizontal || isvertical(each);
+    unsigned int stride = (recycled) ? getstride(each) : 0;
+    struct util_region view = util_region_intersection(&each->placement, &each->clip);
+    unsigned int length = (horizontal) ? view.size.w : view.size.h;
+    unsigned int changed = stride != each->rowstride;
+    unsigned int first = 0;
+    unsigned int count = (records && recycled) ? 1 : records;
+
+    each->rowstride = stride;
+
+    if (stride && length)
+    {
+
+        unsigned int offset = (unsigned int)(((horizontal) ? view.position.x : view.position.y) - getstart(each, horizontal)) / stride;
+
+        first = (offset) ? offset - 1 : 0;
+        count = length / stride + 3;
+
+    }
+
+    if (first > records)
+        first = records;
+
+    if (count > records - first)
+        count = records - first;
+
+    if (each->rebind || first != each->rowfirst || count != each->rowcount)
+        changed = bindrange(each, first, count) || changed;
+
+    return changed;
+
+}
+
+unsigned int parser_bindall(void)
+{
+
+    struct list_item *current = 0;
+    unsigned int changed = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_EACH && !widget->destroyed && !widget_ishidden(widget))
+            changed = bindeach(widget) || changed;
+
+    }
 
     return changed;
 
