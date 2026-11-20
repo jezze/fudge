@@ -126,6 +126,7 @@
 #define IDLE                            (RINGSIZE / 2)
 #define ALIGN                           128
 #define TIMEOUT                         100000
+#define RESETHOLD                       2000
 
 struct bdlentry
 {
@@ -538,10 +539,16 @@ static unsigned int resetcontroller(void)
     write8(REG_CORBCTL, 0);
     write8(REG_RIRBCTL, 0);
     write32(REG_INTCTL, 0);
+    /* the wake bits are sticky, clear what firmware left so only codecs answering this reset count */
+    write16(REG_STATESTS, 0x7FFF);
     write32(REG_GCTL, read32(REG_GCTL) & ~REG_GCTL_CRST);
 
     if (!waitbits32(REG_GCTL, REG_GCTL_CRST, 0))
         return 0;
+
+    /* codecs need the link held in reset for at least 100 us, counted in register reads of about a microsecond on hardware */
+    for (i = 0; i < RESETHOLD; i++)
+        read32(REG_GCTL);
 
     write32(REG_GCTL, read32(REG_GCTL) | REG_GCTL_CRST);
 
