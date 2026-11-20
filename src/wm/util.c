@@ -106,13 +106,6 @@ unsigned int util_region_intersects(struct util_region *region, int x, int y)
 
 }
 
-unsigned int util_region_intersectsx(struct util_region *region, int x)
-{
-
-    return util_intersects(x, region->position.x, region->position.x + region->size.w);
-
-}
-
 unsigned int util_region_intersectsy(struct util_region *region, int y)
 {
 

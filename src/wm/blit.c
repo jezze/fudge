@@ -16,7 +16,6 @@
 #define CMAP_DARK                       2
 #define CMAP_LIGHT                      3
 #define CMAP_ICON_COLOR                 0
-#define CMAP_RECT_COLOR                 0
 #define CMAP_TEXT_COLOR                 0
 
 struct linesegment

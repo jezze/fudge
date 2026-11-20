@@ -99,7 +99,6 @@ struct widget
 
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
 void widget_unsetattributes(struct widget *widget);
-unsigned int widget_intersectsx(struct widget *widget, int x);
 unsigned int widget_intersectsy(struct widget *widget, int y);
 unsigned int widget_intersects(struct widget *widget, int x, int y);
 unsigned int widget_isdragable(struct widget *widget);

@@ -181,13 +181,6 @@ void widget_unsetattributes(struct widget *widget)
 
 }
 
-unsigned int widget_intersectsx(struct widget *widget, int x)
-{
-
-    return util_region_intersectsx(&widget->placement, x) && util_region_intersectsx(&widget->clip, x);
-
-}
-
 unsigned int widget_intersectsy(struct widget *widget, int y)
 {
 

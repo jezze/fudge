@@ -41,7 +41,6 @@ struct util_size util_size_sub(struct util_size *a, unsigned int w, unsigned int
 struct util_size util_size_union(struct util_size *a, struct util_size *b);
 struct util_region util_region(int x, int y, unsigned int w, unsigned int h);
 unsigned int util_region_intersects(struct util_region *region, int x, int y);
-unsigned int util_region_intersectsx(struct util_region *region, int x);
 unsigned int util_region_intersectsy(struct util_region *region, int y);
 struct util_region util_region_intersection(struct util_region *a, struct util_region *b);
 unsigned int util_getkey(struct util_token *tokens, unsigned int n, char *value);
