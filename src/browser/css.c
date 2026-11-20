@@ -105,6 +105,7 @@ struct parser
     char *text;
     unsigned int offset;
     unsigned int origin;
+    unsigned int scheme;
     int minwidth;
     int maxwidth;
 
@@ -191,6 +192,7 @@ struct context
     unsigned int rootsize;
     unsigned int width;
     unsigned int height;
+    unsigned int scheme;
 
 };
 
@@ -1185,6 +1187,7 @@ static void parserule(struct parser *parser, unsigned int start, unsigned int en
     rule = &sheet->rules[sheet->rulecount++];
     rule->declaration = sheet->declarationcount;
     rule->origin = parser->origin;
+    rule->scheme = parser->scheme;
     rule->minwidth = parser->minwidth;
     rule->maxwidth = parser->maxwidth;
 
@@ -3582,7 +3585,7 @@ static unsigned int before(struct match *a, struct match *b)
 
 }
 
-static unsigned int collect(struct css_sheet *sheet, struct html_document *document, unsigned int node, unsigned int width, struct match matches[MATCHES])
+static unsigned int collect(struct css_sheet *sheet, struct html_document *document, unsigned int node, unsigned int width, unsigned int scheme, struct match matches[MATCHES])
 {
 
     struct matcher matcher;
@@ -3601,7 +3604,7 @@ static unsigned int collect(struct css_sheet *sheet, struct html_document *docum
         struct css_selector *selector = &sheet->selectors[i];
         struct css_rule *rule = &sheet->rules[selector->rule];
 
-        if ((int)width < rule->minwidth || (int)width > rule->maxwidth)
+        if ((int)width < rule->minwidth || (int)width > rule->maxwidth || (rule->scheme && rule->scheme != scheme))
             continue;
 
         if (matchkey(sheet, selector, name, id, classes) && matchselector(&matcher, selector->part, selector->part + selector->count, node))
@@ -3982,7 +3985,7 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
 {
 
     struct match matches[MATCHES];
-    unsigned int count = collect(sheet, document, node, context->width, matches);
+    unsigned int count = collect(sheet, document, node, context->width, context->scheme, matches);
     char *styleattr = html_getattribute(document, node, "style");
     unsigned int declarationmark = sheet->declarationcount;
     unsigned int phase;
@@ -4035,6 +4038,7 @@ static unsigned int evaluatequery(struct parser *parser, char *text, unsigned in
     unsigned int offset = skipspace(text, start, end);
     int minwidth = 0;
     int maxwidth = NOLIMIT;
+    unsigned int scheme = parser->scheme;
 
     while (offset < end)
     {
@@ -4068,8 +4072,17 @@ static unsigned int evaluatequery(struct parser *parser, char *text, unsigned in
                 minwidth = medialength(text + valuestart, valueend - valuestart);
             else if (cstring_match(name, "max-width"))
                 maxwidth = medialength(text + valuestart, valueend - valuestart);
-            else if (cstring_match(name, "prefers-color-scheme") && valueend > valuestart && lower(text[valuestart]) == 'd')
-                return 0;
+            else if (cstring_match(name, "prefers-color-scheme") && valueend > valuestart)
+            {
+
+                unsigned int wanted = (lower(text[valuestart]) == 'd') ? CSS_SCHEME_DARK : CSS_SCHEME_LIGHT;
+
+                if (scheme && scheme != wanted)
+                    return 0;
+
+                scheme = wanted;
+
+            }
             else if (cstring_match(name, "-webkit-min-device-pixel-ratio") || cstring_match(name, "min-resolution"))
                 return 0;
 
@@ -4094,6 +4107,7 @@ static unsigned int evaluatequery(struct parser *parser, char *text, unsigned in
 
     }
 
+    parser->scheme = scheme;
     parser->minwidth = (minwidth > parser->minwidth) ? minwidth : parser->minwidth;
     parser->maxwidth = (maxwidth < parser->maxwidth) ? maxwidth : parser->maxwidth;
 
@@ -4149,12 +4163,14 @@ static void parseatrule(struct parser *parser, unsigned int end)
     if (matchword(text + namestart, nameend - namestart, "media"))
     {
 
+        unsigned int scheme = parser->scheme;
         int minwidth = parser->minwidth;
         int maxwidth = parser->maxwidth;
 
         if (evaluatemedia(parser, text, nameend, stop))
             parseblock(parser, stop + 1, close);
 
+        parser->scheme = scheme;
         parser->minwidth = minwidth;
         parser->maxwidth = maxwidth;
 
@@ -4267,6 +4283,7 @@ void css_parse(struct css_sheet *sheet, char *text, unsigned int count, unsigned
     parser.text = text;
     parser.offset = 0;
     parser.origin = origin;
+    parser.scheme = CSS_SCHEME_ANY;
     parser.minwidth = 0;
     parser.maxwidth = NOLIMIT;
 
@@ -4289,7 +4306,7 @@ void css_reset(struct css_sheet *sheet)
 
 }
 
-void css_compute(struct css_sheet *sheet, struct html_document *document, struct css_style *styles, unsigned int width, unsigned int height)
+void css_compute(struct css_sheet *sheet, struct html_document *document, struct css_style *styles, unsigned int width, unsigned int height, unsigned int scheme)
 {
 
     struct css_style root;
@@ -4307,6 +4324,7 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
     context.rootsize = 16;
     context.width = width;
     context.height = height;
+    context.scheme = scheme;
 
     for (node = 1; node < document->nodecount; node++)
     {

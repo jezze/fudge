@@ -73,6 +73,7 @@ static unsigned int nextimage;
 static unsigned int wm;
 static unsigned int viewwidth;
 static unsigned int viewheight;
+static unsigned int scheme = CSS_SCHEME_LIGHT;
 static char *fontpaths[FONT_FACES] = {
     "initrd:data/font/ter-112n.pcf",
     "initrd:data/font/ter-114n.pcf",
@@ -88,6 +89,7 @@ static char *home =
     "body{max-width:640px;margin:2em auto;padding:0 1em;color:#222;background:#f6f6f2}"
     "h1{color:#335;border-bottom:2px solid #99b;padding-bottom:4px}"
     "code{background:#e4e4dc;padding:0 3px}"
+    "@media (prefers-color-scheme: dark){body{color:#dde2de;background:#151816}h1{color:#9fd3a8;border-color:#3d5e45}code{background:#262b28}a{color:#8cc4ff}}"
     "</style></head><body>"
     "<h1>Browser</h1>"
     "<p>Type an address in the bar above and press Enter. Addresses can be files, such as <code>root:data/html/index.html</code>, or pages over <code>http://</code>.</p>"
@@ -930,7 +932,7 @@ static void render(void)
     if (!wm || !viewwidth || !image->id)
         return;
 
-    css_compute(&sheet, &document, styles, viewwidth, viewheight);
+    css_compute(&sheet, &document, styles, viewwidth, viewheight, scheme);
     layout_document(&layout, viewwidth);
 
     limit = MAXBYTES / 4 / viewwidth;
@@ -980,6 +982,13 @@ static void showstate(void)
 
     copystring(typed, URLSIZE, current, cstring_length(current));
     channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= address label \"%s\"\n= back mode \"%s\"\n= forward mode \"%s\"\n", current, (historyindex > 0) ? "normal" : "disabled", (historyindex + 1 < historycount) ? "normal" : "disabled");
+
+}
+
+static void showscheme(void)
+{
+
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= scheme label \"%s\"\n", (scheme == CSS_SCHEME_DARK) ? "Light" : "Dark");
 
 }
 
@@ -1126,6 +1135,11 @@ static void onmain(struct message *message)
         loadfonts();
         createimage(&heap, createimage(&images[1], createimage(&images[0], 0)));
         channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+
+        if (cstring_match(option_getstring("scheme"), "dark"))
+            scheme = CSS_SCHEME_DARK;
+
+        showscheme();
         navigate((url[0]) ? url : "about:home", 1);
         channel_hold(0);
         channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
@@ -1203,6 +1217,16 @@ static void onwmevent(struct message *message)
 
         }
 
+        else if (kv_match(event, "q=scheme"))
+        {
+
+            scheme = (scheme == CSS_SCHEME_DARK) ? CSS_SCHEME_LIGHT : CSS_SCHEME_DARK;
+
+            showscheme();
+            render();
+
+        }
+
         else if (kv_match(event, "q=resize"))
         {
 
@@ -1241,6 +1265,7 @@ void init(void)
 
     option_add("wm-service", "wm");
     option_add("url", "");
+    option_add("scheme", "light");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
     channel_bind(MESSAGE_TYPE_PATH, onpath);
     channel_bind(MESSAGE_TYPE_WMEVENT, onwmevent);

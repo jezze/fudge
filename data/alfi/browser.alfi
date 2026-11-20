@@ -7,5 +7,6 @@
 + box id "addressbox" in "top" mode "edit" padding "3" span "1" onchange "q=address&url=" onenter "q=go&url="
 + text id "address" in "addressbox"
 + button in "top" label "Go" onclick "q=go"
++ button id "scheme" in "top" label "Dark" onclick "q=scheme"
 + box id "frame" in "base" flow "vertical" overflow "scroll" span "1" onresize "q=resize" onclick "q=click"
 + media id "page" in "frame" mimetype "image/raw"

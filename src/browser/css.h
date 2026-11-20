@@ -51,6 +51,9 @@
 #define CSS_BOTTOM                      2
 #define CSS_LEFT                        3
 #define CSS_SIDES                       4
+#define CSS_SCHEME_ANY                  0
+#define CSS_SCHEME_LIGHT                1
+#define CSS_SCHEME_DARK                 2
 
 struct css_length
 {
@@ -169,6 +172,7 @@ struct css_rule
     unsigned int declaration;
     unsigned int declarations;
     unsigned int origin;
+    unsigned int scheme;
     int minwidth;
     int maxwidth;
 
@@ -199,4 +203,4 @@ struct css_sheet
 
 void css_reset(struct css_sheet *sheet);
 void css_parse(struct css_sheet *sheet, char *text, unsigned int count, unsigned int origin);
-void css_compute(struct css_sheet *sheet, struct html_document *document, struct css_style *styles, unsigned int width, unsigned int height);
+void css_compute(struct css_sheet *sheet, struct html_document *document, struct css_style *styles, unsigned int width, unsigned int height, unsigned int scheme);
