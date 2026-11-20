@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      55
+#define PROPERTIES                      56
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -39,6 +39,7 @@
 #define PROP_BOXSIZING                  52
 #define PROP_POSITION                   53
 #define PROP_FLEXDIRECTION              54
+#define PROP_BACKGROUNDIMAGE            55
 #define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
@@ -87,6 +88,7 @@
 #define PHASE_FONT                      1
 #define PHASE_OTHER                     2
 #define PHASES                          3
+#define GRADIENTARGS                    8
 
 struct parser
 {
@@ -216,7 +218,8 @@ static char *properties[PROPERTIES] = {
     "margin-bottom", "margin-left", "padding", "padding-top", "padding-right", "padding-bottom", "padding-left", "border", "border-top", "border-right",
     "border-bottom", "border-left", "border-width", "border-style", "border-color", "border-top-width", "border-right-width", "border-bottom-width", "border-left-width", "border-top-style",
     "border-right-style", "border-bottom-style", "border-left-style", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "width", "height", "min-width",
-    "max-width", "min-height", "box-sizing", "position", "flex-direction"
+    "max-width", "min-height", "box-sizing", "position", "flex-direction",
+    "background-image"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -2237,25 +2240,306 @@ static void setlength(struct context *context, struct css_length *length, char *
 
 }
 
-static void setbackground(struct context *context, char *value)
+static unsigned int isgradient(char *text, unsigned int length)
 {
 
-    struct span spans[8];
-    unsigned int count = countspans(value, spans, 8);
-    unsigned int color = 0;
+    if (length > 8 && buffer_match(text, "-webkit-", 8))
+    {
+
+        text += 8;
+        length -= 8;
+
+    }
+
+    if (length > 10 && buffer_match(text, "repeating-", 10))
+    {
+
+        text += 10;
+        length -= 10;
+
+    }
+
+    return (length > 16 && buffer_match(text, "linear-gradient(", 16)) || (length > 16 && buffer_match(text, "radial-gradient(", 16));
+
+}
+
+static int parsepercent(char *text, unsigned int length, int fallback)
+{
+
+    struct number number = parsenumber(text, length);
+
+    if (matchword(text, length, "left") || matchword(text, length, "top"))
+        return 0;
+
+    if (matchword(text, length, "center"))
+        return 500;
+
+    if (matchword(text, length, "right") || matchword(text, length, "bottom"))
+        return 1000;
+
+    if (number.length && number.length + 1 == length && text[number.length] == '%')
+        return number.milli / 100;
+
+    if (number.length == length && !number.milli)
+        return 0;
+
+    return fallback;
+
+}
+
+static int parseangle(char *text, unsigned int length)
+{
+
+    struct number number = parsenumber(text, length);
+    unsigned int horizontal = contains(text, length, "left") ? 270 : contains(text, length, "right") ? 90 : 0;
+    unsigned int vertical = contains(text, length, "top") ? 1 : contains(text, length, "bottom") ? 2 : 0;
+
+    if (number.length && matchword(text + number.length, length - number.length, "deg"))
+        return roundmilli(number.milli);
+
+    if (number.length && matchword(text + number.length, length - number.length, "turn"))
+        return roundmilli(number.milli * 360);
+
+    if (length < 3 || !buffer_match(text, "to ", 3))
+        return -1;
+
+    if (!vertical)
+        return horizontal;
+
+    if (!horizontal)
+        return (vertical == 1) ? 0 : 180;
+
+    if (vertical == 1)
+        return (horizontal == 90) ? 45 : 315;
+
+    return (horizontal == 90) ? 135 : 225;
+
+}
+
+static void parseshape(struct css_gradient *gradient, char *text)
+{
+
+    struct span spans[GRADIENTARGS];
+    unsigned int count = countspans(text, spans, GRADIENTARGS);
+    unsigned int at = count;
+    unsigned int sizes = 0;
     unsigned int i;
 
     for (i = 0; i < count; i++)
     {
 
-        struct colorvalue parsed = parsecolor(value + spans[i].start, spans[i].length);
+        char *token = text + spans[i].start;
+        unsigned int length = spans[i].length;
 
-        if (parsed.valid)
-            color = parsed.value;
+        if (matchword(token, length, "at"))
+        {
+
+            at = i;
+
+            break;
+
+        }
+
+        if (parsepercent(token, length, -1) >= 0 && sizes < 2)
+        {
+
+            if (sizes == 0)
+                gradient->width = gradient->height = parsepercent(token, length, -1);
+            else
+                gradient->height = parsepercent(token, length, -1);
+
+            sizes++;
+
+        }
 
     }
 
-    context->style->background = color;
+    if (at + 1 < count)
+        gradient->x = parsepercent(text + spans[at + 1].start, spans[at + 1].length, 500);
+
+    if (at + 2 < count)
+        gradient->y = parsepercent(text + spans[at + 2].start, spans[at + 2].length, 500);
+
+}
+
+static void addstop(struct css_gradient *gradient, unsigned int color, int position)
+{
+
+    if (gradient->count < CSS_STOPS)
+    {
+
+        gradient->stops[gradient->count].color = color;
+        gradient->stops[gradient->count].position = position;
+        gradient->count++;
+
+    }
+
+}
+
+static unsigned int parsestop(struct context *context, struct css_gradient *gradient, char *text, unsigned int length)
+{
+
+    struct span spans[3];
+    char token[EXPANDSIZE];
+    struct colorvalue color;
+    unsigned int count;
+    unsigned int i;
+
+    if (length >= EXPANDSIZE)
+        return 0;
+
+    buffer_copy(token, text, length);
+
+    token[length] = '\0';
+    count = countspans(token, spans, 3);
+    color = (count) ? parsecolor(token + spans[0].start, spans[0].length) : colorvalue(0, 0);
+
+    if (!color.valid)
+        return 0;
+
+    if (color.value == CURRENTCOLOR)
+        color.value = context->style->color;
+
+    if (count == 1)
+        addstop(gradient, color.value, -1);
+
+    for (i = 1; i < count; i++)
+        addstop(gradient, color.value, parsepercent(token + spans[i].start, spans[i].length, -1));
+
+    return 1;
+
+}
+
+static void spreadstops(struct css_gradient *gradient)
+{
+
+    unsigned int i;
+
+    if (gradient->stops[0].position < 0)
+        gradient->stops[0].position = 0;
+
+    if (gradient->stops[gradient->count - 1].position < 0)
+        gradient->stops[gradient->count - 1].position = 1000;
+
+    for (i = 1; i < gradient->count; i++)
+    {
+
+        if (gradient->stops[i].position < 0)
+        {
+
+            unsigned int next = i;
+
+            while (gradient->stops[next].position < 0)
+                next++;
+
+            gradient->stops[i].position = gradient->stops[i - 1].position + (gradient->stops[next].position - gradient->stops[i - 1].position) / (int)(next - i + 1);
+
+        }
+
+        if (gradient->stops[i].position < gradient->stops[i - 1].position)
+            gradient->stops[i].position = gradient->stops[i - 1].position;
+
+    }
+
+}
+
+static unsigned int parsegradient(struct context *context, char *text, unsigned int length)
+{
+
+    struct css_sheet *sheet = context->sheet;
+    struct css_gradient *gradient;
+    unsigned int open = buffer_findbyte(text, length, '(');
+    unsigned int close = findclose(text, open, length);
+    unsigned int start = open + 1;
+    unsigned int first = 1;
+
+    if (sheet->gradientcount >= CSS_GRADIENTS || close >= length)
+        return 0;
+
+    gradient = &sheet->gradients[sheet->gradientcount];
+    gradient->radial = contains(text, open, "radial");
+    gradient->count = 0;
+    gradient->angle = 180;
+    gradient->x = 500;
+    gradient->y = 500;
+    gradient->width = 707;
+    gradient->height = 707;
+
+    while (start < close)
+    {
+
+        unsigned int stop = findstop(text, start, close, ",");
+
+        start = skipspace(text, start, stop);
+
+        if (first && !gradient->radial && parseangle(text + start, stop - start) >= 0)
+        {
+
+            gradient->angle = parseangle(text + start, stop - start);
+
+        }
+
+        else if (!parsestop(context, gradient, text + start, stop - start))
+        {
+
+            if (!first || !gradient->radial)
+                return 0;
+
+            if (stop - start < EXPANDSIZE)
+            {
+
+                char shape[EXPANDSIZE];
+
+                buffer_copy(shape, text + start, stop - start);
+
+                shape[stop - start] = '\0';
+
+                parseshape(gradient, shape);
+
+            }
+
+        }
+
+        first = 0;
+        start = stop + 1;
+
+    }
+
+    if (gradient->count < 2)
+        return 0;
+
+    spreadstops(gradient);
+
+    return ++sheet->gradientcount;
+
+}
+
+static void setbackground(struct context *context, char *value, unsigned int image)
+{
+
+    struct span spans[8];
+    unsigned int count = countspans(value, spans, 8);
+    unsigned int color = 0;
+    unsigned int gradient = 0;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        char *text = value + spans[i].start;
+        struct colorvalue parsed = parsecolor(text, spans[i].length);
+
+        if (!gradient && isgradient(text, spans[i].length))
+            gradient = parsegradient(context, text, spans[i].length);
+        else if (parsed.valid && !image)
+            color = (parsed.value == CURRENTCOLOR) ? context->style->color : parsed.value;
+
+    }
+
+    if (!image)
+        context->style->background = color;
+
+    context->style->gradient = gradient;
 
 }
 
@@ -2303,8 +2587,18 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
         break;
 
     case PROP_BACKGROUND:
+        style->background = from->background;
+        style->gradient = from->gradient;
+
+        break;
+
     case PROP_BACKGROUNDCOLOR:
         style->background = from->background;
+
+        break;
+
+    case PROP_BACKGROUNDIMAGE:
+        style->gradient = from->gradient;
 
         break;
 
@@ -2505,7 +2799,12 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_BACKGROUND:
-        setbackground(context, value);
+        setbackground(context, value, 0);
+
+        break;
+
+    case PROP_BACKGROUNDIMAGE:
+        setbackground(context, value, 1);
 
         break;
 
@@ -3803,6 +4102,7 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
     initstyle(&root);
 
     sheet->customtotal = 0;
+    sheet->gradientcount = 0;
     context.sheet = sheet;
     context.document = document;
     context.rootsize = 16;

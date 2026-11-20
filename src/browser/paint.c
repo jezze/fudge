@@ -7,6 +7,16 @@
 
 #define WHITE                           0xFFFFFFFF
 #define PLACEHOLDER                     0xFFC0C0C0
+#define SINES                           91
+#define LIMIT                           30000
+
+static int sines[SINES] = {
+    0, 17, 35, 52, 70, 87, 105, 122, 139, 156, 174, 191, 208, 225, 242, 259, 276, 292, 309, 326,
+    342, 358, 375, 391, 407, 423, 438, 454, 469, 485, 500, 515, 530, 545, 559, 574, 588, 602, 616, 629,
+    643, 656, 669, 682, 695, 707, 719, 731, 743, 755, 766, 777, 788, 799, 809, 819, 829, 839, 848, 857,
+    866, 875, 883, 891, 899, 906, 914, 921, 927, 934, 940, 946, 951, 956, 961, 966, 970, 974, 978, 982,
+    985, 988, 990, 993, 995, 996, 998, 999, 999, 1000, 1000
+};
 
 static unsigned int blend(unsigned int under, unsigned int color)
 {
@@ -47,10 +57,191 @@ static void fill(struct paint_canvas *canvas, int x, int y, int w, int h, unsign
 
 }
 
-static void paintbox(struct paint_canvas *canvas, struct layout_box *box, struct css_style *style)
+static int sine(int angle)
+{
+
+    angle %= 360;
+
+    if (angle < 0)
+        angle += 360;
+
+    if (angle <= 90)
+        return sines[angle];
+
+    if (angle <= 180)
+        return sines[180 - angle];
+
+    if (angle <= 270)
+        return -sines[angle - 180];
+
+    return -sines[360 - angle];
+
+}
+
+static int root(int value)
+{
+
+    int result = 0;
+    int bit = 1 << 30;
+
+    if (value <= 0)
+        return 0;
+
+    while (bit > value)
+        bit >>= 2;
+
+    while (bit)
+    {
+
+        if (value >= result + bit)
+        {
+
+            value -= result + bit;
+            result = (result >> 1) + bit;
+
+        }
+
+        else
+        {
+
+            result >>= 1;
+
+        }
+
+        bit >>= 2;
+
+    }
+
+    return result;
+
+}
+
+static unsigned int mixchannel(unsigned int a, unsigned int b, int shift, int t, int range)
+{
+
+    int ca = (a >> shift) & 0xFF;
+    int cb = (b >> shift) & 0xFF;
+
+    return (unsigned int)(ca + (cb - ca) * t / range) << shift;
+
+}
+
+static unsigned int stopcolor(struct css_gradient *gradient, int t)
+{
+
+    unsigned int i;
+
+    if (t <= gradient->stops[0].position)
+        return gradient->stops[0].color;
+
+    for (i = 1; i < gradient->count; i++)
+    {
+
+        struct css_stop *a = &gradient->stops[i - 1];
+        struct css_stop *b = &gradient->stops[i];
+
+        if (t <= b->position)
+        {
+
+            int range = b->position - a->position;
+            unsigned int ca = (a->color >> 24) ? a->color : (b->color & 0xFFFFFF);
+            unsigned int cb = (b->color >> 24) ? b->color : (a->color & 0xFFFFFF);
+
+            if (range <= 0)
+                return b->color;
+
+            t -= a->position;
+
+            return mixchannel(ca, cb, 24, t, range) | mixchannel(ca, cb, 16, t, range) | mixchannel(ca, cb, 8, t, range) | mixchannel(ca, cb, 0, t, range);
+
+        }
+
+    }
+
+    return gradient->stops[gradient->count - 1].color;
+
+}
+
+static void paintgradient(struct paint_canvas *canvas, struct css_gradient *gradient, struct layout_box *box)
+{
+
+    int x0 = (box->x < 0) ? 0 : box->x;
+    int y0 = (box->y < 0) ? 0 : box->y;
+    int x1 = (box->x + box->w > (int)canvas->width) ? (int)canvas->width : box->x + box->w;
+    int y1 = (box->y + box->h > (int)canvas->height) ? (int)canvas->height : box->y + box->h;
+    int sinus = sine(gradient->angle);
+    int cosinus = sine(gradient->angle + 90);
+    int length = (box->w * ((sinus < 0) ? -sinus : sinus) + box->h * ((cosinus < 0) ? -cosinus : cosinus)) / 1000;
+    int cx = box->x + box->w * gradient->x / 1000;
+    int cy = box->y + box->h * gradient->y / 1000;
+    int rx = box->w * gradient->width / 1000;
+    int ry = box->h * gradient->height / 1000;
+    int i;
+    int j;
+
+    if (box->w <= 0 || box->h <= 0)
+        return;
+
+    if (!gradient->radial)
+    {
+
+        cx = box->x + box->w / 2;
+        cy = box->y + box->h / 2;
+
+    }
+
+    for (j = y0; j < y1; j++)
+    {
+
+        unsigned int *row = canvas->pixels + j * canvas->width;
+
+        for (i = x0; i < x1; i++)
+        {
+
+            unsigned int color;
+            int t;
+
+            if (gradient->radial)
+            {
+
+                int dx = (rx > 0) ? (i - cx) * 1000 / rx : 0;
+                int dy = (ry > 0) ? (j - cy) * 1000 / ry : 0;
+
+                dx = (dx > LIMIT) ? LIMIT : (dx < -LIMIT) ? -LIMIT : dx;
+                dy = (dy > LIMIT) ? LIMIT : (dy < -LIMIT) ? -LIMIT : dy;
+
+                t = root(dx * dx + dy * dy);
+
+            }
+
+            else
+            {
+
+                t = (length > 0) ? ((i - cx) * sinus - (j - cy) * cosinus) / length + 500 : 500;
+
+            }
+
+            color = stopcolor(gradient, t);
+
+            if ((color >> 24) == 0xFF)
+                row[i] = color;
+            else if (color >> 24)
+                row[i] = blend(row[i], color);
+
+        }
+
+    }
+
+}
+
+static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct layout_box *box, struct css_style *style)
 {
 
     fill(canvas, box->x, box->y, box->w, box->h, style->background);
+
+    if (style->gradient)
+        paintgradient(canvas, &layout->gradients[style->gradient - 1], box);
+
     fill(canvas, box->x, box->y, box->w, style->borderwidth[CSS_TOP], style->bordercolor[CSS_TOP]);
     fill(canvas, box->x, box->y + box->h - style->borderwidth[CSS_BOTTOM], box->w, style->borderwidth[CSS_BOTTOM], style->bordercolor[CSS_BOTTOM]);
     fill(canvas, box->x, box->y, style->borderwidth[CSS_LEFT], box->h, style->bordercolor[CSS_LEFT]);
@@ -279,7 +470,7 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
         {
 
             if (style->display != CSS_DISPLAY_INLINE)
-                paintbox(canvas, box, style);
+                paintbox(canvas, layout, box, style);
 
             if (document->nodes[node].tag == HTML_TAG_IMG)
             {

@@ -1119,6 +1119,7 @@ static void onmain(struct message *message)
 
         layout.document = &document;
         layout.styles = styles;
+        layout.gradients = sheet.gradients;
         layout.faces = faces;
         layout.pictures = pictures;
 

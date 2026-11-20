@@ -4,6 +4,8 @@
 #define CSS_RULES                       2048
 #define CSS_POOLSIZE                    0x10000
 #define CSS_CUSTOMS                     2048
+#define CSS_GRADIENTS                   64
+#define CSS_STOPS                       6
 #define CSS_ORIGIN_AGENT                0
 #define CSS_ORIGIN_AUTHOR               1
 #define CSS_UNIT_PX                     0
@@ -72,6 +74,7 @@ struct css_style
     unsigned short fontsize;
     unsigned short lineheight;
     unsigned short lineheightfactor;
+    unsigned short gradient;
     unsigned int color;
     unsigned int background;
     unsigned int bordercolor[CSS_SIDES];
@@ -82,6 +85,28 @@ struct css_style
     struct css_length minwidth;
     struct css_length maxwidth;
     struct css_length minheight;
+
+};
+
+struct css_stop
+{
+
+    unsigned int color;
+    int position;
+
+};
+
+struct css_gradient
+{
+
+    unsigned int radial;
+    unsigned int count;
+    int angle;
+    int x;
+    int y;
+    int width;
+    int height;
+    struct css_stop stops[CSS_STOPS];
 
 };
 
@@ -146,6 +171,8 @@ struct css_sheet
     struct css_declaration declarations[CSS_DECLARATIONS];
     struct css_rule rules[CSS_RULES];
     struct css_custom customs[CSS_CUSTOMS];
+    struct css_gradient gradients[CSS_GRADIENTS];
+    unsigned int gradientcount;
     unsigned short customstart[HTML_NODES];
     unsigned short customcount[HTML_NODES];
     char pool[CSS_POOLSIZE];
