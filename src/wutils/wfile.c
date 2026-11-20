@@ -424,8 +424,7 @@ static void sendvolumes(unsigned int wm)
 
         }
 
-        c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"volume%u\" in \"volume-list\" padding \"4\" onclick \"q=abspath&path=%s:\"\n", &i, name);
-        c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ text in \"volume%u\" label \"%s:\"\n", &i, name);
+        c += cstring_write_fmt(d, MESSAGE_SIZE, c, "@ volumes %s\n", name);
 
     }
 
