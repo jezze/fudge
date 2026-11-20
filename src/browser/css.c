@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      58
+#define PROPERTIES                      63
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -42,6 +42,11 @@
 #define PROP_BACKGROUNDIMAGE            55
 #define PROP_BORDERRADIUS               56
 #define PROP_TEXTTRANSFORM              57
+#define PROP_GRIDTEMPLATECOLUMNS        58
+#define PROP_GAP                        59
+#define PROP_ROWGAP                     60
+#define PROP_COLUMNGAP                  61
+#define PROP_GRIDGAP                    62
 #define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
@@ -91,6 +96,7 @@
 #define PHASE_OTHER                     2
 #define PHASES                          3
 #define GRADIENTARGS                    8
+#define GRIDTRACKS                      12
 
 struct parser
 {
@@ -221,7 +227,8 @@ static char *properties[PROPERTIES] = {
     "border-bottom", "border-left", "border-width", "border-style", "border-color", "border-top-width", "border-right-width", "border-bottom-width", "border-left-width", "border-top-style",
     "border-right-style", "border-bottom-style", "border-left-style", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "width", "height", "min-width",
     "max-width", "min-height", "box-sizing", "position", "flex-direction",
-    "background-image", "border-radius", "text-transform"
+    "background-image", "border-radius", "text-transform", "grid-template-columns", "gap",
+    "row-gap", "column-gap", "grid-gap"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -2004,8 +2011,11 @@ static void setfont(struct context *context, char *value)
 static unsigned int parsedisplay(char *text, unsigned int length)
 {
 
-    if (matchword(text, length, "block") || matchword(text, length, "flow-root") || matchword(text, length, "grid") || matchword(text, length, "table-caption"))
+    if (matchword(text, length, "block") || matchword(text, length, "flow-root") || matchword(text, length, "table-caption"))
         return CSS_DISPLAY_BLOCK;
+
+    if (matchword(text, length, "grid"))
+        return CSS_DISPLAY_GRID;
 
     if (matchword(text, length, "inline") || matchword(text, length, "contents"))
         return CSS_DISPLAY_INLINE;
@@ -2570,6 +2580,110 @@ static void setdecoration(struct context *context, char *value)
 
 }
 
+static unsigned int isfraction(char *text, unsigned int length)
+{
+
+    if (length > 7 && buffer_match(text, "minmax(", 7))
+        return length > 4 && buffer_match(text + length - 3, "fr)", 3);
+
+    return length > 2 && buffer_match(text + length - 2, "fr", 2);
+
+}
+
+static int gaplength(struct context *context, char *text, unsigned int length)
+{
+
+    struct lengthvalue gap = parselength(context, text, length, context->style->fontsize);
+
+    if (matchword(text, length, "normal"))
+        return 0;
+
+    return (gap.valid && gap.length.unit == CSS_UNIT_PX && gap.length.value > 0) ? gap.length.value : 0;
+
+}
+
+static void setcolumns(struct context *context, char *value)
+{
+
+    struct span spans[GRIDTRACKS];
+    unsigned int count = countspans(value, spans, GRIDTRACKS);
+    unsigned int columns = 0;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        char *text = value + spans[i].start;
+        unsigned int length = spans[i].length;
+
+        if (length > 7 && buffer_match(text, "repeat(", 7))
+        {
+
+            unsigned int comma = buffer_findbyte(text, length, ',');
+            unsigned int start = comma + 1;
+
+            while (start < length && text[start] == ' ')
+                start++;
+
+            if (comma < length && (buffer_match(text + 7, "auto-fill", 9) || buffer_match(text + 7, "auto-fit", 8)) && buffer_match(text + start, "minmax(", 7))
+            {
+
+                context->style->columns = CSS_COLUMNS_AUTOFILL;
+                context->style->trackmin = gaplength(context, text + start + 7, buffer_findbyte(text + start + 7, length - start - 7, ','));
+
+                return;
+
+            }
+
+            if (comma < length && isfraction(text + start, length - start - 1))
+            {
+
+                columns += cstring_read_value(text + 7, comma - 7, 10);
+
+                continue;
+
+            }
+
+            columns = 0;
+
+            break;
+
+        }
+
+        if (!isfraction(text, length))
+        {
+
+            columns = 0;
+
+            break;
+
+        }
+
+        columns++;
+
+    }
+
+    context->style->columns = (columns > 32) ? 32 : columns;
+
+}
+
+static void setgap(struct context *context, char *value, unsigned int rows, unsigned int columns)
+{
+
+    struct span spans[2];
+    unsigned int count = countspans(value, spans, 2);
+
+    if (!count)
+        return;
+
+    if (rows)
+        context->style->rowgap = gaplength(context, value + spans[0].start, spans[0].length);
+
+    if (columns)
+        context->style->columngap = gaplength(context, value + spans[(rows && count > 1) ? 1 : 0].start, spans[(rows && count > 1) ? 1 : 0].length);
+
+}
+
 static void copyproperty(struct css_style *style, struct css_style *from, unsigned int property)
 {
 
@@ -2611,6 +2725,29 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
     case PROP_TEXTTRANSFORM:
         style->transform = from->transform;
+
+        break;
+
+    case PROP_GRIDTEMPLATECOLUMNS:
+        style->columns = from->columns;
+        style->trackmin = from->trackmin;
+
+        break;
+
+    case PROP_GAP:
+    case PROP_GRIDGAP:
+        style->rowgap = from->rowgap;
+        style->columngap = from->columngap;
+
+        break;
+
+    case PROP_ROWGAP:
+        style->rowgap = from->rowgap;
+
+        break;
+
+    case PROP_COLUMNGAP:
+        style->columngap = from->columngap;
 
         break;
 
@@ -2817,6 +2954,27 @@ static void apply(struct context *context, unsigned int property, char *value)
 
     case PROP_BACKGROUNDIMAGE:
         setbackground(context, value, 1);
+
+        break;
+
+    case PROP_GRIDTEMPLATECOLUMNS:
+        setcolumns(context, value);
+
+        break;
+
+    case PROP_GAP:
+    case PROP_GRIDGAP:
+        setgap(context, value, 1, 1);
+
+        break;
+
+    case PROP_ROWGAP:
+        setgap(context, value, 1, 0);
+
+        break;
+
+    case PROP_COLUMNGAP:
+        setgap(context, value, 0, 1);
 
         break;
 

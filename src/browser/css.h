@@ -22,6 +22,8 @@
 #define CSS_DISPLAY_ROW                 7
 #define CSS_DISPLAY_CELL                8
 #define CSS_DISPLAY_FLEX                9
+#define CSS_DISPLAY_GRID                10
+#define CSS_COLUMNS_AUTOFILL            0xFF
 #define CSS_ALIGN_LEFT                  0
 #define CSS_ALIGN_CENTER                1
 #define CSS_ALIGN_RIGHT                 2
@@ -73,12 +75,16 @@ struct css_style
     unsigned char position;
     unsigned char column;
     unsigned char transform;
+    unsigned char columns;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;
     unsigned short lineheight;
     unsigned short lineheightfactor;
     unsigned short gradient;
+    unsigned short trackmin;
+    unsigned short rowgap;
+    unsigned short columngap;
     unsigned int color;
     unsigned int background;
     unsigned int bordercolor[CSS_SIDES];

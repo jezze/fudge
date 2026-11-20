@@ -933,22 +933,24 @@ static void placeatomic(struct layout *layout, struct flow *flow, unsigned int n
     int mb = resolve(&style->margin[CSS_BOTTOM], availw);
     int width = measure(layout, node, availw);
     int spacewidth = (flow->space && !isempty(layout, flow) && flow->type == FLOW_NORMAL) ? getmetrics(layout, container).space : 0;
+    int gap = (flow->type == FLOW_FLEXROW && !isempty(layout, flow)) ? container->columngap : 0;
     unsigned int wrap = container->whitespace == CSS_WHITESPACE_NORMAL || container->whitespace == CSS_WHITESPACE_PRELINE;
     unsigned int fragmentstart;
     int height;
 
-    if (wrap && !isempty(layout, flow) && flow->x + spacewidth + ml + width + mr > flow->right)
+    if (wrap && !isempty(layout, flow) && flow->x + spacewidth + gap + ml + width + mr > flow->right)
     {
 
         flushline(layout, flow, 0);
 
         spacewidth = 0;
+        gap = 0;
 
     }
 
     startline(layout, flow);
 
-    flow->x += spacewidth;
+    flow->x += spacewidth + gap;
     fragmentstart = layout->fragmentcount;
     layout->atomicdepth++;
 
@@ -1491,6 +1493,83 @@ static void layouttable(struct layout *layout, struct flow *flow, unsigned int t
 
 }
 
+static void layoutgrid(struct layout *layout, struct flow *flow, unsigned int node)
+{
+
+    struct css_style *style = getstyle(layout, node);
+    int width = flow->right - flow->left;
+    int gap = style->columngap;
+    unsigned int columns = style->columns;
+    unsigned int column = 0;
+    unsigned int rowstart = 0;
+    int rowheight = 0;
+    int y = flow->y;
+    int columnwidth;
+    unsigned int child;
+
+    if (columns == CSS_COLUMNS_AUTOFILL)
+        columns = (style->trackmin + gap > 0) ? (unsigned int)((width + gap) / (style->trackmin + gap)) : 1;
+
+    if (columns < 1)
+        columns = 1;
+
+    columnwidth = max((width - gap * ((int)columns - 1)) / (int)columns, 0);
+
+    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    {
+
+        struct css_style *childstyle;
+        int mt;
+        int mb;
+        int height;
+
+        if (getnode(layout, child)->type != HTML_NODE_ELEMENT || !isvisible(getstyle(layout, child)))
+            continue;
+
+        childstyle = getstyle(layout, child);
+        mt = resolve(&childstyle->margin[CSS_TOP], columnwidth);
+        mb = resolve(&childstyle->margin[CSS_BOTTOM], columnwidth);
+
+        if (!column)
+            rowstart = child;
+
+        height = layoutblock(layout, child, flow->left + (int)column * (columnwidth + gap), y + mt, columnwidth);
+        rowheight = max(rowheight, mt + height + mb);
+        column++;
+
+        if (column == columns || !getnode(layout, child)->next)
+        {
+
+            unsigned int item;
+
+            for (item = rowstart; item; item = getnode(layout, item)->next)
+            {
+
+                struct css_style *itemstyle = getstyle(layout, item);
+
+                if (getnode(layout, item)->type == HTML_NODE_ELEMENT && layout->boxes[item].placed && itemstyle->height.unit == CSS_UNIT_AUTO)
+                    layout->boxes[item].h = rowheight - resolve(&itemstyle->margin[CSS_TOP], columnwidth) - resolve(&itemstyle->margin[CSS_BOTTOM], columnwidth);
+
+                if (item == child)
+                    break;
+
+            }
+
+            y += rowheight + style->rowgap;
+            rowheight = 0;
+            column = 0;
+
+        }
+
+    }
+
+    if (column)
+        y += rowheight + style->rowgap;
+
+    flow->y = (y > flow->y) ? y - style->rowgap : y;
+
+}
+
 static int layoutblock(struct layout *layout, unsigned int node, int x, int top, int availw)
 {
 
@@ -1587,6 +1666,13 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     {
 
         layoutrow(layout, &flow, node, &columns);
+
+    }
+
+    else if (style->display == CSS_DISPLAY_GRID)
+    {
+
+        layoutgrid(layout, &flow, node);
 
     }
 
