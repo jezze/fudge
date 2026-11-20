@@ -2875,11 +2875,27 @@ static void clickwidget(struct widget *widget)
 
     }
 
-    if (state.mousebuttonleft)
+    if (state.mousebuttonleft && widget->attributes.onclick)
     {
 
-        if (widget->attributes.onclick)
+        if (widget->type == WIDGET_TYPE_BOX)
+        {
+
+            unsigned int x = util_max(state.mouseposition.x - widget->cplacement.position.x, 0);
+            unsigned int y = util_max(state.mouseposition.y - widget->cplacement.position.y, 0);
+            char text[64];
+
+            cstring_write_fmt(text, 64, 0, "&x=%u&y=%u\\0", &x, &y);
+            sendevent(widget->source, widget->attributes.onclick, text);
+
+        }
+
+        else
+        {
+
             sendevent(widget->source, widget->attributes.onclick, "");
+
+        }
 
     }
 
@@ -3010,15 +3026,17 @@ static void reportsizes(void)
             unsigned int columns = util_max((int)view.size.w - CONFIG_CURSOR_WIDTH, 0) / width;
             unsigned int rows = view.size.h / font->lineheight;
 
-            if (columns != widget->columns || rows != widget->rows)
+            if (columns != widget->columns || rows != widget->rows || view.size.w != widget->viewwidth || view.size.h != widget->viewheight)
             {
 
-                char text[64];
+                char text[96];
 
                 widget->columns = columns;
                 widget->rows = rows;
+                widget->viewwidth = view.size.w;
+                widget->viewheight = view.size.h;
 
-                cstring_write_fmt(text, 64, 0, "&columns=%u&rows=%u\\0", &columns, &rows);
+                cstring_write_fmt(text, 96, 0, "&columns=%u&rows=%u&width=%u&height=%u\\0", &columns, &rows, &view.size.w, &view.size.h);
                 sendevent(widget->source, widget->attributes.onresize, text);
 
             }

@@ -496,6 +496,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->appcursor = 0;
     widget->columns = 0;
     widget->rows = 0;
+    widget->viewwidth = 0;
+    widget->viewheight = 0;
     widget->selected = 0;
     widget->anchor = 0;
     widget->textrow = 0;

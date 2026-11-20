@@ -69,6 +69,8 @@ struct widget
     unsigned int appcursor;
     unsigned int columns;
     unsigned int rows;
+    unsigned int viewwidth;
+    unsigned int viewheight;
     unsigned int selected;
     unsigned int anchor;
     unsigned int textrow;

@@ -638,7 +638,7 @@ static void feed(struct terminal *terminal, void *buffer, unsigned int count)
 
 }
 
-static void resize(struct terminal *terminal, unsigned int rows, unsigned int columns)
+static unsigned int resize(struct terminal *terminal, unsigned int rows, unsigned int columns)
 {
 
     unsigned int screen;
@@ -646,6 +646,9 @@ static void resize(struct terminal *terminal, unsigned int rows, unsigned int co
 
     rows = (rows < 1) ? 1 : (rows > ROWS) ? ROWS : rows;
     columns = (columns < 1) ? 1 : (columns > COLUMNS) ? COLUMNS : columns;
+
+    if (rows == terminal->rows && columns == terminal->columns)
+        return 0;
 
     if (terminal->cursor.row >= rows)
     {
@@ -680,6 +683,8 @@ static void resize(struct terminal *terminal, unsigned int rows, unsigned int co
     markall(terminal);
 
     terminal->changed = 1;
+
+    return 1;
 
 }
 
@@ -992,9 +997,7 @@ static void onwmevent(struct message *message)
     if (event && kv_match(event, "q=resize"))
     {
 
-        resize(&term, kv_getvalue(event, "rows=", 10), kv_getvalue(event, "columns=", 10));
-
-        if (term.reports)
+        if (resize(&term, kv_getvalue(event, "rows=", 10), kv_getvalue(event, "columns=", 10)) && term.reports)
             sendreport(&term);
 
     }
