@@ -3,6 +3,7 @@
 #define CSS_DECLARATIONS                4096
 #define CSS_RULES                       2048
 #define CSS_POOLSIZE                    0x10000
+#define CSS_CUSTOMS                     2048
 #define CSS_ORIGIN_AGENT                0
 #define CSS_ORIGIN_AUTHOR               1
 #define CSS_UNIT_PX                     0
@@ -113,6 +114,15 @@ struct css_declaration
 
     unsigned short property;
     unsigned short important;
+    unsigned int name;
+    unsigned int value;
+
+};
+
+struct css_custom
+{
+
+    unsigned int name;
     unsigned int value;
 
 };
@@ -135,7 +145,11 @@ struct css_sheet
     struct css_selector selectors[CSS_SELECTORS];
     struct css_declaration declarations[CSS_DECLARATIONS];
     struct css_rule rules[CSS_RULES];
+    struct css_custom customs[CSS_CUSTOMS];
+    unsigned short customstart[HTML_NODES];
+    unsigned short customcount[HTML_NODES];
     char pool[CSS_POOLSIZE];
+    unsigned int customtotal;
     unsigned int partcount;
     unsigned int selectorcount;
     unsigned int declarationcount;

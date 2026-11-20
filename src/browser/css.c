@@ -39,6 +39,7 @@
 #define PROP_BOXSIZING                  52
 #define PROP_POSITION                   53
 #define PROP_FLEXDIRECTION              54
+#define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
 #define PART_ID                         3
@@ -79,6 +80,13 @@
 #define VALUESIZE                       64
 #define FONTTOKENS                      8
 #define FONTSIZES                       8
+#define NAMESIZE                        64
+#define EXPANDSIZE                      512
+#define EXPANDDEPTH                     4
+#define PHASE_CUSTOM                    0
+#define PHASE_FONT                      1
+#define PHASE_OTHER                     2
+#define PHASES                          3
 
 struct parser
 {
@@ -144,11 +152,23 @@ struct matcher
 struct context
 {
 
+    struct css_sheet *sheet;
+    struct html_document *document;
+    unsigned int node;
     struct css_style *style;
     struct css_style *parent;
     unsigned int rootsize;
     unsigned int width;
     unsigned int height;
+
+};
+
+struct expansion
+{
+
+    char text[EXPANDSIZE];
+    unsigned int length;
+    unsigned int valid;
 
 };
 
@@ -505,7 +525,7 @@ static void parsedeclaration(struct css_sheet *sheet, char *text, unsigned int s
 {
 
     unsigned int colon = findstop(text, start, end, ":{");
-    char name[32];
+    char name[NAMESIZE];
     unsigned int namelength = 0;
     unsigned int property;
     unsigned int important = 0;
@@ -516,10 +536,10 @@ static void parsedeclaration(struct css_sheet *sheet, char *text, unsigned int s
 
     start = skipspace(text, start, colon);
 
-    for (i = start; i < colon && !isspace(text[i]) && namelength < 31; i++)
+    for (i = start; i < colon && !isspace(text[i]) && namelength < NAMESIZE - 1; i++)
         name[namelength++] = lower(text[i]);
 
-    property = findproperty(name, namelength);
+    property = (namelength > 2 && name[0] == '-' && name[1] == '-') ? PROP_CUSTOM : findproperty(name, namelength);
 
     if (!property)
         return;
@@ -552,7 +572,7 @@ static void parsedeclaration(struct css_sheet *sheet, char *text, unsigned int s
 
     }
 
-    if (end <= start || contains(text + start, end - start, "var(") || findstop(text, start, end, "{") < end)
+    if ((end <= start && property != PROP_CUSTOM) || findstop(text, start, end, "{") < end)
         return;
 
     if (sheet->declarationcount >= CSS_DECLARATIONS)
@@ -566,9 +586,10 @@ static void parsedeclaration(struct css_sheet *sheet, char *text, unsigned int s
 
     sheet->declarations[sheet->declarationcount].property = property;
     sheet->declarations[sheet->declarationcount].important = important;
-    sheet->declarations[sheet->declarationcount].value = pooladd(sheet, text + start, end - start, 1);
+    sheet->declarations[sheet->declarationcount].name = (property == PROP_CUSTOM) ? pooladd(sheet, name, namelength, 1) : 0;
+    sheet->declarations[sheet->declarationcount].value = pooladd(sheet, text + start, (end > start) ? end - start : 0, 1);
 
-    if (sheet->declarations[sheet->declarationcount].value)
+    if (sheet->declarations[sheet->declarationcount].value && (property != PROP_CUSTOM || sheet->declarations[sheet->declarationcount].name))
         sheet->declarationcount++;
 
 }
@@ -2380,10 +2401,16 @@ static void apply(struct context *context, unsigned int property, char *value)
 
 }
 
-static unsigned int isfontproperty(unsigned int property)
+static unsigned int phaseof(unsigned int property)
 {
 
-    return property == PROP_FONTSIZE || property == PROP_FONT;
+    if (property == PROP_CUSTOM)
+        return PHASE_CUSTOM;
+
+    if (property == PROP_FONTSIZE || property == PROP_FONT)
+        return PHASE_FONT;
+
+    return PHASE_OTHER;
 
 }
 
@@ -2787,7 +2814,152 @@ static unsigned int collect(struct css_sheet *sheet, struct html_document *docum
 
 }
 
-static void applydeclarations(struct context *context, struct css_sheet *sheet, unsigned int start, unsigned int count, unsigned int important, unsigned int fonts)
+static void setcustom(struct context *context, unsigned int name, unsigned int value)
+{
+
+    struct css_sheet *sheet = context->sheet;
+    unsigned int start = sheet->customstart[context->node];
+    unsigned int i;
+
+    for (i = start; i < start + sheet->customcount[context->node]; i++)
+    {
+
+        if (cstring_match(poolstring(sheet, sheet->customs[i].name), poolstring(sheet, name)))
+        {
+
+            sheet->customs[i].value = value;
+
+            return;
+
+        }
+
+    }
+
+    if (sheet->customtotal >= CSS_CUSTOMS || sheet->customtotal != start + sheet->customcount[context->node])
+    {
+
+        sheet->full = 1;
+
+        return;
+
+    }
+
+    sheet->customs[sheet->customtotal].name = name;
+    sheet->customs[sheet->customtotal].value = value;
+    sheet->customtotal++;
+    sheet->customcount[context->node]++;
+
+}
+
+static char *findcustom(struct context *context, char *name, unsigned int length)
+{
+
+    struct css_sheet *sheet = context->sheet;
+    unsigned int node = context->node;
+
+    while (node)
+    {
+
+        unsigned int start = sheet->customstart[node];
+        unsigned int i;
+
+        for (i = start; i < start + sheet->customcount[node]; i++)
+        {
+
+            if (matchword(name, length, poolstring(sheet, sheet->customs[i].name)))
+                return poolstring(sheet, sheet->customs[i].value);
+
+        }
+
+        node = parentelement(context->document, node);
+
+    }
+
+    return 0;
+
+}
+
+static void expand(struct context *context, struct expansion *expansion, char *text, unsigned int length, unsigned int depth)
+{
+
+    unsigned int i = 0;
+
+    while (i < length && expansion->valid)
+    {
+
+        if (i + 4 < length && buffer_match(text + i, "var(", 4))
+        {
+
+            unsigned int close = findclose(text, i + 3, length);
+            unsigned int start = skipspace(text, i + 4, close);
+            unsigned int comma = findstop(text, start, close, ",");
+            unsigned int end = comma;
+            char *value;
+
+            while (end > start && isspace(text[end - 1]))
+                end--;
+
+            value = findcustom(context, text + start, end - start);
+
+            if (value && value[0] && depth < EXPANDDEPTH)
+                expand(context, expansion, value, cstring_length(value), depth + 1);
+            else if (comma < close && depth < EXPANDDEPTH)
+                expand(context, expansion, text + skipspace(text, comma + 1, close), close - skipspace(text, comma + 1, close), depth + 1);
+            else
+                expansion->valid = 0;
+
+            i = close + 1;
+
+            continue;
+
+        }
+
+        if (expansion->length + 1 >= EXPANDSIZE)
+        {
+
+            expansion->valid = 0;
+
+            return;
+
+        }
+
+        expansion->text[expansion->length++] = text[i++];
+
+    }
+
+}
+
+static void applyvalue(struct context *context, unsigned int property, char *value)
+{
+
+    struct expansion expansion;
+
+    if (!contains(value, cstring_length(value), "var("))
+    {
+
+        apply(context, property, value);
+
+        return;
+
+    }
+
+    expansion.length = 0;
+    expansion.valid = 1;
+
+    expand(context, &expansion, value, cstring_length(value), 0);
+
+    if (expansion.valid)
+    {
+
+        expansion.text[expansion.length] = '\0';
+
+        apply(context, property, expansion.text);
+
+    }
+
+}
+
+static void applydeclarations(struct context *context, struct css_sheet *sheet, unsigned int start, unsigned int count, unsigned int important, unsigned int phase)
 {
 
     unsigned int i;
@@ -2797,14 +2969,19 @@ static void applydeclarations(struct context *context, struct css_sheet *sheet, 
 
         struct css_declaration *declaration = &sheet->declarations[i];
 
-        if (declaration->important == important && isfontproperty(declaration->property) == fonts)
-            apply(context, declaration->property, poolstring(sheet, declaration->value));
+        if (declaration->important != important || phaseof(declaration->property) != phase)
+            continue;
+
+        if (phase == PHASE_CUSTOM)
+            setcustom(context, declaration->name, declaration->value);
+        else
+            applyvalue(context, declaration->property, poolstring(sheet, declaration->value));
 
     }
 
 }
 
-static void applyrules(struct context *context, struct css_sheet *sheet, struct match *matches, unsigned int count, unsigned int origin, unsigned int important, unsigned int fonts)
+static void applyrules(struct context *context, struct css_sheet *sheet, struct match *matches, unsigned int count, unsigned int origin, unsigned int important, unsigned int phase)
 {
 
     unsigned int i;
@@ -2815,7 +2992,7 @@ static void applyrules(struct context *context, struct css_sheet *sheet, struct 
         struct css_rule *rule = &sheet->rules[matches[i].rule];
 
         if (matches[i].origin == origin)
-            applydeclarations(context, sheet, rule->declaration, rule->declarations, important, fonts);
+            applydeclarations(context, sheet, rule->declaration, rule->declarations, important, phase);
 
     }
 
@@ -2984,27 +3161,30 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
     unsigned int count = collect(sheet, document, node, context->width, matches);
     char *styleattr = html_getattribute(document, node, "style");
     unsigned int declarationmark = sheet->declarationcount;
-    unsigned int poolmark = sheet->poolcount;
-    unsigned int fonts;
+    unsigned int phase;
+
+    sheet->customstart[node] = sheet->customtotal;
+    sheet->customcount[node] = 0;
 
     if (styleattr)
         parsedeclarations(sheet, styleattr, 0, cstring_length(styleattr));
 
-    for (fonts = 2; fonts > 0; fonts--)
+    for (phase = 0; phase < PHASES; phase++)
     {
 
-        applyrules(context, sheet, matches, count, CSS_ORIGIN_AGENT, 0, fonts - 1);
-        applyhints(context, document, node, fonts - 1);
-        applyrules(context, sheet, matches, count, CSS_ORIGIN_AUTHOR, 0, fonts - 1);
-        applydeclarations(context, sheet, declarationmark, sheet->declarationcount - declarationmark, 0, fonts - 1);
-        applyrules(context, sheet, matches, count, CSS_ORIGIN_AUTHOR, 1, fonts - 1);
-        applydeclarations(context, sheet, declarationmark, sheet->declarationcount - declarationmark, 1, fonts - 1);
+        applyrules(context, sheet, matches, count, CSS_ORIGIN_AGENT, 0, phase);
+
+        if (phase != PHASE_CUSTOM)
+            applyhints(context, document, node, phase == PHASE_FONT);
+
+        applyrules(context, sheet, matches, count, CSS_ORIGIN_AUTHOR, 0, phase);
+        applydeclarations(context, sheet, declarationmark, sheet->declarationcount - declarationmark, 0, phase);
+        applyrules(context, sheet, matches, count, CSS_ORIGIN_AUTHOR, 1, phase);
+        applydeclarations(context, sheet, declarationmark, sheet->declarationcount - declarationmark, 1, phase);
 
     }
 
     sheet->declarationcount = declarationmark;
-    sheet->poolcount = poolmark;
-    sheet->full = 0;
 
     finish(context->style);
 
@@ -3291,10 +3471,14 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
     struct css_style root;
     struct context context;
     unsigned int full = sheet->full;
+    unsigned int poolmark = sheet->poolcount;
     unsigned int node;
 
     initstyle(&root);
 
+    sheet->customtotal = 0;
+    context.sheet = sheet;
+    context.document = document;
     context.rootsize = 16;
     context.width = width;
     context.height = height;
@@ -3307,6 +3491,7 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
         if (document->nodes[node].type != HTML_NODE_ELEMENT)
             continue;
 
+        context.node = node;
         context.style = &styles[node];
         context.parent = (parent) ? &styles[parent] : &root;
 
@@ -3318,6 +3503,7 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
 
     }
 
+    sheet->poolcount = poolmark;
     sheet->full = full;
 
 }
