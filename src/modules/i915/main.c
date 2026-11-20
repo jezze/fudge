@@ -35,6 +35,7 @@ struct hdmi
     unsigned int typec;
     unsigned int connected;
     unsigned int changed;
+    unsigned int off;
     unsigned int pll;
     struct mode mode;
 
@@ -925,6 +926,30 @@ static unsigned int secondinterface_checkmode(unsigned int width, unsigned int h
 
 }
 
+static void secondinterface_detect(void)
+{
+
+    spinlock_acquire(&spinlock);
+
+    if (pipeb.on && (hdmi.off || hdmi.changed || !isconnected(hdmi.port)))
+        disablehdmi();
+
+    hdmi.changed = 0;
+
+    if (!hdmi.off && !pipeb.on && isconnected(hdmi.port))
+    {
+
+        probehdmi();
+
+        if (hdmi.connected)
+            enablehdmi();
+
+    }
+
+    spinlock_release(&spinlock);
+
+}
+
 static void secondinterface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -939,29 +964,23 @@ static void secondinterface_setmode(unsigned int width, unsigned int height, uns
 
     }
 
-}
-
-static void secondinterface_detect(void)
-{
-
-    spinlock_acquire(&spinlock);
-
-    if (pipeb.on && (hdmi.changed || !isconnected(hdmi.port)))
-        disablehdmi();
-
-    hdmi.changed = 0;
-
-    if (!pipeb.on && isconnected(hdmi.port))
+    if (hdmi.off)
     {
 
-        probehdmi();
+        hdmi.off = 0;
 
-        if (hdmi.connected)
-            enablehdmi();
+        secondinterface_detect();
 
     }
 
-    spinlock_release(&spinlock);
+}
+
+static void secondinterface_disable(void)
+{
+
+    hdmi.off = 1;
+
+    secondinterface_detect();
 
 }
 
@@ -1072,6 +1091,7 @@ static void driver_init(unsigned int id)
     secondinterface.connected = 0;
     secondinterface.checkmode = secondinterface_checkmode;
     secondinterface.detect = secondinterface_detect;
+    secondinterface.disable = secondinterface_disable;
 
 }
 

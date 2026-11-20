@@ -129,6 +129,16 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
     struct message_videoconf *videoconf = message_validate(MESSAGE_TYPE_VIDEOCONF, data, count);
 
+    if (videoconf && !videoconf->bpp)
+    {
+
+        if (interface->disable)
+            interface->disable();
+
+        return MESSAGE_OK;
+
+    }
+
     if (interface->setmode && videoconf)
     {
 
@@ -239,6 +249,7 @@ void video_initinterface(struct video_interface *interface, unsigned long frameb
     interface->flush = 0;
     interface->checkmode = 0;
     interface->detect = 0;
+    interface->disable = 0;
 
 }
 

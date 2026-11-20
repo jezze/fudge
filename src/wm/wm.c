@@ -222,11 +222,15 @@ static void selectvideos(void)
 {
 
     struct message_videoconf preferred;
+    struct message_videoconf off;
     unsigned int i;
 
     preferred.width = 0;
     preferred.height = 0;
     preferred.bpp = 4;
+    off.width = 0;
+    off.height = 0;
+    off.bpp = 0;
     state.nvideos = 0;
 
     for (i = 0; i < VIDEOS; i++)
@@ -234,13 +238,17 @@ static void selectvideos(void)
 
         char device[DEVICENAME];
         struct videoconfig *config;
+        unsigned int channel;
 
         cstring_write_fmt(device, DEVICENAME, 0, "video:%u\\0", &i);
 
         config = findvideoconfig(device);
+        channel = channel_lookup(device);
 
-        if (channel_lookup(device) && (!config || config->enabled))
+        if (channel && (!config || config->enabled))
             addvideo(device, (config) ? &config->videoconf : &preferred);
+        else if (channel)
+            channel_send(0, channel, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &off);
 
     }
 
