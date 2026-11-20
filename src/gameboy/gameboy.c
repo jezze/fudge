@@ -474,10 +474,12 @@ static void destroyscreen(void)
 static void showwindow(void)
 {
 
+    char *alfi = "initrd:data/alfi/gameboy.alfi";
     unsigned int width = LCD_WIDTH;
     unsigned int height = LCD_HEIGHT;
 
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ window id \"window\" label \"Gameboy (%s)\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", path + fs_dirlength(path), screenname, &width, &height);
+    channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Gameboy (%s)\"\n= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", path + fs_dirlength(path), screenname, &width, &height);
 
 }
 

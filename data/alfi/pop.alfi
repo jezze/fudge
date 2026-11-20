@@ -1,0 +1,2 @@
++ window id "window" label "Prince of Persia" flow "stretch"
++ media id "screen" in "window" mimetype "image/raw"

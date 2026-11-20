@@ -562,10 +562,12 @@ static void destroyscreen(void)
 static void showwindow(char *path)
 {
 
+    char *alfi = "initrd:data/alfi/nes.alfi";
     unsigned int width = VISIBLE_DOTS;
     unsigned int height = VISIBLE_SCANLINES;
 
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ window id \"window\" label \"NES (%s)\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", path + fs_dirlength(path), screenname, &width, &height);
+    channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"NES (%s)\"\n= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", path + fs_dirlength(path), screenname, &width, &height);
 
 }
 

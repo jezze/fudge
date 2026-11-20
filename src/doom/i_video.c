@@ -767,7 +767,10 @@ static unsigned int createscreen(void)
 static void showwindow(void)
 {
 
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ window id \"window\" label \"Doom\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
+    char *alfi = "initrd:data/alfi/doom.alfi";
+
+    channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
 
 }
 
