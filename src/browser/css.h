@@ -37,6 +37,9 @@
 #define CSS_LIST_DECIMAL                4
 #define CSS_DECORATION_UNDERLINE        1
 #define CSS_DECORATION_LINETHROUGH      2
+#define CSS_TRANSFORM_NONE              0
+#define CSS_TRANSFORM_UPPERCASE         1
+#define CSS_TRANSFORM_LOWERCASE         2
 #define CSS_POSITION_STATIC             0
 #define CSS_POSITION_RELATIVE           1
 #define CSS_POSITION_ABSOLUTE           2
@@ -69,6 +72,7 @@ struct css_style
     unsigned char borderbox;
     unsigned char position;
     unsigned char column;
+    unsigned char transform;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;

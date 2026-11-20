@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      57
+#define PROPERTIES                      58
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -41,6 +41,7 @@
 #define PROP_FLEXDIRECTION              54
 #define PROP_BACKGROUNDIMAGE            55
 #define PROP_BORDERRADIUS               56
+#define PROP_TEXTTRANSFORM              57
 #define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
@@ -220,7 +221,7 @@ static char *properties[PROPERTIES] = {
     "border-bottom", "border-left", "border-width", "border-style", "border-color", "border-top-width", "border-right-width", "border-bottom-width", "border-left-width", "border-top-style",
     "border-right-style", "border-bottom-style", "border-left-style", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "width", "height", "min-width",
     "max-width", "min-height", "box-sizing", "position", "flex-direction",
-    "background-image", "border-radius"
+    "background-image", "border-radius", "text-transform"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -2608,6 +2609,11 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
         break;
 
+    case PROP_TEXTTRANSFORM:
+        style->transform = from->transform;
+
+        break;
+
     case PROP_FONTSIZE:
         style->fontsize = from->fontsize;
 
@@ -2811,6 +2817,16 @@ static void apply(struct context *context, unsigned int property, char *value)
 
     case PROP_BACKGROUNDIMAGE:
         setbackground(context, value, 1);
+
+        break;
+
+    case PROP_TEXTTRANSFORM:
+        if (matchword(value, length, "uppercase"))
+            style->transform = CSS_TRANSFORM_UPPERCASE;
+        else if (matchword(value, length, "lowercase"))
+            style->transform = CSS_TRANSFORM_LOWERCASE;
+        else if (matchword(value, length, "none") || matchword(value, length, "capitalize"))
+            style->transform = CSS_TRANSFORM_NONE;
 
         break;
 
@@ -3779,6 +3795,7 @@ static void inherit(struct css_style *style, struct css_style *parent)
     style->liststyle = parent->liststyle;
     style->decoration = parent->decoration;
     style->hidden = parent->hidden;
+    style->transform = parent->transform;
 
 }
 

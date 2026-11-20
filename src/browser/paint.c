@@ -428,7 +428,23 @@ static int paintglyph(struct paint_canvas *canvas, struct font_face *face, unsig
 
 }
 
-static void painttext(struct paint_canvas *canvas, struct layout *layout, struct layout_fragment *fragment, unsigned int color)
+static unsigned int transform(unsigned int codepoint, unsigned int mode)
+{
+
+    unsigned int lower = (codepoint >= 'a' && codepoint <= 'z') || (codepoint >= 0xE0 && codepoint <= 0xFE && codepoint != 0xF7);
+    unsigned int upper = (codepoint >= 'A' && codepoint <= 'Z') || (codepoint >= 0xC0 && codepoint <= 0xDE && codepoint != 0xD7);
+
+    if (mode == CSS_TRANSFORM_UPPERCASE && lower)
+        return codepoint - 32;
+
+    if (mode == CSS_TRANSFORM_LOWERCASE && upper)
+        return codepoint + 32;
+
+    return codepoint;
+
+}
+
+static void painttext(struct paint_canvas *canvas, struct layout *layout, struct layout_fragment *fragment, unsigned int color, unsigned int mode)
 {
 
     struct font_face *face = &layout->faces[fragment->face];
@@ -460,7 +476,7 @@ static void painttext(struct paint_canvas *canvas, struct layout *layout, struct
 
         space = 0;
         i += utf8_read(text + i, fragment->length - i, &codepoint);
-        x += paintglyph(canvas, face, codepoint, x, fragment->y, fragment->scale, color);
+        x += paintglyph(canvas, face, transform(codepoint, mode), x, fragment->y, fragment->scale, color);
 
     }
 
@@ -520,7 +536,7 @@ static void paintfragment(struct paint_canvas *canvas, struct layout *layout, st
 
     }
 
-    painttext(canvas, layout, fragment, style->color);
+    painttext(canvas, layout, fragment, style->color, style->transform);
 
     if (style->decoration & CSS_DECORATION_UNDERLINE)
         fill(canvas, fragment->x, fragment->y + fragment->ascent + fragment->scale, fragment->w, fragment->scale, style->color);
