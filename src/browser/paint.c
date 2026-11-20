@@ -58,6 +58,13 @@ static void paintbox(struct paint_canvas *canvas, struct layout_box *box, struct
 
 }
 
+static int padding(struct css_length *length)
+{
+
+    return (length->unit == CSS_UNIT_PX) ? length->value : 0;
+
+}
+
 static void paintplaceholder(struct paint_canvas *canvas, struct layout_box *box)
 {
 
@@ -65,6 +72,43 @@ static void paintplaceholder(struct paint_canvas *canvas, struct layout_box *box
     fill(canvas, box->x, box->y + box->h - 1, box->w, 1, PLACEHOLDER);
     fill(canvas, box->x, box->y, 1, box->h, PLACEHOLDER);
     fill(canvas, box->x + box->w - 1, box->y, 1, box->h, PLACEHOLDER);
+
+}
+
+static void paintpicture(struct paint_canvas *canvas, struct layout_picture *picture, int x, int y, int w, int h)
+{
+
+    unsigned int *pixels = canvas->heap + picture->offset / 4;
+    int x0 = (x < 0) ? 0 : x;
+    int y0 = (y < 0) ? 0 : y;
+    int x1 = (x + w > (int)canvas->width) ? (int)canvas->width : x + w;
+    int y1 = (y + h > (int)canvas->height) ? (int)canvas->height : y + h;
+    int i;
+    int j;
+
+    if (w <= 0 || h <= 0)
+        return;
+
+    for (j = y0; j < y1; j++)
+    {
+
+        unsigned int *row = canvas->pixels + j * canvas->width;
+        unsigned int *source = pixels + (unsigned int)(j - y) * picture->height / (unsigned int)h * picture->width;
+
+        for (i = x0; i < x1; i++)
+        {
+
+            unsigned int color = source[(unsigned int)(i - x) * picture->width / (unsigned int)w];
+            unsigned int alpha = color >> 24;
+
+            if (alpha == 0xFF)
+                row[i] = color;
+            else if (alpha)
+                row[i] = blend(row[i], color);
+
+        }
+
+    }
 
 }
 
@@ -238,7 +282,14 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
                 paintbox(canvas, box, style);
 
             if (document->nodes[node].tag == HTML_TAG_IMG)
-                paintplaceholder(canvas, box);
+            {
+
+                if (layout->picture[node] && canvas->heap)
+                    paintpicture(canvas, &layout->pictures[layout->picture[node] - 1], box->x + style->borderwidth[CSS_LEFT] + padding(&style->padding[CSS_LEFT]), box->y + style->borderwidth[CSS_TOP] + padding(&style->padding[CSS_TOP]), box->w - style->borderwidth[CSS_LEFT] - style->borderwidth[CSS_RIGHT] - padding(&style->padding[CSS_LEFT]) - padding(&style->padding[CSS_RIGHT]), box->h - style->borderwidth[CSS_TOP] - style->borderwidth[CSS_BOTTOM] - padding(&style->padding[CSS_TOP]) - padding(&style->padding[CSS_BOTTOM]));
+                else
+                    paintplaceholder(canvas, box);
+
+            }
 
         }
 

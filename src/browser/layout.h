@@ -5,6 +5,15 @@
 #define LAYOUT_FRAGMENT_GENERATED       1
 #define LAYOUT_FRAGMENT_MARKER          2
 
+struct layout_picture
+{
+
+    unsigned int width;
+    unsigned int height;
+    unsigned int offset;
+
+};
+
 struct layout_box
 {
 
@@ -54,6 +63,8 @@ struct layout
     struct html_document *document;
     struct css_style *styles;
     struct font_face *faces;
+    struct layout_picture *pictures;
+    unsigned short picture[HTML_NODES];
     struct layout_box boxes[HTML_NODES];
     struct layout_fragment fragments[LAYOUT_FRAGMENTS];
     struct layout_item items[LAYOUT_ITEMS];

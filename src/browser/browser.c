@@ -1,5 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
+#include <compression.h>
+#include <hash.h>
+#include <image.h>
 #include "html.h"
 #include "css.h"
 #include "font.h"
@@ -18,6 +21,11 @@
 #define REDIRECTS                       5
 #define MAXHEIGHT                       0x4000
 #define MAXBYTES                        0x2000000
+#define PICTURES                        64
+#define HEAPSIZE                        0x1000000
+#define PAGE_HTML                       0
+#define PAGE_TEXT                       1
+#define PAGE_OTHER                      2
 
 struct image
 {
@@ -33,7 +41,7 @@ struct page
 {
 
     unsigned int count;
-    unsigned int text;
+    unsigned int kind;
 
 };
 
@@ -43,6 +51,15 @@ static struct css_style styles[HTML_NODES];
 static struct layout layout;
 static struct font_face faces[FONT_FACES];
 static struct image images[IMAGES];
+static struct image heap;
+static struct layout_picture pictures[PICTURES];
+static unsigned int picturehashes[PICTURES];
+static unsigned int picturecount;
+static unsigned int heapused;
+static struct png png;
+static unsigned int pngcount;
+static unsigned int pngtarget;
+static unsigned int pngid;
 static char source[SOURCESIZE];
 static char history[HISTORY][URLSIZE];
 static char current[URLSIZE];
@@ -465,13 +482,13 @@ static void seterror(char *text)
 
 }
 
-static struct page page(unsigned int count, unsigned int text)
+static struct page page(unsigned int count, unsigned int kind)
 {
 
     struct page result;
 
     result.count = count;
-    result.text = text;
+    result.kind = kind;
 
     return result;
 
@@ -491,7 +508,13 @@ static struct page loadfile(char *url)
 
     }
 
-    return page(count, !(matchsuffix(url, ".html") || matchsuffix(url, ".htm") || matchsuffix(url, ".css")));
+    if (matchsuffix(url, ".html") || matchsuffix(url, ".htm"))
+        return page(count, PAGE_HTML);
+
+    if (matchsuffix(url, ".png"))
+        return page(count, PAGE_OTHER);
+
+    return page(count, PAGE_TEXT);
 
 }
 
@@ -510,6 +533,7 @@ static struct page loadhttp(char *url)
         char *type;
         char *encoding;
         char *redirect;
+        unsigned int kind;
 
         if (!count)
         {
@@ -551,15 +575,10 @@ static struct page loadhttp(char *url)
 
         type = findheader(source, end, "content-type");
         encoding = findheader(source, end, "transfer-encoding");
+        kind = PAGE_HTML;
 
-        if (type && !(matchprefix(type, headerlength(type), "text/") || matchprefix(type, headerlength(type), "application/xhtml")))
-        {
-
-            seterror("This kind of content can not be shown.");
-
-            return page(0, 0);
-
-        }
+        if (type && !(matchprefix(type, headerlength(type), "text/html") || matchprefix(type, headerlength(type), "application/xhtml")))
+            kind = (matchprefix(type, headerlength(type), "text/")) ? PAGE_TEXT : PAGE_OTHER;
 
         count -= end;
 
@@ -568,7 +587,7 @@ static struct page loadhttp(char *url)
         if (encoding && matchprefix(encoding, headerlength(encoding), "chunked"))
             count = dechunk(source, count);
 
-        return page(count, type && !matchprefix(type, headerlength(type), "text/html") && !matchprefix(type, headerlength(type), "application/xhtml"));
+        return page(count, kind);
 
     }
 
@@ -761,6 +780,144 @@ static void removeimage(struct image *image)
 
 }
 
+static unsigned int readpng(struct png *png, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    if (pngid)
+        return fs_read_full(1, pngtarget, pngid, buffer, count, offset);
+
+    if (offset >= pngcount)
+        return 0;
+
+    if (count > pngcount - offset)
+        count = pngcount - offset;
+
+    buffer_copy(buffer, source + offset, count);
+
+    return count;
+
+}
+
+static unsigned int decodepicture(struct layout_picture *picture)
+{
+
+    unsigned int size;
+    unsigned char zero = 0;
+    unsigned int *pixels;
+    unsigned int y;
+
+    if (!heap.id || !png_open(&png, readpng) || !png.width || !png.height)
+        return 0;
+
+    size = png.width * png.height * 4;
+
+    if (png.width > HEAPSIZE / 4 / png.height || heapused + size > HEAPSIZE)
+        return 0;
+
+    if (fs_write(1, heap.target, heap.id, &zero, 1, heapused + size - 1) != 1)
+        return 0;
+
+    pixels = fs_mmap(1, heap.target, heap.id, 0);
+
+    if (!pixels)
+        return 0;
+
+    for (y = 0; y < png.height; y++)
+    {
+
+        if (!png_readrow(&png, pixels + heapused / 4 + y * png.width))
+            break;
+
+    }
+
+    fs_munmap(1, heap.target, heap.id);
+
+    if (y < png.height)
+        return 0;
+
+    picture->width = png.width;
+    picture->height = png.height;
+    picture->offset = heapused;
+    heapused += size;
+
+    return 1;
+
+}
+
+static unsigned int loadpicture(char *url)
+{
+
+    unsigned int hash = djb_hash(cstring_length(url), url);
+    struct page loaded;
+    unsigned int i;
+
+    for (i = 0; i < picturecount; i++)
+    {
+
+        if (picturehashes[i] == hash)
+            return i + 1;
+
+    }
+
+    if (picturecount >= PICTURES)
+        return 0;
+
+    if (findscheme(url))
+    {
+
+        loaded = load(url);
+        pngcount = loaded.count;
+        pngid = 0;
+
+        if (!pngcount)
+            return 0;
+
+    }
+
+    else
+    {
+
+        pngtarget = fs_auth(url);
+        pngid = (pngtarget) ? fs_walk(1, pngtarget, 0, url) : 0;
+
+        if (!pngid)
+            return 0;
+
+    }
+
+    if (!decodepicture(&pictures[picturecount]))
+        return 0;
+
+    picturehashes[picturecount] = hash;
+    picturecount++;
+
+    return picturecount;
+
+}
+
+static void loadpictures(void)
+{
+
+    unsigned int node;
+
+    picturecount = 0;
+    heapused = 0;
+
+    buffer_clear(layout.picture, sizeof (unsigned short) * HTML_NODES);
+
+    for (node = 1; node < document.nodecount; node++)
+    {
+
+        char *src = (document.nodes[node].tag == HTML_TAG_IMG) ? html_getattribute(&document, node, "src") : 0;
+        char url[URLSIZE];
+
+        if (src && resolve(url, URLSIZE, base, src) && issafe(url))
+            layout.picture[node] = loadpicture(url);
+
+    }
+
+}
+
 static void render(void)
 {
 
@@ -787,11 +944,17 @@ static void render(void)
     canvas.pixels = fs_mmap(1, image->target, image->id, 0);
     canvas.width = viewwidth;
     canvas.height = height;
+    canvas.heap = (heapused) ? fs_mmap(1, heap.target, heap.id, 0) : 0;
+
+    if (canvas.pixels)
+        paint_document(&canvas, &layout);
+
+    if (canvas.heap)
+        fs_munmap(1, heap.target, heap.id);
 
     if (!canvas.pixels)
         return;
 
-    paint_document(&canvas, &layout);
     fs_munmap(1, image->target, image->id);
     channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= page source \"mem:%s\" width \"%u\" height \"%u\"\n", image->name, &viewwidth, &height);
 
@@ -897,14 +1060,37 @@ static void navigate(char *url, unsigned int push)
     copystring(current, URLSIZE, fetched, cstring_length(fetched));
     copystring(history[historyindex], URLSIZE, current, cstring_length(current));
 
+    if (loaded.count && loaded.kind == PAGE_OTHER)
+    {
+
+        if (loaded.count > 8 && buffer_match(source, "\x89PNG", 4))
+        {
+
+            loaded.count = cstring_write_fmt(source, SOURCESIZE, 0, "<html><body style=\"margin:0\"><img src=\"%s\"></body></html>", current);
+            loaded.kind = PAGE_HTML;
+
+        }
+
+        else
+        {
+
+            seterror("This kind of content can not be shown.");
+
+            loaded.count = 0;
+
+        }
+
+    }
+
     if (!loaded.count)
         showerror(target);
-    else if (loaded.text)
+    else if (loaded.kind == PAGE_TEXT)
         html_parsetext(&document, source, loaded.count);
     else
         html_parse(&document, source, loaded.count);
 
     loadstyles();
+    loadpictures();
     showstate();
     render();
 
@@ -934,15 +1120,17 @@ static void onmain(struct message *message)
         layout.document = &document;
         layout.styles = styles;
         layout.faces = faces;
+        layout.pictures = pictures;
 
         loadfonts();
-        createimage(&images[1], createimage(&images[0], 0));
+        createimage(&heap, createimage(&images[1], createimage(&images[0], 0)));
         channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
         navigate((url[0]) ? url : "about:home", 1);
         channel_hold(0);
         channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
         removeimage(&images[0]);
         removeimage(&images[1]);
+        removeimage(&heap);
 
     }
 

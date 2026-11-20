@@ -801,17 +801,34 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
     int br = style->borderwidth[CSS_RIGHT] + resolve(&style->padding[CSS_RIGHT], availw);
     int bt = style->borderwidth[CSS_TOP] + resolve(&style->padding[CSS_TOP], availw);
     int bb = style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_BOTTOM], availw);
+    struct layout_picture *picture = (layout->picture[node]) ? &layout->pictures[layout->picture[node] - 1] : 0;
+    unsigned int haswidth = style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT;
+    unsigned int hasheight = style->height.unit == CSS_UNIT_PX;
     int width;
-    int height = (style->height.unit == CSS_UNIT_PX) ? style->height.value : metrics.ascent + metrics.descent;
+    int natural;
+    int height = (hasheight) ? style->height.value : metrics.ascent + metrics.descent;
     char *rows = html_getattribute(layout->document, node, "rows");
 
     getlabel(layout, node, &label);
 
     labelwidth = measuretext(layout, &metrics, label.text, label.length, 1);
-    width = (style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT) ? resolve(&style->width, availw) : replacedwidth(layout, node, &metrics, labelwidth);
+    width = (haswidth) ? resolve(&style->width, availw) : replacedwidth(layout, node, &metrics, labelwidth);
 
     if (style->height.unit != CSS_UNIT_PX && rows && cstring_match(html_getstring(layout->document, getnode(layout, node)->name), "textarea"))
         height = (metrics.ascent + metrics.descent) * (int)cstring_read_value(rows, cstring_length(rows), 10);
+
+    if (picture)
+    {
+
+        if (!haswidth)
+            width = (hasheight) ? height * (int)picture->width / (int)picture->height : (int)picture->width;
+
+        if (!hasheight)
+            height = (haswidth) ? width * (int)picture->height / (int)picture->width : (int)picture->height;
+
+        label.length = 0;
+
+    }
 
     if (style->borderbox)
     {
@@ -821,7 +838,15 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
 
     }
 
+    natural = width;
+
+    if (style->maxwidth.unit == CSS_UNIT_PX || style->maxwidth.unit == CSS_UNIT_PERCENT)
+        width = min(width, resolve(&style->maxwidth, availw) - ((style->borderbox) ? bl + br : 0));
+
     width = min(width, max(availw - bl - br - resolve(&style->margin[CSS_LEFT], availw) - resolve(&style->margin[CSS_RIGHT], availw), 0));
+
+    if (picture && !hasheight && width != natural && natural > 0)
+        height = height * width / natural;
 
     box->placed = 1;
     box->x = x + resolve(&style->margin[CSS_LEFT], availw);
