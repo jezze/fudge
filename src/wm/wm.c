@@ -27,6 +27,9 @@
 #define ROW_FAR             0x40000000
 #define MOUSE_NORMAL        4
 #define MOUSE_FASTEST       16
+#define SCROLL_NORMAL       4
+#define SCROLL_FASTEST      16
+#define SCROLL_STEP         4
 #define MOUSE_RAMP          8
 #define FONTS               4
 #define CLOCK_TIMER         1
@@ -93,6 +96,8 @@ struct input
     unsigned int enabled;
     unsigned int target;
     unsigned int speed;
+    unsigned int scroll;
+    unsigned int invert;
     unsigned int doubletap;
     unsigned int keymap;
 
@@ -594,6 +599,10 @@ static void addinput(unsigned int type, char *rest, unsigned int length)
     unsigned int valuelength = measureword(rest, length, valueoffset);
     unsigned int enabledoffset = findfield(rest, length, 2);
     unsigned int enabledlength = measureword(rest, length, enabledoffset);
+    unsigned int scrolloffset = findfield(rest, length, 3);
+    unsigned int scrolllength = measureword(rest, length, scrolloffset);
+    unsigned int invertoffset = findfield(rest, length, 4);
+    unsigned int invertlength = measureword(rest, length, invertoffset);
     char name[DEVICENAME];
     struct input *input;
     unsigned int index;
@@ -619,6 +628,8 @@ static void addinput(unsigned int type, char *rest, unsigned int length)
     input->type = type;
     input->enabled = !isword(rest + enabledoffset, enabledlength, "off");
     input->speed = MOUSE_NORMAL;
+    input->scroll = util_clamp((scrolllength) ? cstring_read_value(rest + scrolloffset, scrolllength, 10) : SCROLL_NORMAL, 1, SCROLL_FASTEST);
+    input->invert = isword(rest + invertoffset, invertlength, "on");
     input->keymap = KEYMAPS;
 
     switch (type)
@@ -879,8 +890,8 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"video {width} {height} {bpp} {device} {enabled}\" %s", option_getstring("video-config")));
     configlines("inputs", 6);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"keyboard {device} {map} {enabled}\" %s", option_getstring("keyboard-config")));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"mouse {device} {speed} {enabled}\" %s", option_getstring("mouse-config")));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap} {enabled}\" %s", option_getstring("touch-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"mouse {device} {speed} {enabled} {scroll} {invert}\" %s", option_getstring("mouse-config")));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .devices -format \"touch {device} {doubletap} {enabled} {scroll} {invert}\" %s", option_getstring("touch-config")));
     adddefaults();
     loadreference(data, config, ".theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
@@ -4236,13 +4247,23 @@ static void onmousepress(struct message *message)
 
 }
 
-static void scrollby(int relz)
+static int getscroll(struct input *input, int relz)
+{
+
+    if (!input)
+        return relz * SCROLL_NORMAL * SCROLL_STEP;
+
+    return ((input->invert) ? -relz : relz) * (int)input->scroll * SCROLL_STEP;
+
+}
+
+static void scrollby(int y)
 {
 
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
     if (scrollablewidget)
-        scrollwidget(scrollablewidget, relz * 16);
+        scrollwidget(scrollablewidget, y);
 
     sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
 
@@ -4256,7 +4277,7 @@ static void onmousescroll(struct message *message)
     struct message_mousescroll *mousescroll = message_validate(MESSAGE_TYPE_MOUSESCROLL, message->data, message->length);
 
     if (mousescroll)
-        scrollby(mousescroll->relz);
+        scrollby(getscroll(findinput(message->source), mousescroll->relz));
 
 }
 
@@ -4432,7 +4453,7 @@ static void ontouchcontact(struct message *message)
         if (touch.fingers >= 2)
         {
 
-            touch.wheel -= scaletouch(dy, &touch.accw, contact->ymax, TOUCH_WHEELCOUNTS);
+            touch.wheel += getscroll(input, -scaletouch(dy, &touch.accw, contact->ymax, TOUCH_WHEELCOUNTS));
 
         }
 
