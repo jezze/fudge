@@ -1211,7 +1211,7 @@ static void measurerow(struct layout *layout, unsigned int row, struct columns *
 
 }
 
-static int computecolumns(struct layout *layout, unsigned int node, struct columns *columns, int availw)
+static int computecolumns(struct layout *layout, unsigned int node, struct columns *columns, int availw, unsigned int stretch)
 {
 
     int maxwidths[COLUMNS];
@@ -1292,6 +1292,43 @@ static int computecolumns(struct layout *layout, unsigned int node, struct colum
             columns->widths[i] = (total) ? maxwidths[i] * max(space - fixedtotal, 0) / total : 0;
         else
             columns->widths[i] = maxwidths[i];
+
+    }
+
+    total = 0;
+
+    for (i = 0; i < columns->count; i++)
+        total += columns->widths[i];
+
+    if (stretch && total < space)
+    {
+
+        unsigned int autos = 0;
+        int weight = 0;
+        int extra = space - total;
+
+        for (i = 0; i < columns->count; i++)
+        {
+
+            if (!fixed[i])
+            {
+
+                autos++;
+                weight += maxwidths[i];
+
+            }
+
+        }
+
+        for (i = 0; i < columns->count; i++)
+        {
+
+            if (!autos)
+                columns->widths[i] += extra / (int)columns->count;
+            else if (!fixed[i])
+                columns->widths[i] += (weight) ? extra * maxwidths[i] / weight : extra / (int)autos;
+
+        }
 
     }
 
@@ -1478,7 +1515,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     if (style->display == CSS_DISPLAY_TABLE || style->display == CSS_DISPLAY_ROW)
     {
 
-        int width = computecolumns(layout, node, &columns, cw);
+        int width = computecolumns(layout, node, &columns, cw, style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT);
 
         if (!(style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT) && width < cw)
         {
