@@ -3410,7 +3410,10 @@ static void stepcycle(struct widget *cycle, unsigned int forward)
 
     record = record_at(cycle->source, set, current);
 
-    if (record && cycle->attributes.onclick)
+    if (!record)
+        return;
+
+    if (cycle->attributes.onclick)
     {
 
         char action[EVENTDATA_SIZE];
@@ -3419,6 +3422,12 @@ static void stepcycle(struct widget *cycle, unsigned int forward)
         sendtextevent(cycle->source, 1, action, "");
 
     }
+
+    cstring_write_fmt(textbuffer, TEXTBOX_SIZE, 0, "%s\\0", record_getfield(record, "label", 5));
+
+    cycle->attributes.label = strpool_updatestring(cycle->attributes.label, textbuffer);
+
+    damage(cycle);
 
 }
 
