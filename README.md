@@ -132,9 +132,10 @@ architecture has is in its README.
 
 The node will not have any networking abilities by default. The simplest way to
 enable networking is the -N flag, which adds a network card on QEMU's user mode
-networking and does not need root. The node gets the address 10.0.5.1 and QEMU
-answers as the router on 10.0.5.80, which are the defaults the network programs
-in Fudge use, so it can reach the outside world right away. The host can not
+networking and does not need root. ethernet:0 is dynamic in
+data/config/network.mq, so the node asks QEMU for its address with DHCP, gets
+10.0.5.1 and uses QEMU as the router on 10.0.5.80, so it can reach the outside
+world right away. The host can not
 connect to the node this way and nodes can not talk to each other.
 
 ```sh
@@ -148,6 +149,10 @@ allow you to do this.
 ```sh
 $ sudo ./vmctrl run -x <architecture> -t <name>
 ```
+
+There is no DHCP server on the bridge, so give each node a static entry in
+data/config/network.mq (type static with address, route 10.0.5.80, netmask and
+dns) before building.
 
 Once you started one or more instances of Fudge, each with a different name you
 can bridge their networks together with this command.
