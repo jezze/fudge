@@ -77,6 +77,13 @@ static unsigned int getnum(char *value, unsigned int base)
 
 }
 
+static unsigned int getstring(unsigned int current, char *value)
+{
+
+    return strpool_updatestring(current, (value && value[0]) ? value : 0);
+
+}
+
 unsigned int attr_update(unsigned int attribute, char *value, unsigned int current)
 {
 
@@ -90,7 +97,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return getnum(value, 16);
 
     case ATTR_DATA:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_DISPLAY:
         return util_getkey(displays, NUM_DISPLAYS, value);
@@ -105,13 +112,13 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(haligns, 3, value);
 
     case ATTR_ID:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_IN:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_LABEL:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_MIMETYPE:
         return util_getkey(mimetypes, 1, value);
@@ -120,19 +127,19 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(modes, NUM_MODES, value);
 
     case ATTR_ONCHANGE:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_ONCLICK:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_ONENTER:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_ONRESIZE:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_ONSELECT:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_OVERFLOW:
         return util_getkey(overflows, 2, value);
@@ -141,7 +148,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return getnum(value, 10);
 
     case ATTR_SOURCE:
-        return strpool_updatestring(current, value);
+        return getstring(current, value);
 
     case ATTR_SPACING:
         return getnum(value, 10);
