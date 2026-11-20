@@ -2837,9 +2837,9 @@ static void applyhint(struct context *context, unsigned int property, char *valu
     buffer[length] = '\0';
 
     if (length && cstring_isdigit(buffer[length - 1]))
-        cstring_write(buffer, VALUESIZE, suffix, length);
+        length += cstring_write(buffer, VALUESIZE, suffix, length);
 
-    buffer[VALUESIZE - 1] = '\0';
+    buffer[length] = '\0';
 
     apply(context, property, buffer);
 
