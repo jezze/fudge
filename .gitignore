@@ -14,6 +14,7 @@ fudge.img
 fudge.iso
 fudge.tar
 report.xml
+src/browser/browser
 src/demo/demo
 src/doom/doom
 src/gameboy/gameboy

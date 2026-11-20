@@ -1,0 +1,19 @@
+B:=\
+    $(DIR_SRC)/browser/browser \
+
+O:=\
+    $(DIR_SRC)/browser/browser.o \
+    $(DIR_SRC)/browser/css.o \
+    $(DIR_SRC)/browser/font.o \
+    $(DIR_SRC)/browser/html.o \
+    $(DIR_SRC)/browser/layout.o \
+    $(DIR_SRC)/browser/paint.o \
+    $(DIR_SRC)/wutils/kv.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/font/font.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/bin.mk

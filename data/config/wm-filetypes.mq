@@ -16,6 +16,11 @@
       command: "wedit"
     }
     {
+      suffix: ".html"
+      label: "Browse"
+      command: "browser"
+    }
+    {
       suffix: ".pcx"
       label: "View"
       command: "wimage"

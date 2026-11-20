@@ -1,3 +1,4 @@
+include $(DIR_SRC)/browser/rules.mk
 ifneq ($(filter i386-unknown-elf x86_64-unknown-elf,$(TARGET)),)
 include $(DIR_SRC)/demo/rules.mk
 endif
