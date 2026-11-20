@@ -52,7 +52,7 @@ static void showimage(void)
         size[count] = 0;
 
         if (count)
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ media id \"image\" in \"frame\" mimetype \"image/raw\" source \"mem:%s\" %s", memname, size);
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= image source \"mem:%s\" %s", memname, size);
 
     }
 
@@ -104,7 +104,7 @@ static void onpath(struct message *message)
 {
 
     if (path[0])
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "- image\n");
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= image source \"\"\n");
 
     cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
     showimage();
