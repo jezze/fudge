@@ -3623,9 +3623,13 @@ static unsigned int collect(struct css_sheet *sheet, struct html_document *docum
             {
 
                 struct match match;
+                unsigned int k;
 
                 buffer_copy(&match, &matches[count], sizeof (struct match));
-                buffer_copy(&matches[j + 1], &matches[j], sizeof (struct match) * (count - j));
+
+                for (k = count; k > j; k--)
+                    buffer_copy(&matches[k], &matches[k - 1], sizeof (struct match));
+
                 buffer_copy(&matches[j], &match, sizeof (struct match));
 
             }
