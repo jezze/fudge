@@ -577,6 +577,13 @@ static unsigned int findinputname(char *name)
 }
 
 /* a device listed again (a config sent in several messages) keeps its place */
+static unsigned int isword(char *data, unsigned int count, char *word)
+{
+
+    return count == cstring_length(word) && buffer_match(data, word, count);
+
+}
+
 static void addinput(unsigned int type, char *rest, unsigned int length)
 {
 
@@ -609,7 +616,7 @@ static void addinput(unsigned int type, char *rest, unsigned int length)
     cstring_write_fmt(input->name, DEVICENAME, 0, "%s\\0", name);
 
     input->type = type;
-    input->enabled = !(enabledlength == 3 && buffer_match(rest + enabledoffset, "off", 3));
+    input->enabled = !isword(rest + enabledoffset, enabledlength, "off");
     input->speed = MOUSE_NORMAL;
     input->keymap = KEYMAPS;
 
@@ -642,7 +649,7 @@ static void addinput(unsigned int type, char *rest, unsigned int length)
         break;
 
     case INPUT_TOUCH:
-        input->doubletap = (valuelength == 5 && buffer_match(rest + valueoffset, "right", 5)) ? DOUBLETAP_RIGHT : DOUBLETAP_DRAG;
+        input->doubletap = isword(rest + valueoffset, valuelength, "right") ? DOUBLETAP_RIGHT : DOUBLETAP_DRAG;
 
         break;
 
@@ -693,28 +700,28 @@ static void configline(char *line, unsigned int length)
 
     length -= start;
 
-    if (count == 6 && buffer_match(word, "layout", 6))
+    if (isword(word, count, "layout"))
     {
 
         state.layout = (length >= 6 && buffer_match(rest, "tiling", 6)) ? LAYOUT_TILING : LAYOUT_DEFAULT;
 
     }
 
-    else if (count == 10 && buffer_match(word, "background", 10))
+    else if (isword(word, count, "background"))
     {
 
         loadbackground(rest, length);
 
     }
 
-    else if (count == 6 && buffer_match(word, "videos", 6))
+    else if (isword(word, count, "videos"))
     {
 
         state.nvideoconfigs = 0;
 
     }
 
-    else if (count == 5 && buffer_match(word, "video", 5))
+    else if (isword(word, count, "video"))
     {
 
         if (state.nvideoconfigs < VIDEOS)
@@ -729,7 +736,7 @@ static void configline(char *line, unsigned int length)
             config->videoconf.width = getnumber(rest, length, 0, 10, 0);
             config->videoconf.height = getnumber(rest, length, 1, 10, 0);
             config->videoconf.bpp = getnumber(rest, length, 2, 10, 4);
-            config->enabled = !(enabledlength == 3 && buffer_match(rest + enabledoffset, "off", 3));
+            config->enabled = !isword(rest + enabledoffset, enabledlength, "off");
 
             if (devicelength && devicelength < DEVICENAME)
                 cstring_write_fmt(config->device, DEVICENAME, 0, "%w\\0", rest + deviceoffset, &devicelength);
@@ -742,35 +749,35 @@ static void configline(char *line, unsigned int length)
 
     }
 
-    else if (count == 6 && buffer_match(word, "inputs", 6))
+    else if (isword(word, count, "inputs"))
     {
 
         state.inputs.count = 0;
 
     }
 
-    else if (count == 8 && buffer_match(word, "keyboard", 8))
+    else if (isword(word, count, "keyboard"))
     {
 
         addinput(INPUT_KEYBOARD, rest, length);
 
     }
 
-    else if (count == 5 && buffer_match(word, "mouse", 5))
+    else if (isword(word, count, "mouse"))
     {
 
         addinput(INPUT_MOUSE, rest, length);
 
     }
 
-    else if (count == 5 && buffer_match(word, "touch", 5))
+    else if (isword(word, count, "touch"))
     {
 
         addinput(INPUT_TOUCH, rest, length);
 
     }
 
-    else if (count == 12 && buffer_match(word, "transparency", 12))
+    else if (isword(word, count, "transparency"))
     {
 
         unsigned int i;
@@ -782,7 +789,7 @@ static void configline(char *line, unsigned int length)
 
     }
 
-    else if (count == 6 && buffer_match(word, "cursor", 6))
+    else if (isword(word, count, "cursor"))
     {
 
         unsigned int scale = cstring_read_value(rest, length, 10);
@@ -791,7 +798,7 @@ static void configline(char *line, unsigned int length)
 
     }
 
-    else if (count == 5 && buffer_match(word, "color", 5))
+    else if (isword(word, count, "color"))
     {
 
         unsigned int space = buffer_findbyte(rest, length, ' ');
@@ -809,14 +816,14 @@ static void configline(char *line, unsigned int length)
 
     }
 
-    else if (count == 8 && buffer_match(word, "bindings", 8))
+    else if (isword(word, count, "bindings"))
     {
 
         bind_reset();
 
     }
 
-    else if (count == 7 && buffer_match(word, "binding", 7))
+    else if (isword(word, count, "binding"))
     {
 
         bind_add(rest, length);
