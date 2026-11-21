@@ -21,6 +21,26 @@ static struct socket local;
 static struct socket server;
 static struct socket broadcast;
 
+static void settimeout(unsigned int timer, unsigned int ms)
+{
+
+    struct message_timerrequest timerrequest;
+
+    timerrequest.id = 0;
+    timerrequest.ms = ms;
+    timerrequest.repeat = 0;
+
+    channel_send(0, timer, MESSAGE_TYPE_TIMERREQUEST, sizeof (struct message_timerrequest), &timerrequest);
+
+}
+
+static void ontimerexpire(struct message *message)
+{
+
+    channel_close(0);
+
+}
+
 static unsigned int putoption(void *buffer, unsigned int count, unsigned int offset, unsigned char code, unsigned char length, void *data)
 {
 
@@ -163,11 +183,14 @@ static unsigned int parsemessage(struct lease *lease, unsigned char *data, unsig
 
 }
 
-static unsigned int exchange(unsigned int ethernet, unsigned char type, struct lease *lease)
+static unsigned int exchange(unsigned int ethernet, unsigned int timer, unsigned char type, struct lease *lease)
 {
 
     unsigned char buffer[4096];
     unsigned int count;
+
+    if (timer)
+        settimeout(timer, option_getdecimal("timeout"));
 
     socket_send_udp(0, ethernet, &local, &broadcast, &broadcast, buildmessage(buffer, 4096, type, lease), buffer);
 
@@ -244,6 +267,7 @@ static void onmain(struct message *message)
 
     char *device = option_getstring("ethernet-service");
     unsigned int ethernet = channel_lookup(device);
+    unsigned int timer = channel_lookup(option_getstring("timer-service"));
     char type[16];
 
     if (!cstring_match(system_address(device, "type", "type", type, 16), "dynamic"))
@@ -270,10 +294,13 @@ static void onmain(struct message *message)
         socket_resolvelocal(0, ethernet, &local);
         channel_send(0, ethernet, MESSAGE_TYPE_LINK, 0, 0);
 
-        reply = exchange(ethernet, DHCP_DISCOVER, &lease);
+        reply = exchange(ethernet, timer, DHCP_DISCOVER, &lease);
 
         if (reply == DHCP_OFFER)
-            reply = exchange(ethernet, DHCP_REQUEST, &lease);
+            reply = exchange(ethernet, timer, DHCP_REQUEST, &lease);
+
+        if (timer)
+            settimeout(timer, 0);
 
         channel_send(0, ethernet, MESSAGE_TYPE_UNLINK, 0, 0);
 
@@ -316,7 +343,10 @@ void init(void)
     option_add("clock-service", "clock:0");
     option_add("ethernet-service", "ethernet:0");
     option_add("type", "");
+    option_add("timer-service", "timer:0");
+    option_add("timeout", "10000");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_TIMEREXPIRE, ontimerexpire);
 
 }
 
