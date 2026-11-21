@@ -12,6 +12,7 @@
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
 .set CALL_INDEX_COLLECT,                0x0A
+.set CALL_INDEX_CALL,                   0x0B
 .set CALL_FRAME,                        48
 
 .macro callindex index
@@ -99,3 +100,14 @@ call_raise:
     movl %edi, 8(%rsp)
     movl %esi, 12(%rsp)
     callindex CALL_INDEX_RAISE
+
+.global call_call
+call_call:
+    subq $CALL_FRAME, %rsp
+    movl %edi, 8(%rsp)
+    movl %esi, 12(%rsp)
+    movl %edx, 16(%rsp)
+    movl %ecx, 20(%rsp)
+    movq %r8, 24(%rsp)
+    movq %r9, 32(%rsp)
+    callindex CALL_INDEX_CALL

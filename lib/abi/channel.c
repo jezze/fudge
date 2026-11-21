@@ -503,6 +503,25 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
 }
 
+unsigned int channel_call(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data, unsigned int replyevent, unsigned int replycount, void *replydata)
+{
+
+    struct message reply;
+    unsigned int status;
+
+    message_init(&reply, 0, 0, replycount, replydata);
+
+    while ((status = call_call(ichannel, target, event, count, data, &reply)) == MESSAGE_RETRY)
+        relieve();
+
+    /* a kernel service answers straight into the reply; a task, or a service answering later, with mail */
+    if (status == MESSAGE_OK)
+        return (reply.type == replyevent) ? reply.length : 0;
+
+    return (status == MESSAGE_PENDING) ? channel_wait(ichannel, target, replyevent, replycount, replydata) : 0;
+
+}
+
 static void fetchevents(unsigned int target)
 {
 
@@ -512,10 +531,7 @@ static void fetchevents(unsigned int target)
     unsigned int count;
     unsigned int i;
 
-    if (!place(1, target, MESSAGE_TYPE_EVENTSREQUEST, 0, 0))
-        return;
-
-    count = channel_wait(1, target, MESSAGE_TYPE_EVENTSRESPONSE, MESSAGE_SIZE, data);
+    count = channel_call(1, target, MESSAGE_TYPE_EVENTSREQUEST, 0, 0, MESSAGE_TYPE_EVENTSRESPONSE, MESSAGE_SIZE, data);
 
     for (i = 0; count >= offset && i < response->count && offset + sizeof (struct message_eventsentry) <= count; i++)
     {
@@ -542,22 +558,14 @@ static void fetchevents(unsigned int target)
 static unsigned int walk(unsigned int target, unsigned int parent, char *path, unsigned int length)
 {
 
+    struct message_walkresponse response;
     char data[MESSAGE_SIZE];
     struct message_walkrequest *request = (struct message_walkrequest *)data;
 
     request->parent = parent;
     request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct message_walkrequest));
 
-    if (channel_send(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
-    {
-
-        struct message_walkresponse response;
-
-        return (channel_wait(1, target, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
-
-    }
-
-    return 0;
+    return (channel_call(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
 
 }
 
@@ -565,28 +573,19 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 {
 
     struct message_readrequest request;
+    char data[MESSAGE_SIZE];
+    struct message_readresponse *response;
 
     request.id = id;
     request.offset = 0;
     request.count = 16;
     request.flags = 0;
+    response = message_validate(MESSAGE_TYPE_READRESPONSE, data, channel_call(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request, MESSAGE_TYPE_READRESPONSE, MESSAGE_SIZE, data));
 
-    if (channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
-    {
+    if (!response || response->buffer || response->count > 16)
+        return 0;
 
-        char data[MESSAGE_SIZE];
-        struct message_readresponse *response;
-
-        response = message_validate(MESSAGE_TYPE_READRESPONSE, data, channel_wait(1, target, MESSAGE_TYPE_READRESPONSE, MESSAGE_SIZE, data));
-
-        if (!response || response->buffer || response->count > 16)
-            return 0;
-
-        return cstring_read_value((char *)(response + 1), response->count, 10);
-
-    }
-
-    return 0;
+    return cstring_read_value((char *)(response + 1), response->count, 10);
 
 }
 

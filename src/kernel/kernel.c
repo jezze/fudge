@@ -417,8 +417,32 @@ unsigned int kernel_placereply(unsigned int target, unsigned int source, unsigne
 {
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
+    struct task *task = (mailbox) ? pool_gettask(mailbox->itask) : 0;
 
-    return (mailbox) ? mailbox_placereply(mailbox, source, event, count, data) : MESSAGE_FAILED;
+    if (!mailbox)
+        return MESSAGE_FAILED;
+
+    /* a call in progress on this channel: the answer is copied straight into the caller's reply, within its own call */
+    if (task && task->reply && task->replychannel == mailbox->ichannel)
+    {
+
+        struct message *reply = task->reply;
+
+        if (count > reply->length)
+            count = reply->length;
+
+        buffer_copy(reply->data, data, count);
+
+        reply->type = event;
+        reply->source = source;
+        reply->length = count;
+        task->reply = 0;
+
+        return MESSAGE_OK;
+
+    }
+
+    return mailbox_placereply(mailbox, source, event, count, data);
 
 }
 

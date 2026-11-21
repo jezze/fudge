@@ -9,6 +9,7 @@
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
 .set CALL_INDEX_COLLECT,                0x0A
+.set CALL_INDEX_CALL,                   0x0B
 .set CALL_FRAME,                        32
 
 # The kernel reads the arguments from the user stack in the same layout as on x86:
@@ -98,3 +99,14 @@ call_raise:
     sw a0, 4(sp)
     sw a1, 8(sp)
     callindex CALL_INDEX_RAISE
+
+.global call_call
+call_call:
+    addi sp, sp, -CALL_FRAME
+    sw a0, 4(sp)
+    sw a1, 8(sp)
+    sw a2, 12(sp)
+    sw a3, 16(sp)
+    sw a4, 20(sp)
+    sw a5, 24(sp)
+    callindex CALL_INDEX_CALL

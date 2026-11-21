@@ -1,4 +1,5 @@
 unsigned int call_announce(unsigned int ichannel, unsigned int length, char *name);
+unsigned int call_call(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data, struct message *reply);
 unsigned int call_collect(void);
 unsigned int call_debug(char *message);
 unsigned int call_despawn(void);

@@ -12,6 +12,7 @@
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
 .set CALL_INDEX_COLLECT,                0x0A
+.set CALL_INDEX_CALL,                   0x0B
 
 .section .text
 
@@ -78,5 +79,11 @@ call_collect:
 .global call_raise
 call_raise:
     movl $CALL_INDEX_RAISE, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_call
+call_call:
+    movl $CALL_INDEX_CALL, %eax
     int $CALL_INTERRUPT
     ret
