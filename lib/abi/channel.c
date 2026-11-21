@@ -7,6 +7,7 @@
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
 #define CHANNEL_STATE_CLOSED            2
+/* task mail is refused once a slot for replies is all that is left; the message being run holds one more */
 #define CHANNEL_FULL                    (MESSAGE_SLOTS - 2)
 
 struct inbox
@@ -98,6 +99,7 @@ static void locate(unsigned int ichannel, struct message *message)
 
     unsigned int page = ichannel * MESSAGE_SLOTS + message->slot;
 
+    /* the done page follows the message pages: found from where any picked message's page lies */
     inboxes[ichannel].done = (volatile unsigned char *)message->data + MESSAGE_SIZE * (MESSAGE_PAGES - page) + ichannel * MESSAGE_SLOTS;
 
 }
@@ -209,13 +211,13 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
 }
 
-/* someone may be retrying a send into our full channel 0: run its oldest message, but never from inside another one */
 static void relieve(void)
 {
 
     struct inbox *inbox = &inboxes[0];
     struct message message;
 
+    /* someone may be retrying a send into our full channel 0: run its oldest message, but never from inside another one */
     if (relieving || inbox->handed || !canpick(0))
         return;
 
