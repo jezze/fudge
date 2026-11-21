@@ -152,7 +152,10 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     if (inbox->count == MESSAGE_SLOTS)
         return MESSAGE_OK;
 
-    while ((status = call_pick(ichannel, &inbox->messages[inbox->count], MESSAGE_SLOTS - inbox->count, flags)) == MESSAGE_RAISED)
+    status = call_pick(ichannel, &inbox->messages[inbox->count], MESSAGE_SLOTS - inbox->count, flags);
+
+    /* raised bits have run their listeners: the caller decides whether to return or pick again */
+    if (status == MESSAGE_RAISED)
         runraised();
 
     if (status == MESSAGE_OK)
@@ -281,6 +284,9 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
 
             continue;
 
+        case MESSAGE_RAISED:
+            continue;
+
         case MESSAGE_OK:
             return message->type;
 
@@ -407,13 +413,32 @@ unsigned int channel_process(unsigned int ichannel)
 
     struct message message;
 
-    if (pick(ichannel, &message))
+    while (canpick(ichannel))
     {
 
-        dispatch(ichannel, &message);
-        finish(ichannel, &message);
+        switch (take(ichannel, &message, MESSAGE_FLAG_BLOCK | MESSAGE_FLAG_RAISED))
+        {
 
-        return message.type;
+        case MESSAGE_OK:
+            dispatch(ichannel, &message);
+            finish(ichannel, &message);
+
+            return message.type;
+
+        /* raised listeners ran: return, so the caller does what follows a message (the wm draws) */
+        case MESSAGE_RAISED:
+            return CHANNEL_EVENTS;
+
+        case MESSAGE_RETRY:
+            if (ichannel)
+                relieve();
+
+            break;
+
+        default:
+            return 0;
+
+        }
 
     }
 
@@ -436,6 +461,9 @@ unsigned int channel_drain(unsigned int ichannel)
             dispatch(ichannel, &message);
             finish(ichannel, &message);
 
+            break;
+
+        case MESSAGE_RAISED:
             break;
 
         case MESSAGE_RETRY:
