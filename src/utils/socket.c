@@ -7,10 +7,32 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 
+static void settimeout(unsigned int timer, unsigned int ms)
+{
+
+    struct message_timerrequest timerrequest;
+
+    timerrequest.id = 0;
+    timerrequest.ms = ms;
+    timerrequest.repeat = 0;
+
+    channel_send(0, timer, MESSAGE_TYPE_TIMERREQUEST, sizeof (struct message_timerrequest), &timerrequest);
+
+}
+
+static void ontimerexpire(struct message *message)
+{
+
+    channel_close(0);
+
+}
+
 static void onqueryrequest(struct message *message)
 {
 
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
+    unsigned int timer = channel_lookup(option_getstring("timer-service"));
+    unsigned int timeout = option_getdecimal("timeout");
 
     if (ethernet)
     {
@@ -18,6 +40,9 @@ static void onqueryrequest(struct message *message)
         char *optmode = option_getstring("mode");
         unsigned char buffer[MESSAGE_SIZE];
         unsigned int count;
+
+        if (timer)
+            settimeout(timer, timeout);
 
         socket_resolveremote(0, ethernet, &local, &router);
 
@@ -28,7 +53,14 @@ static void onqueryrequest(struct message *message)
             socket_send_tcp(0, ethernet, &local, &remote, &router, message->length, message->data);
 
             while (remote.info.tcp.state == TCP_STATE_ESTABLISHED && (count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
+            {
+
                 channel_send(0, message->source, MESSAGE_TYPE_DATA, count, buffer);
+
+                if (timer)
+                    settimeout(timer, timeout);
+
+            }
 
         }
 
@@ -42,6 +74,9 @@ static void onqueryrequest(struct message *message)
             channel_send(0, message->source, MESSAGE_TYPE_DATA, count, buffer);
 
         }
+
+        if (timer)
+            settimeout(timer, 0);
 
     }
 
@@ -96,8 +131,11 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "");
     option_add("mode", "");
+    option_add("timer-service", "timer:0");
+    option_add("timeout", "10000");
     channel_bind(MESSAGE_TYPE_QUERYREQUEST, onqueryrequest);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_TIMEREXPIRE, ontimerexpire);
 
 }
 
