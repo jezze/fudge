@@ -3012,7 +3012,7 @@ static void reportsizes(void)
 
     struct list_item *current = 0;
 
-    /* sizes go out when the drag ends: a report per step fills a slow client, and the wm sleeps sending to it (KERN-0023) */
+    /* sizes go out when the drag ends: a report per step fills a slow client, and the wm retries sending to it until it catches up (KERN-0023) */
     if (state.mousebuttonleft || state.mousebuttonright)
         return;
 

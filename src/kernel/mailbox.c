@@ -120,28 +120,9 @@ static void checkselflock(struct mailbox *mailbox)
 
 }
 
-static void reclaimtask(unsigned int itask)
-{
-
-    struct task *task = pool_gettask(itask);
-    unsigned int i;
-
-    for (i = 0; task && i < TASK_MAILBOXES; i++)
-    {
-
-        struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
-
-        if (mailbox)
-            reclaim(mailbox);
-
-    }
-
-}
-
 void mailbox_sleep(struct mailbox *mailbox)
 {
 
-    reclaimtask(mailbox->itask);
     checkselflock(mailbox);
     kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
 

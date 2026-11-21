@@ -189,7 +189,7 @@ static unsigned int place(unsigned int itask, void *stack)
 
         }
 
-        /* a kernel server answers into a slot of the caller's mailbox reserved before any work is done; no room even after reclaiming: the caller sleeps until mail arrives or a slot frees, then places again */
+        /* a kernel server answers into a slot of the caller's mailbox reserved before any work is done; no room even after reclaiming: the caller sleeps until mail arrives there or a sender to it is refused, then places again */
         status = mailbox_reservereply(mailbox);
 
         if (status == MESSAGE_RETRY)
