@@ -6,6 +6,7 @@
 static struct socket router;
 static struct socket local;
 static struct socket remotes[64];
+static unsigned int armed;
 static unsigned int ethernet;
 static unsigned int output;
 
@@ -47,6 +48,28 @@ static void onconsoledata(struct message *message)
 
 }
 
+static void settimeout(unsigned int timer, unsigned int ms)
+{
+
+    struct message_timerrequest timerrequest;
+
+    timerrequest.id = 0;
+    timerrequest.ms = ms;
+    timerrequest.repeat = 0;
+    armed = (ms) ? 1 : 0;
+
+    channel_send(0, timer, MESSAGE_TYPE_TIMERREQUEST, sizeof (struct message_timerrequest), &timerrequest);
+
+}
+
+static void ontimerexpire(struct message *message)
+{
+
+    if (armed)
+        channel_close(0);
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -56,6 +79,7 @@ static void onmain(struct message *message)
     if (ethernet)
     {
 
+        unsigned int timer = channel_lookup(option_getstring("timer-service"));
         char address[32];
         char buffer[MESSAGE_SIZE];
         unsigned int count;
@@ -67,11 +91,31 @@ static void onmain(struct message *message)
         socket_bind_tcps(&local, option_getstring("local-port"), mtwist_rand(&state), mtwist_rand(&state));
         socket_resolvelocal(0, ethernet, &local);
         channel_send(0, ethernet, MESSAGE_TYPE_LINK, 0, 0);
-        socket_resolveremote(0, ethernet, &local, &router);
-        socket_listen_tcp(ethernet, &local, remotes, 64, &router);
 
-        while ((count = socket_receive(0, ethernet, &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
-            channel_send(0, output, MESSAGE_TYPE_DATA, count, buffer);
+        if (timer)
+            settimeout(timer, option_getdecimal("timeout"));
+
+        socket_resolveremote(0, ethernet, &local, &router);
+
+        if (timer)
+            settimeout(timer, 0);
+
+        if (router.resolved)
+        {
+
+            socket_listen_tcp(ethernet, &local, remotes, 64, &router);
+
+            while ((count = socket_receive(0, ethernet, &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
+                channel_send(0, output, MESSAGE_TYPE_DATA, count, buffer);
+
+        }
+
+        else
+        {
+
+            channel_send_fmt(0, output, MESSAGE_TYPE_ERROR, "No answer from the router\n");
+
+        }
 
         channel_send(0, ethernet, MESSAGE_TYPE_UNLINK, 0, 0);
 
@@ -95,8 +139,11 @@ void init(void)
     option_add("local-address", "");
     option_add("local-port", "");
     option_add("router-address", "");
+    option_add("timer-service", "timer:0");
+    option_add("timeout", "5000");
     channel_bind(MESSAGE_TYPE_CONSOLEDATA, onconsoledata);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_TIMEREXPIRE, ontimerexpire);
 
 }
 
