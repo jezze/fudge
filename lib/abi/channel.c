@@ -7,6 +7,7 @@
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
 #define CHANNEL_STATE_CLOSED            2
+#define CHANNEL_FULL                    (MESSAGE_SLOTS - 2)
 
 struct inbox
 {
@@ -23,6 +24,7 @@ struct inbox
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
+static unsigned int relieving;
 static unsigned int status;
 static struct message_pipe pipe;
 
@@ -110,15 +112,24 @@ static void finish(unsigned int ichannel, struct message *message)
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
 
-    unsigned int status = call_pick(ichannel, inbox->messages, MESSAGE_SLOTS, flags);
+    unsigned int status;
+    unsigned int i;
+
+    for (i = 0; inbox->index + i < inbox->count; i++)
+        buffer_copy(&inbox->messages[i], &inbox->messages[inbox->index + i], sizeof (struct message));
 
     inbox->index = 0;
-    inbox->count = 0;
+    inbox->count = i;
+
+    if (inbox->count == MESSAGE_SLOTS)
+        return MESSAGE_OK;
+
+    status = call_pick(ichannel, &inbox->messages[inbox->count], MESSAGE_SLOTS - inbox->count, flags);
 
     if (status == MESSAGE_OK)
     {
 
-        locate(ichannel, &inbox->messages[0]);
+        locate(ichannel, &inbox->messages[inbox->count]);
 
         while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].type)
             inbox->count++;
@@ -169,45 +180,6 @@ static unsigned int canpick(unsigned int ichannel)
 
 }
 
-static unsigned int pick(unsigned int ichannel, struct message *message)
-{
-
-    while (canpick(ichannel))
-    {
-
-        unsigned int status = take(ichannel, message, MESSAGE_FLAG_BLOCK);
-
-        switch (status)
-        {
-
-        case MESSAGE_RETRY:
-            continue;
-
-        case MESSAGE_OK:
-            return message->type;
-
-        case MESSAGE_FAILED:
-            return 0;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    unsigned int status;
-
-    while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY);
-
-    return (status == MESSAGE_OK) ? event : 0;
-
-}
-
 static void dispatch(unsigned int ichannel, struct message *message)
 {
 
@@ -234,6 +206,75 @@ static void dispatch(unsigned int ichannel, struct message *message)
         break;
 
     }
+
+}
+
+/* someone may be retrying a send into our full channel 0: run its oldest message, but never from inside another one */
+static void relieve(void)
+{
+
+    struct inbox *inbox = &inboxes[0];
+    struct message message;
+
+    if (relieving || inbox->handed || !canpick(0))
+        return;
+
+    fill(0, inbox, 0);
+
+    if (inbox->count - inbox->index >= CHANNEL_FULL && take(0, &message, 0) == MESSAGE_OK)
+    {
+
+        relieving = 1;
+
+        dispatch(0, &message);
+        finish(0, &message);
+
+        relieving = 0;
+
+    }
+
+}
+
+static unsigned int pick(unsigned int ichannel, struct message *message)
+{
+
+    while (canpick(ichannel))
+    {
+
+        unsigned int status = take(ichannel, message, MESSAGE_FLAG_BLOCK);
+
+        switch (status)
+        {
+
+        case MESSAGE_RETRY:
+            if (ichannel)
+                relieve();
+
+            continue;
+
+        case MESSAGE_OK:
+            return message->type;
+
+        case MESSAGE_FAILED:
+            return 0;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    unsigned int status;
+
+    while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY)
+        relieve();
+
+    return (status == MESSAGE_OK) ? event : 0;
 
 }
 

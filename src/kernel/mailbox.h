@@ -29,7 +29,6 @@ unsigned int mailbox_keepreply(struct mailbox *mailbox);
 void mailbox_unreserve(struct mailbox *mailbox);
 unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int mailbox_placereserved(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data);
-void mailbox_waitfor(struct mailbox *mailbox, unsigned int itask);
 void mailbox_reset(struct mailbox *mailbox);
 void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel, unsigned long pages);
 void mailbox_init(struct mailbox *mailbox);

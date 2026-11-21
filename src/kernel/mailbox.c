@@ -11,7 +11,6 @@
 static void reclaim(struct mailbox *mailbox)
 {
 
-    unsigned int reclaimed = 0;
     unsigned int i;
 
     spinlock_acquire(&mailbox->spinlock);
@@ -27,16 +26,11 @@ static void reclaim(struct mailbox *mailbox)
 
             list_add_unsafe(&mailbox->free, &mailbox->items[i]);
 
-            reclaimed++;
-
         }
 
     }
 
     spinlock_release(&mailbox->spinlock);
-
-    if (reclaimed)
-        kernel_wake(mailbox->resource.inode);
 
 }
 
@@ -121,43 +115,8 @@ static void checkselflock(struct mailbox *mailbox)
 
     struct task *task = pool_gettask(mailbox->itask);
 
-    if (task && !task->waitingfor && !unpromised(mailbox) && !mailbox->reserved && !mailbox->queued.head)
+    if (task && !unpromised(mailbox) && !mailbox->reserved && !mailbox->queued.head)
         debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u sleeps on its own full mailbox", &mailbox->itask);
-
-}
-
-static void checkcycle(struct mailbox *mailbox, unsigned int itask)
-{
-
-    unsigned int owner = mailbox->itask;
-    unsigned int i;
-
-    for (i = 0; i < POOL_TASKS; i++)
-    {
-
-        struct task *task = pool_gettask(owner);
-        struct mailbox *next;
-
-        if (owner == itask)
-        {
-
-            debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u waits on task %u, which waits on it", &itask, &mailbox->itask);
-
-            return;
-
-        }
-
-        if (!task || !task->waitingfor)
-            return;
-
-        next = pool_getnodemailbox(task->waitingfor);
-
-        if (!next)
-            return;
-
-        owner = next->itask;
-
-    }
 
 }
 
@@ -259,8 +218,7 @@ unsigned int mailbox_reservereply(struct mailbox *mailbox)
 void mailbox_unreservereply(struct mailbox *mailbox)
 {
 
-    if (shift(mailbox, &mailbox->reply, 0))
-        kernel_wake(mailbox->resource.inode);
+    shift(mailbox, &mailbox->reply, 0);
 
 }
 
@@ -274,8 +232,7 @@ unsigned int mailbox_keepreply(struct mailbox *mailbox)
 void mailbox_unreserve(struct mailbox *mailbox)
 {
 
-    if (shift(mailbox, &mailbox->reserved, 0))
-        kernel_wake(mailbox->resource.inode);
+    shift(mailbox, &mailbox->reserved, 0);
 
 }
 
@@ -290,42 +247,6 @@ unsigned int mailbox_placereserved(struct mailbox *mailbox, unsigned int source,
 {
 
     return place(mailbox, &mailbox->reserved, 0, event, source, count, data);
-
-}
-
-void mailbox_waitfor(struct mailbox *mailbox, unsigned int itask)
-{
-
-    struct task *task = pool_gettask(itask);
-    unsigned int waiting = 0;
-
-    reclaimtask(itask);
-
-    if (task && mailbox->itask && mailbox->itask != itask)
-    {
-
-        reclaim(mailbox);
-        spinlock_acquire(&mailbox->spinlock);
-
-        if (unpromised(mailbox) <= MAILBOX_REPLYSLOTS)
-        {
-
-            task->waitingfor = mailbox->resource.inode;
-            waiting = 1;
-
-        }
-
-        spinlock_release(&mailbox->spinlock);
-
-    }
-
-    if (waiting)
-    {
-
-        checkcycle(mailbox, itask);
-        kernel_signal(itask, TASK_SIGNAL_BLOCK);
-
-    }
 
 }
 

@@ -52,7 +52,6 @@ static void retiretask(unsigned int itask)
             mailbox->resource.inode = pool_renewnode(inode);
 
             pool_unpickmailbox(task->imailbox[i]);
-            kernel_wake(inode);
 
         }
 
@@ -327,29 +326,6 @@ void kernel_signal(unsigned int itask, unsigned int signal)
         spinlock_acquire(&task->spinlock);
         task_signal(task, signal);
         spinlock_release(&task->spinlock);
-
-    }
-
-}
-
-void kernel_wake(unsigned int inode)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < POOL_TASKS; i++)
-    {
-
-        struct task *task = pool_gettask(i);
-
-        if (task && task->waitingfor == inode)
-        {
-
-            task->waitingfor = 0;
-
-            kernel_signal(i, TASK_SIGNAL_UNBLOCK);
-
-        }
 
     }
 

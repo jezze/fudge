@@ -1,6 +1,7 @@
 #define TASK_CODESIZE                   0x00200000
 #define TASK_STACKSIZE                  0x00008000
 #define TASK_BUFFERSIZE                 0x00008000
+#define TASK_RETRIESLOG                 0x10000
 #define TASK_MAILBOXES                  (MESSAGE_PAGES / MESSAGE_SLOTS)
 #define TASK_STATE_DEAD                 1
 #define TASK_STATE_BLOCKED              2
@@ -39,7 +40,7 @@ struct task
     unsigned int state;
     unsigned long mmap;
     unsigned long buffer;
-    unsigned int waitingfor;
+    unsigned int retries;
     unsigned int aborted;
     unsigned int started;
     unsigned int imailbox[TASK_MAILBOXES];

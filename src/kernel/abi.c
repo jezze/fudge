@@ -167,10 +167,23 @@ static unsigned int place(unsigned int itask, void *stack)
         if (target)
         {
 
+            struct task *task = pool_gettask(itask);
+
+            /* a full target never puts the sender to sleep, it retries; the target is woken in case it waits on another channel and must run its full channel 0 */
             status = kernel_place(inode, args->target, args->event, args->count, args->data);
 
             if (status == MESSAGE_RETRY)
-                mailbox_waitfor(target, itask);
+            {
+
+                kernel_signal(target->itask, TASK_SIGNAL_UNBLOCK);
+
+                if (++task->retries == TASK_RETRIESLOG)
+                    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u keeps retrying a send to task %u", &itask, &target->itask);
+
+            }
+
+            else
+                task->retries = 0;
 
             return status;
 
