@@ -12,6 +12,7 @@ endif
 include $(DIR_LIB)/$(LOADER)/rules.mk
 include $(DIR_LIB)/net/rules.mk
 include $(DIR_LIB)/socket/rules.mk
+include $(DIR_LIB)/ssl/rules.mk
 ifeq ($(TARGET),i386-tcc)
 include $(DIR_LIB)/tcc/rules.mk
 endif

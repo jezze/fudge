@@ -2469,7 +2469,7 @@ int br_ssl_choose_hash(unsigned bf);
  *    BR_TARGET().
  */
 
-#if BR_ENABLE_INTRINSICS && (BR_GCC_4_4 || BR_CLANG_3_7 || BR_MSC_2005)
+#if BR_ENABLE_INTRINSICS && (BR_AES_X86NI || BR_SSE2 || BR_RDRAND) && (BR_GCC_4_4 || BR_CLANG_3_7 || BR_MSC_2005)
 
 /*
  * x86 intrinsics (both 32-bit and 64-bit).

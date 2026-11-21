@@ -244,4 +244,19 @@
 #define BR_BE_UNALIGNED   1
  */
 
+/*
+ * fudge: no OS random source, clock, CPU-specific intrinsics or SIMD.
+ * Callers seed the PRNG with br_ssl_engine_inject_entropy() and give
+ * the X.509 engine the time with br_x509_minimal_set_time().
+ */
+#define BR_RDRAND   0
+#define BR_USE_GETENTROPY   0
+#define BR_USE_URANDOM   0
+#define BR_USE_WIN32_RAND   0
+#define BR_USE_UNIX_TIME   0
+#define BR_USE_WIN32_TIME   0
+#define BR_AES_X86NI   0
+#define BR_SSE2   0
+#define BR_POWER8   0
+
 #endif
