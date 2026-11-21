@@ -13,7 +13,7 @@
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
-#define NUM_EVENTS                      82
+#define NUM_EVENTS                      83
 
 static struct job job;
 static char script[SCRIPTSIZE];
@@ -319,6 +319,7 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"wmpaste", MESSAGE_TYPE_WMPASTE},
     {"eventsrequest", MESSAGE_TYPE_EVENTSREQUEST},
     {"eventsresponse", MESSAGE_TYPE_EVENTSRESPONSE},
+    {"start", MESSAGE_TYPE_START},
     {"p9p", MESSAGE_TYPE_P9P}
 };
 

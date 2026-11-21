@@ -111,6 +111,7 @@
 #define MESSAGE_TYPE_WMPASTE            0x67
 #define MESSAGE_TYPE_EVENTSREQUEST      0x68
 #define MESSAGE_TYPE_EVENTSRESPONSE     0x69
+#define MESSAGE_TYPE_START              0x6A
 #define MESSAGE_TYPE_P9P                0x70
 #define PIPE_ROUTES                     10
 #define READ_FLAG_BUFFER                0x01

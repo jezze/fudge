@@ -217,6 +217,34 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
     struct inbox *inbox = &inboxes[ichannel];
 
+    /* a job's options, MAIN and paths in one message: listeners see them one by one, as if sent apart */
+    if (message->type == MESSAGE_TYPE_START)
+    {
+
+        unsigned int offset = 0;
+
+        while (offset + sizeof (struct message_eventsentry) <= message->length)
+        {
+
+            struct message_eventsentry *entry = (struct message_eventsentry *)((char *)message->data + offset);
+            struct message part;
+
+            offset += sizeof (struct message_eventsentry);
+
+            if (entry->length > message->length - offset || entry->event == MESSAGE_TYPE_START)
+                break;
+
+            message_init(&part, entry->event, message->source, entry->length, (char *)message->data + offset);
+            dispatch(ichannel, &part);
+
+            offset += (entry->length + 3) & ~3u;
+
+        }
+
+        return;
+
+    }
+
     if (message->type == MESSAGE_TYPE_MAIN && !ichannel)
         setpipe(message);
 
