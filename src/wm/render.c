@@ -250,6 +250,19 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         if (widget_hasscrollbar(child))
             csize.w = util_min(csize.w + CONFIG_SCROLL_WIDTH, climit.w);
 
+        if (measureminimum && child->type == WIDGET_TYPE_MEDIA)
+        {
+
+            unsigned int stretch = getstretch(widget->attributes.flow);
+
+            if (stretch & STRETCH_HORIZONTAL)
+                csize.w = 0;
+
+            if (stretch & STRETCH_VERTICAL)
+                csize.h = 0;
+
+        }
+
         if (child->attributes.span && !measurespans)
         {
 
