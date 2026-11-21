@@ -10,6 +10,29 @@ static char inputbuffer[4096];
 static struct ring input;
 static unsigned int ethernet;
 static unsigned int output;
+static unsigned int armed;
+
+static void settimeout(unsigned int timer, unsigned int ms)
+{
+
+    struct message_timerrequest timerrequest;
+
+    timerrequest.id = 0;
+    timerrequest.ms = ms;
+    timerrequest.repeat = 0;
+    armed = (ms) ? 1 : 0;
+
+    channel_send(0, timer, MESSAGE_TYPE_TIMERREQUEST, sizeof (struct message_timerrequest), &timerrequest);
+
+}
+
+static void ontimerexpire(struct message *message)
+{
+
+    if (armed)
+        channel_close(0);
+
+}
 
 static unsigned int buildrequest(unsigned int count, void *buffer)
 {
@@ -104,6 +127,7 @@ static void onmain(struct message *message)
     if (ethernet)
     {
 
+        unsigned int timer = channel_lookup(option_getstring("timer-service"));
         char address[32];
         char buffer[4096];
         unsigned int count;
@@ -121,12 +145,33 @@ static void onmain(struct message *message)
             dnsresolve(&remote, option_getstring("domain"));
 
         channel_send(0, ethernet, MESSAGE_TYPE_LINK, 0, 0);
+
+        if (timer)
+            settimeout(timer, option_getdecimal("timeout"));
+
         socket_resolveremote(0, ethernet, &local, &router);
         socket_connect_tcp(0, ethernet, &local, &remote, &router);
-        socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
-        while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
-            channel_send(0, output, MESSAGE_TYPE_DATA, count, buffer);
+        if (timer)
+            settimeout(timer, 0);
+
+        if (remote.info.tcp.state == TCP_STATE_ESTABLISHED)
+        {
+
+            socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
+
+            while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
+                channel_send(0, output, MESSAGE_TYPE_DATA, count, buffer);
+
+        }
+
+        else
+        {
+
+            channel_send_fmt(0, output, MESSAGE_TYPE_ERROR, "Could not connect\n");
+            channel_close(0);
+
+        }
 
         channel_send(0, ethernet, MESSAGE_TYPE_UNLINK, 0, 0);
 
@@ -151,8 +196,11 @@ void init(void)
     option_add("channel", "#fudge");
     option_add("nick", "");
     option_add("realname", "Anonymous User");
+    option_add("timer-service", "timer:0");
+    option_add("timeout", "10000");
     channel_bind(MESSAGE_TYPE_CONSOLEDATA, onconsoledata);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_TIMEREXPIRE, ontimerexpire);
 
 }
 
