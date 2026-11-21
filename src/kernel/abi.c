@@ -119,6 +119,28 @@ static unsigned int spawn(unsigned int itask, void *stack)
 
 }
 
+static unsigned int raise(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int target; unsigned int bits;} *args = stack;
+    struct mailbox *mailbox = pool_getnodemailbox(args->target);
+
+    if (!mailbox || !mailbox->itask)
+        return MESSAGE_FAILED;
+
+    kernel_raise(mailbox->itask, args->bits);
+
+    return MESSAGE_OK;
+
+}
+
+static unsigned int collect(unsigned int itask, void *stack)
+{
+
+    return kernel_collect(itask);
+
+}
+
 static unsigned int despawn(unsigned int itask, void *stack)
 {
 
@@ -266,11 +288,11 @@ void abi_setup(void)
     abi_setcallback(0x03, spawn);
     abi_setcallback(0x04, despawn);
     abi_setcallback(0x05, kill);
-    abi_setcallback(0x06, debug);
+    abi_setcallback(0x06, raise);
     abi_setcallback(0x07, load);
     abi_setcallback(0x08, unload);
     abi_setcallback(0x09, announce);
-    abi_setcallback(0x0A, debug);
+    abi_setcallback(0x0A, collect);
     abi_setcallback(0x0B, debug);
     abi_setcallback(0x0C, debug);
     abi_setcallback(0x0D, debug);

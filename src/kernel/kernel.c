@@ -331,6 +331,47 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
+void kernel_raise(unsigned int itask, unsigned int bits)
+{
+
+    struct task *task = pool_gettask(itask);
+
+    if (task)
+    {
+
+        spinlock_acquire(&task->spinlock);
+
+        task->raised |= bits;
+
+        spinlock_release(&task->spinlock);
+        kernel_signal(itask, TASK_SIGNAL_UNBLOCK);
+
+    }
+
+}
+
+unsigned int kernel_collect(unsigned int itask)
+{
+
+    struct task *task = pool_gettask(itask);
+    unsigned int bits = 0;
+
+    if (task)
+    {
+
+        spinlock_acquire(&task->spinlock);
+
+        bits = task->raised;
+        task->raised = 0;
+
+        spinlock_release(&task->spinlock);
+
+    }
+
+    return bits;
+
+}
+
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 

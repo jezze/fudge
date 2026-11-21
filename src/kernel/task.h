@@ -41,6 +41,7 @@ struct task
     unsigned long mmap;
     unsigned long buffer;
     unsigned int retries;
+    unsigned int raised;
     unsigned int aborted;
     unsigned int started;
     unsigned int imailbox[TASK_MAILBOXES];

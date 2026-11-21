@@ -45,6 +45,7 @@ void task_reset(struct task *task)
 
     task->state = TASK_STATE_DEAD;
     task->retries = 0;
+    task->raised = 0;
     task->aborted = 0;
     task->started = 0;
     task->mmap = 0;

@@ -131,7 +131,12 @@ void mailbox_sleep(struct mailbox *mailbox)
 unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int flags)
 {
 
+    struct task *task = pool_gettask(mailbox->itask);
     unsigned int n;
+
+    /* raised bits go before mail on channel 0, so steady mail cannot hold them back */
+    if (!mailbox->ichannel && task && task->raised)
+        return MESSAGE_RAISED;
 
     reclaim(mailbox);
     spinlock_acquire(&mailbox->spinlock);

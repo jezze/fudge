@@ -3,6 +3,7 @@
 #include "channel.h"
 
 #define CHANNEL_EVENTS                  256
+#define CHANNEL_BITS                    32
 #define CHANNEL_MAILBOXES               (MESSAGE_PAGES / MESSAGE_SLOTS)
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
@@ -23,6 +24,7 @@ struct inbox
 };
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
+static void (*raisedlisteners[CHANNEL_BITS])(void);
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
 static unsigned int relieving;
@@ -111,6 +113,22 @@ static void finish(unsigned int ichannel, struct message *message)
 
 }
 
+static void runraised(void)
+{
+
+    unsigned int bits = call_collect();
+    unsigned int i;
+
+    for (i = 0; i < CHANNEL_BITS; i++)
+    {
+
+        if ((bits & (1u << i)) && raisedlisteners[i])
+            raisedlisteners[i]();
+
+    }
+
+}
+
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
 
@@ -126,7 +144,8 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     if (inbox->count == MESSAGE_SLOTS)
         return MESSAGE_OK;
 
-    status = call_pick(ichannel, &inbox->messages[inbox->count], MESSAGE_SLOTS - inbox->count, flags);
+    while ((status = call_pick(ichannel, &inbox->messages[inbox->count], MESSAGE_SLOTS - inbox->count, flags)) == MESSAGE_RAISED)
+        runraised();
 
     if (status == MESSAGE_OK)
     {
@@ -508,6 +527,21 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 
 }
 
+void channel_bindraised(unsigned int bit, void (*callback)(void))
+{
+
+    if (bit < CHANNEL_BITS)
+        raisedlisteners[bit] = callback;
+
+}
+
+unsigned int channel_raise(unsigned int target, unsigned int bit)
+{
+
+    return (bit < CHANNEL_BITS) ? call_raise(resolve(target), 1u << bit) == MESSAGE_OK : 0;
+
+}
+
 void channel_close(unsigned int ichannel)
 {
 
@@ -549,6 +583,8 @@ static void abortdrain(void)
 
     struct message messages[MESSAGE_SLOTS];
     unsigned int i;
+
+    call_collect();
 
     for (i = 0; i < CHANNEL_MAILBOXES; i++)
     {
