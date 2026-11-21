@@ -632,13 +632,18 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/socket.o \
+    $(DIR_SRC)/utils/tls.o \
 
 L:=\
+    $(DIR_LIB)/ssl/ssl.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/hash/hash.a \
     $(DIR_LIB)/socket/socket.a \
     $(DIR_LIB)/net/net.a \
+
+$(DIR_SRC)/utils/tls.o: PP_FLAGS:=$(filter-out -std=c89 -pedantic, $(PP_FLAGS)) $(SSL_FLAGS)
+$(DIR_SRC)/utils/tls.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic, $(CC_FLAGS)) -std=c99
 
 include $(DIR_MK)/bin.mk
 
