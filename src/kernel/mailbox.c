@@ -236,6 +236,14 @@ void mailbox_unreserve(struct mailbox *mailbox)
 
 }
 
+unsigned int mailbox_placenotify(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    /* notifies also leave a slot to task mail: a slot freed in a flooded mailbox goes to a task retrying a send, not to the next event */
+    return place(mailbox, 0, MAILBOX_REPLYSLOTS + MAILBOX_MAILSLOTS, event, source, count, data);
+
+}
+
 unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
