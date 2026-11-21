@@ -194,7 +194,7 @@ static struct message_audioinfo getinfo(void)
 
     struct message_audioinfo audioinfo;
 
-    if (!channel_send(1, audio, MESSAGE_TYPE_INFO, 0, 0) || !channel_wait(1, audio, MESSAGE_TYPE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo))
+    if (!channel_call(1, audio, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo))
         buffer_clear(&audioinfo, sizeof (struct message_audioinfo));
 
     return audioinfo;

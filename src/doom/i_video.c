@@ -557,9 +557,7 @@ static void setmode(void)
     videoconf.bpp = 4;
 
     channel_send(0, videotarget, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
-    channel_send(1, videotarget, MESSAGE_TYPE_INFO, 0, 0);
-
-    if (channel_wait(1, videotarget, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.bpp == 4)
+    if (channel_call(1, videotarget, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.bpp == 4)
     {
 
         framebuffer = (unsigned int *)videoinfo.framebuffer;
@@ -618,8 +616,7 @@ static void enterfullscreen(void)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_TYPE_WMGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
+        channel_call(1, wm, MESSAGE_TYPE_WMGRAB, 0, 0, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -665,8 +662,7 @@ static void leavefullscreen(void)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_TYPE_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
+        channel_call(1, wm, MESSAGE_TYPE_WMUNGRAB, 0, 0, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 

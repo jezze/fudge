@@ -691,9 +691,7 @@ static void onmain(struct message *message)
 
     }
 
-    channel_send(1, timer, MESSAGE_TYPE_INFO, 0, 0);
-
-    if (!channel_wait(1, timer, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo) || !timerinfo.hz)
+    if (!channel_call(1, timer, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo) || !timerinfo.hz)
         return;
 
     hz = timerinfo.hz;

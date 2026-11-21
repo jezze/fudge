@@ -19,9 +19,7 @@ static void onmain(struct message *message)
 
         struct message_batteryinfo batteryinfo;
 
-        channel_send(1, battery, MESSAGE_TYPE_INFO, 0, 0);
-
-        if (channel_wait(1, battery, MESSAGE_TYPE_BATTERYINFO, sizeof (struct message_batteryinfo), &batteryinfo))
+        if (channel_call(1, battery, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_BATTERYINFO, sizeof (struct message_batteryinfo), &batteryinfo))
         {
 
             char *charge = (batteryinfo.unit == MESSAGE_BATTERY_MILLIAMPS) ? "mAh" : "mWh";

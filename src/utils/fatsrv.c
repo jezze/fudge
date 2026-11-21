@@ -37,8 +37,7 @@ static void sendblockrequest(unsigned int event, unsigned int reply, unsigned in
     request.count = count * sectorsize;
     request.target = 0;
 
-    if (channel_send(1, block, event, sizeof (struct message_blockrequest), &request))
-        channel_wait(1, block, reply, sizeof (struct message_blockresponse), &response);
+    channel_call(1, block, event, sizeof (struct message_blockrequest), &request, reply, sizeof (struct message_blockresponse), &response);
 
 }
 
@@ -393,9 +392,7 @@ static unsigned int getnow(unsigned short *date, unsigned short *time)
 
         struct message_clockinfo clockinfo;
 
-        channel_send(1, clock, MESSAGE_TYPE_INFO, 0, 0);
-
-        if (!channel_wait(1, clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo) || clockinfo.year < 1980)
+        if (!channel_call(1, clock, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo) || clockinfo.year < 1980)
             return 0;
 
         *date = ((clockinfo.year - 1980) << 9) | (clockinfo.month << 5) | clockinfo.day;
@@ -1552,9 +1549,7 @@ static void onmain(struct message *message)
 
         struct fat fat;
 
-        channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0);
-
-        if (!channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
+        if (!channel_call(1, block, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
             return;
 
         sectorsize = 512;

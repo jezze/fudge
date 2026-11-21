@@ -90,22 +90,14 @@ static unsigned int getdisksector(unsigned int sector, unsigned int blocksize)
 static unsigned int sendblockrequest(unsigned int event, unsigned int reply, unsigned int count, unsigned int sector, unsigned int blocksize, unsigned int target)
 {
 
+    struct message_blockresponse response;
     struct message_blockrequest request;
 
     request.sector = partsector + getdisksector(sector, blocksize);
     request.count = count;
     request.target = target;
 
-    if (channel_send(1, block, event, sizeof (struct message_blockrequest), &request))
-    {
-
-        struct message_blockresponse response;
-
-        return (channel_wait(1, block, reply, sizeof (struct message_blockresponse), &response)) ? response.count : 0;
-
-    }
-
-    return 0;
+    return (channel_call(1, block, event, sizeof (struct message_blockrequest), &request, reply, sizeof (struct message_blockresponse), &response)) ? response.count : 0;
 
 }
 
@@ -2138,9 +2130,7 @@ static void onmain(struct message *message)
     if (block)
     {
 
-        channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0);
-
-        if (!channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
+        if (!channel_call(1, block, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
             return;
 
         readsuperblock();

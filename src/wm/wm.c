@@ -283,8 +283,7 @@ static void configurevideo(unsigned int channel)
     buffer_clear(black, 768);
     channel_send(0, channel, MESSAGE_TYPE_VIDEOCMAP, 768, &black);
     channel_send(0, channel, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.video[0].videoconf);
-    channel_send(1, channel, MESSAGE_TYPE_INFO, 0, 0);
-    channel_wait(1, channel, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+    channel_call(1, channel, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_VIDEOINFO, 0, 0);
 
 }
 
@@ -304,8 +303,7 @@ static void setupvideos(void)
         {
 
             channel_send(0, channel, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.video[i].videoconf);
-            channel_send(1, channel, MESSAGE_TYPE_INFO, 0, 0);
-            channel_wait(1, channel, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+            channel_call(1, channel, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_VIDEOINFO, 0, 0);
 
         }
 
@@ -3849,9 +3847,7 @@ static void showclock(void)
 
     struct message_clockinfo clockinfo;
 
-    channel_send(1, state.clock, MESSAGE_TYPE_INFO, 0, 0);
-
-    if (channel_wait(1, state.clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
+    if (channel_call(1, state.clock, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
     {
 
         unsigned char hours;

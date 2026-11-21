@@ -534,17 +534,24 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 unsigned int channel_call(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data, unsigned int replyevent, unsigned int replycount, void *replydata)
 {
 
+    char buffer[MESSAGE_SIZE];
     struct message reply;
     unsigned int status;
 
-    message_init(&reply, 0, 0, replycount, replydata);
+    message_init(&reply, 0, 0, MESSAGE_SIZE, buffer);
 
     while ((status = call_call(ichannel, target, event, count, data, &reply)) == MESSAGE_RETRY)
         relieve();
 
-    /* a kernel service answers straight into the reply; a task, or a service answering later, with mail */
+    /* a kernel service answers straight into the reply, which listeners see like any awaited answer; a task, or a service answering later, answers with mail */
     if (status == MESSAGE_OK)
-        return (reply.type == replyevent) ? reply.length : 0;
+    {
+
+        dispatch(ichannel, &reply);
+
+        return (reply.type == replyevent) ? buffer_read(replydata, replycount, reply.data, reply.length, 0) : 0;
+
+    }
 
     return (status == MESSAGE_PENDING) ? channel_wait(ichannel, target, replyevent, replycount, replydata) : 0;
 
