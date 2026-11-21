@@ -255,7 +255,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
             unsigned int stretch = getstretch(widget->attributes.flow);
 
-            if (stretch & STRETCH_HORIZONTAL)
+            if (measureclipped || (stretch & STRETCH_HORIZONTAL))
                 csize.w = 0;
 
             if (stretch & STRETCH_VERTICAL)
@@ -777,7 +777,7 @@ static struct util_size getsizebox(struct widget *widget, struct util_size *limi
     unsigned int clipped = measureclipped;
     struct util_size csize;
 
-    measureclipped = clipped || widget_isscrollable(widget);
+    measureclipped = clipped || widget_isscrollable(widget) || (measureminimum && widget_iseditable(widget));
     csize = childrengetsize(widget, &inner);
     measureclipped = clipped;
 
@@ -1135,7 +1135,10 @@ static struct util_size measurewindow(struct widget *widget, struct util_size *l
     measurespans = 0;
     measureminimum = 0;
 
-    return util_size(util_clamp(util_max(csize.w, title.width + CONFIG_WINDOW_BUTTON_WIDTH * 4), 0, limit->w), util_clamp(csize.h + CONFIG_WINDOW_BUTTON_HEIGHT, 0, limit->h));
+    if (!minimum)
+        csize.w = util_max(csize.w, title.width + CONFIG_WINDOW_BUTTON_WIDTH * 4);
+
+    return util_size(util_clamp(csize.w, CONFIG_WINDOW_BUTTON_WIDTH * 4, limit->w), util_clamp(csize.h + CONFIG_WINDOW_BUTTON_HEIGHT, 0, limit->h));
 
 }
 
@@ -1186,12 +1189,17 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     unsigned int onclose = util_region_intersects(&rclose, mouse.x, mouse.y);
     struct palette *normal = getpalette(PALETTE_WINDOW, SHADE_NORMAL);
     struct palette *hover = getpalette(PALETTE_WINDOW, SHADE_HOVER);
+    int tx0 = util_max(x0, rtitle.position.x);
+    int tx2 = util_min(x2, rtitle.position.x + (int)rtitle.size.w);
 
     blit_frame(display, &rhamburger, line, x0, x2, normal->frame);
     blit_frame(display, &rminimize, line, x0, x2, normal->frame);
     blit_frame(display, &rtitle, line, x0, x2, normal->frame);
     blit_frame(display, &rclose, line, x0, x2, normal->frame);
-    textrender(display, widget, &rtitle, normal->text, x0, x2, 0, &zerosize, 0, line);
+
+    if (tx0 < tx2)
+        textrender(display, widget, &rtitle, normal->text, tx0, tx2, 0, &zerosize, 0, line);
+
     blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? hover->icon : normal->icon);
     blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? hover->icon : normal->icon);
     blit_iconx(display, &rclose, line, x0, x2, (onclose) ? hover->icon : normal->icon);
