@@ -23,6 +23,10 @@ static unsigned int isaddress(char *host)
 static void opensocket(unsigned int source, struct url *url, char address[32])
 {
 
+    unsigned int secure = url->scheme && cstring_match(url->scheme, "https");
+    char *mode = (secure) ? "tls" : "tcp";
+    char *port = (url->port) ? url->port : ((secure) ? "443" : "80");
+
     unsigned int target = fs_spawn(2, "initrd:bin/socket");
 
     if (target)
@@ -31,7 +35,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         struct message_pipe pipe;
         struct message message;
 
-        channel_send_fmt(2, target, MESSAGE_TYPE_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0remote-port\\0%s\\0", address, (url->port) ? url->port : "80");
+        channel_send_fmt(2, target, MESSAGE_TYPE_OPTION, "mode\\0%s\\0remote-address\\0%s\\0remote-port\\0%s\\0server-name\\0%s\\0", mode, address, port, url->host);
         message_initpipe(&pipe);
         channel_send(2, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 

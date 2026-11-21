@@ -94,9 +94,9 @@ static char *home =
     "@media (prefers-color-scheme: dark){body{color:#dde2de;background:#151816}h1{color:#9fd3a8;border-color:#3d5e45}code{background:#262b28}a{color:#8cc4ff}}"
     "</style></head><body>"
     "<h1>Browser</h1>"
-    "<p>Type an address in the bar above and press Enter. Addresses can be files, such as <code>root:data/html/index.html</code>, or pages over <code>http://</code>.</p>"
+    "<p>Type an address in the bar above and press Enter. Addresses can be files, such as <code>root:data/html/index.html</code>, or pages over <code>http://</code> and <code>https://</code>.</p>"
     "<ul><li><a href=\"initrd:data/help.txt\">initrd:data/help.txt</a></li><li><a href=\"root:data/html/index.html\">root:data/html/index.html</a> (needs the root disk)</li></ul>"
-    "<p>HTML, CSS, PNG images and simple JavaScript are supported; https is not supported yet.</p>"
+    "<p>HTML, CSS, PNG images and simple JavaScript are supported.</p>"
     "</body></html>";
 
 static char lower(char c)
@@ -310,7 +310,12 @@ static unsigned int resolve(char *out, unsigned int size, char *from, char *href
     if (link[0] == '/' && link[1] == '/')
     {
 
-        cstring_write_fmt(out, size, 0, "http:%s\\0", link);
+        unsigned int scheme = findscheme(from);
+
+        if (scheme)
+            cstring_write_fmt(out, size, 0, "%w:%s\\0", from, &scheme, link);
+        else
+            cstring_write_fmt(out, size, 0, "http:%s\\0", link);
 
         return 1;
 
@@ -543,7 +548,7 @@ static struct page loadhttp(char *url)
         if (!count)
         {
 
-            seterror("The host could not be reached.");
+            seterror((findscheme(url) == 5) ? "The host could not be reached, or its certificate could not be verified." : "The host could not be reached.");
 
             return page(0, 0);
 
@@ -588,10 +593,10 @@ static struct page loadhttp(char *url)
 
             copystring(fetched, URLSIZE, next, cstring_length(next));
 
-            if (!matchprefix(next, cstring_length(next), "http://"))
+            if (!matchprefix(next, cstring_length(next), "http://") && !matchprefix(next, cstring_length(next), "https://"))
             {
 
-                seterror("The page has moved to an address that is not http://, such as https://, which is not supported yet.");
+                seterror("The page has moved to an address that is not http:// or https://.");
 
                 return page(0, 0);
 
@@ -654,10 +659,10 @@ static struct page load(char *url)
     if (scheme)
     {
 
-        if (scheme == 4 && matchprefix(url, scheme, "http"))
+        if ((scheme == 4 && matchprefix(url, scheme, "http")) || (scheme == 5 && matchprefix(url, scheme, "https")))
             return loadhttp(url);
 
-        seterror("Only http:// addresses and files are supported.");
+        seterror("Only http:// and https:// addresses and files are supported.");
 
         return page(0, 0);
 
