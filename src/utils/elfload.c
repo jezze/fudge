@@ -33,20 +33,43 @@ static void relocate(unsigned int address)
         if (mapdata[i + width + 1] == 'T')
             writeaddress(&mapdata[i], cstring_read_value(&mapdata[i], width, 16) + address);
 
+        if (mapdata[i + width + 1] == 'T' || mapdata[i + width + 1] == 'X')
+            mapdata[i + width + 1] = 'L';
+
     }
 
 }
 
-static unsigned int findsymbol(char *data, unsigned int count, unsigned int length, char *symbol)
+static unsigned int countsymbols(char type)
 {
 
+    unsigned int offset = 0;
+    unsigned int total = 0;
+    unsigned int i;
+
+    for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
+    {
+
+        if (mapdata[i + width + 1] == type)
+            total++;
+
+    }
+
+    return total;
+
+}
+
+static unsigned int findsymbol(char *data, unsigned int count, unsigned int length, char *symbol, char *types)
+{
+
+    unsigned int ntypes = cstring_length(types);
     unsigned int offset = 0;
     unsigned int i;
 
     for (i = 0; (offset = buffer_eachbyte(data, count, '\n', offset)); i = offset)
     {
 
-        if ((data[i + width + 1] == 'T') || (data[i + width + 1] == 'A'))
+        if (buffer_findbyte(types, ntypes, data[i + width + 1]) < ntypes)
         {
 
             if (buffer_match(&data[i + width + 3], symbol, length))
@@ -60,21 +83,22 @@ static unsigned int findsymbol(char *data, unsigned int count, unsigned int leng
 
 }
 
-static void updateundefined(void)
+static unsigned int updateundefined(unsigned int source)
 {
 
+    unsigned int unresolved = 0;
     unsigned int offset = 0;
     unsigned int i;
 
     for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
     {
 
-        if (mapdata[i + width + 1] == 'U')
+        if (mapdata[i + width + 1] == 'U' || mapdata[i + width + 1] == 'A')
         {
 
             char *symbol = &mapdata[i + width + 3];
             unsigned int length = (offset - i) - (width + 3);
-            unsigned int address = findsymbol(kerneldata, kernelcount, length, symbol);
+            unsigned int address = findsymbol(kerneldata, kernelcount, length, symbol, "TA");
 
             if (!address)
             {
@@ -89,7 +113,7 @@ static void updateundefined(void)
                 count = fs_read_path(1, module, data, 4096);
 
                 if (count)
-                    address = findsymbol(data, count, length, symbol);
+                    address = findsymbol(data, count, length, symbol, "L");
 
             }
 
@@ -102,9 +126,24 @@ static void updateundefined(void)
 
             }
 
+            else
+            {
+
+                unsigned int namelength = length - 1;
+
+                mapdata[i + width + 1] = 'U';
+
+                channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %w\n", symbol, &namelength);
+
+                unresolved++;
+
+            }
+
         }
 
     }
+
+    return unresolved;
 
 }
 
@@ -417,7 +456,7 @@ static unsigned int findunresolved32(unsigned int source, unsigned int target, u
                 fs_read_full(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_full(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
 
-                if (!symbol.shindex && !findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name))
+                if (!symbol.shindex && !findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name, "TA"))
                 {
 
                     channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
@@ -480,7 +519,7 @@ static unsigned int apply32(unsigned int source, unsigned int target, unsigned i
                 else
                     fs_read_full(1, target, id, &value, 4, dataheader->offset + relocation.offset);
 
-                address = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
+                address = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name, "TA");
                 place = base + dataheader->offset + relocation.offset;
 
                 if (header->machine == ELF_MACHINE_RISCV)
@@ -640,7 +679,7 @@ static unsigned int findunresolved64(unsigned int source, unsigned int target, u
                 fs_read_full(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_full(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + relocation.symbol * symbolheader->esize);
 
-                if (!symbol.shindex && !findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name))
+                if (!symbol.shindex && !findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name, "TA"))
                 {
 
                     channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
@@ -696,7 +735,7 @@ static unsigned int apply64(unsigned int source, unsigned int target, unsigned i
                 fs_read_full(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_full(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + relocation.symbol * symbolheader->esize);
 
-                value = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
+                value = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name, "TA");
                 value += relocation.addend;
 
                 if (header->machine == ELF_MACHINE_AARCH64)
@@ -870,14 +909,17 @@ static void load(unsigned int source, char *path)
 
                         mapcount = fs_read_path(1, mapname, mapdata, 4096);
 
-                        if (mapcount)
+                        if (mapcount && countsymbols('L'))
                         {
 
-                            unsigned int textoffset;
+                            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Already loaded: %s\n", path);
 
-                            updateundefined();
+                        }
 
-                            textoffset = (class == ELF_IDENTITY_CLASS_64) ? link64(source, target, id, &header, address) : link32(source, target, id, (struct elf_header *)&header, address);
+                        else if (mapcount && !updateundefined(source))
+                        {
+
+                            unsigned int textoffset = (class == ELF_IDENTITY_CLASS_64) ? link64(source, target, id, &header, address) : link32(source, target, id, (struct elf_header *)&header, address);
 
                             if (textoffset)
                             {
