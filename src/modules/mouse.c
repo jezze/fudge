@@ -109,6 +109,9 @@ void mouse_initinterface(struct mouse_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface, operands_place);
+    events_init(&interface->events);
+
+    interface->resource.events = &interface->events;
 
 }
 

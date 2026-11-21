@@ -16,6 +16,7 @@ struct timer_interface
 {
 
     struct resource resource;
+    struct events events;
     unsigned int hz;
     unsigned int jiffies;
     struct spinlock spinlock;

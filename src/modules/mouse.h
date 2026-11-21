@@ -2,6 +2,7 @@ struct mouse_interface
 {
 
     struct resource resource;
+    struct events events;
     unsigned int buttons;
 
 };

@@ -2,6 +2,7 @@ struct touch_interface
 {
 
     struct resource resource;
+    struct events events;
 
 };
 

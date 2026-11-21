@@ -8,6 +8,7 @@
 #include "memsrv.h"
 #include "core.h"
 #include "pool.h"
+#include "events.h"
 #include "kernel.h"
 
 static struct core *(*getcorecallback)(void);
@@ -377,7 +378,38 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
     struct resource *resource = pool_getnoderesource(target);
 
-    return (resource && resource->place) ? resource->place(target, source, event, count, data) : MESSAGE_FAILED;
+    if (!resource || !resource->place)
+        return MESSAGE_FAILED;
+
+    /* a resource with events answers subscribing and fetching itself; its driver only sees plain links */
+    if (resource->events)
+    {
+
+        switch (event)
+        {
+
+        case MESSAGE_TYPE_LINK:
+            if (count == sizeof (struct message_link) && events_subscribe(resource->events, source, ((struct message_link *)data)->bit))
+                return MESSAGE_OK;
+
+            count = 0;
+
+            break;
+
+        case MESSAGE_TYPE_UNLINK:
+            if (events_unsubscribe(resource->events, source))
+                return MESSAGE_OK;
+
+            break;
+
+        case MESSAGE_TYPE_EVENTSREQUEST:
+            return events_send(resource->events, resource->inode, source);
+
+        }
+
+    }
+
+    return resource->place(target, source, event, count, data);
 
 }
 
@@ -444,6 +476,9 @@ void kernel_notify(struct resource *resource, unsigned int event, unsigned int c
     struct list *links = &resource->links;
     struct list_item *current;
     struct list_item *next;
+
+    if (resource->events)
+        events_record(resource->events, event, count, data);
 
     spinlock_acquire(&links->spinlock);
 
