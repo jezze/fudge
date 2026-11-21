@@ -84,6 +84,27 @@ static void onqueryrequest(struct message *message)
 
 }
 
+static unsigned int getticks(char *service)
+{
+
+    unsigned int timer = channel_lookup(service);
+
+    if (timer)
+    {
+
+        struct message_timerinfo timerinfo;
+
+        channel_send(1, timer, MESSAGE_TYPE_INFO, 0, 0);
+
+        if (channel_wait(1, timer, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo))
+            return timerinfo.counter;
+
+    }
+
+    return 0;
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -95,7 +116,8 @@ static void onmain(struct message *message)
         char address[32];
         struct mtwist_state state;
 
-        mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
+        /* the ticks keep two connections opened in the same second from getting the same port and sequence numbers */
+        mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")) ^ getticks(option_getstring("timer-service")));
         socket_bind_ipv4s(&local, system_address(option_getstring("ethernet-service"), "local-address", "address", address, 32));
         socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
         socket_bind_ipv4s(&remote, option_getstring("remote-address"));
