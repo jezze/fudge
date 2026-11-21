@@ -18,6 +18,8 @@
 #define STATE_GRABBED       1
 #define TEXTBOX_SIZE        4096
 #define EVENTDATA_SIZE      512
+#define OUTBOXES            8
+#define OUTBOX_SIZE         0x1000
 #define RENDERFILE_SIZE     4096
 #define BIND_PASSES         3
 #define FOLLOW_KEYSIZE      256
@@ -147,6 +149,15 @@ struct keymap
 
 };
 
+struct outbox
+{
+
+    unsigned int target;
+    unsigned int length;
+    char data[OUTBOX_SIZE];
+
+};
+
 struct state
 {
 
@@ -190,6 +201,102 @@ struct state
 };
 
 static struct state state;
+static struct outbox outboxes[OUTBOXES];
+
+static struct outbox *findoutbox(unsigned int target, unsigned int create)
+{
+
+    struct outbox *empty = 0;
+    unsigned int i;
+
+    for (i = 0; i < OUTBOXES; i++)
+    {
+
+        struct outbox *outbox = &outboxes[i];
+
+        if (outbox->length && outbox->target == target)
+            return outbox;
+
+        if (!outbox->length && !empty)
+            empty = outbox;
+
+    }
+
+    if (create && empty)
+        empty->target = target;
+
+    return (create) ? empty : 0;
+
+}
+
+static void flush(struct outbox *outbox)
+{
+
+    while (outbox->length)
+    {
+
+        struct message_eventsentry *entry = (struct message_eventsentry *)outbox->data;
+        unsigned int size = sizeof (struct message_eventsentry) + ((entry->length + 3) & ~3u);
+        unsigned int i;
+
+        if (channel_trysend(0, outbox->target, entry->event, entry->length, entry + 1) == MESSAGE_RETRY)
+            break;
+
+        outbox->length -= size;
+
+        /* the rest moves to the front; the regions overlap, so byte by byte from the start */
+        for (i = 0; i < outbox->length; i++)
+            outbox->data[i] = outbox->data[i + size];
+
+    }
+
+}
+
+static void sendclient(unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    struct outbox *outbox = findoutbox(target, 0);
+    unsigned int size = sizeof (struct message_eventsentry) + ((count + 3) & ~3u);
+
+    if (outbox)
+        flush(outbox);
+
+    /* the wm never waits for a client: a full client gets its events later, in order, when the kernel says it has room */
+    if ((!outbox || !outbox->length) && channel_trysend(0, target, event, count, data) != MESSAGE_RETRY)
+        return;
+
+    outbox = findoutbox(target, 1);
+
+    if (outbox && outbox->length + size <= OUTBOX_SIZE)
+    {
+
+        struct message_eventsentry *entry = (struct message_eventsentry *)(outbox->data + outbox->length);
+
+        entry->event = event;
+        entry->length = count;
+
+        buffer_copy(entry + 1, data, count);
+
+        outbox->length += size;
+
+    }
+
+}
+
+static void onroom(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < OUTBOXES; i++)
+    {
+
+        if (outboxes[i].length)
+            flush(&outboxes[i]);
+
+    }
+
+}
 static struct {struct touchcontact contacts[TOUCH_CONTACTS]; unsigned int pointer; unsigned int downtime; unsigned int travel; unsigned int fingers; unsigned int button; unsigned int pressed; unsigned int speed; unsigned int time; unsigned int tapped; unsigned int taptime; unsigned int dragging; unsigned int secondtap; int accx; int accy; int accw; int motionx; int motiony; int wheel;} touch;
 static unsigned int linebuffer[LINEBUFFER];
 static char *fontn[FONTS] = {
@@ -1441,7 +1548,7 @@ static void sendtextevent(unsigned int source, char *action, char *text)
         message.wmevent.type = 1;
         message.wmevent.length = count + 1;
 
-        channel_send(0, source, MESSAGE_TYPE_WMEVENT, sizeof (struct message_wmevent) + message.wmevent.length, &message);
+        sendclient(source, MESSAGE_TYPE_WMEVENT, sizeof (struct message_wmevent) + message.wmevent.length, &message);
 
     }
 
@@ -2865,7 +2972,7 @@ static void clickwidget(struct widget *widget)
             struct util_region rclose = render_getwindowbutton(widget, RENDER_WINDOWBUTTON_CLOSE);
 
             if (util_region_intersects(&rclose, state.mouseposition.x, state.mouseposition.y))
-                channel_send(0, widget->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
+                sendclient(widget->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
 
         }
 
@@ -3574,7 +3681,7 @@ static unsigned int sendaction(unsigned int type)
     if (!state.focusedwindow)
         return 0;
 
-    channel_send(0, state.focusedwindow->source, type, 0, 0);
+    sendclient(state.focusedwindow->source, type, 0, 0);
 
     return 1;
 
@@ -3588,7 +3695,7 @@ static unsigned int dobinding(struct bind_binding *binding)
 
     case BIND_ACTION_CLOSE:
         if (state.focusedwindow)
-            channel_send(0, state.focusedwindow->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
+            sendclient(state.focusedwindow->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
 
         break;
 
@@ -3780,7 +3887,7 @@ static void onkeypress(struct message *message)
                     buffer_copy(&wmkeypress.unicode, state.keys.code.value, wmkeypress.length);
                     wmkeypress.keymod = state.keys.mod;
 
-                    channel_send(0, state.focusedwindow->source, MESSAGE_TYPE_WMKEYPRESS, sizeof (struct message_wmkeypress), &wmkeypress);
+                    sendclient(state.focusedwindow->source, MESSAGE_TYPE_WMKEYPRESS, sizeof (struct message_wmkeypress), &wmkeypress);
 
                     state.pressedsources[keypress->scancode & 0x7F] = state.focusedwindow->source;
 
@@ -5300,6 +5407,7 @@ void init(void)
     channel_bind(MESSAGE_TYPE_WMSELECT, onwmselect);
     channel_bind(MESSAGE_TYPE_WMRENDERDATA, onwmrenderdata);
     channel_bind(MESSAGE_TYPE_WMRENDERFILE, onwmrenderfile);
+    channel_bindraised(MESSAGE_BIT_ROOM, onroom);
     channel_bind(MESSAGE_TYPE_WMUNGRAB, onwmungrab);
     channel_bind(MESSAGE_TYPE_WMUNMAP, onwmunmap);
 

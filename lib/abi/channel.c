@@ -387,6 +387,13 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
+unsigned int channel_trysend(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    return call_place(ichannel, resolve(target), event, count, data);
+
+}
+
 unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, void **args)
 {
 

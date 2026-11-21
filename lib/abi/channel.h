@@ -1,4 +1,5 @@
 unsigned int channel_call(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data, unsigned int replyevent, unsigned int replycount, void *replydata);
+unsigned int channel_trysend(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int channel_send_fmt(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, ...);
 unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, void **args);

@@ -193,6 +193,7 @@ static unsigned int send(unsigned int itask, unsigned int ichannel, unsigned int
         {
 
             kernel_signal(receiver->itask, TASK_SIGNAL_UNBLOCK);
+            mailbox_refuse(receiver, itask);
 
             if (++task->retries == TASK_RETRIESLOG)
                 debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u keeps retrying a send to task %u", &itask, &receiver->itask);

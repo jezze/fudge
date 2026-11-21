@@ -1,5 +1,6 @@
 #define MAILBOX_REPLYSLOTS              1
 #define MAILBOX_MAILSLOTS               1
+#define MAILBOX_REFUSED                 4
 
 struct mailbox
 {
@@ -15,6 +16,7 @@ struct mailbox
     struct list queued;
     unsigned int reply;
     unsigned int reserved;
+    unsigned int refused[MAILBOX_REFUSED];
     unsigned int held;
     volatile unsigned char *done;
     unsigned long pages;
@@ -22,6 +24,7 @@ struct mailbox
 
 };
 
+void mailbox_refuse(struct mailbox *mailbox, unsigned int itask);
 void mailbox_sleep(struct mailbox *mailbox);
 unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int flags);
 unsigned int mailbox_reservereply(struct mailbox *mailbox);

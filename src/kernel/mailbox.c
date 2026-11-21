@@ -11,6 +11,8 @@
 static void reclaim(struct mailbox *mailbox)
 {
 
+    unsigned int refused[MAILBOX_REFUSED];
+    unsigned int freed = 0;
     unsigned int i;
 
     spinlock_acquire(&mailbox->spinlock);
@@ -26,11 +28,32 @@ static void reclaim(struct mailbox *mailbox)
 
             list_add_unsafe(&mailbox->free, &mailbox->items[i]);
 
+            freed++;
+
         }
 
     }
 
+    for (i = 0; i < MAILBOX_REFUSED; i++)
+    {
+
+        refused[i] = (freed) ? mailbox->refused[i] : 0;
+
+        if (freed)
+            mailbox->refused[i] = 0;
+
+    }
+
     spinlock_release(&mailbox->spinlock);
+
+    /* tasks this mailbox refused learn that it has room again, without having waited for it */
+    for (i = 0; i < MAILBOX_REFUSED; i++)
+    {
+
+        if (refused[i])
+            kernel_raise(refused[i], 1u << MESSAGE_BIT_ROOM);
+
+    }
 
 }
 
@@ -117,6 +140,34 @@ static void checkselflock(struct mailbox *mailbox)
 
     if (task && !unpromised(mailbox) && !mailbox->reserved && !mailbox->queued.head)
         debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u sleeps on its own full mailbox", &mailbox->itask);
+
+}
+
+void mailbox_refuse(struct mailbox *mailbox, unsigned int itask)
+{
+
+    unsigned int i;
+
+    spinlock_acquire(&mailbox->spinlock);
+
+    for (i = 0; i < MAILBOX_REFUSED; i++)
+    {
+
+        if (mailbox->refused[i] == itask)
+            break;
+
+        if (!mailbox->refused[i])
+        {
+
+            mailbox->refused[i] = itask;
+
+            break;
+
+        }
+
+    }
+
+    spinlock_release(&mailbox->spinlock);
 
 }
 
@@ -254,6 +305,9 @@ void mailbox_reset(struct mailbox *mailbox)
     mailbox->held = 0;
     mailbox->reply = 0;
     mailbox->reserved = 0;
+
+    for (i = 0; i < MAILBOX_REFUSED; i++)
+        mailbox->refused[i] = 0;
 
     list_init(&mailbox->free);
     list_init(&mailbox->queued);
