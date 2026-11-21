@@ -560,19 +560,46 @@ static struct page loadhttp(char *url)
 
         redirect = findheader(source, end, "location");
 
-        if (status >= 300 && status < 400 && redirect)
+        if (status >= 300 && status < 400 && status != 304)
         {
 
             char link[URLSIZE];
+            char next[URLSIZE];
+
+            if (!redirect)
+            {
+
+                seterror("The server redirected without saying where to.");
+
+                return page(0, 0);
+
+            }
 
             copystring(link, URLSIZE, redirect, headerlength(redirect));
 
-            if (!resolve(location, URLSIZE, url, link) || !issafe(location))
-                break;
+            if (!resolve(next, URLSIZE, url, link) || !issafe(next))
+            {
+
+                seterror("The server redirected to an address that can not be used.");
+
+                return page(0, 0);
+
+            }
+
+            copystring(fetched, URLSIZE, next, cstring_length(next));
+
+            if (!matchprefix(next, cstring_length(next), "http://"))
+            {
+
+                seterror("The page has moved to an address that is not http://, such as https://, which is not supported yet.");
+
+                return page(0, 0);
+
+            }
+
+            copystring(location, URLSIZE, next, cstring_length(next));
 
             url = location;
-
-            copystring(fetched, URLSIZE, url, cstring_length(url));
 
             continue;
 
