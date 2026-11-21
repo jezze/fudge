@@ -25,6 +25,7 @@ struct inbox
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static void (*raisedlisteners[CHANNEL_BITS])(void);
+static unsigned int linked[CHANNEL_BITS];
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
 static unsigned int relieving;
@@ -113,6 +114,8 @@ static void finish(unsigned int ichannel, struct message *message)
 
 }
 
+static void fetchevents(unsigned int target);
+
 static void runraised(void)
 {
 
@@ -122,7 +125,12 @@ static void runraised(void)
     for (i = 0; i < CHANNEL_BITS; i++)
     {
 
-        if ((bits & (1u << i)) && raisedlisteners[i])
+        if (!(bits & (1u << i)))
+            continue;
+
+        if (linked[i])
+            fetchevents(linked[i]);
+        else if (raisedlisteners[i])
             raisedlisteners[i]();
 
     }
@@ -262,7 +270,7 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
     while (canpick(ichannel))
     {
 
-        unsigned int status = take(ichannel, message, MESSAGE_FLAG_BLOCK);
+        unsigned int status = take(ichannel, message, MESSAGE_FLAG_BLOCK | MESSAGE_FLAG_RAISED);
 
         switch (status)
         {
@@ -299,8 +307,62 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
+static unsigned int link(unsigned int ichannel, unsigned int target)
+{
+
+    struct message_link message;
+    unsigned int i;
+
+    /* bits from the top are the library's: one per linked service, which raises it and is asked for its new events */
+    for (i = CHANNEL_BITS; i-- > 0;)
+    {
+
+        if (!linked[i] && !raisedlisteners[i])
+        {
+
+            linked[i] = target;
+            message.bit = i;
+
+            if (place(ichannel, target, MESSAGE_TYPE_LINK, sizeof (struct message_link), &message))
+                return MESSAGE_TYPE_LINK;
+
+            linked[i] = 0;
+
+            return 0;
+
+        }
+
+    }
+
+    return place(ichannel, target, MESSAGE_TYPE_LINK, 0, 0);
+
+}
+
+static unsigned int unlink(unsigned int ichannel, unsigned int target)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < CHANNEL_BITS; i++)
+    {
+
+        if (linked[i] == target)
+            linked[i] = 0;
+
+    }
+
+    return place(ichannel, target, MESSAGE_TYPE_UNLINK, 0, 0);
+
+}
+
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
+
+    if (event == MESSAGE_TYPE_LINK && !count)
+        return link(ichannel, resolve(target));
+
+    if (event == MESSAGE_TYPE_UNLINK && !count)
+        return unlink(ichannel, resolve(target));
 
     if (event == MESSAGE_TYPE_ERROR && status == MESSAGE_STATUS_OK)
         status = MESSAGE_STATUS_ERROR;
@@ -367,7 +429,7 @@ unsigned int channel_drain(unsigned int ichannel)
     while (canpick(ichannel))
     {
 
-        switch (take(ichannel, &message, 0))
+        switch (take(ichannel, &message, MESSAGE_FLAG_RAISED))
         {
 
         case MESSAGE_OK:
@@ -438,6 +500,42 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
     struct message message;
 
     return (channel_poll(ichannel, source, event, &message)) ? buffer_read(data, count, message.data, message.length, 0) : 0;
+
+}
+
+static void fetchevents(unsigned int target)
+{
+
+    char data[MESSAGE_SIZE];
+    struct message_eventsresponse *response = (struct message_eventsresponse *)data;
+    unsigned int offset = sizeof (struct message_eventsresponse);
+    unsigned int count;
+    unsigned int i;
+
+    if (!place(1, target, MESSAGE_TYPE_EVENTSREQUEST, 0, 0))
+        return;
+
+    count = channel_wait(1, target, MESSAGE_TYPE_EVENTSRESPONSE, MESSAGE_SIZE, data);
+
+    for (i = 0; count >= offset && i < response->count && offset + sizeof (struct message_eventsentry) <= count; i++)
+    {
+
+        struct message_eventsentry *entry = (struct message_eventsentry *)(data + offset);
+        struct message message;
+
+        offset += sizeof (struct message_eventsentry);
+
+        if (entry->length > count - offset)
+            break;
+
+        message_init(&message, entry->event, target, entry->length, data + offset);
+
+        if (entry->event < CHANNEL_EVENTS && listeners[entry->event])
+            listeners[entry->event](&message);
+
+        offset += (entry->length + 3) & ~3u;
+
+    }
 
 }
 

@@ -6,6 +6,7 @@
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_FAILED                  0x03
 #define MESSAGE_RAISED                  0x04
+#define MESSAGE_FLAG_RAISED             0x02
 #define MESSAGE_FLAG_BLOCK              0x01
 #define MESSAGE_ROOT                    0x01
 #define MESSAGE_SECTORSIZE              512
@@ -106,6 +107,8 @@
 #define MESSAGE_TYPE_WMCOPY             0x65
 #define MESSAGE_TYPE_WMCUT              0x66
 #define MESSAGE_TYPE_WMPASTE            0x67
+#define MESSAGE_TYPE_EVENTSREQUEST      0x68
+#define MESSAGE_TYPE_EVENTSRESPONSE     0x69
 #define MESSAGE_TYPE_P9P                0x70
 #define PIPE_ROUTES                     10
 #define READ_FLAG_BUFFER                0x01
@@ -154,6 +157,29 @@ struct message_loginfo
 
     unsigned int level;
     unsigned int count;
+
+};
+
+struct message_link
+{
+
+    unsigned int bit;
+
+};
+
+struct message_eventsresponse
+{
+
+    unsigned int count;
+    unsigned int lost;
+
+};
+
+struct message_eventsentry
+{
+
+    unsigned int event;
+    unsigned int length;
 
 };
 
