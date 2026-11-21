@@ -3012,6 +3012,10 @@ static void reportsizes(void)
 
     struct list_item *current = 0;
 
+    /* sizes go out when the drag ends: a report per step fills a slow client, and the wm sleeps sending to it (KERN-0023) */
+    if (state.mousebuttonleft || state.mousebuttonright)
+        return;
+
     while ((current = pool_next(current)))
     {
 
@@ -4108,6 +4112,8 @@ static void movemouse(int x, int y, unsigned int buttons)
 
     }
 
+    relayout = state.mousebuttonleft || state.mousebuttonright;
+
     /* a release dropped by a full mailbox shows up as a cleared bit */
     if (state.mousebuttonleft && !(buttons & 1))
         releasebutton(1);
@@ -4115,7 +4121,6 @@ static void movemouse(int x, int y, unsigned int buttons)
     if (state.mousebuttonright && !(buttons & 2))
         releasebutton(2);
 
-    relayout = state.mousebuttonleft || state.mousebuttonright;
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;
     state.mouseposition.x = x;
