@@ -10,6 +10,7 @@
 
 unsigned int *framebuffer;
 unsigned int wmax, hmax, wmid, hmid;
+static struct keys keys;
 static unsigned int framecount;
 
 unsigned int inperiod(unsigned int frame, unsigned int start, unsigned int end)
@@ -79,6 +80,16 @@ static void ontimertick(struct message *message)
 
     if (framebuffer)
         render(framecount++);
+
+}
+
+static void onkeypress(struct message *message)
+{
+
+    struct message_keypress *keypress = message_validate(MESSAGE_TYPE_KEYPRESS, message->data, message->length);
+
+    if (keypress && keys_getcode(&keys, keypress->scancode) == KEYS_KEY_ESCAPE)
+        channel_close(0);
 
 }
 
@@ -159,6 +170,7 @@ void init(void)
 {
 
     setup();
+    keys_init(&keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     option_add("width", "640");
     option_add("height", "480");
     option_add("bpp", "4");
@@ -167,6 +179,7 @@ void init(void)
     option_add("video-service", "video:0");
     option_add("wm-service", "wm");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_KEYPRESS, onkeypress);
     channel_bind(MESSAGE_TYPE_TIMERTICK, ontimertick);
     channel_bind(MESSAGE_TYPE_VIDEOINFO, onvideoinfo);
 
