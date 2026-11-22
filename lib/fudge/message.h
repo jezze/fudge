@@ -547,34 +547,6 @@ struct message_clockinfo
 
 };
 
-struct message_coreinfo
-{
-
-    unsigned int id;
-    unsigned int sp;
-    unsigned int task;
-
-};
-
-struct message_taskinfo
-{
-
-    unsigned int id;
-    unsigned int state;
-    unsigned int signals_kills;
-    unsigned int signals_blocks;
-    unsigned int thread_ip;
-    unsigned int thread_sp;
-
-};
-
-struct message_mailboxinfo
-{
-
-    unsigned int address;
-
-};
-
 void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, void *data);
 void message_initpipe(struct message_pipe *pipe);
 void *message_validate(unsigned int type, void *data, unsigned int count);
