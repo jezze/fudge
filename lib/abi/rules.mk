@@ -7,6 +7,7 @@ O:=\
     $(DIR_LIB)/abi/fs.o \
     $(DIR_LIB)/abi/job.o \
     $(DIR_LIB)/abi/option.o \
+    $(DIR_LIB)/abi/post.o \
     $(DIR_LIB)/abi/system.o \
 
 include $(DIR_LIB)/abi/$(ARCH)/rules.mk

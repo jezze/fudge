@@ -357,7 +357,7 @@ void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, u
         if (command->target)
         {
 
-            channel_send(ichannel, command->target, event, count, buffer);
+            channel_post(ichannel, command->target, event, count, buffer);
 
             break;
 
@@ -378,7 +378,7 @@ void job_sendall(struct job *job, unsigned int ichannel, unsigned int event, uns
         struct job_command *command = &job->commands[i];
 
         if (command->target)
-            channel_send(ichannel, command->target, event, count, buffer);
+            channel_post(ichannel, command->target, event, count, buffer);
 
     }
 
