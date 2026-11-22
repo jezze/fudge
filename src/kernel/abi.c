@@ -186,13 +186,12 @@ static unsigned int send(unsigned int itask, unsigned int ichannel, unsigned int
     if (receiver)
     {
 
-        /* a full target never puts the sender to sleep, it retries; the target is woken in case it waits on another channel and must run its full channel 0 */
+        /* a full target never puts the sender to sleep: it retries, or posts and is told when there is room */
         status = kernel_place(inode, target, event, count, data);
 
         if (status == MESSAGE_RETRY)
         {
 
-            kernel_signal(receiver->itask, TASK_SIGNAL_UNBLOCK);
             mailbox_refuse(receiver, itask);
 
             if (++task->retries == TASK_RETRIESLOG)

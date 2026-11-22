@@ -7,7 +7,6 @@
 #define MESSAGE_FAILED                  0x03
 #define MESSAGE_RAISED                  0x04
 #define MESSAGE_PENDING                 0x05
-#define MESSAGE_FLAG_RAISED             0x02
 #define MESSAGE_BIT_ROOM                0
 #define MESSAGE_FLAG_BLOCK              0x01
 #define MESSAGE_ROOT                    0x01

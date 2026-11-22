@@ -185,8 +185,8 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, uns
     struct task *task = pool_gettask(mailbox->itask);
     unsigned int n;
 
-    /* raised bits go before mail on channel 0 when asked for, so steady mail cannot hold them back */
-    if (!mailbox->ichannel && (flags & MESSAGE_FLAG_RAISED) && task && task->raised)
+    /* raised bits go before mail on channel 0, so steady mail cannot hold them back */
+    if (!mailbox->ichannel && task && task->raised)
         return MESSAGE_RAISED;
 
     reclaim(mailbox);
@@ -270,14 +270,6 @@ void mailbox_unreserve(struct mailbox *mailbox)
 {
 
     shift(mailbox, &mailbox->reserved, 0);
-
-}
-
-unsigned int mailbox_placenotify(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    /* notifies also leave a slot to task mail: a slot freed in a flooded mailbox goes to a task retrying a send, not to the next event */
-    return place(mailbox, 0, MAILBOX_REPLYSLOTS + MAILBOX_MAILSLOTS, event, source, count, data);
 
 }
 

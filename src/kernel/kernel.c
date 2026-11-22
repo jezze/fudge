@@ -516,12 +516,7 @@ void kernel_notify(struct resource *resource, unsigned int event, unsigned int c
         if (pool_getnoderesource(target))
         {
 
-            struct mailbox *mailbox = pool_getnodemailbox(target);
-
-            if (mailbox)
-                mailbox_placenotify(mailbox, resource->inode, event, count, data);
-            else
-                kernel_place(resource->inode, target, event, count, data);
+            kernel_place(resource->inode, target, event, count, data);
 
         }
 

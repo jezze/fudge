@@ -8,8 +8,6 @@
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
 #define CHANNEL_STATE_CLOSED            2
-/* task mail is refused once a slot for replies is all that is left; the message being run holds one more */
-#define CHANNEL_FULL                    (MESSAGE_SLOTS - 2)
 
 struct inbox
 {
@@ -28,7 +26,6 @@ static void (*raisedlisteners[CHANNEL_BITS])(void);
 static unsigned int linked[CHANNEL_BITS];
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
-static unsigned int relieving;
 static unsigned int status;
 static struct message_pipe pipe;
 
@@ -140,19 +137,10 @@ static void runraised(void)
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
 
-    unsigned int status;
-    unsigned int i;
-
-    for (i = 0; inbox->index + i < inbox->count; i++)
-        buffer_copy(&inbox->messages[i], &inbox->messages[inbox->index + i], sizeof (struct message));
+    unsigned int status = call_pick(ichannel, inbox->messages, MESSAGE_SLOTS, flags);
 
     inbox->index = 0;
-    inbox->count = i;
-
-    if (inbox->count == MESSAGE_SLOTS)
-        return MESSAGE_OK;
-
-    status = call_pick(ichannel, &inbox->messages[inbox->count], MESSAGE_SLOTS - inbox->count, flags);
+    inbox->count = 0;
 
     /* raised bits have run their listeners: the caller decides whether to return or pick again */
     if (status == MESSAGE_RAISED)
@@ -161,7 +149,7 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     if (status == MESSAGE_OK)
     {
 
-        locate(ichannel, &inbox->messages[inbox->count]);
+        locate(ichannel, &inbox->messages[0]);
 
         while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].type)
             inbox->count++;
@@ -269,47 +257,18 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
 }
 
-static void relieve(void)
-{
-
-    struct inbox *inbox = &inboxes[0];
-    struct message message;
-
-    /* someone may be retrying a send into our full channel 0: run its oldest message, but never from inside another one */
-    if (relieving || inbox->handed || !canpick(0))
-        return;
-
-    fill(0, inbox, 0);
-
-    if (inbox->count - inbox->index >= CHANNEL_FULL && take(0, &message, 0) == MESSAGE_OK)
-    {
-
-        relieving = 1;
-
-        dispatch(0, &message);
-        finish(0, &message);
-
-        relieving = 0;
-
-    }
-
-}
-
 static unsigned int pick(unsigned int ichannel, struct message *message)
 {
 
     while (canpick(ichannel))
     {
 
-        unsigned int status = take(ichannel, message, MESSAGE_FLAG_BLOCK | MESSAGE_FLAG_RAISED);
+        unsigned int status = take(ichannel, message, MESSAGE_FLAG_BLOCK);
 
         switch (status)
         {
 
         case MESSAGE_RETRY:
-            if (ichannel)
-                relieve();
-
             continue;
 
         case MESSAGE_RAISED:
@@ -334,8 +293,7 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
     unsigned int status;
 
-    while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY)
-        relieve();
+    while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY);
 
     return (status == MESSAGE_OK) ? event : 0;
 
@@ -451,7 +409,7 @@ unsigned int channel_process(unsigned int ichannel)
     while (canpick(ichannel))
     {
 
-        switch (take(ichannel, &message, MESSAGE_FLAG_BLOCK | MESSAGE_FLAG_RAISED))
+        switch (take(ichannel, &message, MESSAGE_FLAG_BLOCK))
         {
 
         case MESSAGE_OK:
@@ -465,9 +423,6 @@ unsigned int channel_process(unsigned int ichannel)
             return CHANNEL_EVENTS;
 
         case MESSAGE_RETRY:
-            if (ichannel)
-                relieve();
-
             break;
 
         default:
@@ -489,7 +444,7 @@ unsigned int channel_drain(unsigned int ichannel)
     while (canpick(ichannel))
     {
 
-        switch (take(ichannel, &message, MESSAGE_FLAG_RAISED))
+        switch (take(ichannel, &message, 0))
         {
 
         case MESSAGE_OK:
@@ -575,8 +530,7 @@ unsigned int channel_call(unsigned int ichannel, unsigned int target, unsigned i
 
     message_init(&reply, 0, 0, MESSAGE_SIZE, buffer);
 
-    while ((status = call_call(ichannel, target, event, count, data, &reply)) == MESSAGE_RETRY)
-        relieve();
+    while ((status = call_call(ichannel, target, event, count, data, &reply)) == MESSAGE_RETRY);
 
     /* a kernel service answers straight into the reply, which listeners see like any awaited answer; a task, or a service answering later, answers with mail */
     if (status == MESSAGE_OK)
