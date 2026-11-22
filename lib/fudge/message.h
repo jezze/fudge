@@ -88,10 +88,6 @@
 #define MESSAGE_TYPE_WMUNGRAB           0x54
 #define MESSAGE_TYPE_WMKEYPRESS         0x55
 #define MESSAGE_TYPE_WMKEYRELEASE       0x56
-#define MESSAGE_TYPE_WMMOUSEMOVE        0x57
-#define MESSAGE_TYPE_WMMOUSESCROLL      0x58
-#define MESSAGE_TYPE_WMMOUSEPRESS       0x59
-#define MESSAGE_TYPE_WMMOUSERELEASE     0x5A
 #define MESSAGE_TYPE_WMRENDERDATA       0x5B
 #define MESSAGE_TYPE_WMRENDERFILE       0x5C
 #define MESSAGE_TYPE_WMFLUSH            0x5D
@@ -105,7 +101,6 @@
 #define MESSAGE_TYPE_WMCOPY             0x65
 #define MESSAGE_TYPE_WMCUT              0x66
 #define MESSAGE_TYPE_WMPASTE            0x67
-#define MESSAGE_TYPE_P9P                0x70
 #define PIPE_ROUTES                     10
 #define READ_FLAG_BUFFER                0x01
 
@@ -363,35 +358,6 @@ struct message_wmkeyrelease
     unsigned int keymod;
     unsigned int unicode;
     unsigned int length;
-
-};
-
-struct message_wmmousemove
-{
-
-    char relx;
-    char rely;
-
-};
-
-struct message_wmmousescroll
-{
-
-    char relz;
-
-};
-
-struct message_wmmousepress
-{
-
-    unsigned int button;
-
-};
-
-struct message_wmmouserelease
-{
-
-    unsigned int button;
 
 };
 

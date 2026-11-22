@@ -167,18 +167,6 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     case MESSAGE_TYPE_WMKEYRELEASE:
         return checksize(data, count, sizeof (struct message_wmkeyrelease));
 
-    case MESSAGE_TYPE_WMMOUSEMOVE:
-        return checksize(data, count, sizeof (struct message_wmmousemove));
-
-    case MESSAGE_TYPE_WMMOUSESCROLL:
-        return checksize(data, count, sizeof (struct message_wmmousescroll));
-
-    case MESSAGE_TYPE_WMMOUSEPRESS:
-        return checksize(data, count, sizeof (struct message_wmmousepress));
-
-    case MESSAGE_TYPE_WMMOUSERELEASE:
-        return checksize(data, count, sizeof (struct message_wmmouserelease));
-
     case MESSAGE_TYPE_CREATEREQUEST:
         if (count >= sizeof (struct message_createrequest))
         {

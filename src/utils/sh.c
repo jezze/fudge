@@ -13,7 +13,7 @@
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
-#define NUM_EVENTS                      80
+#define NUM_EVENTS                      75
 
 static struct job job;
 static char script[SCRIPTSIZE];
@@ -300,10 +300,6 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"wmungrab", MESSAGE_TYPE_WMUNGRAB},
     {"wmkeypress", MESSAGE_TYPE_WMKEYPRESS},
     {"wmkeyrelease", MESSAGE_TYPE_WMKEYRELEASE},
-    {"wmmousemove", MESSAGE_TYPE_WMMOUSEMOVE},
-    {"wmmousescroll", MESSAGE_TYPE_WMMOUSESCROLL},
-    {"wmmousepress", MESSAGE_TYPE_WMMOUSEPRESS},
-    {"wmmouserelease", MESSAGE_TYPE_WMMOUSERELEASE},
     {"wmrenderdata", MESSAGE_TYPE_WMRENDERDATA},
     {"wmrenderfile", MESSAGE_TYPE_WMRENDERFILE},
     {"wmflush", MESSAGE_TYPE_WMFLUSH},
@@ -316,8 +312,7 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"wmselect", MESSAGE_TYPE_WMSELECT},
     {"wmcopy", MESSAGE_TYPE_WMCOPY},
     {"wmcut", MESSAGE_TYPE_WMCUT},
-    {"wmpaste", MESSAGE_TYPE_WMPASTE},
-    {"p9p", MESSAGE_TYPE_P9P}
+    {"wmpaste", MESSAGE_TYPE_WMPASTE}
 };
 
 static unsigned int findevent(char *word)
