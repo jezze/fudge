@@ -112,7 +112,7 @@ static unsigned int getcounter(void)
 
     struct message_timerinfo timerinfo;
 
-    if (!timer || !channel_call(1, timer, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo))
+    if (!timer || !channel_send(1, timer, MESSAGE_TYPE_INFO, 0, 0) || !channel_wait(1, timer, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo))
         return 0;
 
     if (timerinfo.hz)

@@ -1,6 +1,3 @@
-unsigned int channel_call(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data, unsigned int replyevent, unsigned int replycount, void *replydata);
-unsigned int channel_post(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
-unsigned int channel_trysend(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int channel_send_fmt(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, ...);
 unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, void **args);
@@ -10,8 +7,6 @@ unsigned int channel_drain(unsigned int ichannel);
 unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message);
 unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int channel_lookup(char *name);
-void channel_bindraised(unsigned int bit, void (*callback)(void));
-unsigned int channel_raise(unsigned int target, unsigned int bit);
 void channel_bind(unsigned int event, void (*callback)(struct message *message));
 void channel_hold(unsigned int ichannel);
 void channel_loop(unsigned int ichannel);

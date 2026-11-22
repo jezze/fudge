@@ -19,7 +19,8 @@ static unsigned int sendblockreadrequest(unsigned int target, unsigned int secto
     request.count = count;
     request.target = 0;
 
-    return (channel_call(1, target, MESSAGE_TYPE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response)) ? response.count : 0;
+    channel_send(1, target, MESSAGE_TYPE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request);
+    return (channel_wait(1, target, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response)) ? response.count : 0;
 
 }
 
@@ -159,7 +160,9 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
     if (!target)
         return;
 
-    if (!channel_call(1, target, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo) || blockinfo.blocksize < MESSAGE_SECTORSIZE)
+    channel_send(1, target, MESSAGE_TYPE_INFO, 0, 0);
+
+    if (!channel_wait(1, target, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo) || blockinfo.blocksize < MESSAGE_SECTORSIZE)
         return;
 
     /* a disc (also a hybrid one with an MBR) is one filesystem, mounted as partition 0 */

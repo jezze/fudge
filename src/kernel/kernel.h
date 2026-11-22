@@ -14,8 +14,6 @@ unsigned int kernel_unlinknode(struct resource *resource, unsigned int source);
 void kernel_schedule(struct core *core);
 unsigned int kernel_kill(unsigned int itask);
 void kernel_signal(unsigned int itask, unsigned int signal);
-void kernel_raise(unsigned int itask, unsigned int bits);
-unsigned int kernel_collect(unsigned int itask);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_placereply(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_placereserved(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);

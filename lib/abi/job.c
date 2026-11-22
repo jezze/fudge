@@ -188,24 +188,6 @@ unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir)
 
 }
 
-static unsigned int pack(char *buffer, unsigned int offset, unsigned int event, unsigned int count, void *data)
-{
-
-    struct message_eventsentry *entry = (struct message_eventsentry *)(buffer + offset);
-    unsigned int size = sizeof (struct message_eventsentry) + ((count + 3) & ~3u);
-
-    if (offset > MESSAGE_SIZE || size > MESSAGE_SIZE - offset)
-        return MESSAGE_SIZE + 1;
-
-    entry->event = event;
-    entry->length = count;
-
-    buffer_copy(entry + 1, data, count);
-
-    return offset + size;
-
-}
-
 void job_run(struct job *job, unsigned int ichannel, char *pwd)
 {
 
@@ -217,9 +199,7 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         struct job_command *command = &job->commands[i - 1];
         struct message_pipe pipe;
         char options[MESSAGE_SIZE];
-        char start[MESSAGE_SIZE];
         unsigned int count;
-        unsigned int offset;
         unsigned int j;
 
         setpipe(job, i - 1, &pipe);
@@ -228,29 +208,6 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
 
         for (j = 0; j < command->noptions; j++)
             count += cstring_write_fmt(options, MESSAGE_SIZE, count, "%s\\0%s\\0", command->keys[j], command->values[j]);
-
-        offset = pack(start, 0, MESSAGE_TYPE_OPTION, count, options);
-        offset = pack(start, offset, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
-
-        for (j = 0; j < command->npaths; j++)
-        {
-
-            char absolute[1024];
-            unsigned int length = fs_absolute(absolute, 1024, pwd, command->paths[j]);
-
-            offset = pack(start, offset, MESSAGE_TYPE_PATH, length + 1, absolute);
-
-        }
-
-        /* one message starts a job, so nothing it answers can meet more of its start on the way */
-        if (offset <= MESSAGE_SIZE)
-        {
-
-            channel_send(ichannel, command->target, MESSAGE_TYPE_START, offset, start);
-
-            continue;
-
-        }
 
         channel_send(ichannel, command->target, MESSAGE_TYPE_OPTION, count, options);
         channel_send(ichannel, command->target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
@@ -357,7 +314,7 @@ void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, u
         if (command->target)
         {
 
-            channel_post(ichannel, command->target, event, count, buffer);
+            channel_send(ichannel, command->target, event, count, buffer);
 
             break;
 
@@ -378,7 +335,7 @@ void job_sendall(struct job *job, unsigned int ichannel, unsigned int event, uns
         struct job_command *command = &job->commands[i];
 
         if (command->target)
-            channel_post(ichannel, command->target, event, count, buffer);
+            channel_send(ichannel, command->target, event, count, buffer);
 
     }
 

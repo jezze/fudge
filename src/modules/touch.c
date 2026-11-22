@@ -67,9 +67,6 @@ void touch_initinterface(struct touch_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_TOUCHINTERFACE, interface, operands_place);
-    events_init(&interface->events);
-
-    interface->resource.events = &interface->events;
 
 }
 

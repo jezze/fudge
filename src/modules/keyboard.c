@@ -69,9 +69,6 @@ void keyboard_initinterface(struct keyboard_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface, operands_place);
-    events_init(&interface->events);
-
-    interface->resource.events = &interface->events;
 
 }
 

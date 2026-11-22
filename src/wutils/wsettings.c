@@ -805,7 +805,7 @@ static void findvideos(void)
             copystring(video->device, DEVICENAME, name, cstring_length(name));
 
             video->configured = 0;
-            video->enabled = channel_call(1, channel, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.connected;
+            video->enabled = channel_send(1, channel, MESSAGE_TYPE_INFO, 0, 0) && channel_wait(1, channel, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.connected;
             video->width = 0;
             video->height = 0;
             video->bpp = 4;
@@ -1465,7 +1465,7 @@ static unsigned int loadresolutions(char *device)
     resolutions[count].label = "Preferred";
     count++;
 
-    if (channel && channel_call(1, channel, MESSAGE_TYPE_VIDEOMODEREQUEST, 0, 0, MESSAGE_TYPE_VIDEOMODERESPONSE, sizeof (struct message_videomodes), &videomodes))
+    if (channel && channel_send(1, channel, MESSAGE_TYPE_VIDEOMODEREQUEST, 0, 0) && channel_wait(1, channel, MESSAGE_TYPE_VIDEOMODERESPONSE, sizeof (struct message_videomodes), &videomodes))
     {
 
         unsigned int i;

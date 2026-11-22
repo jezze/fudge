@@ -3,11 +3,12 @@
 #include "channel.h"
 
 #define CHANNEL_EVENTS                  256
-#define CHANNEL_BITS                    32
 #define CHANNEL_MAILBOXES               (MESSAGE_PAGES / MESSAGE_SLOTS)
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
 #define CHANNEL_STATE_CLOSED            2
+/* task mail is refused once a slot for replies is all that is left; the message being run holds one more */
+#define CHANNEL_FULL                    (MESSAGE_SLOTS - 2)
 
 struct inbox
 {
@@ -22,10 +23,9 @@ struct inbox
 };
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
-static void (*raisedlisteners[CHANNEL_BITS])(void);
-static unsigned int linked[CHANNEL_BITS];
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
+static unsigned int relieving;
 static unsigned int status;
 static struct message_pipe pipe;
 
@@ -111,45 +111,27 @@ static void finish(unsigned int ichannel, struct message *message)
 
 }
 
-static void fetchevents(unsigned int target);
-
-static void runraised(void)
-{
-
-    unsigned int bits = call_collect();
-    unsigned int i;
-
-    for (i = 0; i < CHANNEL_BITS; i++)
-    {
-
-        if (!(bits & (1u << i)))
-            continue;
-
-        if (linked[i])
-            fetchevents(linked[i]);
-        else if (raisedlisteners[i])
-            raisedlisteners[i]();
-
-    }
-
-}
-
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
 
-    unsigned int status = call_pick(ichannel, inbox->messages, MESSAGE_SLOTS, flags);
+    unsigned int status;
+    unsigned int i;
+
+    for (i = 0; inbox->index + i < inbox->count; i++)
+        buffer_copy(&inbox->messages[i], &inbox->messages[inbox->index + i], sizeof (struct message));
 
     inbox->index = 0;
-    inbox->count = 0;
+    inbox->count = i;
 
-    /* raised bits have run their listeners: the caller decides whether to return or pick again */
-    if (status == MESSAGE_RAISED)
-        runraised();
+    if (inbox->count == MESSAGE_SLOTS)
+        return MESSAGE_OK;
+
+    status = call_pick(ichannel, &inbox->messages[inbox->count], MESSAGE_SLOTS - inbox->count, flags);
 
     if (status == MESSAGE_OK)
     {
 
-        locate(ichannel, &inbox->messages[0]);
+        locate(ichannel, &inbox->messages[inbox->count]);
 
         while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].type)
             inbox->count++;
@@ -205,34 +187,6 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    /* a job's options, MAIN and paths in one message: listeners see them one by one, as if sent apart */
-    if (message->type == MESSAGE_TYPE_START)
-    {
-
-        unsigned int offset = 0;
-
-        while (offset + sizeof (struct message_eventsentry) <= message->length)
-        {
-
-            struct message_eventsentry *entry = (struct message_eventsentry *)((char *)message->data + offset);
-            struct message part;
-
-            offset += sizeof (struct message_eventsentry);
-
-            if (entry->length > message->length - offset || entry->event == MESSAGE_TYPE_START)
-                break;
-
-            message_init(&part, entry->event, message->source, entry->length, (char *)message->data + offset);
-            dispatch(ichannel, &part);
-
-            offset += (entry->length + 3) & ~3u;
-
-        }
-
-        return;
-
-    }
-
     if (message->type == MESSAGE_TYPE_MAIN && !ichannel)
         setpipe(message);
 
@@ -257,6 +211,32 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
 }
 
+static void relieve(void)
+{
+
+    struct inbox *inbox = &inboxes[0];
+    struct message message;
+
+    /* someone may be retrying a send into our full channel 0: run its oldest message, but never from inside another one */
+    if (relieving || inbox->handed || !canpick(0))
+        return;
+
+    fill(0, inbox, 0);
+
+    if (inbox->count - inbox->index >= CHANNEL_FULL && take(0, &message, 0) == MESSAGE_OK)
+    {
+
+        relieving = 1;
+
+        dispatch(0, &message);
+        finish(0, &message);
+
+        relieving = 0;
+
+    }
+
+}
+
 static unsigned int pick(unsigned int ichannel, struct message *message)
 {
 
@@ -269,9 +249,9 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
         {
 
         case MESSAGE_RETRY:
-            continue;
+            if (ichannel)
+                relieve();
 
-        case MESSAGE_RAISED:
             continue;
 
         case MESSAGE_OK:
@@ -293,68 +273,15 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
     unsigned int status;
 
-    while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY);
+    while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY)
+        relieve();
 
     return (status == MESSAGE_OK) ? event : 0;
 
 }
 
-static unsigned int link(unsigned int ichannel, unsigned int target)
-{
-
-    struct message_link message;
-    unsigned int i;
-
-    /* bits from the top are the library's: one per linked service, which raises it and is asked for its new events */
-    for (i = CHANNEL_BITS; i-- > 0;)
-    {
-
-        if (!linked[i] && !raisedlisteners[i])
-        {
-
-            linked[i] = target;
-            message.bit = i;
-
-            if (place(ichannel, target, MESSAGE_TYPE_LINK, sizeof (struct message_link), &message))
-                return MESSAGE_TYPE_LINK;
-
-            linked[i] = 0;
-
-            return 0;
-
-        }
-
-    }
-
-    return place(ichannel, target, MESSAGE_TYPE_LINK, 0, 0);
-
-}
-
-static unsigned int unlink(unsigned int ichannel, unsigned int target)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < CHANNEL_BITS; i++)
-    {
-
-        if (linked[i] == target)
-            linked[i] = 0;
-
-    }
-
-    return place(ichannel, target, MESSAGE_TYPE_UNLINK, 0, 0);
-
-}
-
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
-
-    if (event == MESSAGE_TYPE_LINK && !count)
-        return link(ichannel, resolve(target));
-
-    if (event == MESSAGE_TYPE_UNLINK && !count)
-        return unlink(ichannel, resolve(target));
 
     if (event == MESSAGE_TYPE_ERROR && status == MESSAGE_STATUS_OK)
         status = MESSAGE_STATUS_ERROR;
@@ -370,13 +297,6 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
     }
 
     return place(ichannel, target, event, count, data);
-
-}
-
-unsigned int channel_trysend(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    return call_place(ichannel, resolve(target), event, count, data);
 
 }
 
@@ -406,29 +326,13 @@ unsigned int channel_process(unsigned int ichannel)
 
     struct message message;
 
-    while (canpick(ichannel))
+    if (pick(ichannel, &message))
     {
 
-        switch (take(ichannel, &message, MESSAGE_FLAG_BLOCK))
-        {
+        dispatch(ichannel, &message);
+        finish(ichannel, &message);
 
-        case MESSAGE_OK:
-            dispatch(ichannel, &message);
-            finish(ichannel, &message);
-
-            return message.type;
-
-        /* raised listeners ran: return, so the caller does what follows a message (the wm draws) */
-        case MESSAGE_RAISED:
-            return CHANNEL_EVENTS;
-
-        case MESSAGE_RETRY:
-            break;
-
-        default:
-            return 0;
-
-        }
+        return message.type;
 
     }
 
@@ -451,9 +355,6 @@ unsigned int channel_drain(unsigned int ichannel)
             dispatch(ichannel, &message);
             finish(ichannel, &message);
 
-            break;
-
-        case MESSAGE_RAISED:
             break;
 
         case MESSAGE_RETRY:
@@ -521,75 +422,25 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
 }
 
-unsigned int channel_call(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data, unsigned int replyevent, unsigned int replycount, void *replydata)
-{
-
-    char buffer[MESSAGE_SIZE];
-    struct message reply;
-    unsigned int status;
-
-    message_init(&reply, 0, 0, MESSAGE_SIZE, buffer);
-
-    while ((status = call_call(ichannel, target, event, count, data, &reply)) == MESSAGE_RETRY);
-
-    /* a kernel service answers straight into the reply, which listeners see like any awaited answer; a task, or a service answering later, answers with mail */
-    if (status == MESSAGE_OK)
-    {
-
-        dispatch(ichannel, &reply);
-
-        return (reply.type == replyevent) ? buffer_read(replydata, replycount, reply.data, reply.length, 0) : 0;
-
-    }
-
-    return (status == MESSAGE_PENDING) ? channel_wait(ichannel, target, replyevent, replycount, replydata) : 0;
-
-}
-
-static void fetchevents(unsigned int target)
-{
-
-    char data[MESSAGE_SIZE];
-    struct message_eventsresponse *response = (struct message_eventsresponse *)data;
-    unsigned int offset = sizeof (struct message_eventsresponse);
-    unsigned int count;
-    unsigned int i;
-
-    count = channel_call(1, target, MESSAGE_TYPE_EVENTSREQUEST, 0, 0, MESSAGE_TYPE_EVENTSRESPONSE, MESSAGE_SIZE, data);
-
-    for (i = 0; count >= offset && i < response->count && offset + sizeof (struct message_eventsentry) <= count; i++)
-    {
-
-        struct message_eventsentry *entry = (struct message_eventsentry *)(data + offset);
-        struct message message;
-
-        offset += sizeof (struct message_eventsentry);
-
-        if (entry->length > count - offset)
-            break;
-
-        message_init(&message, entry->event, target, entry->length, data + offset);
-
-        if (entry->event < CHANNEL_EVENTS && listeners[entry->event])
-            listeners[entry->event](&message);
-
-        offset += (entry->length + 3) & ~3u;
-
-    }
-
-}
-
 static unsigned int walk(unsigned int target, unsigned int parent, char *path, unsigned int length)
 {
 
-    struct message_walkresponse response;
     char data[MESSAGE_SIZE];
     struct message_walkrequest *request = (struct message_walkrequest *)data;
 
     request->parent = parent;
     request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct message_walkrequest));
 
-    return (channel_call(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
+    if (channel_send(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
+    {
+
+        struct message_walkresponse response;
+
+        return (channel_wait(1, target, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
+
+    }
+
+    return 0;
 
 }
 
@@ -597,19 +448,28 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 {
 
     struct message_readrequest request;
-    char data[MESSAGE_SIZE];
-    struct message_readresponse *response;
 
     request.id = id;
     request.offset = 0;
     request.count = 16;
     request.flags = 0;
-    response = message_validate(MESSAGE_TYPE_READRESPONSE, data, channel_call(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request, MESSAGE_TYPE_READRESPONSE, MESSAGE_SIZE, data));
 
-    if (!response || response->buffer || response->count > 16)
-        return 0;
+    if (channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
+    {
 
-    return cstring_read_value((char *)(response + 1), response->count, 10);
+        char data[MESSAGE_SIZE];
+        struct message_readresponse *response;
+
+        response = message_validate(MESSAGE_TYPE_READRESPONSE, data, channel_wait(1, target, MESSAGE_TYPE_READRESPONSE, MESSAGE_SIZE, data));
+
+        if (!response || response->buffer || response->count > 16)
+            return 0;
+
+        return cstring_read_value((char *)(response + 1), response->count, 10);
+
+    }
+
+    return 0;
 
 }
 
@@ -645,21 +505,6 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 {
 
     listeners[event] = callback;
-
-}
-
-void channel_bindraised(unsigned int bit, void (*callback)(void))
-{
-
-    if (bit < CHANNEL_BITS)
-        raisedlisteners[bit] = callback;
-
-}
-
-unsigned int channel_raise(unsigned int target, unsigned int bit)
-{
-
-    return (bit < CHANNEL_BITS) ? call_raise(resolve(target), 1u << bit) == MESSAGE_OK : 0;
 
 }
 
@@ -704,8 +549,6 @@ static void abortdrain(void)
 
     struct message messages[MESSAGE_SLOTS];
     unsigned int i;
-
-    call_collect();
 
     for (i = 0; i < CHANNEL_MAILBOXES; i++)
     {

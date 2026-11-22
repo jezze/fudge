@@ -11,8 +11,6 @@
 static void reclaim(struct mailbox *mailbox)
 {
 
-    unsigned int refused[MAILBOX_REFUSED];
-    unsigned int freed = 0;
     unsigned int i;
 
     spinlock_acquire(&mailbox->spinlock);
@@ -28,32 +26,11 @@ static void reclaim(struct mailbox *mailbox)
 
             list_add_unsafe(&mailbox->free, &mailbox->items[i]);
 
-            freed++;
-
         }
 
     }
 
-    for (i = 0; i < MAILBOX_REFUSED; i++)
-    {
-
-        refused[i] = (freed) ? mailbox->refused[i] : 0;
-
-        if (freed)
-            mailbox->refused[i] = 0;
-
-    }
-
     spinlock_release(&mailbox->spinlock);
-
-    /* tasks this mailbox refused learn that it has room again, without having waited for it */
-    for (i = 0; i < MAILBOX_REFUSED; i++)
-    {
-
-        if (refused[i])
-            kernel_raise(refused[i], 1u << MESSAGE_BIT_ROOM);
-
-    }
 
 }
 
@@ -143,34 +120,6 @@ static void checkselflock(struct mailbox *mailbox)
 
 }
 
-void mailbox_refuse(struct mailbox *mailbox, unsigned int itask)
-{
-
-    unsigned int i;
-
-    spinlock_acquire(&mailbox->spinlock);
-
-    for (i = 0; i < MAILBOX_REFUSED; i++)
-    {
-
-        if (mailbox->refused[i] == itask)
-            break;
-
-        if (!mailbox->refused[i])
-        {
-
-            mailbox->refused[i] = itask;
-
-            break;
-
-        }
-
-    }
-
-    spinlock_release(&mailbox->spinlock);
-
-}
-
 void mailbox_sleep(struct mailbox *mailbox)
 {
 
@@ -182,12 +131,7 @@ void mailbox_sleep(struct mailbox *mailbox)
 unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int flags)
 {
 
-    struct task *task = pool_gettask(mailbox->itask);
     unsigned int n;
-
-    /* raised bits go before mail on channel 0, so steady mail cannot hold them back */
-    if (!mailbox->ichannel && task && task->raised)
-        return MESSAGE_RAISED;
 
     reclaim(mailbox);
     spinlock_acquire(&mailbox->spinlock);
@@ -273,6 +217,14 @@ void mailbox_unreserve(struct mailbox *mailbox)
 
 }
 
+unsigned int mailbox_placenotify(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    /* notifies also leave a slot to task mail: a slot freed in a flooded mailbox goes to a task retrying a send, not to the next event */
+    return place(mailbox, 0, MAILBOX_REPLYSLOTS + MAILBOX_MAILSLOTS, event, source, count, data);
+
+}
+
 unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -297,9 +249,6 @@ void mailbox_reset(struct mailbox *mailbox)
     mailbox->held = 0;
     mailbox->reply = 0;
     mailbox->reserved = 0;
-
-    for (i = 0; i < MAILBOX_REFUSED; i++)
-        mailbox->refused[i] = 0;
 
     list_init(&mailbox->free);
     list_init(&mailbox->queued);

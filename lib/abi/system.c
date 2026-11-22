@@ -169,7 +169,9 @@ unsigned int system_unixtime(char *service)
 
         struct message_clockinfo clockinfo;
 
-        if (!channel_call(1, clock, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
+        channel_send(1, clock, MESSAGE_TYPE_INFO, 0, 0);
+
+        if (!channel_wait(1, clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
             return 0;
 
         return time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds);

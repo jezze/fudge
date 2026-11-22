@@ -4,12 +4,9 @@
 .set CALL_INDEX_SPAWN,                  0x03
 .set CALL_INDEX_DESPAWN,                0x04
 .set CALL_INDEX_KILL,                   0x05
-.set CALL_INDEX_RAISE,                  0x06
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
-.set CALL_INDEX_COLLECT,                0x0A
-.set CALL_INDEX_CALL,                   0x0B
 
 # The kernel reads the arguments from the user stack as {return address, arguments...}, like on
 # x86: r0-r3 are pushed in front of the caller's stacked arguments, then lr. The index goes in r12.
@@ -37,7 +34,4 @@ call place, CALL_INDEX_PLACE
 call spawn, CALL_INDEX_SPAWN
 call unload, CALL_INDEX_UNLOAD
 call announce, CALL_INDEX_ANNOUNCE
-call collect, CALL_INDEX_COLLECT
-call raise, CALL_INDEX_RAISE
-call call, CALL_INDEX_CALL
 

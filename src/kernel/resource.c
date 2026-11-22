@@ -80,7 +80,6 @@ void resource_init(struct resource *resource, unsigned int type, void *data, uns
     resource->data = data;
     resource->inode = 0;
     resource->place = place;
-    resource->events = 0;
 
 }
 

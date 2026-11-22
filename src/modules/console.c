@@ -124,9 +124,6 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface, operands_place);
-    events_init(&interface->events);
-
-    interface->resource.events = &interface->events;
 
     interface->width = 0;
     interface->height = 0;

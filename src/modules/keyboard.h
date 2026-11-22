@@ -2,7 +2,6 @@ struct keyboard_interface
 {
 
     struct resource resource;
-    struct events events;
 
 };
 

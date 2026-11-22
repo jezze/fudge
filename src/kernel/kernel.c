@@ -8,7 +8,6 @@
 #include "memsrv.h"
 #include "core.h"
 #include "pool.h"
-#include "events.h"
 #include "kernel.h"
 
 static struct core *(*getcorecallback)(void);
@@ -332,84 +331,12 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
-void kernel_raise(unsigned int itask, unsigned int bits)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-    {
-
-        spinlock_acquire(&task->spinlock);
-
-        task->raised |= bits;
-
-        spinlock_release(&task->spinlock);
-        kernel_signal(itask, TASK_SIGNAL_UNBLOCK);
-
-    }
-
-}
-
-unsigned int kernel_collect(unsigned int itask)
-{
-
-    struct task *task = pool_gettask(itask);
-    unsigned int bits = 0;
-
-    if (task)
-    {
-
-        spinlock_acquire(&task->spinlock);
-
-        bits = task->raised;
-        task->raised = 0;
-
-        spinlock_release(&task->spinlock);
-
-    }
-
-    return bits;
-
-}
-
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct resource *resource = pool_getnoderesource(target);
 
-    if (!resource || !resource->place)
-        return MESSAGE_FAILED;
-
-    /* a resource with events answers subscribing and fetching itself; its driver only sees plain links */
-    if (resource->events)
-    {
-
-        switch (event)
-        {
-
-        case MESSAGE_TYPE_LINK:
-            if (count == sizeof (struct message_link) && events_subscribe(resource->events, source, ((struct message_link *)data)->bit))
-                return MESSAGE_OK;
-
-            count = 0;
-
-            break;
-
-        case MESSAGE_TYPE_UNLINK:
-            if (events_unsubscribe(resource->events, source))
-                return MESSAGE_OK;
-
-            break;
-
-        case MESSAGE_TYPE_EVENTSREQUEST:
-            return events_send(resource->events, resource->inode, source);
-
-        }
-
-    }
-
-    return resource->place(target, source, event, count, data);
+    return (resource && resource->place) ? resource->place(target, source, event, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -417,32 +344,8 @@ unsigned int kernel_placereply(unsigned int target, unsigned int source, unsigne
 {
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
-    struct task *task = (mailbox) ? pool_gettask(mailbox->itask) : 0;
 
-    if (!mailbox)
-        return MESSAGE_FAILED;
-
-    /* a call in progress on this channel: the answer is copied straight into the caller's reply, within its own call */
-    if (task && task->reply && task->replychannel == mailbox->ichannel)
-    {
-
-        struct message *reply = task->reply;
-
-        if (count > reply->length)
-            count = reply->length;
-
-        buffer_copy(reply->data, data, count);
-
-        reply->type = event;
-        reply->source = source;
-        reply->length = count;
-        task->reply = 0;
-
-        return MESSAGE_OK;
-
-    }
-
-    return mailbox_placereply(mailbox, source, event, count, data);
+    return (mailbox) ? mailbox_placereply(mailbox, source, event, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -501,9 +404,6 @@ void kernel_notify(struct resource *resource, unsigned int event, unsigned int c
     struct list_item *current;
     struct list_item *next;
 
-    if (resource->events)
-        events_record(resource->events, event, count, data);
-
     spinlock_acquire(&links->spinlock);
 
     for (current = links->head; current; current = next)
@@ -516,7 +416,12 @@ void kernel_notify(struct resource *resource, unsigned int event, unsigned int c
         if (pool_getnoderesource(target))
         {
 
-            kernel_place(resource->inode, target, event, count, data);
+            struct mailbox *mailbox = pool_getnodemailbox(target);
+
+            if (mailbox)
+                mailbox_placenotify(mailbox, resource->inode, event, count, data);
+            else
+                kernel_place(resource->inode, target, event, count, data);
 
         }
 

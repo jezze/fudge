@@ -283,7 +283,8 @@ static void configurevideo(unsigned int channel)
     buffer_clear(black, 768);
     channel_send(0, channel, MESSAGE_TYPE_VIDEOCMAP, 768, &black);
     channel_send(0, channel, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.video[0].videoconf);
-    channel_call(1, channel, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+    channel_send(1, channel, MESSAGE_TYPE_INFO, 0, 0);
+    channel_wait(1, channel, MESSAGE_TYPE_VIDEOINFO, 0, 0);
 
 }
 
@@ -303,7 +304,8 @@ static void setupvideos(void)
         {
 
             channel_send(0, channel, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &state.video[i].videoconf);
-            channel_call(1, channel, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+            channel_send(1, channel, MESSAGE_TYPE_INFO, 0, 0);
+            channel_wait(1, channel, MESSAGE_TYPE_VIDEOINFO, 0, 0);
 
         }
 
@@ -1441,7 +1443,7 @@ static void sendtextevent(unsigned int source, char *action, char *text)
         message.wmevent.type = 1;
         message.wmevent.length = count + 1;
 
-        channel_post(0, source, MESSAGE_TYPE_WMEVENT, sizeof (struct message_wmevent) + message.wmevent.length, &message);
+        channel_send(0, source, MESSAGE_TYPE_WMEVENT, sizeof (struct message_wmevent) + message.wmevent.length, &message);
 
     }
 
@@ -2865,7 +2867,7 @@ static void clickwidget(struct widget *widget)
             struct util_region rclose = render_getwindowbutton(widget, RENDER_WINDOWBUTTON_CLOSE);
 
             if (util_region_intersects(&rclose, state.mouseposition.x, state.mouseposition.y))
-                channel_post(0, widget->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
+                channel_send(0, widget->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
 
         }
 
@@ -3574,7 +3576,7 @@ static unsigned int sendaction(unsigned int type)
     if (!state.focusedwindow)
         return 0;
 
-    channel_post(0, state.focusedwindow->source, type, 0, 0);
+    channel_send(0, state.focusedwindow->source, type, 0, 0);
 
     return 1;
 
@@ -3588,7 +3590,7 @@ static unsigned int dobinding(struct bind_binding *binding)
 
     case BIND_ACTION_CLOSE:
         if (state.focusedwindow)
-            channel_post(0, state.focusedwindow->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
+            channel_send(0, state.focusedwindow->source, MESSAGE_TYPE_INTERRUPT, 0, 0);
 
         break;
 
@@ -3780,7 +3782,7 @@ static void onkeypress(struct message *message)
                     buffer_copy(&wmkeypress.unicode, state.keys.code.value, wmkeypress.length);
                     wmkeypress.keymod = state.keys.mod;
 
-                    channel_post(0, state.focusedwindow->source, MESSAGE_TYPE_WMKEYPRESS, sizeof (struct message_wmkeypress), &wmkeypress);
+                    channel_send(0, state.focusedwindow->source, MESSAGE_TYPE_WMKEYPRESS, sizeof (struct message_wmkeypress), &wmkeypress);
 
                     state.pressedsources[keypress->scancode & 0x7F] = state.focusedwindow->source;
 
@@ -3847,7 +3849,9 @@ static void showclock(void)
 
     struct message_clockinfo clockinfo;
 
-    if (channel_call(1, state.clock, MESSAGE_TYPE_INFO, 0, 0, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
+    channel_send(1, state.clock, MESSAGE_TYPE_INFO, 0, 0);
+
+    if (channel_wait(1, state.clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
     {
 
         unsigned char hours;

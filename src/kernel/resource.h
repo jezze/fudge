@@ -25,7 +25,6 @@ struct resource
     void *data;
     unsigned int inode;
     struct list links;
-    struct events *events;
     unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };

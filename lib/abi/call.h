@@ -1,12 +1,9 @@
 unsigned int call_announce(unsigned int ichannel, unsigned int length, char *name);
-unsigned int call_call(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data, struct message *reply);
-unsigned int call_collect(void);
 unsigned int call_debug(char *message);
 unsigned int call_despawn(void);
 unsigned int call_kill(unsigned int task);
 unsigned int call_load(unsigned int target, unsigned int id);
 unsigned int call_pick(unsigned int ichannel, struct message *messages, unsigned int count, unsigned int flags);
 unsigned int call_place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
-unsigned int call_raise(unsigned int target, unsigned int bits);
 unsigned int call_spawn(unsigned int target, unsigned int id);
 unsigned int call_unload(unsigned int target, unsigned int id);

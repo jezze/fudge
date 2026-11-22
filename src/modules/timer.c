@@ -272,9 +272,6 @@ void timer_initinterface(struct timer_interface *interface, unsigned int hz)
     unsigned int i;
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface, operands_place);
-    events_init(&interface->events);
-
-    interface->resource.events = &interface->events;
     spinlock_init(&interface->spinlock);
     list_init(&interface->free);
 

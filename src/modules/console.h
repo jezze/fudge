@@ -2,7 +2,6 @@ struct console_interface
 {
 
     struct resource resource;
-    struct events events;
     unsigned int width;
     unsigned int height;
     unsigned int color;
