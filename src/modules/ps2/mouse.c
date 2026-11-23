@@ -12,9 +12,16 @@ static unsigned int sequence;
 static unsigned int type;
 static unsigned char state;
 static unsigned char oldstate;
-static char relx;
-static char rely;
+static int relx;
+static int rely;
 static char relz;
+
+static char clamp(int value)
+{
+
+    return (value > 127) ? 127 : (value < -127) ? -127 : value;
+
+}
 
 static void handleirq(unsigned int irq)
 {
@@ -45,11 +52,12 @@ static void handleirq(unsigned int irq)
 
             break;
 
+        /* a movement is nine bits: the data byte with its sign in the first byte of the packet */
         case 1:
             if (state & (1 << 6))
                 relx = 0;
             else
-                relx = data;
+                relx = (state & (1 << 4)) ? (int)data - 256 : data;
 
             sequence = 2;
 
@@ -59,7 +67,7 @@ static void handleirq(unsigned int irq)
             if (state & (1 << 7))
                 rely = 0;
             else
-                rely = data;
+                rely = (state & (1 << 5)) ? (int)data - 256 : data;
 
             sequence = (type) ? 3 : 0;
 
@@ -108,8 +116,19 @@ static void handleirq(unsigned int irq)
         if ((oldstate & 4) && !(state & 4))
            mouse_notifyrelease(&mouseinterface, 3);
 
-        if (relx || rely)
-           mouse_notifymove(&mouseinterface, relx, -rely);
+        /* told in steps that fit a move, as virtio-mouse does */
+        while (relx || rely)
+        {
+
+            char x = clamp(relx);
+            char y = clamp(rely);
+
+            mouse_notifymove(&mouseinterface, x, -y);
+
+            relx -= x;
+            rely -= y;
+
+        }
 
         if (relz)
             mouse_notifyscroll(&mouseinterface, relz);
