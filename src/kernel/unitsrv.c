@@ -6,6 +6,7 @@
 #include "service.h"
 #include "mailbox.h"
 #include "kernel.h"
+#include "page.h"
 #include "unitsrv.h"
 
 #define LISTRECORDS                     8
@@ -142,18 +143,14 @@ static void initfilerecord(struct record *record, struct resource *device, unsig
 
 }
 
-static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, unsigned int source, struct message_readrequest *request)
+static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, unsigned int source, struct message_readrequest *request, struct page_lease *lease)
 {
 
-    unsigned char buffer[sizeof (struct message_readresponse) + TEXTSIZE];
-    struct message_readresponse *response = (struct message_readresponse *)buffer;
     char text[TEXTSIZE];
     unsigned int length = cstring_write_value(text, TEXTSIZE, device->inode, 10, 0, 0);
+    unsigned int total = (request->offset < length) ? buffer_write(lease->data, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
 
-    response->count = (request->offset < length) ? buffer_write(response + 1, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
-    response->buffer = 0;
-
-    return kernel_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+    return page_answer(source, lease, total, unitsrv->server.inode);
 
 }
 
@@ -161,26 +158,29 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
 {
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
-    unsigned char buffer[sizeof (struct message_readresponse) + sizeof (struct record) * LISTRECORDS];
-    struct message_readresponse *response = (struct message_readresponse *)buffer;
-    struct record *records = (struct record *)(response + 1);
 
     if (request)
     {
 
+        struct page_lease lease = page_lend(source);
+        unsigned int length = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
+        struct record *records = lease.data;
         struct resource *file = getfile(unitsrv, request->id);
         struct resource *dir;
         unsigned int root;
         unsigned int c = 0;
         unsigned int i;
 
+        if (lease.status != MESSAGE_OK)
+            return lease.status;
+
         if (file)
-            return readfile(unitsrv, file, source, request);
+            return readfile(unitsrv, file, source, request, &lease);
 
         dir = getdir(unitsrv, request->id);
         root = request->id == unitsrv->server.inode;
 
-        for (i = request->offset; (root || dir) && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
+        for (i = request->offset; (root || dir) && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= length; i++)
         {
 
             if (i < 2)
@@ -194,10 +194,7 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
 
         }
 
-        response->count = c * sizeof (struct record);
-        response->buffer = 0;
-
-        return kernel_placereply(source, unitsrv->server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return page_answer(source, &lease, c * sizeof (struct record), unitsrv->server.inode);
 
     }
 

@@ -414,23 +414,25 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
-    struct message_readresponse *readresponse = (struct message_readresponse *)response;
 
     if (request)
     {
 
-        unsigned int status;
+        struct page_lease lease;
+        unsigned int total;
 
+        /* what is read describes the system before the page for the answer is taken from the pool */
         spinlock_acquire(&spinlock);
 
-        readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse), readresponse + 1);
-        readresponse->buffer = 0;
+        total = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE) ? request->count : MESSAGE_SIZE, response);
+        lease = page_lend(source);
 
-        status = kernel_placereply(source, server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + readresponse->count, response);
+        if (lease.status == MESSAGE_OK)
+            buffer_copy(lease.data, response, total);
 
         spinlock_release(&spinlock);
 
-        return status;
+        return (lease.status == MESSAGE_OK) ? page_answer(source, &lease, total, server.inode) : lease.status;
 
     }
 

@@ -186,14 +186,7 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
     struct inbox *inbox = &inboxes[ichannel];
     unsigned int status = MESSAGE_OK;
 
-    if (inbox->handed)
-        inbox->done[inbox->handed - 1] = 1;
-
-    if (inbox->handedpage)
-        page_free(inbox->handedpage);
-
-    inbox->handed = 0;
-    inbox->handedpage = 0;
+    channel_done(ichannel);
 
     if (inbox->index == inbox->count)
         status = fill(ichannel, inbox, 0);
@@ -612,12 +605,17 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 
         struct message message;
         struct message_readresponse *response;
+        unsigned int value;
 
         switch (channel_pollreply(1, target, MESSAGE_TYPE_READRESPONSE, &message))
         {
 
         case MESSAGE_TYPE_DATA:
-            return (message.length <= 16) ? cstring_read_value(message.data, message.length, 10) : 0;
+            value = (message.length <= 16) ? cstring_read_value(message.data, message.length, 10) : 0;
+
+            channel_done(1);
+
+            return value;
 
         case MESSAGE_TYPE_READRESPONSE:
             response = message_validate(MESSAGE_TYPE_READRESPONSE, message.data, message.length);
@@ -660,6 +658,23 @@ unsigned int channel_lookup(char *name)
     }
 
     return target;
+
+}
+
+/* the message last picked or polled on this channel is finished with now, rather than at the next pick */
+void channel_done(unsigned int ichannel)
+{
+
+    struct inbox *inbox = &inboxes[ichannel];
+
+    if (inbox->handed)
+        inbox->done[inbox->handed - 1] = 1;
+
+    if (inbox->handedpage)
+        page_free(inbox->handedpage);
+
+    inbox->handed = 0;
+    inbox->handedpage = 0;
 
 }
 

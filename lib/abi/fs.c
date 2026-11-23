@@ -269,6 +269,7 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
     struct readreply reply = readreply(ichannel, target, id, count, offset);
 
     buffer_copy(buffer, reply.data, reply.count);
+    channel_done(ichannel);
 
     return reply.count;
 
@@ -334,9 +335,14 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
         for (i = 0; i < reply.count; i += MESSAGE_SIZE)
             each(source, data + i, (reply.count - i < MESSAGE_SIZE) ? reply.count - i : MESSAGE_SIZE);
 
+        /* unless each gave the page on, it goes back to the pool now */
+        channel_done(ichannel);
+
         offset += reply.count;
 
     }
+
+    channel_done(ichannel);
 
     return 1;
 

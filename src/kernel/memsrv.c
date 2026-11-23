@@ -6,6 +6,7 @@
 #include "pool.h"
 #include "kernel.h"
 #include "memsrv.h"
+#include "page.h"
 
 #define ROOT                            1
 #define FILEPAGES                       (MEMSRV_FILESIZE / MEMSRV_PAGESIZE)
@@ -560,26 +561,25 @@ static unsigned int onmunmaprequest(unsigned int source, unsigned int count, voi
 static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    unsigned char buffer[MESSAGE_SIZE];
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
-    struct message_readresponse *response = (struct message_readresponse *)buffer;
 
     if (request)
     {
 
-        unsigned int length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
+        unsigned int length = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
         struct file *file = getfile(request->id);
+        struct page_lease lease = page_lend(source);
+        unsigned int total = 0;
+
+        if (lease.status != MESSAGE_OK)
+            return lease.status;
 
         if (request->id == ROOT)
-            response->count = readrecords((struct record *)(response + 1), length, request->offset);
+            total = readrecords(lease.data, length, request->offset);
         else if (file)
-            response->count = readdata(file, (unsigned char *)(response + 1), length, request->offset);
-        else
-            response->count = 0;
+            total = readdata(file, lease.data, length, request->offset);
 
-        response->buffer = 0;
-
-        return kernel_placereply(source, server.inode, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return page_answer(source, &lease, total, server.inode);
 
     }
 

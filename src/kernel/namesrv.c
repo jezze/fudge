@@ -4,6 +4,7 @@
 #include "service.h"
 #include "mailbox.h"
 #include "kernel.h"
+#include "page.h"
 #include "namesrv.h"
 
 #define LISTRECORDS                     8
@@ -73,23 +74,26 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
-    unsigned char buffer[sizeof (struct message_readresponse) + sizeof (struct record) * LISTRECORDS];
-    struct message_readresponse *response = (struct message_readresponse *)buffer;
-    struct record *records = (struct record *)(response + 1);
 
     if (request)
     {
 
+        struct page_lease lease = page_lend(source);
+        unsigned int length = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
+        struct record *records = lease.data;
         struct resource *resource = 0;
         unsigned int c = 0;
         unsigned int i;
 
-        for (i = request->offset; request->id == MESSAGE_ROOT && i < 2 && (c + 1) * sizeof (struct record) <= request->count; i++)
+        if (lease.status != MESSAGE_OK)
+            return lease.status;
+
+        for (i = request->offset; request->id == MESSAGE_ROOT && i < 2 && (c + 1) * sizeof (struct record) <= length; i++)
             record_init(&records[c++], MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
 
         resource_lock();
 
-        for (i = 2; request->id == MESSAGE_ROOT && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count && (resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)); i++)
+        for (i = 2; request->id == MESSAGE_ROOT && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= length && (resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)); i++)
         {
 
             struct service *current = resource->data;
@@ -101,10 +105,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
         resource_unlock();
 
-        response->count = c * sizeof (struct record);
-        response->buffer = 0;
-
-        return kernel_placereply(source, MESSAGE_ROOT, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return page_answer(source, &lease, c * sizeof (struct record), MESSAGE_ROOT);
 
     }
 
