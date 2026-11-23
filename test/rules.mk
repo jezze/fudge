@@ -194,6 +194,19 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/repeat \
+
+O:=\
+    $(DIR_TEST)/repeat.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/runner \
 
 O:=\
@@ -276,6 +289,19 @@ B:=\
 
 O:=\
     $(DIR_TEST)/stale.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
+    $(DIR_TEST)/stress \
+
+O:=\
+    $(DIR_TEST)/stress.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \

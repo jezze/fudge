@@ -12,6 +12,7 @@
 struct pagerow
 {
 
+    unsigned int free;
     unsigned int origin;
     unsigned int owner;
     unsigned int count;
@@ -51,6 +52,9 @@ static unsigned int isvalid(unsigned int page)
 static void release(unsigned int page)
 {
 
+    if (rows[page].free)
+        debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "Page released twice");
+
     if (rows[page].origin)
         charged[rows[page].origin]--;
 
@@ -60,6 +64,7 @@ static void release(unsigned int page)
     rows[page].source = 0;
     rows[page].queued = 0;
     rows[page].next = freehead;
+    rows[page].free = 1;
     freehead = page;
     nfree++;
 
@@ -145,6 +150,10 @@ unsigned int page_alloc(unsigned int itask)
     if (page)
     {
 
+        if (!rows[page].free || rows[page].owner)
+            debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "Page taken from the pool is in use");
+
+        rows[page].free = 0;
         freehead = rows[page].next;
         nfree--;
         charged[itask]++;

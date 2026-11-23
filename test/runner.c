@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define TESTS                           16
+#define TESTS                           17
 #define PATHSIZE                        64
 #define DEADLINE                        30000
 #define GRACE                           5000
@@ -33,6 +33,7 @@ static struct test tests[TESTS] = {
     {"cut", 0},
     {"pipes", 0},
     {"relay", 0},
+    {"stress", 0},
     {"audio", 0},
     {"expand", 0}
 };

@@ -188,18 +188,22 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 
     channel_done(ichannel);
 
-    if (inbox->index == inbox->count)
-        status = fill(ichannel, inbox, 0);
-
-    if (status == MESSAGE_FAILED)
-        return status;
-
-    if ((ichannel || started) && (inbox->index == inbox->count || isend(&inbox->messages[inbox->index])) && takepage(ichannel, message))
-        return MESSAGE_OK;
-
-    if (inbox->index == inbox->count)
+    for (;;)
     {
 
+        if (inbox->index == inbox->count)
+            status = fill(ichannel, inbox, 0);
+
+        if (status == MESSAGE_FAILED)
+            return status;
+
+        if ((ichannel || started) && (inbox->index == inbox->count || isend(&inbox->messages[inbox->index])) && takepage(ichannel, message))
+            return MESSAGE_OK;
+
+        if (inbox->index < inbox->count)
+            break;
+
+        /* mail that came while waiting may be a TERM sent after pages that came with it, so the pages are looked for again */
         status = fill(ichannel, inbox, flags);
 
         if (status != MESSAGE_OK)

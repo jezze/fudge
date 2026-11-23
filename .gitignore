@@ -114,6 +114,7 @@ test/pingpong
 test/pipe
 test/pipes
 test/relay
+test/repeat
 test/runner
 test/sender
 test/sink
@@ -121,6 +122,7 @@ test/source
 test/spawn
 test/stage
 test/stale
+test/stress
 test/verify
 test/window0
 test/window1
