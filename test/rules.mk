@@ -38,6 +38,19 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/disks \
+
+O:=\
+    $(DIR_TEST)/disks.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/emit \
 
 O:=\

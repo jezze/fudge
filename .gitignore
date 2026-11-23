@@ -102,6 +102,7 @@ src/wutils/wimage
 test/abort
 test/audio
 test/cut
+test/disks
 test/emit
 test/expand
 test/files

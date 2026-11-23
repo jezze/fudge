@@ -33,10 +33,24 @@ test -f mk/config.mk || error "No configuration, set one with make <config>"
 
 log=$(mktemp)
 wav=$(mktemp)
-trap 'rm -f "${log}"; test -n "${keepwav}" || rm -f "${wav}"' EXIT
+trap 'rm -f "${log}" "${disk}"; test -n "${keepwav}" || rm -f "${wav}"' EXIT
+
+# one MBR disk with a FAT and an ext2 partition, each holding the same pattern the disks test reads back
+makedisk() {
+    staging=$(mktemp -d)
+    awk 'BEGIN { for (i = 0; i < 40000; i++) printf "%c", 97 + i % 26 }' > "${staging}/pattern.txt"
+    truncate -s 40M "${disk}"
+    printf 'label: dos\n2048,32768,c\n34816,32768,83\n' | sfdisk -q "${disk}"
+    mformat -i "${disk}@@1048576" -T 32768 -h 64 -s 32 :: > /dev/null
+    mcopy -i "${disk}@@1048576" "${staging}/pattern.txt" ::pattern.txt
+    mke2fs -q -F -t ext2 -E offset=$((34816 * 512)) -d "${staging}" "${disk}" 16M > /dev/null
+    rm -rf "${staging}"
+}
 audiodev="-audiodev wav,id=audio0,path=${wav},out.frequency=48000,out.channels=2,out.format=s16"
 audio=""
 endian=little
+disk=$(mktemp)
+drive=""
 
 arch=$(sed -n 's/^ARCH:=//p' mk/config.mk)
 loader=$(sed -n 's/^LOADER:=//p' mk/config.mk)
@@ -48,6 +62,7 @@ case "${arch}" in
     x86|x86_64)
         cmd="qemu-system-x86_64 -nodefaults -smp ${smp} -m 256 -vga std"
         audio="${audiodev} -device virtio-sound-pci,audiodev=audio0"
+        drive="-drive file=${disk},format=raw,if=ide,index=0"
         test -w /dev/kvm && cmd="${cmd} -enable-kvm"
 
         if test "${loader}" == "mboot2"
@@ -66,12 +81,14 @@ case "${arch}" in
         smp=1
         cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -global virtio-mmio.force-legacy=false"
         audio="${audiodev} -device virtio-sound-device,audiodev=audio0"
+        drive="-drive file=${disk},format=raw,if=none,id=disk0 -device virtio-blk-device,drive=disk0"
         # qemu's virtio-sound takes samples in the guest's byte order, although virtio's format is little-endian
         endian=big
         ;;
     aarch64|riscv32|riscv64)
         cmd="qemu-system-${arch} -nodefaults -machine virt -smp ${smp} $(test "${arch}" == "aarch64" && echo "-cpu cortex-a53" || true) -m 256 -device ramfb"
         audio="${audiodev} -device virtio-sound-device,audiodev=audio0"
+        drive="-drive file=${disk},format=raw,if=none,id=disk0 -device virtio-blk-device,drive=disk0"
         ;;
     *)
         error "Unknown architecture: ${arch}"
@@ -85,7 +102,9 @@ case "${arch}" in
         ;;
 esac
 
-${cmd} ${audio:--audio none} -display none -no-reboot -serial file:"${log}" > /dev/null 2>&1 &
+test -n "${drive}" && makedisk
+
+${cmd} ${audio:--audio none} ${drive} -display none -no-reboot -serial file:"${log}" > /dev/null 2>&1 &
 pid=${!}
 deadline=$((SECONDS + timeout))
 
@@ -128,7 +147,14 @@ then
     case "${result}" in ok) ;; *) audiofailed=1 ;; esac
 fi
 
-if grep -q "^tests done .* 0 failed" "${log}" && test -z "${audiofailed}"
+# with a disk attached, the disks test must have read it rather than skipped
+if test -n "${drive}" && grep -q "^test disks: skipped" "${log}"
+then
+    echo "test disks did not find the attached disk"
+    diskfailed=1
+fi
+
+if grep -q "^tests done .* 0 failed" "${log}" && test -z "${audiofailed}" && test -z "${diskfailed}"
 then
     echo "PASS on ${arch}-${loader} smp ${smp}"
     exit 0
