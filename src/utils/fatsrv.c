@@ -1527,9 +1527,10 @@ static void onwriterequest(struct message *message)
 {
 
     struct message_writerequest *request = message_validate(MESSAGE_TYPE_WRITEREQUEST, message->data, message->length);
+    void *data = (request) ? page_address(request->page) : 0;
     struct message_writeresponse response;
 
-    response.count = (request) ? writefile(request->id, request->offset, request->count, request + 1) : 0;
+    response.count = (data) ? writefile(request->id, request->offset, request->count, data) : 0;
 
     channel_send(0, message->source, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 

@@ -502,6 +502,7 @@ struct message_writerequest
     unsigned int id;
     unsigned int offset;
     unsigned int count;
+    unsigned int page;
 
 };
 

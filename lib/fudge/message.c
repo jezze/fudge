@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include "page.h"
 #include "message.h"
 
 static void *checksize(void *data, unsigned int count, unsigned int size)
@@ -216,12 +217,13 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
         return 0;
 
     case MESSAGE_TYPE_WRITEREQUEST:
-        if (count >= sizeof (struct message_writerequest))
+        /* the data is in the page the request names */
+        if (count == sizeof (struct message_writerequest))
         {
 
             struct message_writerequest *writerequest = data;
 
-            return checkpayload(data, count, sizeof (struct message_writerequest), writerequest->count);
+            return (writerequest->count <= PAGE_SIZE) ? data : 0;
 
         }
 

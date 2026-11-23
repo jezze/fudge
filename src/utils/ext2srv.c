@@ -2070,12 +2070,13 @@ static void onwriterequest(struct message *message)
 {
 
     struct message_writerequest *request = message_validate(MESSAGE_TYPE_WRITEREQUEST, message->data, message->length);
+    void *data = (request) ? page_address(request->page) : 0;
     struct message_writeresponse response;
     struct ext2_node node;
 
     response.count = 0;
 
-    if (request && mode == EXT2_MOUNT_WRITE)
+    if (data && mode == EXT2_MOUNT_WRITE)
     {
 
         simpleread(&node, request->id);
@@ -2084,12 +2085,12 @@ static void onwriterequest(struct message *message)
         {
 
         case 0x4000:
-            response.count = writedirectory(&node, request->offset, request->count, request->id, request + 1);
+            response.count = writedirectory(&node, request->offset, request->count, request->id, data);
 
             break;
 
         case 0x8000:
-            response.count = writefile(&node, request->offset, request->count, request->id, request + 1);
+            response.count = writefile(&node, request->offset, request->count, request->id, data);
 
             break;
 

@@ -28,6 +28,13 @@ void *page_address(unsigned int page)
 
 }
 
+unsigned int page_number(void *data)
+{
+
+    return getpage(data);
+
+}
+
 /* the page goes to the target along with a request naming it; this returns the name */
 unsigned int page_hand(void *data, unsigned int target)
 {

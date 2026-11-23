@@ -419,17 +419,18 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     {
 
         struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
+        struct page_lease lease = page_borrow(source, request->page);
 
         response.count = 0;
 
-        if (header)
+        if (header && lease.data)
         {
 
             switch (cpio_mode(header) & 0xF000)
             {
 
             case 0x8000:
-                response.count = write(request->id, request + 1, request->count, request->offset);
+                response.count = write(request->id, lease.data, request->count, request->offset);
 
                 break;
 

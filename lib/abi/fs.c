@@ -446,26 +446,34 @@ unsigned int fs_walkparent(unsigned int ichannel, unsigned int target, char *pat
 
 }
 
+/* the data goes in a page the request names; the writer keeps the page and frees it once answered */
 unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    char data[MESSAGE_SIZE];
-    struct message_writerequest *request = (struct message_writerequest *)data;
+    struct message_writerequest request;
+    void *page = page_alloc();
+    unsigned int written = 0;
 
-    request->id = id;
-    request->offset = offset;
-    request->count = buffer_write(data, MESSAGE_SIZE, buffer, count, sizeof (struct message_writerequest));
+    request.id = id;
+    request.offset = offset;
+    request.count = (count < PAGE_SIZE) ? count : PAGE_SIZE;
+    request.page = page_number(page);
 
-    if (channel_send(ichannel, target, MESSAGE_TYPE_WRITEREQUEST, sizeof (struct message_writerequest) + request->count, data))
+    buffer_copy(page, buffer, request.count);
+
+    if (channel_send(ichannel, target, MESSAGE_TYPE_WRITEREQUEST, sizeof (struct message_writerequest), &request))
     {
 
         struct message_writeresponse response;
 
-        return (channel_wait(ichannel, target, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response)) ? response.count : 0;
+        if (channel_wait(ichannel, target, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response))
+            written = response.count;
 
     }
 
-    return 0;
+    page_free(page);
+
+    return written;
 
 }
 

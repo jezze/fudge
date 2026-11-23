@@ -655,8 +655,9 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     {
 
         struct file *file = getfile(request->id);
+        struct page_lease lease = page_borrow(source, request->page);
 
-        response.count = (file) ? writedata(file, (unsigned char *)(request + 1), request->count, request->offset) : 0;
+        response.count = (file && lease.data) ? writedata(file, lease.data, request->count, request->offset) : 0;
 
         return kernel_placereply(source, server.inode, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
