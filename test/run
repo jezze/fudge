@@ -1,0 +1,106 @@
+#!/bin/bash
+
+set -e
+
+error() {
+    echo "Error: ${1}" >&2
+    exit 3
+}
+
+timeout=300
+smp=4
+
+while test ${#} -gt 0
+do
+    case "${1}" in
+        -s)
+            smp="${2}"
+            shift
+            ;;
+        -t)
+            timeout="${2}"
+            shift
+            ;;
+        *)
+            error "Unknown option: ${1} (-s <cpus>, -t <seconds>)"
+            ;;
+    esac
+
+    shift
+done
+
+test -f mk/config.mk || error "No configuration, set one with make <config>"
+
+arch=$(sed -n 's/^ARCH:=//p' mk/config.mk)
+loader=$(sed -n 's/^LOADER:=//p' mk/config.mk)
+
+test -f fudge || error "Kernel not found, run make test"
+test -f fudge.test.cpio || error "Test ramdisk not found, run make test"
+
+case "${arch}" in
+    x86|x86_64)
+        cmd="qemu-system-x86_64 -nodefaults -smp ${smp} -m 256 -vga std"
+        test -w /dev/kvm && cmd="${cmd} -enable-kvm"
+
+        if test "${loader}" == "mboot2"
+        then
+            test -f fudge.test.iso || error "Test ISO not found, run make test"
+            cmd="${cmd} -cdrom fudge.test.iso -boot d"
+        else
+            cmd="${cmd} -kernel fudge -initrd fudge.test.cpio,build/testinitrd/bin/init"
+        fi
+        ;;
+    arm)
+        smp=1
+        cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none"
+        ;;
+    m68k)
+        smp=1
+        cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -audio none -global virtio-mmio.force-legacy=false"
+        ;;
+    aarch64|riscv32|riscv64)
+        cmd="qemu-system-${arch} -nodefaults -machine virt -smp ${smp} $(test "${arch}" == "aarch64" && echo "-cpu cortex-a53" || true) -m 256 -audio none -device ramfb"
+        ;;
+    *)
+        error "Unknown architecture: ${arch}"
+        ;;
+esac
+
+case "${arch}" in
+    aarch64|arm|m68k|riscv32|riscv64)
+        ramdisk=$(sed -n 's/^#define ARCH_RAMDISK_BASE *\(.*ARCH_RAMBASE + \)*\(0x[0-9A-F]*\).*/\2/p' src/kernel/${arch}/arch.h)
+        cmd="${cmd} -kernel fudge -device loader,file=fudge.test.cpio,addr=${ramdisk},force-raw=on"
+        ;;
+esac
+
+log=$(mktemp)
+trap 'rm -f "${log}"' EXIT
+
+${cmd} -display none -no-reboot -serial file:"${log}" > /dev/null 2>&1 &
+pid=${!}
+deadline=$((SECONDS + timeout))
+
+while kill -0 ${pid} 2> /dev/null && ! grep -q "^tests done" "${log}" && test ${SECONDS} -lt ${deadline}
+do
+    sleep 1
+done
+
+kill ${pid} 2> /dev/null || true
+wait ${pid} 2> /dev/null || true
+tr -d '\r\003' < "${log}" | grep -a "^test\|^dump\|^\[" || true
+
+if ! grep -q "^tests done" "${log}"
+then
+    hung=$(tr -d '\r\003' < "${log}" | sed -n 's/^test \(.*\) start$/\1/p' | tail -n 1)
+    echo "TIMEOUT after ${timeout}s on ${arch}-${loader} smp ${smp}${hung:+, in test ${hung}}"
+    exit 2
+fi
+
+if grep -q "^tests done .* 0 failed" "${log}"
+then
+    echo "PASS on ${arch}-${loader} smp ${smp}"
+    exit 0
+fi
+
+echo "FAIL on ${arch}-${loader} smp ${smp}"
+exit 1

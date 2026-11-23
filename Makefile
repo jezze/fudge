@@ -6,9 +6,13 @@ RAMDISK_DATA:=alfi config font ssl wallpaper-small.png help.txt keys motd.txt sh
 INIT=init
 ISO_TYPE:=iso
 ISO=$(KERNEL).$(ISO_TYPE)
+TESTRAMDISK:=$(KERNEL).test.$(RAMDISK_TYPE)
+TESTISO:=$(KERNEL).test.$(ISO_TYPE)
 DIR_BUILD:=build
 DIR_BUILDBOOT:=$(DIR_BUILD)/boot
 DIR_BUILDINITRD:=$(DIR_BUILD)/initrd
+DIR_BUILDTESTINITRD:=$(DIR_BUILD)/testinitrd
+DIR_BUILDTESTISO:=$(DIR_BUILD)/testiso
 DIR_BUILDROOT:=$(DIR_BUILD)/root
 DIR_BUILDUEFI:=$(DIR_BUILD)/uefi
 DIR_INCLUDE:=include
@@ -16,16 +20,17 @@ DIR_ISO:=iso
 DIR_MK:=mk
 DIR_LIB:=lib
 DIR_SRC:=src
+DIR_TEST:=test
 DIR_INSTALL:=/boot
 REPORT:=report.xml
 
-.PHONY: all clean check check-full install help
+.PHONY: all clean check check-full install help test
 .SUFFIXES:
 
 all: $(DIR_BUILDBOOT) $(DIR_BUILDROOT) $(DIR_BUILDUEFI)
 
 clean:
-	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD) $(REPORT)
+	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD) $(REPORT) $(TESTBIN) $(TESTRAMDISK) $(TESTISO)
 
 check:
 	@cppcheck -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) --std=c89 --report-progress --xml --enable=all --check-level=exhaustive --suppress=unusedStructMember --suppress=constParameterPointer --suppress=constVariablePointer --suppress=constParameterCallback --suppress=unusedFunction --suppress=cert-API01-C --suppress=cert-EXP15-C --suppress=cert-STR05-C . 2> $(REPORT)
@@ -110,6 +115,10 @@ help:
 	@echo ""
 	@echo "  $$ make"
 	@echo ""
+	@echo "To build the test boot (run it with test/run):"
+	@echo ""
+	@echo "  $$ make test"
+	@echo ""
 	@echo "To clean:"
 	@echo ""
 	@echo "  $$ make clean"
@@ -126,8 +135,11 @@ include $(DIR_MK)/$(ARCH)-$(LOADER).mk
 MODULES_ARCH:=$(firstword $(wildcard data/config/modules-$(ARCH)-$(LOADER).mq) data/config/modules-$(ARCH).mq)
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
+include $(DIR_TEST)/rules.mk
 -include $(DEP)
 endif
+
+test: $(TESTRAMDISK) $(if $(filter mboot2,$(LOADER)),$(TESTISO))
 
 $(DIR_BUILD):
 	@echo BUILD $@

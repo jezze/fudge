@@ -174,6 +174,29 @@ Replace eth0 with the name of the network interface that is connected to the
 internet. You only need to run this command once unless you reboot your host
 machine.
 
+## Running the tests
+
+make test builds a second ramdisk (fudge.test.cpio, and fudge.test.iso for
+multiboot2 configurations) whose init runs the test programs in test/ instead of
+starting the system. test/run boots it in QEMU without a display and reads the
+results from the serial port:
+
+```sh
+$ make test
+$ test/run
+```
+
+-s sets the number of CPUs (default 4) and -t the timeout in seconds (default 300).
+test/run exits with 0 when every test passed, 1 when one failed and 2 when the
+boot hung, naming the test that was running.
+
+Each test has a deadline in test/runner.c. A test that passes it is aborted and
+reported as hung, and the next test runs. Before the abort, the runner prints the
+task and mailbox tables from sysinfo, one line each starting with dump. Known problems are tests, not notes:
+the known list in test/runner.c names each failing test with the reason it fails.
+Such a test is reported as known instead of failed, and once it passes it is
+reported as fixed and counts as a failure until it is taken off the list.
+
 ## Disk images
 
 You can create a fudge.qcow2 image and install Fudge on it. First build Fudge,
