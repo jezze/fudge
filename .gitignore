@@ -111,6 +111,7 @@ test/peer
 test/pingpong
 test/pipe
 test/pipes
+test/relay
 test/runner
 test/sender
 test/sink

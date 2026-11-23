@@ -13,6 +13,8 @@
 /* data that came in a page has no mailbox slot; these slots say so, and whether the page is still to be freed */
 #define CHANNEL_SLOTPAGE                MESSAGE_SLOTS
 #define CHANNEL_SLOTKEPT                (MESSAGE_SLOTS + 1)
+/* handlers may run inside handlers, as relieve does */
+#define CHANNEL_ACTIVE                  8
 
 struct inbox
 {
@@ -31,6 +33,8 @@ static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
 static unsigned int started;
+static struct message *active[CHANNEL_ACTIVE];
+static unsigned int nactive;
 static unsigned int relieving;
 static unsigned int status;
 static struct message_pipe pipe;
@@ -241,8 +245,14 @@ static void dispatch(unsigned int ichannel, struct message *message)
     if (message->type == MESSAGE_TYPE_MAIN && !ichannel)
         setpipe(message);
 
+    if (nactive < CHANNEL_ACTIVE)
+        active[nactive++] = message;
+
     if (message->type < CHANNEL_EVENTS && listeners[message->type])
         listeners[message->type](message);
+
+    if (nactive && active[nactive - 1] == message)
+        nactive--;
 
     switch (message->type)
     {
@@ -319,7 +329,47 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
 
 }
 
-/* pipe data goes in a page; the page is the receiver's to free once read */
+/* the data is a page this task was handed and still holds: from here it is not freed, as it is about to be given on */
+static unsigned int handover(void *data)
+{
+
+    unsigned int i;
+
+    for (i = nactive; i > 0; i--)
+    {
+
+        struct message *message = active[i - 1];
+
+        if (message->slot == CHANNEL_SLOTPAGE && message->data == data)
+        {
+
+            message->slot = CHANNEL_SLOTKEPT;
+
+            return 1;
+
+        }
+
+    }
+
+    for (i = 0; i < CHANNEL_MAILBOXES; i++)
+    {
+
+        if (inboxes[i].handedpage == data)
+        {
+
+            inboxes[i].handedpage = 0;
+
+            return 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+/* pipe data goes in a page, the one it came in if the handler sends that on; the page is the receiver's to free once read */
 static unsigned int placepage(unsigned int target, unsigned int count, void *data)
 {
 
@@ -327,6 +377,9 @@ static unsigned int placepage(unsigned int target, unsigned int count, void *dat
 
     if (count > PAGE_SIZE)
         return 0;
+
+    if (handover(data))
+        return (page_give(data, target, count)) ? MESSAGE_TYPE_DATA : 0;
 
     page = page_alloc();
 

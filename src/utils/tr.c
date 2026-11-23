@@ -47,12 +47,11 @@ static void replace(unsigned int source, void *data, unsigned int count)
 
 }
 
+/* in place, so data that came in a page goes on in that page */
 static void ondata(struct message *message)
 {
 
-    char buffer[MESSAGE_SIZE];
-
-    replace(message->source, buffer, buffer_write(buffer, MESSAGE_SIZE, message->data, message->length, 0));
+    replace(message->source, message->data, message->length);
 
 }
 

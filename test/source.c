@@ -37,6 +37,16 @@ static void onmain(struct message *message)
         for (i = 0; i < count; i++)
             block->bytes[i] = sent + i;
 
+        /* so a test can see the page arrive at the end of a pipe without having been copied */
+        if (!sent && option_getdecimal("report"))
+        {
+
+            unsigned int address = (unsigned long)block;
+
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "%u", &address);
+
+        }
+
         if (!page_give(block, target, count))
         {
 
@@ -61,6 +71,7 @@ void init(void)
 
     option_add("target", "0");
     option_add("bytes", "0");
+    option_add("report", "0");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
