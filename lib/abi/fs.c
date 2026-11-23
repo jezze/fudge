@@ -224,16 +224,33 @@ static struct readreply readreply(unsigned int ichannel, unsigned int target, un
     request.count = count;
     request.flags = READ_FLAG_BUFFER;
 
-    if (channel_send(ichannel, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_poll(ichannel, target, MESSAGE_TYPE_READRESPONSE, &message))
+    if (channel_send(ichannel, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
     {
 
-        struct message_readresponse *response = message_validate(MESSAGE_TYPE_READRESPONSE, message.data, message.length);
+        struct message_readresponse *response;
 
-        if (response)
+        /* the data comes in a page from a service that answers with pages; the page is freed at the next pick on this channel, unless given on first */
+        switch (channel_pollreply(ichannel, target, MESSAGE_TYPE_READRESPONSE, &message))
         {
 
-            reply.count = response->count;
-            reply.data = (response->buffer) ? (void *)response->buffer : response + 1;
+        case MESSAGE_TYPE_DATA:
+            reply.count = message.length;
+            reply.data = message.data;
+
+            break;
+
+        case MESSAGE_TYPE_READRESPONSE:
+            response = message_validate(MESSAGE_TYPE_READRESPONSE, message.data, message.length);
+
+            if (response)
+            {
+
+                reply.count = response->count;
+                reply.data = (response->buffer) ? (void *)response->buffer : response + 1;
+
+            }
+
+            break;
 
         }
 

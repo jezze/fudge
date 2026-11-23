@@ -275,6 +275,55 @@ unsigned int page_free(unsigned int itask, unsigned int page)
 
 }
 
+/* a service in the kernel answers a task in a page taken on the task's behalf and counted against it; at its limit the task sleeps until a page is freed, then asks again */
+struct page_lease page_lend(unsigned int target)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(target);
+    struct page_lease lease;
+
+    lease.page = 0;
+    lease.status = MESSAGE_FAILED;
+    lease.data = 0;
+
+    if (!mailbox)
+        return lease;
+
+    lease.page = page_alloc(mailbox->itask);
+
+    if (lease.page)
+    {
+
+        lease.status = MESSAGE_OK;
+        lease.data = (void *)(base + (unsigned long)(lease.page - 1) * PAGE_SIZE);
+
+    }
+
+    else
+    {
+
+        lease.status = MESSAGE_RETRY;
+
+        kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+
+    }
+
+    return lease;
+
+}
+
+unsigned int page_answer(unsigned int target, struct page_lease *lease, unsigned int count, unsigned int source)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(target);
+
+    if (!mailbox)
+        return MESSAGE_FAILED;
+
+    return givetask(mailbox->itask, lease->page, mailbox->itask, mailbox->ichannel, count, source);
+
+}
+
 void page_untask(unsigned int itask)
 {
 

@@ -514,11 +514,21 @@ void channel_loop(unsigned int ichannel)
 
 }
 
-unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message)
+static unsigned int poll(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int pages, struct message *message)
 {
 
     while (pick(ichannel, message))
     {
+
+        /* a reply given in a page is the caller's, not data for the listeners */
+        if (pages && message->source == source && message->slot == CHANNEL_SLOTPAGE)
+        {
+
+            hand(ichannel, message);
+
+            return MESSAGE_TYPE_DATA;
+
+        }
 
         dispatch(ichannel, message);
 
@@ -539,6 +549,20 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
     }
 
     return 0;
+
+}
+
+unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message)
+{
+
+    return poll(ichannel, source, event, 0, message);
+
+}
+
+unsigned int channel_pollreply(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message)
+{
+
+    return poll(ichannel, source, event, 1, message);
 
 }
 
@@ -586,15 +610,24 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
     if (channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
     {
 
-        char data[MESSAGE_SIZE];
+        struct message message;
         struct message_readresponse *response;
 
-        response = message_validate(MESSAGE_TYPE_READRESPONSE, data, channel_wait(1, target, MESSAGE_TYPE_READRESPONSE, MESSAGE_SIZE, data));
+        switch (channel_pollreply(1, target, MESSAGE_TYPE_READRESPONSE, &message))
+        {
 
-        if (!response || response->buffer || response->count > 16)
-            return 0;
+        case MESSAGE_TYPE_DATA:
+            return (message.length <= 16) ? cstring_read_value(message.data, message.length, 10) : 0;
 
-        return cstring_read_value((char *)(response + 1), response->count, 10);
+        case MESSAGE_TYPE_READRESPONSE:
+            response = message_validate(MESSAGE_TYPE_READRESPONSE, message.data, message.length);
+
+            if (!response || response->buffer || response->count > 16)
+                return 0;
+
+            return cstring_read_value((char *)(response + 1), response->count, 10);
+
+        }
 
     }
 

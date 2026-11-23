@@ -323,17 +323,18 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
 static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    unsigned char buffer[MESSAGE_SIZE];
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
-    struct message_readresponse *response = (struct message_readresponse *)buffer;
 
     if (request)
     {
 
         struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
-        unsigned int length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
+        unsigned int length = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
+        struct page_lease lease = page_lend(source);
+        unsigned int total = 0;
 
-        response->count = 0;
+        if (lease.status != MESSAGE_OK)
+            return lease.status;
 
         if (header)
         {
@@ -342,17 +343,12 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
             {
 
             case 0x4000:
-                response->count = readrecords(request->id, (struct record *)(response + 1), length, request->offset);
+                total = readrecords(request->id, lease.data, length, request->offset);
 
                 break;
 
             case 0x8000:
-                response->count = read(request->id, response + 1, length, request->offset);
-
-                break;
-
-            default:
-                response->count = 0;
+                total = read(request->id, lease.data, length, request->offset);
 
                 break;
 
@@ -360,9 +356,8 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
         }
 
-        response->buffer = 0;
-
-        return kernel_place(server.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        /* the reader gets the page, copied into once from the ramdisk */
+        return page_answer(source, &lease, total, server.inode);
 
     }
 

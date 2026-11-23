@@ -104,6 +104,7 @@ test/audio
 test/cut
 test/emit
 test/expand
+test/files
 test/flood
 test/init
 test/pages
