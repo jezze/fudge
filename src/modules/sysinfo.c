@@ -13,6 +13,8 @@ static struct record rootrecords[ROOTRECORDS];
 static struct spinlock spinlock;
 static char output[OUTPUTSIZE];
 static unsigned char response[MESSAGE_SIZE];
+/* the page a reader brought to carry the answer counts as free: the answer describes the pool without it */
+static unsigned int asking;
 static unsigned int outputcount;
 static unsigned int outputid;
 static unsigned int outputsource;
@@ -231,14 +233,28 @@ static unsigned int writepages(void)
 {
 
     unsigned int c = 0;
-    unsigned int free = page_getfree();
+    unsigned int free = page_getfree() + ((asking) ? 1 : 0);
     unsigned int count = PAGE_COUNT;
     unsigned int limit = PAGE_TASKLIMIT;
+    unsigned int page;
 
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  free: %u\n", &free);
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  count: %u\n", &count);
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  limit: %u\n", &limit);
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  held: [\n");
+
+    for (page = 1; page <= PAGE_COUNT; page++)
+    {
+
+        struct page_info info = page_getinfo(page);
+
+        if (info.owner && page != asking)
+            c += cstring_write_fmt(output, OUTPUTSIZE, c, "    { page: %u owner: %u origin: %u queued: %u count: %u source: %u }\n", &page, &info.owner, &info.origin, &info.queued, &info.count, &info.source);
+
+    }
+
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
 
     return c;
@@ -424,8 +440,10 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
         /* what is read describes the system before the page for the answer is taken from the pool */
         spinlock_acquire(&spinlock);
 
+        asking = request->page;
         total = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE) ? request->count : MESSAGE_SIZE, response);
-        lease = page_lend(source);
+        asking = 0;
+        lease = page_borrow(source, request->page);
 
         if (lease.status == MESSAGE_OK)
             buffer_copy(lease.data, response, total);

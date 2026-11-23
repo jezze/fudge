@@ -100,6 +100,39 @@ unsigned int page_getfree(void)
 
 }
 
+unsigned int page_getheld(unsigned int itask)
+{
+
+    unsigned int count = 0;
+    unsigned int page;
+
+    for (page = 1; page <= PAGE_COUNT; page++)
+    {
+
+        if (rows[page].owner == itask)
+            count++;
+
+    }
+
+    return count;
+
+}
+
+struct page_info page_getinfo(unsigned int page)
+{
+
+    struct page_info info;
+
+    info.owner = (isvalid(page)) ? rows[page].owner : 0;
+    info.origin = (isvalid(page)) ? rows[page].origin : 0;
+    info.queued = (isvalid(page)) ? rows[page].queued : 0;
+    info.count = (isvalid(page)) ? rows[page].count : 0;
+    info.source = (isvalid(page)) ? rows[page].source : 0;
+
+    return info;
+
+}
+
 unsigned int page_alloc(unsigned int itask)
 {
 
@@ -275,38 +308,61 @@ unsigned int page_free(unsigned int itask, unsigned int page)
 
 }
 
-/* a service in the kernel answers a task in a page taken on the task's behalf and counted against it; at its limit the task sleeps until a page is freed, then asks again */
-struct page_lease page_lend(unsigned int target)
+/* a reader brings its own page with a request: handed to a task, that task now holds it; a service in the kernel uses it where it is */
+unsigned int page_hand(unsigned int itask, unsigned int page, unsigned int target)
 {
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
+    struct task *task = (mailbox) ? pool_gettask(mailbox->itask) : 0;
+    unsigned int status = MESSAGE_FAILED;
+
+    if (!isvalid(page))
+        return MESSAGE_FAILED;
+
+    spinlock_acquire(&spinlock);
+
+    /* as with give: a task marked dead may already have handed back its pages, and a page made its own now would never come back */
+    if (rows[page].owner == itask && !rows[page].queued && (!task || task->state != TASK_STATE_DEAD))
+    {
+
+        if (mailbox)
+            rows[page].owner = mailbox->itask;
+
+        status = MESSAGE_OK;
+
+    }
+
+    spinlock_release(&spinlock);
+
+    return status;
+
+}
+
+struct page_lease page_borrow(unsigned int source, unsigned int page)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(source);
     struct page_lease lease;
 
     lease.page = 0;
     lease.status = MESSAGE_FAILED;
     lease.data = 0;
 
-    if (!mailbox)
+    if (!mailbox || !isvalid(page))
         return lease;
 
-    lease.page = page_alloc(mailbox->itask);
+    spinlock_acquire(&spinlock);
 
-    if (lease.page)
+    if (rows[page].owner == mailbox->itask && !rows[page].queued)
     {
 
+        lease.page = page;
         lease.status = MESSAGE_OK;
-        lease.data = (void *)(base + (unsigned long)(lease.page - 1) * PAGE_SIZE);
+        lease.data = (void *)(base + (unsigned long)(page - 1) * PAGE_SIZE);
 
     }
 
-    else
-    {
-
-        lease.status = MESSAGE_RETRY;
-
-        kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
-
-    }
+    spinlock_release(&spinlock);
 
     return lease;
 

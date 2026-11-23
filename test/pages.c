@@ -104,7 +104,12 @@ static void onmain(struct message *message)
     free = readfree();
 
     if (free != PAGE_COUNT)
+    {
+
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%u pages free at the end\n", &free);
+        system_run(message->source, "mq -query .held -format \"held page {page} owner {owner} origin {origin} queued {queued} count {count} source {source}\" sysinfo:pages.mq");
+
+    }
 
 }
 

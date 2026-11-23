@@ -239,18 +239,6 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
         return 0;
 
-    case MESSAGE_TYPE_READRESPONSE:
-        if (count >= sizeof (struct message_readresponse))
-        {
-
-            struct message_readresponse *readresponse = data;
-
-            return checkpayload(data, count, sizeof (struct message_readresponse), (readresponse->buffer) ? 0 : readresponse->count);
-
-        }
-
-        return 0;
-
     }
 
     return data;

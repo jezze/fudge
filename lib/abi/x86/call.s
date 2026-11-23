@@ -14,6 +14,7 @@
 .set CALL_INDEX_PAGEGIVE,               0x0B
 .set CALL_INDEX_PAGETAKE,               0x0C
 .set CALL_INDEX_PAGEFREE,               0x0D
+.set CALL_INDEX_PAGEHAND,               0x0E
 
 .section .text
 
@@ -50,6 +51,12 @@ call_pagealloc:
 .global call_pagefree
 call_pagefree:
     movl $CALL_INDEX_PAGEFREE, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_pagehand
+call_pagehand:
+    movl $CALL_INDEX_PAGEHAND, %eax
     int $CALL_INTERRUPT
     ret
 

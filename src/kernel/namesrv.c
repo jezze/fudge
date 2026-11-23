@@ -78,7 +78,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     if (request)
     {
 
-        struct page_lease lease = page_lend(source);
+        struct page_lease lease = page_borrow(source, request->page);
         unsigned int length = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
         struct record *records = lease.data;
         struct resource *resource = 0;

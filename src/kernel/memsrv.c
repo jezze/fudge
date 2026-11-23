@@ -568,7 +568,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
         unsigned int length = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
         struct file *file = getfile(request->id);
-        struct page_lease lease = page_lend(source);
+        struct page_lease lease = page_borrow(source, request->page);
         unsigned int total = 0;
 
         if (lease.status != MESSAGE_OK)

@@ -1541,24 +1541,6 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
 
 }
 
-static unsigned int sendfile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int target)
-{
-
-    if (roffset < getfilesize(node))
-    {
-
-        struct span span = getspan(node, roffset, rcount, rcount);
-        unsigned int count = span.blocks * blocksize;
-
-        if (span.sector && sendblockrequest(MESSAGE_TYPE_BLOCKREADREQUEST, MESSAGE_TYPE_BLOCKREADRESPONSE, count, span.sector, blocksize, target) == count)
-            return span.count;
-
-    }
-
-    return 0;
-
-}
-
 static void cleartail(struct ext2_node *node, unsigned int roffset)
 {
 
@@ -1790,46 +1772,36 @@ static void oncreaterequest(struct message *message)
 
 }
 
+/* the data goes in the page the reader handed over with the request, which goes back filled */
 static void onreadrequest(struct message *message)
 {
 
-    unsigned char data[MESSAGE_SIZE];
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, message->data, message->length);
-    struct message_readresponse *response = (struct message_readresponse *)data;
+    void *data = (request) ? page_address(request->page) : 0;
+    unsigned int count = 0;
     struct ext2_node node;
 
-    response->count = 0;
-    response->buffer = 0;
+    if (!data)
+        return;
 
-    if (request)
+    simpleread(&node, request->id);
+
+    switch (node.type & 0xF000)
     {
 
-        simpleread(&node, request->id);
+    case 0x4000:
+        count = readdirectory(&node, request->offset, request->count, PAGE_SIZE, data);
 
-        switch (node.type & 0xF000)
-        {
+        break;
 
-        case 0x4000:
-            response->count = readdirectory(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
+    case 0x8000:
+        count = readfile(&node, request->offset, request->count, PAGE_SIZE, data);
 
-            break;
-
-        case 0x8000:
-            if (request->flags & READ_FLAG_BUFFER)
-                response->count = sendfile(&node, request->offset, request->count, message->source);
-
-            if (response->count)
-                response->buffer = blockinfo.buffer + request->offset % blocksize;
-            else
-                response->count = readfile(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
-
-            break;
-
-        }
+        break;
 
     }
 
-    channel_send(0, message->source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + ((response->buffer) ? 0 : response->count), data);
+    page_give(data, message->source, count);
 
 }
 

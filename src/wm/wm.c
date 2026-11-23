@@ -58,7 +58,6 @@
 struct listing
 {
 
-    struct message_readresponse response;
     struct record records[ROOTRECORDS];
 
 };
@@ -3918,27 +3917,22 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 
 }
 
+/* the records go in the page the reader handed over with the request, which goes back filled */
 static void onreadrequest(struct message *message)
 {
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, message->data, message->length);
-    struct listing listing;
+    struct listing *listing = (request) ? page_address(request->page) : 0;
+    unsigned int c = 0;
+    unsigned int i;
 
-    if (request)
-    {
+    if (!listing)
+        return;
 
-        unsigned int c = 0;
-        unsigned int i;
+    for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
+        record_init(&listing->records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
 
-        for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
-            record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
-
-        listing.response.count = c * sizeof (struct record);
-        listing.response.buffer = 0;
-
-        channel_send(0, message->source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
-
-    }
+    page_give(listing, message->source, c * sizeof (struct record));
 
 }
 

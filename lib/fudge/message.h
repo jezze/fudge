@@ -102,7 +102,6 @@
 #define MESSAGE_TYPE_WMCUT              0x66
 #define MESSAGE_TYPE_WMPASTE            0x67
 #define PIPE_ROUTES                     10
-#define READ_FLAG_BUFFER                0x01
 
 struct message
 {
@@ -449,14 +448,7 @@ struct message_readrequest
     unsigned int offset;
     unsigned int count;
     unsigned int flags;
-
-};
-
-struct message_readresponse
-{
-
-    unsigned int count;
-    unsigned long buffer;
+    unsigned int page;
 
 };
 

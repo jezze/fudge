@@ -11,6 +11,7 @@
 .set CALL_INDEX_PAGEGIVE,               0x0B
 .set CALL_INDEX_PAGETAKE,               0x0C
 .set CALL_INDEX_PAGEFREE,               0x0D
+.set CALL_INDEX_PAGEHAND,               0x0E
 .set CALL_FRAME,                        32
 
 # The kernel reads the arguments from the user stack in the same layout as on x86:
@@ -59,6 +60,13 @@ call_pagefree:
     addi sp, sp, -CALL_FRAME
     sw a0, 4(sp)
     callindex CALL_INDEX_PAGEFREE
+
+.global call_pagehand
+call_pagehand:
+    addi sp, sp, -CALL_FRAME
+    sw a0, 4(sp)
+    sw a1, 8(sp)
+    callindex CALL_INDEX_PAGEHAND
 
 .global call_pagegive
 call_pagegive:

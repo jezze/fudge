@@ -292,6 +292,15 @@ static unsigned int pagetake(unsigned int itask, void *stack)
 
 }
 
+static unsigned int pagehand(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int page; unsigned int target;} *args = stack;
+
+    return page_hand(itask, args->page, args->target);
+
+}
+
 static unsigned int pagefree(unsigned int itask, void *stack)
 {
 
@@ -339,7 +348,7 @@ void abi_setup(void)
     abi_setcallback(0x0B, pagegive);
     abi_setcallback(0x0C, pagetake);
     abi_setcallback(0x0D, pagefree);
-    abi_setcallback(0x0E, debug);
+    abi_setcallback(0x0E, pagehand);
     abi_setcallback(0x0F, debug);
 
 }

@@ -162,7 +162,7 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
     if (request)
     {
 
-        struct page_lease lease = page_lend(source);
+        struct page_lease lease = page_borrow(source, request->page);
         unsigned int length = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
         struct record *records = lease.data;
         struct resource *file = getfile(unitsrv, request->id);

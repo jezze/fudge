@@ -1463,31 +1463,26 @@ static void oncreaterequest(struct message *message)
 
 }
 
+/* the data goes in the page the reader handed over with the request, which goes back filled */
 static void onreadrequest(struct message *message)
 {
 
-    unsigned char data[MESSAGE_SIZE];
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, message->data, message->length);
-    struct message_readresponse *response = (struct message_readresponse *)data;
+    void *data = (request) ? page_address(request->page) : 0;
+    unsigned int count = 0;
     struct fat_entry entry;
 
-    response->count = 0;
+    if (!data)
+        return;
 
-    if (request)
-    {
+    getnode(request->id, &entry);
 
-        getnode(request->id, &entry);
+    if (gettype(&entry) == RECORD_TYPE_DIRECTORY)
+        count = readdirectory(request->id == ROOT, getcluster(&entry), request->offset, PAGE_SIZE, data);
+    else
+        count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, PAGE_SIZE, data);
 
-        if (gettype(&entry) == RECORD_TYPE_DIRECTORY)
-            response->count = readdirectory(request->id == ROOT, getcluster(&entry), request->offset, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
-        else
-            response->count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
-
-    }
-
-    response->buffer = 0;
-
-    channel_send(0, message->source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, data);
+    page_give(data, message->source, count);
 
 }
 

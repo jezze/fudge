@@ -525,7 +525,7 @@ static unsigned int poll(unsigned int ichannel, unsigned int source, unsigned in
 
         dispatch(ichannel, message);
 
-        if (message->source == source && message->type == event)
+        if (!pages && message->source == source && message->type == event)
         {
 
             hand(ichannel, message);
@@ -552,10 +552,11 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
 }
 
-unsigned int channel_pollreply(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message)
+/* a reply comes in a page from the source; mail from the source meanwhile goes to the listeners as usual */
+unsigned int channel_pollreply(unsigned int ichannel, unsigned int source, struct message *message)
 {
 
-    return poll(ichannel, source, event, 1, message);
+    return poll(ichannel, source, 0, 1, message);
 
 }
 
@@ -594,42 +595,40 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 {
 
     struct message_readrequest request;
+    struct message message;
+    void *page = page_alloc();
+    unsigned int value = 0;
 
     request.id = id;
     request.offset = 0;
     request.count = 16;
     request.flags = 0;
+    request.page = page_hand(page, target);
 
-    if (channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
+    if (!request.page)
     {
 
-        struct message message;
-        struct message_readresponse *response;
-        unsigned int value;
+        page_free(page);
 
-        switch (channel_pollreply(1, target, MESSAGE_TYPE_READRESPONSE, &message))
-        {
-
-        case MESSAGE_TYPE_DATA:
-            value = (message.length <= 16) ? cstring_read_value(message.data, message.length, 10) : 0;
-
-            channel_done(1);
-
-            return value;
-
-        case MESSAGE_TYPE_READRESPONSE:
-            response = message_validate(MESSAGE_TYPE_READRESPONSE, message.data, message.length);
-
-            if (!response || response->buffer || response->count > 16)
-                return 0;
-
-            return cstring_read_value((char *)(response + 1), response->count, 10);
-
-        }
+        return 0;
 
     }
 
-    return 0;
+    if (channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_pollreply(1, target, &message) == MESSAGE_TYPE_DATA)
+    {
+
+        if (message.length <= 16)
+            value = cstring_read_value(message.data, message.length, 10);
+
+        channel_done(1);
+
+        return value;
+
+    }
+
+    page_free(page);
+
+    return value;
 
 }
 

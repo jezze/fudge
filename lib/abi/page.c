@@ -21,6 +21,23 @@ static unsigned int getpage(void *data)
 
 }
 
+void *page_address(unsigned int page)
+{
+
+    return (page <= PAGE_COUNT) ? getdata(page) : 0;
+
+}
+
+/* the page goes to the target along with a request naming it; this returns the name */
+unsigned int page_hand(void *data, unsigned int target)
+{
+
+    unsigned int page = getpage(data);
+
+    return (page && call_pagehand(page, target) == MESSAGE_OK) ? page : 0;
+
+}
+
 void *page_alloc(void)
 {
 

@@ -475,23 +475,6 @@ static unsigned int readfile(struct node *node, unsigned int offset, unsigned in
 
 }
 
-static unsigned int sendfile(struct node *node, unsigned int offset, unsigned int count, unsigned int target)
-{
-
-    if (offset < node->size)
-    {
-
-        struct span span = getspan(node, offset, count, count);
-
-        if (sendblockrequest(span.sector, span.sectors * CDFS_SECTORSIZE, target) == span.sectors * CDFS_SECTORSIZE)
-            return span.count;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int stat(unsigned int id, struct record *record)
 {
 
@@ -579,44 +562,26 @@ static unsigned int findroot(void)
 
 }
 
+/* the data goes in the page the reader handed over with the request, which goes back filled */
 static void onreadrequest(struct message *message)
 {
 
-    unsigned char data[MESSAGE_SIZE];
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, message->data, message->length);
-    struct message_readresponse *response = (struct message_readresponse *)data;
+    void *data = (request) ? page_address(request->page) : 0;
+    unsigned int count = 0;
+    struct node node;
 
-    response->count = 0;
-    response->buffer = 0;
+    if (!data)
+        return;
 
-    if (request)
-    {
+    node = getnode(request->id);
 
-        struct node node = getnode(request->id);
+    if (node.type == RECORD_TYPE_DIRECTORY)
+        count = readdirectory(&node, request->offset, PAGE_SIZE, data);
+    else
+        count = readfile(&node, request->offset, request->count, PAGE_SIZE, data);
 
-        if (node.type == RECORD_TYPE_DIRECTORY)
-        {
-
-            response->count = readdirectory(&node, request->offset, MESSAGE_SIZE - sizeof (struct message_readresponse), (struct record *)(response + 1));
-
-        }
-
-        else
-        {
-
-            if (request->flags & READ_FLAG_BUFFER)
-                response->count = sendfile(&node, request->offset, request->count, message->source);
-
-            if (response->count)
-                response->buffer = blockinfo.buffer + request->offset % CDFS_SECTORSIZE;
-            else
-                response->count = readfile(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
-
-        }
-
-    }
-
-    channel_send(0, message->source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + ((response->buffer) ? 0 : response->count), data);
+    page_give(data, message->source, count);
 
 }
 

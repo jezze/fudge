@@ -4,7 +4,7 @@ unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsig
 unsigned int channel_pick(unsigned int ichannel, struct message *message);
 unsigned int channel_process(unsigned int ichannel);
 unsigned int channel_drain(unsigned int ichannel);
-unsigned int channel_pollreply(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message);
+unsigned int channel_pollreply(unsigned int ichannel, unsigned int source, struct message *message);
 unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message);
 unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int channel_lookup(char *name);

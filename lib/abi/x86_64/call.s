@@ -14,6 +14,7 @@
 .set CALL_INDEX_PAGEGIVE,               0x0B
 .set CALL_INDEX_PAGETAKE,               0x0C
 .set CALL_INDEX_PAGEFREE,               0x0D
+.set CALL_INDEX_PAGEHAND,               0x0E
 .set CALL_FRAME,                        48
 
 .macro callindex index
@@ -60,6 +61,13 @@ call_pagefree:
     subq $CALL_FRAME, %rsp
     movl %edi, 8(%rsp)
     callindex CALL_INDEX_PAGEFREE
+
+.global call_pagehand
+call_pagehand:
+    subq $CALL_FRAME, %rsp
+    movl %edi, 8(%rsp)
+    movl %esi, 12(%rsp)
+    callindex CALL_INDEX_PAGEHAND
 
 .global call_pagegive
 call_pagegive:

@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include "call.h"
 #include "channel.h"
+#include "page.h"
 #include "fs.h"
 
 #define SPAWNNAMES                      64
@@ -210,54 +211,45 @@ unsigned int fs_munmap(unsigned int ichannel, unsigned int target, unsigned int 
 
 }
 
+/* the reader brings the page, so it counts against the reader and the reader sleeps for one at its limit; the service fills it and gives it back */
 static struct readreply readreply(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int count, unsigned int offset)
 {
 
     struct readreply reply;
     struct message_readrequest request;
     struct message message;
+    void *page = page_alloc();
 
     reply.count = 0;
     reply.data = 0;
     request.id = id;
     request.offset = offset;
     request.count = count;
-    request.flags = READ_FLAG_BUFFER;
+    request.flags = 0;
+    request.page = page_hand(page, target);
 
-    if (channel_send(ichannel, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
+    if (!request.page)
     {
 
-        struct message_readresponse *response;
+        page_free(page);
 
-        /* the data comes in a page from a service that answers with pages; the page is freed at the next pick on this channel, unless given on first */
-        switch (channel_pollreply(ichannel, target, MESSAGE_TYPE_READRESPONSE, &message))
-        {
-
-        case MESSAGE_TYPE_DATA:
-            reply.count = message.length;
-            reply.data = message.data;
-
-            break;
-
-        case MESSAGE_TYPE_READRESPONSE:
-            response = message_validate(MESSAGE_TYPE_READRESPONSE, message.data, message.length);
-
-            if (response)
-            {
-
-                reply.count = response->count;
-                reply.data = (response->buffer) ? (void *)response->buffer : response + 1;
-
-            }
-
-            break;
-
-        }
-
-        if (reply.count > count)
-            reply.count = count;
+        return reply;
 
     }
+
+    /* the page is freed at the next pick on this channel or by channel_done, unless given on first */
+    if (channel_send(ichannel, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_pollreply(ichannel, target, &message) == MESSAGE_TYPE_DATA)
+    {
+
+        reply.count = (message.length < count) ? message.length : count;
+        reply.data = message.data;
+
+        return reply;
+
+    }
+
+    /* no answer: the page is still this task's unless a task took it, and then it goes back with that task */
+    page_free(page);
 
     return reply;
 
