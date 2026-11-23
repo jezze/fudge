@@ -12,6 +12,7 @@ struct pagerow
     unsigned int origin;
     unsigned int owner;
     unsigned int count;
+    unsigned int source;
     unsigned int queued;
     unsigned int next;
 
@@ -52,6 +53,7 @@ static void release(unsigned int page)
     rows[page].origin = 0;
     rows[page].owner = 0;
     rows[page].count = 0;
+    rows[page].source = 0;
     rows[page].queued = 0;
     rows[page].next = freehead;
     freehead = page;
@@ -125,7 +127,7 @@ unsigned int page_alloc(unsigned int itask)
 
 }
 
-unsigned int page_give(unsigned int itask, unsigned int page, unsigned int target, unsigned int count)
+unsigned int page_give(unsigned int itask, unsigned int page, unsigned int target, unsigned int count, unsigned int source)
 {
 
     struct task *task = pool_gettask(target);
@@ -142,6 +144,7 @@ unsigned int page_give(unsigned int itask, unsigned int page, unsigned int targe
 
         rows[page].owner = target;
         rows[page].count = count;
+        rows[page].source = source;
         rows[page].queued = 1;
         rows[page].next = 0;
 
@@ -171,6 +174,7 @@ struct page_handoff page_take(unsigned int itask)
 
     handoff.page = 0;
     handoff.count = 0;
+    handoff.source = 0;
 
     spinlock_acquire(&spinlock);
 
@@ -188,6 +192,7 @@ struct page_handoff page_take(unsigned int itask)
         rows[page].next = 0;
         handoff.page = page;
         handoff.count = rows[page].count;
+        handoff.source = rows[page].source;
 
     }
 

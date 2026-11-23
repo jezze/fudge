@@ -9,5 +9,6 @@ struct page_handoff
 
     unsigned int page;
     unsigned int count;
+    unsigned int source;
 
 };

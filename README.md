@@ -197,6 +197,10 @@ the known list in test/runner.c names each failing test with the reason it fails
 Such a test is reported as known instead of failed, and once it passes it is
 reported as fixed and counts as a failure until it is taken off the list.
 
+Where the machine has a sound card (all but arm), test/run records what it plays and
+checks that the ramp the audio test plays came out complete and in order, reported as
+test audio-out.
+
 ## Disk images
 
 You can create a fudge.qcow2 image and install Fudge on it. First build Fudge,

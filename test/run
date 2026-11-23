@@ -31,6 +31,13 @@ done
 
 test -f mk/config.mk || error "No configuration, set one with make <config>"
 
+log=$(mktemp)
+wav=$(mktemp)
+trap 'rm -f "${log}"; test -n "${keepwav}" || rm -f "${wav}"' EXIT
+audiodev="-audiodev wav,id=audio0,path=${wav},out.frequency=48000,out.channels=2,out.format=s16"
+audio=""
+endian=little
+
 arch=$(sed -n 's/^ARCH:=//p' mk/config.mk)
 loader=$(sed -n 's/^LOADER:=//p' mk/config.mk)
 
@@ -40,6 +47,7 @@ test -f fudge.test.cpio || error "Test ramdisk not found, run make test"
 case "${arch}" in
     x86|x86_64)
         cmd="qemu-system-x86_64 -nodefaults -smp ${smp} -m 256 -vga std"
+        audio="${audiodev} -device virtio-sound-pci,audiodev=audio0"
         test -w /dev/kvm && cmd="${cmd} -enable-kvm"
 
         if test "${loader}" == "mboot2"
@@ -52,14 +60,18 @@ case "${arch}" in
         ;;
     arm)
         smp=1
-        cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none"
+        cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256"
         ;;
     m68k)
         smp=1
-        cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -audio none -global virtio-mmio.force-legacy=false"
+        cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -global virtio-mmio.force-legacy=false"
+        audio="${audiodev} -device virtio-sound-device,audiodev=audio0"
+        # qemu's virtio-sound takes samples in the guest's byte order, although virtio's format is little-endian
+        endian=big
         ;;
     aarch64|riscv32|riscv64)
-        cmd="qemu-system-${arch} -nodefaults -machine virt -smp ${smp} $(test "${arch}" == "aarch64" && echo "-cpu cortex-a53" || true) -m 256 -audio none -device ramfb"
+        cmd="qemu-system-${arch} -nodefaults -machine virt -smp ${smp} $(test "${arch}" == "aarch64" && echo "-cpu cortex-a53" || true) -m 256 -device ramfb"
+        audio="${audiodev} -device virtio-sound-device,audiodev=audio0"
         ;;
     *)
         error "Unknown architecture: ${arch}"
@@ -73,10 +85,7 @@ case "${arch}" in
         ;;
 esac
 
-log=$(mktemp)
-trap 'rm -f "${log}"' EXIT
-
-${cmd} -display none -no-reboot -serial file:"${log}" > /dev/null 2>&1 &
+${cmd} ${audio:--audio none} -display none -no-reboot -serial file:"${log}" > /dev/null 2>&1 &
 pid=${!}
 deadline=$((SECONDS + timeout))
 
@@ -84,6 +93,19 @@ while kill -0 ${pid} 2> /dev/null && ! grep -q "^tests done" "${log}" && test ${
 do
     sleep 1
 done
+
+# whatever is still playing reaches the recording before the machine is stopped; it stops growing once played out
+if test -n "${audio}"
+then
+    size=-1
+
+    for i in 1 2 3 4 5 6 7 8 9 10
+    do
+        test "$(stat -c %s "${wav}")" == "${size}" && break
+        size=$(stat -c %s "${wav}")
+        sleep 1
+    done
+fi
 
 kill ${pid} 2> /dev/null || true
 wait ${pid} 2> /dev/null || true
@@ -96,7 +118,17 @@ then
     exit 2
 fi
 
-if grep -q "^tests done .* 0 failed" "${log}"
+# the audio test plays a ramp: every frame that is not silence must be the next one, left counting 1 to 30000 and right its negative
+if test -n "${audio}"
+then
+    result=$(od -An -v -t d2 --endian=${endian} -j 44 "${wav}" | awk '
+        { for (i = 1; i <= NF; i++) { if (!half) { left = $i; half = 1; continue } half = 0; if (!left && !$i) continue; if (left == next1 + 1 && $i == -(next1 + 1)) { got++; next1 = (next1 + 1) % 30000 } else if (!bad++) first = got } }
+        END { if (bad) printf "fail: frame %u differs, %u in order, %u differ", first, got, bad; else if (got != 48000) printf "fail: %u of 48000 frames", got; else printf "ok" }')
+    echo "test audio-out ${result}"
+    case "${result}" in ok) ;; *) audiofailed=1 ;; esac
+fi
+
+if grep -q "^tests done .* 0 failed" "${log}" && test -z "${audiofailed}"
 then
     echo "PASS on ${arch}-${loader} smp ${smp}"
     exit 0

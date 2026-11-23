@@ -2,6 +2,8 @@
 #include <abi.h>
 
 #define CLIENTS                         4
+/* a sender has at most this many pages out, so its queue here never overflows */
+#define CLIENTPAGES                     PAGE_TASKLIMIT
 #define RINGSIZE                        0x10000
 #define RATE                            48000
 #define FRAMESIZE                       4
@@ -29,12 +31,31 @@ struct statresult
 
 };
 
+struct block
+{
+
+    unsigned char bytes[PAGE_SIZE];
+
+};
+
+struct clientpage
+{
+
+    struct block *block;
+    unsigned int count;
+    unsigned int offset;
+
+};
+
 struct client
 {
 
     unsigned int source;
     unsigned int waiting;
     struct ring ring;
+    struct clientpage pages[CLIENTPAGES];
+    unsigned int head;
+    unsigned int npages;
 
 };
 
@@ -122,6 +143,8 @@ static struct client *findclient(unsigned int source)
 
                 clients[i].source = source;
                 clients[i].waiting = 0;
+                clients[i].head = 0;
+                clients[i].npages = 0;
 
                 ring_reset(&clients[i].ring);
 
@@ -238,6 +261,81 @@ static unsigned int render(struct device *device, unsigned int frames)
 
 }
 
+/* mixes straight out of the client's pages and frees each one once played, so its sender may fill another */
+static unsigned int addpages(struct client *client, unsigned int start, unsigned int total)
+{
+
+    while (start < total && client->npages)
+    {
+
+        struct clientpage *page = &client->pages[client->head];
+        unsigned int count = page->count - page->offset;
+        unsigned int j;
+
+        if (count > total - start)
+            count = total - start;
+
+        for (j = 0; j < count / 2; j++)
+            sums[start / 2 + j] += (int)(((page->block->bytes[page->offset + j * 2 + 1] << 8) | page->block->bytes[page->offset + j * 2]) ^ 0x8000) - 0x8000;
+
+        page->offset += count;
+        start += count;
+
+        if (page->offset == page->count)
+        {
+
+            page_free(page->block);
+
+            client->head = (client->head + 1) % CLIENTPAGES;
+            client->npages--;
+
+        }
+
+    }
+
+    return start;
+
+}
+
+static void takepages(void)
+{
+
+    for (;;)
+    {
+
+        struct page_data input = page_trytake();
+        struct client *client;
+        unsigned int count;
+
+        if (!input.data)
+            break;
+
+        client = findclient(input.source);
+        count = input.count - input.count % FRAMESIZE;
+
+        if (client && count && client->npages < CLIENTPAGES)
+        {
+
+            struct clientpage *page = &client->pages[(client->head + client->npages) % CLIENTPAGES];
+
+            page->block = input.data;
+            page->count = count;
+            page->offset = 0;
+            client->npages++;
+
+        }
+
+        else
+        {
+
+            page_free(input.data);
+
+        }
+
+    }
+
+}
+
 static void mix(unsigned int frames)
 {
 
@@ -261,6 +359,8 @@ static void mix(unsigned int frames)
         for (j = 0; j < count / 2; j++)
             sums[j] += (int)(((samples[j * 2 + 1] << 8) | samples[j * 2]) ^ 0x8000) - 0x8000;
 
+        addpages(client, count, frames * FRAMESIZE);
+
         if (client->waiting && ring_avail(&client->ring) >= MESSAGE_SIZE)
         {
 
@@ -270,7 +370,7 @@ static void mix(unsigned int frames)
 
         }
 
-        if (ring_isempty(&client->ring))
+        if (ring_isempty(&client->ring) && !client->npages)
             client->source = 0;
 
     }
@@ -342,6 +442,8 @@ static void ontimertick(struct message *message)
 
         unsigned int elapsed = timertick->counter - pace.counter;
         unsigned int played;
+
+        takepages();
 
         if (!pace.started || elapsed > hz)
             elapsed = 0;

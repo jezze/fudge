@@ -255,7 +255,8 @@ static unsigned int pagegive(unsigned int itask, void *stack)
 
     struct {void *caller; unsigned int page; unsigned int target; unsigned int count;} *args = stack;
 
-    return (page_give(itask, args->page, kernel_getinodetask(args->target), args->count)) ? MESSAGE_OK : MESSAGE_FAILED;
+    /* the receiver learns who gave the page by the giver's channel 0, as a message names its sender */
+    return (page_give(itask, args->page, kernel_getinodetask(args->target), args->count, kernel_getchannelinode(itask, 0))) ? MESSAGE_OK : MESSAGE_FAILED;
 
 }
 

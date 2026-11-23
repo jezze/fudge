@@ -39,6 +39,13 @@ struct wav
 
 };
 
+struct block
+{
+
+    unsigned char bytes[PAGE_SIZE];
+
+};
+
 struct output
 {
 
@@ -46,7 +53,8 @@ struct output
     unsigned int channels;
     unsigned int framesize;
     unsigned int count;
-    unsigned char buffer[MESSAGE_SIZE];
+    unsigned int failed;
+    struct block *page;
 
 };
 
@@ -201,11 +209,18 @@ static struct message_audioinfo getinfo(void)
 
 }
 
-static void senddata(unsigned int count, void *buffer)
+/* the mixer frees each page once played, so a full set of pages in flight is what paces this task */
+static void senddata(struct output *output, struct block *page, unsigned int count)
 {
 
-    channel_send(1, audio, MESSAGE_TYPE_DATA, count, buffer);
-    getinfo();
+    if (!page_give(page, audio, count))
+    {
+
+        page_free(page);
+
+        output->failed = 1;
+
+    }
 
 }
 
@@ -216,6 +231,8 @@ static void initoutput(struct output *output, unsigned int rate, unsigned int ch
     output->channels = channels;
     output->framesize = channels * 2;
     output->count = 0;
+    output->failed = 0;
+    output->page = 0;
 
 }
 
@@ -240,9 +257,10 @@ static void flush(struct output *output)
 {
 
     if (output->count)
-        senddata(output->count, output->buffer);
+        senddata(output, output->page, output->count);
 
     output->count = 0;
+    output->page = 0;
 
 }
 
@@ -251,16 +269,19 @@ static void emit(struct output *output, struct resampler *resampler)
 
     unsigned int i;
 
-    if (output->count + output->framesize > MESSAGE_SIZE)
+    if (output->count + output->framesize > PAGE_SIZE)
         flush(output);
+
+    if (!output->page)
+        output->page = page_alloc();
 
     for (i = 0; i < output->channels; i++)
     {
 
         unsigned int sample = resampler->mixed[i];
 
-        output->buffer[output->count++] = sample;
-        output->buffer[output->count++] = sample >> 8;
+        output->page->bytes[output->count++] = sample;
+        output->page->bytes[output->count++] = sample >> 8;
 
     }
 
@@ -374,10 +395,12 @@ static void play(unsigned int source, struct wav *wav, unsigned int target, unsi
 
     struct output output;
     struct resampler resampler;
-    char buffer[MESSAGE_SIZE];
-    unsigned int chunksize = MESSAGE_SIZE - MESSAGE_SIZE % wav->align;
+    char buffer[PAGE_SIZE];
+    unsigned int chunksize = PAGE_SIZE - PAGE_SIZE % wav->align;
     unsigned int passthrough;
     unsigned int count;
+
+    initoutput(&output, 0, 0);
 
     passthrough = choose(wav, &output);
 
@@ -395,14 +418,43 @@ static void play(unsigned int source, struct wav *wav, unsigned int target, unsi
     resampler.phase = 0;
     resampler.started = 0;
 
-    /* whole frames per message, since the drivers drop a partial one */
-    while (offset < end && (count = fs_read_full(1, target, id, buffer, (end - offset < chunksize) ? end - offset : chunksize, offset)))
+    /* whole frames per page, since the mixer drops a partial one */
+    while (offset < end && !output.failed)
     {
 
+        unsigned int size = (end - offset < chunksize) ? end - offset : chunksize;
+
         if (passthrough == 1)
-            senddata(count, buffer);
+        {
+
+            struct block *page = page_alloc();
+
+            count = fs_read_full(1, target, id, page, size, offset);
+
+            if (!count)
+            {
+
+                page_free(page);
+
+                break;
+
+            }
+
+            senddata(&output, page, count);
+
+        }
+
         else
+        {
+
+            count = fs_read_full(1, target, id, buffer, size, offset);
+
+            if (!count)
+                break;
+
             convert(wav, &output, &resampler, buffer, count);
+
+        }
 
         offset += count;
 
@@ -410,6 +462,9 @@ static void play(unsigned int source, struct wav *wav, unsigned int target, unsi
 
     if (passthrough == 2)
         flush(&output);
+
+    if (output.failed)
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Audio service does not take pages: %s\n", option_getstring("audio-service"));
 
 }
 
@@ -499,13 +554,31 @@ static void ondata(struct message *message)
         while ((count = framecount - framecount % framesize))
         {
 
-            if (count > MESSAGE_SIZE)
-                count = MESSAGE_SIZE - MESSAGE_SIZE % framesize;
+            struct output output;
+            struct block *page;
 
-            senddata(count, frames);
+            if (count > PAGE_SIZE)
+                count = PAGE_SIZE - PAGE_SIZE % framesize;
+
+            /* the frames came in mail from a sender that does not use pages, so here they are copied once */
+            initoutput(&output, 0, 0);
+
+            page = page_alloc();
+
+            buffer_copy(page, frames, count);
+            senddata(&output, page, count);
             buffer_copy(frames, frames + count, framecount - count);
 
             framecount -= count;
+
+            if (output.failed)
+            {
+
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Audio service does not take pages: %s\n", option_getstring("audio-service"));
+
+                break;
+
+            }
 
         }
 

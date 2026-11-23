@@ -12,6 +12,19 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/audio \
+
+O:=\
+    $(DIR_TEST)/audio.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/cut \
 
 O:=\
@@ -236,6 +249,7 @@ $(DIR_BUILDTESTINITRD): $(DIR_BUILDINITRD) $(TESTBIN) $(DIR_TEST)/boot.sh
 	@echo BUILD TESTINITRD $@
 	@rm -rf $@
 	@cp -r $(DIR_BUILDINITRD) $@
+	@rm -rf $@/lib $@/data/wallpaper-small.png
 	@mkdir -p $@/test
 	@cp $(filter-out $(DIR_TEST)/init,$(TESTBIN)) $(DIR_TEST)/boot.sh $@/test
 	@cp $(DIR_TEST)/init $@/bin/init
