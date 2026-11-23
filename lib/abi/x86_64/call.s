@@ -10,6 +10,10 @@
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
+.set CALL_INDEX_PAGEALLOC,              0x0A
+.set CALL_INDEX_PAGEGIVE,               0x0B
+.set CALL_INDEX_PAGETAKE,               0x0C
+.set CALL_INDEX_PAGEFREE,               0x0D
 .set CALL_FRAME,                        48
 
 .macro callindex index
@@ -44,6 +48,33 @@ call_load:
     movl %edi, 8(%rsp)
     movl %esi, 12(%rsp)
     callindex CALL_INDEX_LOAD
+
+.global call_pagealloc
+call_pagealloc:
+    subq $CALL_FRAME, %rsp
+    movl %edi, 8(%rsp)
+    callindex CALL_INDEX_PAGEALLOC
+
+.global call_pagefree
+call_pagefree:
+    subq $CALL_FRAME, %rsp
+    movl %edi, 8(%rsp)
+    callindex CALL_INDEX_PAGEFREE
+
+.global call_pagegive
+call_pagegive:
+    subq $CALL_FRAME, %rsp
+    movl %edi, 8(%rsp)
+    movl %esi, 12(%rsp)
+    movl %edx, 16(%rsp)
+    callindex CALL_INDEX_PAGEGIVE
+
+.global call_pagetake
+call_pagetake:
+    subq $CALL_FRAME, %rsp
+    movq %rdi, 8(%rsp)
+    movl %esi, 16(%rsp)
+    callindex CALL_INDEX_PAGETAKE
 
 .global call_pick
 call_pick:

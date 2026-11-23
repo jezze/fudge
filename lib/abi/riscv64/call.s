@@ -7,6 +7,10 @@
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
+.set CALL_INDEX_PAGEALLOC,              0x0A
+.set CALL_INDEX_PAGEGIVE,               0x0B
+.set CALL_INDEX_PAGETAKE,               0x0C
+.set CALL_INDEX_PAGEFREE,               0x0D
 .set CALL_FRAME,                        48
 
 # The kernel reads the arguments from the user stack in the same layout as on x86_64:
@@ -43,6 +47,33 @@ call_load:
     sw a0, 8(sp)
     sw a1, 12(sp)
     callindex CALL_INDEX_LOAD
+
+.global call_pagealloc
+call_pagealloc:
+    addi sp, sp, -CALL_FRAME
+    sw a0, 8(sp)
+    callindex CALL_INDEX_PAGEALLOC
+
+.global call_pagefree
+call_pagefree:
+    addi sp, sp, -CALL_FRAME
+    sw a0, 8(sp)
+    callindex CALL_INDEX_PAGEFREE
+
+.global call_pagegive
+call_pagegive:
+    addi sp, sp, -CALL_FRAME
+    sw a0, 8(sp)
+    sw a1, 12(sp)
+    sw a2, 16(sp)
+    callindex CALL_INDEX_PAGEGIVE
+
+.global call_pagetake
+call_pagetake:
+    addi sp, sp, -CALL_FRAME
+    sd a0, 8(sp)
+    sw a1, 16(sp)
+    callindex CALL_INDEX_PAGETAKE
 
 .global call_pick
 call_pick:

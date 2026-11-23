@@ -6,6 +6,7 @@
 #include "mailbox.h"
 #include "task.h"
 #include "memsrv.h"
+#include "page.h"
 #include "core.h"
 #include "pool.h"
 #include "kernel.h"
@@ -58,6 +59,7 @@ static void retiretask(unsigned int itask)
     }
 
     memsrv_untask(itask);
+    page_untask(itask);
     task_reset(task);
     pool_unpicktask(itask);
 
@@ -502,6 +504,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned in
         mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
         mmap_allocate(header, MMAP_TYPE_NORMAL, buffer, KERNEL_VBUFFER, TASK_BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
         mmap_allocate(header, MMAP_TYPE_NORMAL, pool_getpages(itask), KERNEL_VMAILBOX, MESSAGE_AREASIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+        mmap_allocate(header, MMAP_TYPE_NORMAL, page_getbase(), PAGE_VBASE, PAGE_COUNT * PAGE_SIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
         if (format->map(base, MEMSRV_PAGESIZE, code, TASK_CODESIZE, header) && loadbinary(header, base, id))
             task_register(task, mmap, buffer, format->findentry(base), KERNEL_VSTACK);

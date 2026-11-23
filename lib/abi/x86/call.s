@@ -10,6 +10,10 @@
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
+.set CALL_INDEX_PAGEALLOC,              0x0A
+.set CALL_INDEX_PAGEGIVE,               0x0B
+.set CALL_INDEX_PAGETAKE,               0x0C
+.set CALL_INDEX_PAGEFREE,               0x0D
 
 .section .text
 
@@ -34,6 +38,30 @@ call_kill:
 .global call_load
 call_load:
     movl $CALL_INDEX_LOAD, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_pagealloc
+call_pagealloc:
+    movl $CALL_INDEX_PAGEALLOC, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_pagefree
+call_pagefree:
+    movl $CALL_INDEX_PAGEFREE, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_pagegive
+call_pagegive:
+    movl $CALL_INDEX_PAGEGIVE, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_pagetake
+call_pagetake:
+    movl $CALL_INDEX_PAGETAKE, %eax
     int $CALL_INTERRUPT
     ret
 

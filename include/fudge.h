@@ -7,6 +7,7 @@
 #include <fudge/regexp.h>
 #include <fudge/ring.h>
 #include <fudge/message.h>
+#include <fudge/page.h>
 #include <fudge/time.h>
 #include <fudge/keys.h>
 #include <fudge/mtwist.h>

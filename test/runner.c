@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define TESTS                           7
+#define TESTS                           11
 #define PATHSIZE                        64
 #define DEADLINE                        30000
 #define GRACE                           5000
@@ -17,7 +17,7 @@ struct test
 
 };
 
-/* known: why the test is expected to fail; a known test that passes is reported so it can be taken off */
+/* known: why the test is expected to fail; a known test that passes is reported so it can be taken off; tests that may leave tasks holding pages go last */
 static struct test tests[TESTS] = {
     {"spawn", 0},
     {"pingpong", 0},
@@ -25,7 +25,11 @@ static struct test tests[TESTS] = {
     {"window0", "relieve runs a newer message inside an older one's retrying send, so replies overtake"},
     {"window1", "replies piling up in channel 1 are not relieved while its task sends"},
     {"abort", 0},
-    {"stale", 0}
+    {"stale", 0},
+    {"pages", 0},
+    {"pipe", 0},
+    {"cut", 0},
+    {"expand", 0}
 };
 
 static unsigned int output;
@@ -59,6 +63,7 @@ static void dump(void)
 {
 
     system_run(output, "mq -query .tasks -format \"dump task {id} {state}\" sysinfo:tasks.mq");
+    system_run(output, "mq -query . -format \"dump pages free {free} of {count}\" sysinfo:pages.mq");
     system_run(output, "mq -query .mailboxes -format \"dump mailbox {inode} task {itask} channel {ichannel} messages {nmessages}\" sysinfo:mailboxes.mq");
 
 }

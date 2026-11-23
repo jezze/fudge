@@ -23,6 +23,8 @@
 #define ARCH_TASK_CODEBASE              0x48000000
 #define ARCH_TASK_CODESIZE              (TASK_CODESIZE * POOL_TASKS)
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_CODEBASE + ARCH_TASK_CODESIZE)
+#define ARCH_PAGEPOOL_BASE              (ARCH_TASK_STACKBASE + TASK_STACKSIZE * POOL_TASKS)
+#define ARCH_PAGEPOOL_SIZE              (PAGE_COUNT * PAGE_SIZE)
 #define ARCH_UART_BASE                  0x09000000
 #define ARCH_INTERRUPTS                 2
 #define ARCH_FPUSTATESIZE               528

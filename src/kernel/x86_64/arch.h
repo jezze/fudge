@@ -37,7 +37,9 @@
 #define ARCH_TASK_CODESIZE              (TASK_CODESIZE * POOL_TASKS)
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_CODEBASE + ARCH_TASK_CODESIZE)
 #define ARCH_TASK_STACKSIZE             (TASK_STACKSIZE * POOL_TASKS)
-#define ARCH_END                        (ARCH_TASK_STACKBASE + ARCH_TASK_STACKSIZE)
+#define ARCH_PAGEPOOL_BASE              (ARCH_TASK_STACKBASE + ARCH_TASK_STACKSIZE)
+#define ARCH_PAGEPOOL_SIZE              (PAGE_COUNT * PAGE_SIZE)
+#define ARCH_END                        (ARCH_PAGEPOOL_BASE + ARCH_PAGEPOOL_SIZE)
 #define ARCH_KCODE                      0x01
 #define ARCH_KDATA                      0x02
 #define ARCH_UCODE                      0x03

@@ -8,6 +8,7 @@
 #include "task.h"
 #include "pool.h"
 #include "kernel.h"
+#include "page.h"
 
 #define CALLS                           16
 
@@ -236,6 +237,69 @@ static unsigned int announce(unsigned int itask, void *stack)
 
 }
 
+static unsigned int pagealloc(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int flags;} *args = stack;
+    unsigned int page = page_alloc(itask);
+
+    if (!page && (args->flags & PAGE_FLAG_BLOCK))
+        kernel_signal(itask, TASK_SIGNAL_BLOCK);
+
+    return page;
+
+}
+
+static unsigned int pagegive(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int page; unsigned int target; unsigned int count;} *args = stack;
+
+    return (page_give(itask, args->page, kernel_getinodetask(args->target), args->count)) ? MESSAGE_OK : MESSAGE_FAILED;
+
+}
+
+static unsigned int pagetake(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; struct page_handoff *handoff; unsigned int flags;} *args = stack;
+
+    if (args->handoff && checkargs(args->handoff, sizeof (struct page_handoff)))
+    {
+
+        struct page_handoff handoff = page_take(itask);
+
+        if (handoff.page)
+        {
+
+            buffer_copy(args->handoff, &handoff, sizeof (struct page_handoff));
+
+            return MESSAGE_OK;
+
+        }
+
+        if (args->flags & PAGE_FLAG_BLOCK)
+            kernel_signal(itask, TASK_SIGNAL_BLOCK);
+
+        return MESSAGE_RETRY;
+
+    }
+
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "pagetake check failed");
+
+    return MESSAGE_FAILED;
+
+}
+
+static unsigned int pagefree(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int page;} *args = stack;
+
+    return (page_free(itask, args->page)) ? MESSAGE_OK : MESSAGE_FAILED;
+
+}
+
 unsigned int abi_call(unsigned int index, unsigned int itask, void *stack)
 {
 
@@ -270,10 +334,10 @@ void abi_setup(void)
     abi_setcallback(0x07, load);
     abi_setcallback(0x08, unload);
     abi_setcallback(0x09, announce);
-    abi_setcallback(0x0A, debug);
-    abi_setcallback(0x0B, debug);
-    abi_setcallback(0x0C, debug);
-    abi_setcallback(0x0D, debug);
+    abi_setcallback(0x0A, pagealloc);
+    abi_setcallback(0x0B, pagegive);
+    abi_setcallback(0x0C, pagetake);
+    abi_setcallback(0x0D, pagefree);
     abi_setcallback(0x0E, debug);
     abi_setcallback(0x0F, debug);
 

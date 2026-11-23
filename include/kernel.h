@@ -7,6 +7,7 @@
 #include <kernel/task.h>
 #include <kernel/core.h>
 #include <kernel/pool.h>
+#include <kernel/page.h>
 #include <kernel/namesrv.h>
 #include <kernel/unitsrv.h>
 #include <kernel/memsrv.h>

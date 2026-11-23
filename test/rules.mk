@@ -12,6 +12,32 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/cut \
+
+O:=\
+    $(DIR_TEST)/cut.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
+    $(DIR_TEST)/expand \
+
+O:=\
+    $(DIR_TEST)/expand.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/flood \
 
 O:=\
@@ -29,6 +55,19 @@ B:=\
 
 O:=\
     $(DIR_TEST)/init.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
+    $(DIR_TEST)/pages \
+
+O:=\
+    $(DIR_TEST)/pages.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
@@ -64,6 +103,19 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/pipe \
+
+O:=\
+    $(DIR_TEST)/pipe.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/runner \
 
 O:=\
@@ -90,10 +142,49 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/sink \
+
+O:=\
+    $(DIR_TEST)/sink.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
+    $(DIR_TEST)/source \
+
+O:=\
+    $(DIR_TEST)/source.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/spawn \
 
 O:=\
     $(DIR_TEST)/spawn.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
+    $(DIR_TEST)/stage \
+
+O:=\
+    $(DIR_TEST)/stage.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \

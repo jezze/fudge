@@ -14,6 +14,7 @@ O:=\
     $(DIR_SRC)/kernel/memsrv.o \
     $(DIR_SRC)/kernel/mmap.o \
     $(DIR_SRC)/kernel/namesrv.o \
+    $(DIR_SRC)/kernel/page.o \
     $(DIR_SRC)/kernel/pool.o \
     $(DIR_SRC)/kernel/resource.o \
     $(DIR_SRC)/kernel/service.o \

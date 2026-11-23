@@ -4,7 +4,7 @@
 #include <modules/driver.h>
 
 #define ROOT                            0x0001
-#define ROOTRECORDS                     8
+#define ROOTRECORDS                     9
 #define OUTPUTSIZE                      0x4000
 
 static struct resource server;
@@ -227,6 +227,24 @@ static unsigned int writeservices(void)
 
 }
 
+static unsigned int writepages(void)
+{
+
+    unsigned int c = 0;
+    unsigned int free = page_getfree();
+    unsigned int count = PAGE_COUNT;
+    unsigned int limit = PAGE_TASKLIMIT;
+
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  free: %u\n", &free);
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  count: %u\n", &count);
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  limit: %u\n", &limit);
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
+
+    return c;
+
+}
+
 static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
@@ -271,6 +289,9 @@ static unsigned int write(unsigned int id)
 
     case 0x1006:
         return writedrivers();
+
+    case 0x1007:
+        return writepages();
 
     }
 
@@ -494,6 +515,7 @@ void module_init(void)
     record_init(&rootrecords[5], 0x1004, RECORD_TYPE_NORMAL, 0, 6, 11, "services.mq");
     record_init(&rootrecords[6], 0x1005, RECORD_TYPE_NORMAL, 0, 7, 8, "buses.mq");
     record_init(&rootrecords[7], 0x1006, RECORD_TYPE_NORMAL, 0, 8, 10, "drivers.mq");
+    record_init(&rootrecords[8], 0x1007, RECORD_TYPE_NORMAL, 0, 9, 8, "pages.mq");
     spinlock_init(&spinlock);
     resource_init(&server, 0, 0, operands_place);
     service_init(&service, "sysinfo");

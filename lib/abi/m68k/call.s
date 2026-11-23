@@ -7,6 +7,10 @@
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
+.set CALL_INDEX_PAGEALLOC,              0x0A
+.set CALL_INDEX_PAGEGIVE,               0x0B
+.set CALL_INDEX_PAGETAKE,               0x0C
+.set CALL_INDEX_PAGEFREE,               0x0D
 
 # The kernel reads the arguments from the user stack as {return address, arguments...}, which is how the
 # caller left them. The index goes in d0 and so does the result.
@@ -29,4 +33,8 @@ call place, CALL_INDEX_PLACE
 call spawn, CALL_INDEX_SPAWN
 call unload, CALL_INDEX_UNLOAD
 call announce, CALL_INDEX_ANNOUNCE
+call pagealloc, CALL_INDEX_PAGEALLOC
+call pagefree, CALL_INDEX_PAGEFREE
+call pagegive, CALL_INDEX_PAGEGIVE
+call pagetake, CALL_INDEX_PAGETAKE
 
