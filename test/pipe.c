@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 
-/* four times the pool through three tasks, so every page goes round the pipe several times */
-#define BYTES                           (PAGE_SIZE * PAGE_COUNT * 4 + 123)
+/* many times what a task may have out, so every page it takes goes round the pipe again and again */
+#define BYTES                           (PAGE_SIZE * PAGE_TASKLIMIT * 32 + 123)
 #define DELAY                           20000
 #define STAGES                          3
 

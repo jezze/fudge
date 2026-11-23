@@ -256,19 +256,19 @@ static unsigned int pagegive(unsigned int itask, void *stack)
     struct {void *caller; unsigned int page; unsigned int target; unsigned int count;} *args = stack;
 
     /* the receiver learns who gave the page by the giver's channel 0, as a message names its sender */
-    return (page_give(itask, args->page, kernel_getinodetask(args->target), args->count, kernel_getchannelinode(itask, 0))) ? MESSAGE_OK : MESSAGE_FAILED;
+    return page_give(itask, args->page, args->target, args->count, kernel_getchannelinode(itask, 0));
 
 }
 
 static unsigned int pagetake(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; struct page_handoff *handoff; unsigned int flags;} *args = stack;
+    struct {void *caller; unsigned int ichannel; struct page_handoff *handoff; unsigned int flags;} *args = stack;
 
     if (args->handoff && checkargs(args->handoff, sizeof (struct page_handoff)))
     {
 
-        struct page_handoff handoff = page_take(itask);
+        struct page_handoff handoff = page_take(itask, args->ichannel);
 
         if (handoff.page)
         {

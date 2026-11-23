@@ -102,6 +102,7 @@ src/wutils/wimage
 test/abort
 test/audio
 test/cut
+test/emit
 test/expand
 test/flood
 test/init
@@ -109,6 +110,7 @@ test/pages
 test/peer
 test/pingpong
 test/pipe
+test/pipes
 test/runner
 test/sender
 test/sink
@@ -116,5 +118,6 @@ test/source
 test/spawn
 test/stage
 test/stale
+test/verify
 test/window0
 test/window1

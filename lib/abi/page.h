@@ -10,6 +10,6 @@ struct page_data
 void *page_alloc(void);
 void *page_tryalloc(void);
 unsigned int page_give(void *data, unsigned int target, unsigned int count);
-struct page_data page_take(void);
-struct page_data page_trytake(void);
+struct page_data page_take(unsigned int ichannel);
+struct page_data page_trytake(unsigned int ichannel);
 unsigned int page_free(void *data);

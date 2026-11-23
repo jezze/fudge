@@ -297,45 +297,6 @@ static unsigned int addpages(struct client *client, unsigned int start, unsigned
 
 }
 
-static void takepages(void)
-{
-
-    for (;;)
-    {
-
-        struct page_data input = page_trytake();
-        struct client *client;
-        unsigned int count;
-
-        if (!input.data)
-            break;
-
-        client = findclient(input.source);
-        count = input.count - input.count % FRAMESIZE;
-
-        if (client && count && client->npages < CLIENTPAGES)
-        {
-
-            struct clientpage *page = &client->pages[(client->head + client->npages) % CLIENTPAGES];
-
-            page->block = input.data;
-            page->count = count;
-            page->offset = 0;
-            client->npages++;
-
-        }
-
-        else
-        {
-
-            page_free(input.data);
-
-        }
-
-    }
-
-}
-
 static void mix(unsigned int frames)
 {
 
@@ -414,7 +375,25 @@ static void ondata(struct message *message)
         unsigned int avail = ring_avail(&client->ring);
         unsigned int count = message->length - message->length % FRAMESIZE;
 
-        ring_write(&client->ring, message->data, (count < avail) ? count : avail - avail % FRAMESIZE);
+        /* data that came in a page is played from the page, which is freed once played */
+        if (count && client->npages < CLIENTPAGES && channel_keep(message))
+        {
+
+            struct clientpage *page = &client->pages[(client->head + client->npages) % CLIENTPAGES];
+
+            page->block = message->data;
+            page->count = count;
+            page->offset = 0;
+            client->npages++;
+
+        }
+
+        else
+        {
+
+            ring_write(&client->ring, message->data, (count < avail) ? count : avail - avail % FRAMESIZE);
+
+        }
 
     }
 
@@ -442,8 +421,6 @@ static void ontimertick(struct message *message)
 
         unsigned int elapsed = timertick->counter - pace.counter;
         unsigned int played;
-
-        takepages();
 
         if (!pace.started || elapsed > hz)
             elapsed = 0;

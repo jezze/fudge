@@ -3,7 +3,10 @@
 #include "task.h"
 #include "mmap.h"
 #include "pool.h"
+#include "service.h"
+#include "mailbox.h"
 #include "kernel.h"
+#include "debug.h"
 #include "page.h"
 
 struct pagerow
@@ -28,7 +31,8 @@ struct pagequeue
 
 /* pages are numbered from 1, so row 0 and an empty queue both mean none */
 static struct pagerow rows[PAGE_COUNT + 1];
-static struct pagequeue queues[POOL_TASKS];
+/* pages are given to a channel, like mail, so a task takes them where it waits */
+static struct pagequeue queues[POOL_TASKS][TASK_MAILBOXES];
 static unsigned char waiting[POOL_TASKS];
 /* a page counts against the task that took it from the pool until someone frees it, wherever it is by then */
 static unsigned int charged[POOL_TASKS];
@@ -127,14 +131,14 @@ unsigned int page_alloc(unsigned int itask)
 
 }
 
-unsigned int page_give(unsigned int itask, unsigned int page, unsigned int target, unsigned int count, unsigned int source)
+static unsigned int givetask(unsigned int itask, unsigned int page, unsigned int target, unsigned int ichannel, unsigned int count, unsigned int source)
 {
 
     struct task *task = pool_gettask(target);
-    unsigned int given = 0;
+    unsigned int status = MESSAGE_FAILED;
 
-    if (!isvalid(page) || !task || count > PAGE_SIZE)
-        return 0;
+    if (!task || ichannel >= TASK_MAILBOXES)
+        return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
 
@@ -142,32 +146,71 @@ unsigned int page_give(unsigned int itask, unsigned int page, unsigned int targe
     if (rows[page].owner == itask && !rows[page].queued && task->state != TASK_STATE_DEAD)
     {
 
+        struct pagequeue *queue = &queues[target][ichannel];
+
         rows[page].owner = target;
         rows[page].count = count;
         rows[page].source = source;
         rows[page].queued = 1;
         rows[page].next = 0;
 
-        if (queues[target].tail)
-            rows[queues[target].tail].next = page;
+        if (queue->tail)
+            rows[queue->tail].next = page;
         else
-            queues[target].head = page;
+            queue->head = page;
 
-        queues[target].tail = page;
-        given = 1;
+        queue->tail = page;
+        status = MESSAGE_OK;
 
     }
 
     spinlock_release(&spinlock);
 
-    if (given)
+    if (status == MESSAGE_OK)
         kernel_signal(target, TASK_SIGNAL_UNBLOCK);
 
-    return given;
+    return status;
 
 }
 
-struct page_handoff page_take(unsigned int itask)
+/* a service in the kernel reads the page in place while it is given; it is freed once taken, or stays with the giver on a retry */
+static unsigned int giveservice(unsigned int itask, unsigned int page, unsigned int target, unsigned int count, unsigned int source)
+{
+
+    unsigned int owned;
+    unsigned int status;
+
+    spinlock_acquire(&spinlock);
+
+    owned = rows[page].owner == itask && !rows[page].queued;
+
+    spinlock_release(&spinlock);
+
+    if (!owned)
+        return MESSAGE_FAILED;
+
+    status = kernel_place(source, target, MESSAGE_TYPE_DATA, count, (void *)(base + (unsigned long)(page - 1) * PAGE_SIZE));
+
+    if (status == MESSAGE_OK)
+        page_free(itask, page);
+
+    return status;
+
+}
+
+unsigned int page_give(unsigned int itask, unsigned int page, unsigned int target, unsigned int count, unsigned int source)
+{
+
+    struct mailbox *mailbox = pool_getnodemailbox(target);
+
+    if (!isvalid(page) || count > PAGE_SIZE)
+        return MESSAGE_FAILED;
+
+    return (mailbox) ? givetask(itask, page, mailbox->itask, mailbox->ichannel, count, source) : giveservice(itask, page, target, count, source);
+
+}
+
+struct page_handoff page_take(unsigned int itask, unsigned int ichannel)
 {
 
     struct page_handoff handoff;
@@ -176,17 +219,21 @@ struct page_handoff page_take(unsigned int itask)
     handoff.count = 0;
     handoff.source = 0;
 
+    if (ichannel >= TASK_MAILBOXES)
+        return handoff;
+
     spinlock_acquire(&spinlock);
 
-    if (queues[itask].head)
+    if (queues[itask][ichannel].head)
     {
 
-        unsigned int page = queues[itask].head;
+        struct pagequeue *queue = &queues[itask][ichannel];
+        unsigned int page = queue->head;
 
-        queues[itask].head = rows[page].next;
+        queue->head = rows[page].next;
 
-        if (!queues[itask].head)
-            queues[itask].tail = 0;
+        if (!queue->head)
+            queue->tail = 0;
 
         rows[page].queued = 0;
         rows[page].next = 0;
@@ -231,6 +278,7 @@ unsigned int page_free(unsigned int itask, unsigned int page)
 void page_untask(unsigned int itask)
 {
 
+    unsigned int ichannel;
     unsigned int page;
 
     spinlock_acquire(&spinlock);
@@ -246,8 +294,15 @@ void page_untask(unsigned int itask)
     }
 
     charged[itask] = 0;
-    queues[itask].head = 0;
-    queues[itask].tail = 0;
+
+    for (ichannel = 0; ichannel < TASK_MAILBOXES; ichannel++)
+    {
+
+        queues[itask][ichannel].head = 0;
+        queues[itask][ichannel].tail = 0;
+
+    }
+
     waiting[itask] = 0;
 
     wakewaiting();
@@ -268,6 +323,10 @@ void page_setup(unsigned long address)
 
     for (page = PAGE_COUNT; page > 0; page--)
         release(page);
+
+    /* every task must be able to reach its limit at once, or tasks waiting for pages could wait on each other */
+    if (PAGE_TASKLIMIT * (POOL_TASKS - 1) > PAGE_COUNT)
+        debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "The page pool is smaller than every task at its limit");
 
 }
 

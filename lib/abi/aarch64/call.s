@@ -71,8 +71,9 @@ call_pagegive:
 .global call_pagetake
 call_pagetake:
     sub sp, sp, #CALL_FRAME
-    str x0, [sp, #8]
-    str w1, [sp, #16]
+    str w0, [sp, #8]
+    str x1, [sp, #16]
+    str w2, [sp, #24]
     callindex CALL_INDEX_PAGETAKE
 
 .global call_pick

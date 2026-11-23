@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "call.h"
+#include "page.h"
 #include "channel.h"
 
 #define CHANNEL_EVENTS                  256
@@ -9,6 +10,9 @@
 #define CHANNEL_STATE_CLOSED            2
 /* task mail is refused once a slot for replies is all that is left; the message being run holds one more */
 #define CHANNEL_FULL                    (MESSAGE_SLOTS - 2)
+/* data that came in a page has no mailbox slot; these slots say so, and whether the page is still to be freed */
+#define CHANNEL_SLOTPAGE                MESSAGE_SLOTS
+#define CHANNEL_SLOTKEPT                (MESSAGE_SLOTS + 1)
 
 struct inbox
 {
@@ -18,6 +22,7 @@ struct inbox
     unsigned int index;
     unsigned int count;
     unsigned int handed;
+    void *handedpage;
     unsigned int state;
 
 };
@@ -25,6 +30,7 @@ struct inbox
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
+static unsigned int started;
 static unsigned int relieving;
 static unsigned int status;
 static struct message_pipe pipe;
@@ -59,6 +65,7 @@ static void setpipe(struct message *message)
     struct message_pipe *received = message_validate(MESSAGE_TYPE_MAIN, message->data, message->length);
 
     owner = message->source;
+    started = 1;
 
     if (received)
     {
@@ -107,7 +114,33 @@ static void locate(unsigned int ichannel, struct message *message)
 static void finish(unsigned int ichannel, struct message *message)
 {
 
-    inboxes[ichannel].done[message->slot] = 1;
+    if (message->slot < MESSAGE_SLOTS)
+        inboxes[ichannel].done[message->slot] = 1;
+    else if (message->slot == CHANNEL_SLOTPAGE)
+        page_free(message->data);
+
+}
+
+static unsigned int isend(struct message *message)
+{
+
+    return message->type == MESSAGE_TYPE_TERM || message->type == MESSAGE_TYPE_STATUS;
+
+}
+
+static unsigned int takepage(unsigned int ichannel, struct message *message)
+{
+
+    struct page_data input = page_trytake(ichannel);
+
+    if (!input.data)
+        return 0;
+
+    message_init(message, MESSAGE_TYPE_DATA, input.source, input.count, input.data);
+
+    message->slot = CHANNEL_SLOTPAGE;
+
+    return 1;
 
 }
 
@@ -142,20 +175,35 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
 
 }
 
+/* a program gets no data on channel 0 before its MAIN; mail comes before pages, but TERM and STATUS wait for the pages given before them */
 static unsigned int take(unsigned int ichannel, struct message *message, unsigned int flags)
 {
 
     struct inbox *inbox = &inboxes[ichannel];
+    unsigned int status = MESSAGE_OK;
 
     if (inbox->handed)
         inbox->done[inbox->handed - 1] = 1;
 
+    if (inbox->handedpage)
+        page_free(inbox->handedpage);
+
     inbox->handed = 0;
+    inbox->handedpage = 0;
+
+    if (inbox->index == inbox->count)
+        status = fill(ichannel, inbox, 0);
+
+    if (status == MESSAGE_FAILED)
+        return status;
+
+    if ((ichannel || started) && (inbox->index == inbox->count || isend(&inbox->messages[inbox->index])) && takepage(ichannel, message))
+        return MESSAGE_OK;
 
     if (inbox->index == inbox->count)
     {
 
-        unsigned int status = fill(ichannel, inbox, flags);
+        status = fill(ichannel, inbox, flags);
 
         if (status != MESSAGE_OK)
             return status;
@@ -171,7 +219,10 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 static void hand(unsigned int ichannel, struct message *message)
 {
 
-    inboxes[ichannel].handed = message->slot + 1;
+    if (message->slot < MESSAGE_SLOTS)
+        inboxes[ichannel].handed = message->slot + 1;
+    else if (message->slot == CHANNEL_SLOTPAGE)
+        inboxes[ichannel].handedpage = message->data;
 
 }
 
@@ -218,7 +269,7 @@ static void relieve(void)
     struct message message;
 
     /* someone may be retrying a send into our full channel 0: run its oldest message, but never from inside another one */
-    if (relieving || inbox->handed || !canpick(0))
+    if (relieving || inbox->handed || inbox->handedpage || !canpick(0))
         return;
 
     fill(0, inbox, 0);
@@ -268,6 +319,28 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
 
 }
 
+/* pipe data goes in a page; the page is the receiver's to free once read */
+static unsigned int placepage(unsigned int target, unsigned int count, void *data)
+{
+
+    void *page;
+
+    if (count > PAGE_SIZE)
+        return 0;
+
+    page = page_alloc();
+
+    buffer_copy(page, data, count);
+
+    if (page_give(page, target, count))
+        return MESSAGE_TYPE_DATA;
+
+    page_free(page);
+
+    return 0;
+
+}
+
 static unsigned int place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
@@ -290,6 +363,9 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
     {
 
         struct message_route *route = findroute(event);
+
+        if (route && route->to == MESSAGE_TYPE_DATA)
+            return placepage(resolve(route->target), count, data);
 
         if (route)
             return place(ichannel, resolve(route->target), route->to, count, data);
@@ -498,6 +574,28 @@ unsigned int channel_lookup(char *name)
     }
 
     return target;
+
+}
+
+unsigned int channel_keep(struct message *message)
+{
+
+    unsigned int i;
+
+    if (message->slot != CHANNEL_SLOTPAGE)
+        return 0;
+
+    message->slot = CHANNEL_SLOTKEPT;
+
+    for (i = 0; i < CHANNEL_MAILBOXES; i++)
+    {
+
+        if (inboxes[i].handedpage == message->data)
+            inboxes[i].handedpage = 0;
+
+    }
+
+    return 1;
 
 }
 

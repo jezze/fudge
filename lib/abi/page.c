@@ -39,21 +39,26 @@ void *page_tryalloc(void)
 
 }
 
+/* a service in the kernel that cannot take the page now leaves it with this task, as a full mailbox does */
 unsigned int page_give(void *data, unsigned int target, unsigned int count)
 {
 
-    return call_pagegive(getpage(data), target, count) == MESSAGE_OK;
+    unsigned int status;
+
+    while ((status = call_pagegive(getpage(data), target, count)) == MESSAGE_RETRY);
+
+    return status == MESSAGE_OK;
 
 }
 
-static struct page_data take(unsigned int flags)
+static struct page_data take(unsigned int ichannel, unsigned int flags)
 {
 
     struct page_handoff handoff;
     struct page_data result;
     unsigned int status;
 
-    while ((status = call_pagetake(&handoff, flags)) == MESSAGE_RETRY && flags);
+    while ((status = call_pagetake(ichannel, &handoff, flags)) == MESSAGE_RETRY && flags);
 
     result.data = (status == MESSAGE_OK) ? getdata(handoff.page) : 0;
     result.count = (status == MESSAGE_OK) ? handoff.count : 0;
@@ -63,17 +68,17 @@ static struct page_data take(unsigned int flags)
 
 }
 
-struct page_data page_take(void)
+struct page_data page_take(unsigned int ichannel)
 {
 
-    return take(PAGE_FLAG_BLOCK);
+    return take(ichannel, PAGE_FLAG_BLOCK);
 
 }
 
-struct page_data page_trytake(void)
+struct page_data page_trytake(unsigned int ichannel)
 {
 
-    return take(0);
+    return take(ichannel, 0);
 
 }
 

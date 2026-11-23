@@ -70,7 +70,7 @@ static void onmain(struct message *message)
     for (;;)
     {
 
-        struct page_data input = page_take();
+        struct page_data input = page_take(0);
 
         if (!input.data)
         {

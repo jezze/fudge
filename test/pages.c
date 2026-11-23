@@ -83,7 +83,7 @@ static void onmain(struct message *message)
 
     }
 
-    if (call_pagetake(&handoff, 0) != MESSAGE_RETRY)
+    if (call_pagetake(0, &handoff, 0) != MESSAGE_RETRY)
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "take without a page did not ask to retry\n");
 
     if (count && call_pagegive(held[0], message->source, PAGE_SIZE + 1) == MESSAGE_OK)

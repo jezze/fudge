@@ -2,7 +2,7 @@
 #include <abi.h>
 
 /* as pipe, but the stage doubles every byte and so takes extra pages from the pool; stage and sink start only once the source has emptied the pool, the worst case */
-#define BYTES                           (PAGE_SIZE * PAGE_COUNT * 4 + 123)
+#define BYTES                           (PAGE_SIZE * PAGE_TASKLIMIT * 32 + 123)
 #define DELAY                           20000
 #define STAGES                          3
 

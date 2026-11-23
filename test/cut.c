@@ -2,7 +2,7 @@
 #include <abi.h>
 
 /* the stage is killed once the sink has had REPORT pages; every page must come back to the pool */
-#define BYTES                           (PAGE_SIZE * PAGE_COUNT * 4 + 123)
+#define BYTES                           (PAGE_SIZE * PAGE_TASKLIMIT * 32 + 123)
 #define DELAY                           20000
 #define STAGES                          3
 #define REPORT                          8

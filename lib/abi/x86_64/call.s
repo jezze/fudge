@@ -72,8 +72,9 @@ call_pagegive:
 .global call_pagetake
 call_pagetake:
     subq $CALL_FRAME, %rsp
-    movq %rdi, 8(%rsp)
-    movl %esi, 16(%rsp)
+    movl %edi, 8(%rsp)
+    movq %rsi, 16(%rsp)
+    movl %edx, 24(%rsp)
     callindex CALL_INDEX_PAGETAKE
 
 .global call_pick

@@ -38,6 +38,19 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/emit \
+
+O:=\
+    $(DIR_TEST)/emit.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/expand \
 
 O:=\
@@ -129,6 +142,19 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/pipes \
+
+O:=\
+    $(DIR_TEST)/pipes.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/runner \
 
 O:=\
@@ -211,6 +237,19 @@ B:=\
 
 O:=\
     $(DIR_TEST)/stale.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
+    $(DIR_TEST)/verify \
+
+O:=\
+    $(DIR_TEST)/verify.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \

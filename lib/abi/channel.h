@@ -7,6 +7,7 @@ unsigned int channel_drain(unsigned int ichannel);
 unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message);
 unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int channel_lookup(char *name);
+unsigned int channel_keep(struct message *message);
 void channel_bind(unsigned int event, void (*callback)(struct message *message));
 void channel_hold(unsigned int ichannel);
 void channel_loop(unsigned int ichannel);

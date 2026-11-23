@@ -71,8 +71,9 @@ call_pagegive:
 .global call_pagetake
 call_pagetake:
     addi sp, sp, -CALL_FRAME
-    sd a0, 8(sp)
-    sw a1, 16(sp)
+    sw a0, 8(sp)
+    sd a1, 16(sp)
+    sw a2, 24(sp)
     callindex CALL_INDEX_PAGETAKE
 
 .global call_pick
