@@ -160,8 +160,6 @@ $(DIR_BUILDINITRD): $(LIB) $(BIN) $(KMAP) $(KMOD) $(MODULES_ARCH) $(shell find $
 	@rm -rf $@
 	@mkdir -p $@
 	@mkdir -p $@/boot
-	@mkdir -p $@/lib
-	@cp $(LIB) $@/lib
 	@mkdir -p $@/bin
 	@cp $(filter-out $(ROOTBIN),$(BIN)) $@/bin
 	@mkdir -p $@/data
