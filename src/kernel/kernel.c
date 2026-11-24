@@ -347,7 +347,7 @@ unsigned int kernel_placereply(unsigned int target, unsigned int source, unsigne
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
 
-    return (mailbox) ? mailbox_placereply(mailbox, source, event, count, data) : MESSAGE_FAILED;
+    return (mailbox) ? mailbox_place(mailbox, MAILBOX_REPLY, source, event, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -356,7 +356,7 @@ unsigned int kernel_placereserved(unsigned int target, unsigned int source, unsi
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
 
-    return (mailbox) ? mailbox_placereserved(mailbox, source, event, count, data) : MESSAGE_FAILED;
+    return (mailbox) ? mailbox_place(mailbox, MAILBOX_KEPT, source, event, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -421,7 +421,7 @@ void kernel_notify(struct resource *resource, unsigned int event, unsigned int c
             struct mailbox *mailbox = pool_getnodemailbox(target);
 
             if (mailbox)
-                mailbox_placenotify(mailbox, resource->inode, event, count, data);
+                mailbox_place(mailbox, MAILBOX_NOTIFY, resource->inode, event, count, data);
             else
                 kernel_place(resource->inode, target, event, count, data);
 

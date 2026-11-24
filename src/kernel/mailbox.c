@@ -55,7 +55,26 @@ static unsigned int unpromised(struct mailbox *mailbox)
 
 }
 
-static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsigned int keep, unsigned int event, unsigned int source, unsigned int count, void *data)
+/* slots a placement leaves free: task mail leaves the reply slot; notifies also leave one to task mail, so a slot freed in a flooded mailbox goes to a task retrying a send, not to the next event */
+static unsigned int getkeep(unsigned int mode)
+{
+
+    switch (mode)
+    {
+
+    case MAILBOX_NOTIFY:
+        return MAILBOX_REPLYSLOTS + MAILBOX_MAILSLOTS;
+
+    case MAILBOX_MAIL:
+        return MAILBOX_REPLYSLOTS;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int mailbox_place(struct mailbox *mailbox, unsigned int mode, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     unsigned int status = MESSAGE_FAILED;
@@ -73,10 +92,13 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
 
         spinlock_acquire(&mailbox->spinlock);
 
-        if (promise && *promise)
-            (*promise)--;
+        if (mode == MAILBOX_REPLY)
+            mailbox->reply = 0;
 
-        if (unpromised(mailbox) > keep)
+        if (mode == MAILBOX_KEPT && mailbox->reserved)
+            mailbox->reserved--;
+
+        if (unpromised(mailbox) > getkeep(mode))
         {
 
             struct list_item *item = mailbox->free.head;
@@ -159,86 +181,76 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
     struct mailbox *mailbox = pool_getnodemailbox(target);
 
-    return (mailbox) ? place(mailbox, 0, MAILBOX_REPLYSLOTS, event, source, count, data) : MESSAGE_FAILED;
+    return (mailbox) ? mailbox_place(mailbox, MAILBOX_MAIL, source, event, count, data) : MESSAGE_FAILED;
 
 }
 
-static unsigned int shift(struct mailbox *mailbox, unsigned int *from, unsigned int *to)
-{
-
-    unsigned int moved = 0;
-
-    spinlock_acquire(&mailbox->spinlock);
-
-    if ((from) ? *from : unpromised(mailbox))
-    {
-
-        if (from)
-            (*from)--;
-
-        if (to)
-            (*to)++;
-
-        moved = 1;
-
-    }
-
-    spinlock_release(&mailbox->spinlock);
-
-    return moved;
-
-}
-
+/* the one reply slot of a call into the kernel is promised before the call is run */
 unsigned int mailbox_reservereply(struct mailbox *mailbox)
 {
 
-    if (mailbox->itask)
-        return (mailbox->reply || shift(mailbox, 0, &mailbox->reply)) ? MESSAGE_OK : MESSAGE_RETRY;
+    unsigned int status;
 
-    return MESSAGE_FAILED;
+    if (!mailbox->itask)
+        return MESSAGE_FAILED;
+
+    spinlock_acquire(&mailbox->spinlock);
+
+    if (!mailbox->reply && unpromised(mailbox))
+        mailbox->reply = 1;
+
+    status = (mailbox->reply) ? MESSAGE_OK : MESSAGE_RETRY;
+
+    spinlock_release(&mailbox->spinlock);
+
+    return status;
 
 }
 
 void mailbox_unreservereply(struct mailbox *mailbox)
 {
 
-    shift(mailbox, &mailbox->reply, 0);
+    spinlock_acquire(&mailbox->spinlock);
+
+    mailbox->reply = 0;
+
+    spinlock_release(&mailbox->spinlock);
 
 }
 
+/* a service that answers later keeps the promised slot past the call */
 unsigned int mailbox_keepreply(struct mailbox *mailbox)
 {
 
-    return shift(mailbox, &mailbox->reply, &mailbox->reserved) ? MESSAGE_OK : MESSAGE_FAILED;
+    unsigned int status;
+
+    spinlock_acquire(&mailbox->spinlock);
+
+    status = (mailbox->reply) ? MESSAGE_OK : MESSAGE_FAILED;
+
+    if (mailbox->reply)
+    {
+
+        mailbox->reply = 0;
+        mailbox->reserved++;
+
+    }
+
+    spinlock_release(&mailbox->spinlock);
+
+    return status;
 
 }
 
 void mailbox_unreserve(struct mailbox *mailbox)
 {
 
-    shift(mailbox, &mailbox->reserved, 0);
+    spinlock_acquire(&mailbox->spinlock);
 
-}
+    if (mailbox->reserved)
+        mailbox->reserved--;
 
-unsigned int mailbox_placenotify(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    /* notifies also leave a slot to task mail: a slot freed in a flooded mailbox goes to a task retrying a send, not to the next event */
-    return place(mailbox, 0, MAILBOX_REPLYSLOTS + MAILBOX_MAILSLOTS, event, source, count, data);
-
-}
-
-unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    return place(mailbox, &mailbox->reply, 0, event, source, count, data);
-
-}
-
-unsigned int mailbox_placereserved(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    return place(mailbox, &mailbox->reserved, 0, event, source, count, data);
+    spinlock_release(&mailbox->spinlock);
 
 }
 
