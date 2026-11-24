@@ -37,7 +37,7 @@ static void retiretask(unsigned int itask)
     struct task *task = pool_gettask(itask);
     unsigned int i;
 
-    for (i = 0; i < TASK_MAILBOXES; i++)
+    for (i = 0; i < MESSAGE_CHANNELS; i++)
     {
 
         struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
@@ -161,7 +161,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
     struct task *task = pool_gettask(itask);
 
-    if (task && ichannel < TASK_MAILBOXES)
+    if (task && ichannel < MESSAGE_CHANNELS)
     {
 
         struct mailbox *mailbox = pool_getmailbox(task->imailbox[ichannel]);
@@ -176,7 +176,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
                 mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
-                mailbox_register(mailbox, itask, ichannel, pool_getpages(itask));
+                mailbox_register(mailbox, itask, ichannel);
 
             }
 

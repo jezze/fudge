@@ -4,14 +4,9 @@
 #include "channel.h"
 
 #define CHANNEL_EVENTS                  256
-#define CHANNEL_MAILBOXES               (MESSAGE_PAGES / MESSAGE_SLOTS)
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
 #define CHANNEL_STATE_CLOSED            2
-/* task mail is refused once a slot for replies is all that is left; the message being run holds one more */
-/* data that came in a page has no mailbox slot; these slots say so, and whether the page is still to be freed */
-#define CHANNEL_SLOTPAGE                MESSAGE_SLOTS
-#define CHANNEL_SLOTKEPT                (MESSAGE_SLOTS + 1)
 /* handlers may run inside handlers, as relieve does */
 #define CHANNEL_ACTIVE                  8
 
@@ -29,7 +24,7 @@ struct inbox
 };
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
-static struct inbox inboxes[CHANNEL_MAILBOXES];
+static struct inbox inboxes[MESSAGE_CHANNELS];
 static unsigned int owner;
 static struct message *active[CHANNEL_ACTIVE];
 static unsigned int nactive;
@@ -102,10 +97,10 @@ static unsigned int frominput(unsigned int ichannel, unsigned int source)
 }
 
 /* mail was copied out when picked, so only a page given with a message is left to give back */
-static void finish(unsigned int ichannel, struct message *message)
+static void finish(struct message *message)
 {
 
-    if (message->slot == CHANNEL_SLOTPAGE)
+    if (message->page)
         page_free(message->data);
 
 }
@@ -116,11 +111,10 @@ static void copybox(struct message_box *to, struct message_box *from)
 
     buffer_copy(to, from, sizeof (struct message_box));
 
-    if (to->message.slot < MESSAGE_SLOTS)
+    if (from->message.data == from->payload)
         to->message.data = to->payload;
 
 }
-
 
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
@@ -187,7 +181,7 @@ static void hand(unsigned int ichannel, struct message_box *box, struct message 
     copybox(&inbox->handedbox, box);
     buffer_copy(message, &inbox->handedbox.message, sizeof (struct message));
 
-    if (message->slot == CHANNEL_SLOTPAGE)
+    if (message->page)
         inbox->handedpage = message->data;
 
 }
@@ -195,7 +189,7 @@ static void hand(unsigned int ichannel, struct message_box *box, struct message 
 static unsigned int canpick(unsigned int ichannel)
 {
 
-    return ichannel < CHANNEL_MAILBOXES && inboxes[ichannel].state != CHANNEL_STATE_CLOSED;
+    return ichannel < MESSAGE_CHANNELS && inboxes[ichannel].state != CHANNEL_STATE_CLOSED;
 
 }
 
@@ -241,7 +235,7 @@ static void relieve(void)
     unsigned int i;
 
     /* only channels already in use: a pick on any other would take a mailbox from the pool for nothing */
-    for (i = 0; i < CHANNEL_MAILBOXES; i++)
+    for (i = 0; i < MESSAGE_CHANNELS; i++)
     {
 
         if (inboxes[i].used && canpick(i))
@@ -293,10 +287,10 @@ static unsigned int handover(void *data)
 
         struct message *message = active[i - 1];
 
-        if (message->slot == CHANNEL_SLOTPAGE && message->data == data)
+        if (message->page && message->data == data)
         {
 
-            message->slot = CHANNEL_SLOTKEPT;
+            message->page = 0;
 
             return 1;
 
@@ -304,7 +298,7 @@ static unsigned int handover(void *data)
 
     }
 
-    for (i = 0; i < CHANNEL_MAILBOXES; i++)
+    for (i = 0; i < MESSAGE_CHANNELS; i++)
     {
 
         if (inboxes[i].handedpage == data)
@@ -380,7 +374,7 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
     unsigned int status;
 
-    if (ichannel < CHANNEL_MAILBOXES)
+    if (ichannel < MESSAGE_CHANNELS)
         inboxes[ichannel].used = 1;
 
     if (message_isdata(event))
@@ -512,7 +506,7 @@ unsigned int channel_process(unsigned int ichannel)
     {
 
         dispatch(ichannel, &box.message);
-        finish(ichannel, &box.message);
+        finish(&box.message);
 
         return box.message.type;
 
@@ -535,7 +529,7 @@ unsigned int channel_drain(unsigned int ichannel)
 
         case MESSAGE_OK:
             dispatch(ichannel, &box.message);
-            finish(ichannel, &box.message);
+            finish(&box.message);
 
             break;
 
@@ -563,7 +557,7 @@ void channel_hold(unsigned int ichannel)
 void channel_loop(unsigned int ichannel)
 {
 
-    while (ichannel < CHANNEL_MAILBOXES && inboxes[ichannel].state == CHANNEL_STATE_OPENED && channel_process(ichannel));
+    while (ichannel < MESSAGE_CHANNELS && inboxes[ichannel].state == CHANNEL_STATE_OPENED && channel_process(ichannel));
 
 }
 
@@ -576,7 +570,7 @@ static unsigned int poll(unsigned int ichannel, unsigned int source, unsigned in
     {
 
         /* a reply given in a page is the caller's, not data for the listeners */
-        if (pages && box.message.source == source && box.message.slot == CHANNEL_SLOTPAGE)
+        if (pages && box.message.source == source && box.message.page)
         {
 
             hand(ichannel, &box, message);
@@ -596,7 +590,7 @@ static unsigned int poll(unsigned int ichannel, unsigned int source, unsigned in
 
         }
 
-        finish(ichannel, &box.message);
+        finish(&box.message);
 
         if (box.message.source == source && box.message.type == MESSAGE_TYPE_STATUS)
             return 0;
@@ -750,7 +744,7 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 void channel_close(unsigned int ichannel)
 {
 
-    if (ichannel < CHANNEL_MAILBOXES)
+    if (ichannel < MESSAGE_CHANNELS)
         inboxes[ichannel].state = CHANNEL_STATE_CLOSED;
 
 }
@@ -789,7 +783,7 @@ static void abortdrain(void)
     struct message_box boxes[MESSAGE_SLOTS];
     unsigned int i;
 
-    for (i = 0; i < CHANNEL_MAILBOXES; i++)
+    for (i = 0; i < MESSAGE_CHANNELS; i++)
     {
 
         unsigned int j;
@@ -798,7 +792,7 @@ static void abortdrain(void)
             continue;
 
         for (j = 0; j < MESSAGE_SLOTS && boxes[j].message.type; j++)
-            finish(i, &boxes[j].message);
+            finish(&boxes[j].message);
 
     }
 

@@ -56,7 +56,7 @@ void task_reset(struct task *task)
     task->start.ip = 0;
     task->start.sp = 0;
 
-    for (i = 0; i < TASK_MAILBOXES; i++)
+    for (i = 0; i < MESSAGE_CHANNELS; i++)
         task->imailbox[i] = 0;
 
 }

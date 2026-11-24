@@ -196,7 +196,7 @@ unsigned int page_send(unsigned int itask, unsigned int page, struct mailbox *ma
 
     message_init(&rows[page].message, event, source, count, (void *)(PAGE_VBASE + (unsigned long)(page - 1) * PAGE_SIZE));
 
-    rows[page].message.slot = MESSAGE_SLOTS;
+    rows[page].message.page = page;
 
     list_inititem(&rows[page].item, &rows[page].message);
     spinlock_acquire(&mailbox->spinlock);
@@ -230,11 +230,8 @@ unsigned int page_deliver(struct mailbox *mailbox, unsigned int event, unsigned 
 }
 
 /* the receiver picked the page's message from its mailbox: from now it holds the page */
-void page_picked(void *data)
+void page_picked(unsigned int page)
 {
-
-    unsigned long address = (unsigned long)data;
-    unsigned int page = (address >= PAGE_VBASE) ? (address - PAGE_VBASE) / PAGE_SIZE + 1 : 0;
 
     if (!isvalid(page))
         return;

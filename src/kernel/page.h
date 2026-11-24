@@ -25,7 +25,7 @@ struct page_info page_getinfo(unsigned int page);
 unsigned int page_alloc(unsigned int itask);
 unsigned int page_send(unsigned int itask, unsigned int page, struct mailbox *mailbox, unsigned int event, unsigned int count, unsigned int source);
 unsigned int page_deliver(struct mailbox *mailbox, unsigned int event, unsigned int source, unsigned int count, void *data);
-void page_picked(void *data);
+void page_picked(unsigned int page);
 unsigned int page_free(unsigned int itask, unsigned int page);
 unsigned int page_hand(unsigned int itask, unsigned int page, unsigned int target);
 struct page_lease page_borrow(unsigned int source, unsigned int page);

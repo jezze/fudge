@@ -24,10 +24,12 @@ static unsigned int pick(struct mailbox *mailbox, struct message_box *boxes, uns
         list_remove_unsafe(&mailbox->queued, item);
         buffer_copy(&boxes[n].message, message, sizeof (struct message));
 
-        if (message->slot < MESSAGE_SLOTS)
+        if (!message->page)
         {
 
-            buffer_copy(boxes[n].payload, (void *)(mailbox->pages + MESSAGE_CONTROLSIZE * message->slot), message->length);
+            struct message_box *box = item->data;
+
+            buffer_copy(boxes[n].payload, box->payload, message->length);
 
             boxes[n].message.data = boxes[n].payload;
 
@@ -78,10 +80,10 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
         {
 
             struct list_item *item = mailbox->free.head;
-            struct message *message = item->data;
+            struct message_box *box = item->data;
 
-            message_init(message, event, source, count, 0);
-            buffer_copy((void *)(mailbox->pages + MESSAGE_CONTROLSIZE * message->slot), data, count);
+            message_init(&box->message, event, source, count, 0);
+            buffer_copy(box->payload, data, count);
             list_move_unsafe(&mailbox->queued, &mailbox->free, item);
 
             status = MESSAGE_OK;
@@ -136,8 +138,8 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message_box *boxes, un
         for (i = 0; i < n; i++)
         {
 
-            if (boxes[i].message.slot == MESSAGE_SLOTS)
-                page_picked(boxes[i].message.data);
+            if (boxes[i].message.page)
+                page_picked(boxes[i].message.page);
 
         }
 
@@ -258,12 +260,11 @@ void mailbox_reset(struct mailbox *mailbox)
 
 }
 
-void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel, unsigned long pages)
+void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel)
 {
 
     mailbox->itask = itask;
     mailbox->ichannel = ichannel;
-    mailbox->pages = pages + MESSAGE_CONTROLSIZE * MESSAGE_SLOTS * ichannel;
 
 }
 
@@ -278,9 +279,9 @@ void mailbox_init(struct mailbox *mailbox)
     for (i = 0; i < MESSAGE_SLOTS; i++)
     {
 
-        list_inititem(&mailbox->items[i], &mailbox->messages[i]);
+        list_inititem(&mailbox->items[i], &mailbox->boxes[i]);
 
-        mailbox->messages[i].slot = i;
+        mailbox->boxes[i].message.page = 0;
 
     }
 

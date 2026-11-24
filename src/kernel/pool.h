@@ -1,7 +1,6 @@
 #define POOL_CORES                      256
 #define POOL_TASKMAILBOXES              2
 #define POOL_TASKMMUSIZE                0x20000
-#define POOL_PERTASK                    (TASK_CODESIZE + TASK_STACKSIZE + MMAP_SIZE + POOL_TASKMMUSIZE + MESSAGE_AREASIZE)
 #define POOL_CHUNK                      0x04880000
 /* fixed: the memory layouts of most arches leave room for this many tasks, and no more */
 #define POOL_TASKS                      29
@@ -11,7 +10,6 @@
 #define POOL_LINKS                      (POOL_TASKS * POOL_TASKNODES)
 
 struct core *pool_getcore(unsigned int icore);
-unsigned long pool_getpages(unsigned int itask);
 struct mailbox *pool_getmailbox(unsigned int imailbox);
 struct resource *pool_getnoderesource(unsigned int inode);
 struct mailbox *pool_getnodemailbox(unsigned int inode);
@@ -32,4 +30,4 @@ void pool_unlink(struct list_item *item);
 unsigned int pool_attachnode(struct resource *resource);
 void pool_detachnode(struct resource *resource);
 void pool_setroot(struct resource *resource);
-void pool_setup(unsigned long address);
+void pool_setup(void);

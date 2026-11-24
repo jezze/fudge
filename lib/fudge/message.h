@@ -1,4 +1,4 @@
-#define MESSAGE_SIZE                    0x1000
+#define MESSAGE_SIZE                    PAGE_SIZE
 /* mail carries control, not data, so a slot is small; data goes in pages */
 #define MESSAGE_SLOTS                   16
 /* every control message fits this; data goes in pages */
@@ -9,8 +9,7 @@
 #define MESSAGE_TEXTSIZE                240
 #define MESSAGE_IDSIZE                  32
 #define MESSAGE_CONSOLESIZE             32
-#define MESSAGE_PAGES                   64
-#define MESSAGE_AREASIZE                (MESSAGE_PAGES * MESSAGE_CONTROLSIZE)
+#define MESSAGE_CHANNELS                4
 #define MESSAGE_OK                      0x01
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_FAILED                  0x03
@@ -77,7 +76,6 @@
 #define MESSAGE_TYPE_WALKREQUEST        0x40
 #define MESSAGE_TYPE_WALKRESPONSE       0x41
 #define MESSAGE_TYPE_READREQUEST        0x42
-#define MESSAGE_TYPE_READRESPONSE       0x43
 #define MESSAGE_TYPE_WRITEREQUEST       0x44
 #define MESSAGE_TYPE_WRITERESPONSE      0x45
 #define MESSAGE_TYPE_STATREQUEST        0x46
@@ -118,7 +116,7 @@ struct message
     unsigned int source;
     unsigned int length;
     void *data;
-    unsigned int slot;
+    unsigned int page;
 
 };
 

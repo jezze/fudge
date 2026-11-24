@@ -9,13 +9,12 @@ struct mailbox
     struct spinlock spinlock;
     unsigned int itask;
     unsigned int ichannel;
-    struct message messages[MESSAGE_SLOTS];
+    struct message_box boxes[MESSAGE_SLOTS];
     struct list_item items[MESSAGE_SLOTS];
     struct list free;
     struct list queued;
     unsigned int reply;
     unsigned int reserved;
-    unsigned long pages;
 
 };
 
@@ -29,5 +28,5 @@ unsigned int mailbox_placenotify(struct mailbox *mailbox, unsigned int source, u
 unsigned int mailbox_placereply(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int mailbox_placereserved(struct mailbox *mailbox, unsigned int source, unsigned int event, unsigned int count, void *data);
 void mailbox_reset(struct mailbox *mailbox);
-void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel, unsigned long pages);
+void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel);
 void mailbox_init(struct mailbox *mailbox);

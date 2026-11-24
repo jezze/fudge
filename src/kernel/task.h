@@ -3,7 +3,6 @@
 #define TASK_RETRIESLOG                 0x10000
 /* two tasks each retrying a send to the other this long are stuck: neither can make room for the other */
 #define TASK_RETRIESDEADLOCK            0x1000
-#define TASK_MAILBOXES                  (MESSAGE_PAGES / MESSAGE_SLOTS)
 #define TASK_STATE_DEAD                 1
 #define TASK_STATE_BLOCKED              2
 #define TASK_STATE_ASSIGNED             3
@@ -44,7 +43,7 @@ struct task
     unsigned int sendingto;
     unsigned int aborted;
     unsigned int started;
-    unsigned int imailbox[TASK_MAILBOXES];
+    unsigned int imailbox[MESSAGE_CHANNELS];
 
 };
 
