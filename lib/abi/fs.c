@@ -47,13 +47,18 @@ unsigned int fs_auth(char *path)
 unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int parent, void *buffer, unsigned int count)
 {
 
-    char data[MESSAGE_SIZE];
-    struct message_createrequest *request = (struct message_createrequest *)data;
+    struct {struct message_createrequest request; char name[RECORD_NAMESIZE];} message;
 
-    request->parent = parent;
-    request->count = buffer_write(data, MESSAGE_SIZE, buffer, count, sizeof (struct message_createrequest));
+    if (count > RECORD_NAMESIZE)
+        return channel_toolong();
 
-    if (channel_send(ichannel, target, MESSAGE_TYPE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
+    buffer_clear(&message, sizeof (message));
+    buffer_copy(message.name, buffer, count);
+
+    message.request.parent = parent;
+    message.request.count = count;
+
+    if (channel_send(ichannel, target, MESSAGE_TYPE_CREATEREQUEST, sizeof (message), &message))
     {
 
         struct message_createresponse response;
@@ -402,16 +407,21 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int parent, char *path)
 {
 
-    char data[MESSAGE_SIZE];
-    struct message_walkrequest *request = (struct message_walkrequest *)data;
+    struct {struct message_walkrequest request; char path[MESSAGE_PATHSIZE];} message;
 
     /* TODO: Handle this stuff better */
     path += buffer_eachbyte(path, cstring_length(path), ':', 0);
 
-    request->parent = parent;
-    request->length = buffer_write(data, MESSAGE_SIZE, path, cstring_length(path), sizeof (struct message_walkrequest));
+    if (cstring_length(path) > MESSAGE_PATHSIZE)
+        return channel_toolong();
 
-    if (channel_send(ichannel, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
+    buffer_clear(&message, sizeof (message));
+    buffer_copy(message.path, path, cstring_length(path));
+
+    message.request.parent = parent;
+    message.request.length = cstring_length(path);
+
+    if (channel_send(ichannel, target, MESSAGE_TYPE_WALKREQUEST, sizeof (message), &message))
     {
 
         struct message_walkresponse response;

@@ -50,10 +50,22 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
+/* input is a stream of bytes, so a long one goes in as many messages as it takes */
 void console_notifydata(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->resource, MESSAGE_TYPE_CONSOLEDATA, count, buffer);
+    unsigned int offset;
+
+    for (offset = 0; offset < count; offset += MESSAGE_CONSOLESIZE)
+    {
+
+        struct message_consoledata consoledata;
+
+        consoledata.count = buffer_write(consoledata.data, MESSAGE_CONSOLESIZE, (char *)buffer + offset, count - offset, 0);
+
+        kernel_notify(&interface->resource, MESSAGE_TYPE_CONSOLEDATA, sizeof (struct message_consoledata), &consoledata);
+
+    }
 
 }
 

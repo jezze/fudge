@@ -18,7 +18,7 @@
 #define REG_LSR_RX                      (1 << 0)
 #define REG_LSR_THRE                    (1 << 5)
 #define BUFFERSIZE                      16
-#define TIMEOUT                         100000
+#define TIMEOUT                         0x1000000
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;

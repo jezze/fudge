@@ -84,10 +84,10 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
     if (mailbox->itask && message_isdata(event))
         return page_deliver(mailbox, event, source, count, data);
 
-    if (count > MESSAGE_SLOTSIZE)
-        debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "Mail of %u bytes does not fit a slot", &count);
+    if (count > MESSAGE_CONTROLSIZE)
+        debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "Control message of %u bytes is too long", &count);
 
-    if (mailbox->itask && count <= MESSAGE_SLOTSIZE)
+    if (mailbox->itask && count <= MESSAGE_CONTROLSIZE)
     {
 
         status = MESSAGE_RETRY;

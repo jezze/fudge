@@ -224,10 +224,29 @@ static void deleteend(void)
 
 }
 
+/* input is a stream of bytes, so a long one goes in as many messages as it takes */
+static void sendconsole(void *data, unsigned int count)
+{
+
+    unsigned int offset;
+
+    for (offset = 0; offset < count; offset += MESSAGE_CONSOLESIZE)
+    {
+
+        struct message_consoledata consoledata;
+
+        consoledata.count = buffer_write(consoledata.data, MESSAGE_CONSOLESIZE, (char *)data + offset, count - offset, 0);
+
+        channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, sizeof (struct message_consoledata), &consoledata);
+
+    }
+
+}
+
 static void interrupt(void)
 {
 
-    channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, 1, "\003");
+    sendconsole("\003", 1);
 
 }
 
@@ -344,7 +363,7 @@ static void onconsolebyte(unsigned char c)
             break;
 
         default:
-            channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, 1, &c);
+            sendconsole(&c, 1);
 
             break;
 
@@ -476,12 +495,11 @@ static void onconsolebyte(unsigned char c)
 static void onconsoledata(struct message *message)
 {
 
-    unsigned char data[MESSAGE_SIZE];
-    unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
+    struct message_consoledata *consoledata = message_validate(MESSAGE_TYPE_CONSOLEDATA, message->data, message->length);
     unsigned int i;
 
-    for (i = 0; i < count; i++)
-        onconsolebyte(data[i]);
+    for (i = 0; consoledata && i < consoledata->count; i++)
+        onconsolebyte(consoledata->data[i]);
 
 }
 
@@ -524,7 +542,7 @@ static void onkeypress(struct message *message)
             else
             {
 
-                channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, keys.code.length, keys.code.value);
+                sendconsole(keys.code.value, keys.code.length);
 
             }
 

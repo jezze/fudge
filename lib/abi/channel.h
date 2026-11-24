@@ -2,6 +2,7 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
 unsigned int channel_send_fmt(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, ...);
 unsigned int channel_toolong(void);
 unsigned int channel_sendoption(unsigned int ichannel, unsigned int target, char *key, char *value);
+unsigned int channel_sendid(unsigned int ichannel, unsigned int target, unsigned int event, char *id);
 unsigned int channel_sendpath(unsigned int ichannel, unsigned int target, char *path);
 unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, void **args);
 unsigned int channel_pick(unsigned int ichannel, struct message *message);

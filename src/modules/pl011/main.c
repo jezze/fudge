@@ -16,7 +16,7 @@
 #define REG_IMSC_RT                     (1 << 6)
 #define REG_ICR                         0x44
 #define BUFFERSIZE                      16
-#define TIMEOUT                         100000
+#define TIMEOUT                         0x1000000
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;

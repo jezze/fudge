@@ -389,7 +389,7 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
     if (message_isdata(event))
         return placepage(ichannel, target, event, count, data);
 
-    if (count > MESSAGE_SLOTSIZE)
+    if (count > MESSAGE_CONTROLSIZE)
         return channel_toolong();
 
     while ((status = call_place(ichannel, target, event, count, data, 0)) == MESSAGE_RETRY)
@@ -451,6 +451,21 @@ unsigned int channel_sendoption(unsigned int ichannel, unsigned int target, char
     buffer_copy(option.value, value, cstring_length(value));
 
     return channel_send(ichannel, target, MESSAGE_TYPE_OPTION, sizeof (struct message_option), &option);
+
+}
+
+unsigned int channel_sendid(unsigned int ichannel, unsigned int target, unsigned int event, char *id)
+{
+
+    struct message_id message;
+
+    if (cstring_length(id) >= MESSAGE_IDSIZE)
+        return channel_toolong();
+
+    buffer_clear(&message, sizeof (struct message_id));
+    buffer_copy(message.id, id, cstring_length(id));
+
+    return channel_send(ichannel, target, event, sizeof (struct message_id), &message);
 
 }
 
@@ -619,13 +634,18 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 static unsigned int walk(unsigned int target, unsigned int parent, char *path, unsigned int length)
 {
 
-    char data[MESSAGE_SIZE];
-    struct message_walkrequest *request = (struct message_walkrequest *)data;
+    struct {struct message_walkrequest request; char path[MESSAGE_PATHSIZE];} message;
 
-    request->parent = parent;
-    request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct message_walkrequest));
+    if (length > MESSAGE_PATHSIZE)
+        return channel_toolong();
 
-    if (channel_send(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
+    buffer_clear(&message, sizeof (message));
+    buffer_copy(message.path, path, length);
+
+    message.request.parent = parent;
+    message.request.length = length;
+
+    if (channel_send(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (message), &message))
     {
 
         struct message_walkresponse response;

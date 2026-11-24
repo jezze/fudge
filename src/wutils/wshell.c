@@ -60,11 +60,22 @@ static struct terminal term;
 static unsigned int shell;
 static unsigned int wm;
 
+/* input is a stream of bytes, so a long one goes in as many messages as it takes */
 static void sendconsole(void *data, unsigned int count)
 {
 
-    if (shell)
-        channel_send(0, shell, MESSAGE_TYPE_CONSOLEDATA, count, data);
+    unsigned int offset;
+
+    for (offset = 0; shell && offset < count; offset += MESSAGE_CONSOLESIZE)
+    {
+
+        struct message_consoledata consoledata;
+
+        consoledata.count = buffer_write(consoledata.data, MESSAGE_CONSOLESIZE, (char *)data + offset, count - offset, 0);
+
+        channel_send(0, shell, MESSAGE_TYPE_CONSOLEDATA, sizeof (struct message_consoledata), &consoledata);
+
+    }
 
 }
 
@@ -775,29 +786,31 @@ static void addoutput(struct output *output, char *line, unsigned int count)
 static void sendcursor(unsigned int position)
 {
 
-    struct {struct message_wmcursor wmcursor; char id[8];} message;
+    struct {struct message_wmcursor wmcursor; char id[MESSAGE_IDSIZE];} message;
+
+    buffer_clear(&message, sizeof (message));
+    buffer_copy(message.id, "screen", 6);
 
     message.wmcursor.position = position;
 
-    buffer_write(message.id, 8, "screen", 7, 0);
-
     if (wm)
-        channel_send(0, wm, MESSAGE_TYPE_WMCURSOR, sizeof (struct message_wmcursor) + 7, &message);
+        channel_send(0, wm, MESSAGE_TYPE_WMCURSOR, sizeof (message), &message);
 
 }
 
 static void sendselect(unsigned int anchor, unsigned int end)
 {
 
-    struct {struct message_wmselect wmselect; char id[8];} message;
+    struct {struct message_wmselect wmselect; char id[MESSAGE_IDSIZE];} message;
+
+    buffer_clear(&message, sizeof (message));
+    buffer_copy(message.id, "screen", 6);
 
     message.wmselect.anchor = anchor;
     message.wmselect.end = end;
 
-    buffer_write(message.id, 8, "screen", 7, 0);
-
     if (wm)
-        channel_send(0, wm, MESSAGE_TYPE_WMSELECT, sizeof (struct message_wmselect) + 7, &message);
+        channel_send(0, wm, MESSAGE_TYPE_WMSELECT, sizeof (message), &message);
 
 }
 

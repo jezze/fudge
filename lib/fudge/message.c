@@ -1,5 +1,6 @@
 #include "buffer.h"
 #include "page.h"
+#include "record.h"
 #include "message.h"
 
 static void *checksize(void *data, unsigned int count, unsigned int size)
@@ -70,6 +71,28 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
     case MESSAGE_TYPE_ERROR:
         return checksize(data, count, sizeof (struct message_error));
+
+    case MESSAGE_TYPE_WMFLUSH:
+    case MESSAGE_TYPE_WMREAD:
+        return checksize(data, count, sizeof (struct message_id));
+
+    case MESSAGE_TYPE_WMCURSOR:
+        return checksize(data, count, sizeof (struct message_wmcursor) + MESSAGE_IDSIZE);
+
+    case MESSAGE_TYPE_WMSELECT:
+        return checksize(data, count, sizeof (struct message_wmselect) + MESSAGE_IDSIZE);
+
+    case MESSAGE_TYPE_CONSOLEDATA:
+        if (count == sizeof (struct message_consoledata))
+        {
+
+            struct message_consoledata *consoledata = data;
+
+            return (consoledata->count <= MESSAGE_CONSOLESIZE) ? data : 0;
+
+        }
+
+        return 0;
 
     case MESSAGE_TYPE_MAIN:
         return checksize(data, count, sizeof (struct message_pipe));
@@ -201,12 +224,12 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
         return checksize(data, count, sizeof (struct message_wmkeyrelease));
 
     case MESSAGE_TYPE_CREATEREQUEST:
-        if (count >= sizeof (struct message_createrequest))
+        if (count == sizeof (struct message_createrequest) + RECORD_NAMESIZE)
         {
 
-            struct message_createrequest *createrequest = data;
+            struct message_createrequest *request = data;
 
-            return checkpayload(data, count, sizeof (struct message_createrequest), createrequest->count);
+            return (request->count <= RECORD_NAMESIZE) ? data : 0;
 
         }
 
@@ -225,12 +248,12 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
         return 0;
 
     case MESSAGE_TYPE_WALKREQUEST:
-        if (count >= sizeof (struct message_walkrequest))
+        if (count == sizeof (struct message_walkrequest) + MESSAGE_PATHSIZE)
         {
 
-            struct message_walkrequest *walkrequest = data;
+            struct message_walkrequest *request = data;
 
-            return checkpayload(data, count, sizeof (struct message_walkrequest), walkrequest->length);
+            return (request->length <= MESSAGE_PATHSIZE) ? data : 0;
 
         }
 

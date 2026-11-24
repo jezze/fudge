@@ -2,10 +2,14 @@
 /* mail carries control, not data, so a slot is small; data goes in pages */
 #define MESSAGE_SLOTSIZE                0x200
 #define MESSAGE_SLOTS                   16
+/* every control message fits this; data goes in pages */
+#define MESSAGE_CONTROLSIZE             256
 #define MESSAGE_KEYSIZE                 32
 #define MESSAGE_VALUESIZE               192
 #define MESSAGE_PATHSIZE                240
 #define MESSAGE_TEXTSIZE                240
+#define MESSAGE_IDSIZE                  32
+#define MESSAGE_CONSOLESIZE             32
 #define MESSAGE_PAGES                   64
 #define MESSAGE_AREASIZE                (MESSAGE_PAGES * MESSAGE_SLOTSIZE + MESSAGE_SIZE)
 #define MESSAGE_OK                      0x01
@@ -135,6 +139,21 @@ struct message_option
 
     char key[MESSAGE_KEYSIZE];
     char value[MESSAGE_VALUESIZE];
+
+};
+
+struct message_id
+{
+
+    char id[MESSAGE_IDSIZE];
+
+};
+
+struct message_consoledata
+{
+
+    unsigned int count;
+    unsigned char data[MESSAGE_CONSOLESIZE];
 
 };
 

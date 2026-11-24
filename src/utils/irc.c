@@ -77,8 +77,9 @@ static void dnsresolve(struct socket *socket, char *domain)
 static void onconsoledata(struct message *message)
 {
 
-    unsigned char data[MESSAGE_SIZE];
-    unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
+    struct message_consoledata *consoledata = message_validate(MESSAGE_TYPE_CONSOLEDATA, message->data, message->length);
+    unsigned char data[MESSAGE_CONSOLESIZE];
+    unsigned int count = (consoledata) ? buffer_read(data, MESSAGE_CONSOLESIZE, consoledata->data, consoledata->count, 0) : 0;
     unsigned int i;
 
     if (!ethernet || !remote.resolved)

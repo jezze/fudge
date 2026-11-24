@@ -24,12 +24,14 @@ static char savedata[SAVESIZE];
 static void sendcursor(unsigned int position)
 {
 
-    struct {struct message_wmcursor wmcursor; char id[8];} message;
+    struct {struct message_wmcursor wmcursor; char id[MESSAGE_IDSIZE];} message;
+
+    buffer_clear(&message, sizeof (message));
+    buffer_copy(message.id, "content", 7);
 
     message.wmcursor.position = position;
 
-    buffer_write(message.id, 8, "content", 8, 0);
-    channel_send(0, wm, MESSAGE_TYPE_WMCURSOR, sizeof (struct message_wmcursor) + 8, &message);
+    channel_send(0, wm, MESSAGE_TYPE_WMCURSOR, sizeof (message), &message);
 
 }
 
@@ -205,7 +207,7 @@ static unsigned int writefile(void)
     unsigned int saved = 0;
     struct message message;
 
-    channel_send(0, wm, MESSAGE_TYPE_WMREAD, 8, "content");
+    channel_sendid(0, wm, MESSAGE_TYPE_WMREAD, "content");
 
     while (channel_poll(0, wm, MESSAGE_TYPE_WMTEXT, &message) && message.length)
     {

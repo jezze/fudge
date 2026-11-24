@@ -14,7 +14,7 @@
 #define REG_SERDAT_STOP                 0x0100
 #define REG_SERPER                      0x32
 #define REG_SERPER_115200               30
-#define TIMEOUT                         100000
+#define TIMEOUT                         0x1000000
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;

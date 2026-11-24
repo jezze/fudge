@@ -114,7 +114,7 @@ static void flush(void)
     }
 
     video_render(screen, LCD_WIDTH, 1, 1, LCD_WIDTH, LCD_HEIGHT, 0, 0);
-    channel_send(0, wm, MESSAGE_TYPE_WMFLUSH, cstring_length_zero(id), id);
+    channel_sendid(0, wm, MESSAGE_TYPE_WMFLUSH, id);
 
     flushing = 1;
     dirty = 0;

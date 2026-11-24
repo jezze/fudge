@@ -95,7 +95,7 @@
 #define BAUDRATE_57600                  0x0002
 #define BAUDRATE_115200                 0x0001
 #define BUFFERSIZE                      16
-#define TIMEOUT                         100000
+#define TIMEOUT                         0x1000000
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
