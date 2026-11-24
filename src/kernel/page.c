@@ -41,6 +41,13 @@ static unsigned int isvalid(unsigned int page)
 
 }
 
+static void *getdata(unsigned int page)
+{
+
+    return (void *)(base + (unsigned long)(page - 1) * PAGE_SIZE);
+
+}
+
 static void release(unsigned int page)
 {
 
@@ -218,7 +225,7 @@ unsigned int page_deliver(struct mailbox *mailbox, unsigned int event, unsigned 
     if (!page)
         return MESSAGE_FAILED;
 
-    buffer_copy((void *)(base + (unsigned long)(page - 1) * PAGE_SIZE), data, count);
+    buffer_copy(getdata(page), data, count);
 
     status = page_send(mailbox->itask, page, mailbox, event, count, source);
 
@@ -320,7 +327,7 @@ struct page_lease page_borrow(unsigned int source, unsigned int page)
 
         lease.page = page;
         lease.status = MESSAGE_OK;
-        lease.data = (void *)(base + (unsigned long)(page - 1) * PAGE_SIZE);
+        lease.data = getdata(page);
 
     }
 

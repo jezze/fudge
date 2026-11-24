@@ -321,7 +321,7 @@ static unsigned int placepage(unsigned int ichannel, unsigned int target, unsign
 
     buffer_copy(page, data, count);
 
-    if (deliver(ichannel, target, event, count, 0, page_number(page)))
+    if (channel_give(ichannel, target, event, count, page))
         return event;
 
     page_free(page);
@@ -385,6 +385,14 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
     to = route(ichannel, target, event);
 
     return place(ichannel, to.target, to.to, count, data);
+
+}
+
+/* a page this task holds goes to the target as named, unrouted; once given it is the receiver's */
+unsigned int channel_give(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *page)
+{
+
+    return (count <= PAGE_SIZE && deliver(ichannel, target, event, count, 0, page_number(page))) ? event : 0;
 
 }
 

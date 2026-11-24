@@ -1484,7 +1484,7 @@ static void onreadrequest(struct message *message)
     else
         count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, PAGE_SIZE, data);
 
-    page_give(data, message->source, count);
+    channel_give(0, message->source, MESSAGE_TYPE_DATA, count, data);
 
 }
 

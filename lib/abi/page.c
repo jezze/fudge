@@ -2,14 +2,14 @@
 #include "call.h"
 #include "page.h"
 
-static void *getdata(unsigned int page)
+void *page_address(unsigned int page)
 {
 
-    return (page) ? (void *)((unsigned long)PAGE_VBASE + (unsigned long)(page - 1) * PAGE_SIZE) : 0;
+    return (page && page <= PAGE_COUNT) ? (void *)((unsigned long)PAGE_VBASE + (unsigned long)(page - 1) * PAGE_SIZE) : 0;
 
 }
 
-static unsigned int getpage(void *data)
+unsigned int page_number(void *data)
 {
 
     unsigned long address = (unsigned long)data;
@@ -21,25 +21,11 @@ static unsigned int getpage(void *data)
 
 }
 
-void *page_address(unsigned int page)
-{
-
-    return (page <= PAGE_COUNT) ? getdata(page) : 0;
-
-}
-
-unsigned int page_number(void *data)
-{
-
-    return getpage(data);
-
-}
-
 /* the page goes to the target along with a request naming it; this returns the name */
 unsigned int page_hand(void *data, unsigned int target)
 {
 
-    unsigned int page = getpage(data);
+    unsigned int page = page_number(data);
 
     return (page && call_pagehand(page, target) == MESSAGE_OK) ? page : 0;
 
@@ -52,33 +38,21 @@ void *page_alloc(void)
 
     while (!(page = call_pagealloc(PAGE_FLAG_BLOCK)));
 
-    return getdata(page);
+    return page_address(page);
 
 }
 
 void *page_tryalloc(void)
 {
 
-    return getdata(call_pagealloc(0));
-
-}
-
-/* a service in the kernel that cannot take the page now leaves it with this task, as a full mailbox does */
-unsigned int page_give(void *data, unsigned int target, unsigned int count)
-{
-
-    unsigned int status;
-
-    while ((status = call_place(0, target, MESSAGE_TYPE_DATA, count, 0, getpage(data))) == MESSAGE_RETRY);
-
-    return status == MESSAGE_OK;
+    return page_address(call_pagealloc(0));
 
 }
 
 unsigned int page_free(void *data)
 {
 
-    return call_pagefree(getpage(data)) == MESSAGE_OK;
+    return call_pagefree(page_number(data)) == MESSAGE_OK;
 
 }
 

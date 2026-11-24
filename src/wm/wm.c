@@ -3945,7 +3945,7 @@ static void onreadrequest(struct message *message)
     for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
         record_init(&listing->records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
 
-    page_give(listing, message->source, c * sizeof (struct record));
+    channel_give(0, message->source, MESSAGE_TYPE_DATA, c * sizeof (struct record), listing);
 
 }
 

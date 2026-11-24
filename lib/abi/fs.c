@@ -8,7 +8,6 @@
 #define SPAWNCHUNK                      (MESSAGE_SIZE - sizeof (struct message_writerequest))
 #define SPAWNNAMESIZE                   32
 #define FS_NAMESIZE                     32
-#define READSIZE                        0x8000
 
 unsigned int fs_auth(char *path)
 {
@@ -305,7 +304,7 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
 
     }
 
-    while ((message = readreply(ichannel, target, id, READSIZE, offset)) && message->length)
+    while ((message = readreply(ichannel, target, id, PAGE_SIZE, offset)) && message->length)
     {
 
         offset += message->length;

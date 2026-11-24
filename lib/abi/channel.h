@@ -1,4 +1,5 @@
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
+unsigned int channel_give(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *page);
 unsigned int channel_forward(unsigned int ichannel, unsigned int target, unsigned int event, struct message *message);
 unsigned int channel_send_fmt(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, ...);
 unsigned int channel_toolong(void);

@@ -48,7 +48,7 @@ static void onmain(struct message *message)
 
         }
 
-        if (!page_give(block, target, count))
+        if (!channel_give(0, target, MESSAGE_TYPE_DATA, count, block))
         {
 
             page_free(block);

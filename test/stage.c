@@ -48,7 +48,7 @@ static void expand(unsigned int target, struct message *message)
         if (used == PAGE_SIZE)
         {
 
-            page_give(output, target, used);
+            channel_give(0, target, MESSAGE_TYPE_DATA, used, output);
 
             output = 0;
 
@@ -57,7 +57,7 @@ static void expand(unsigned int target, struct message *message)
     }
 
     if (output)
-        page_give(output, target, used);
+        channel_give(0, target, MESSAGE_TYPE_DATA, used, output);
 
 }
 
