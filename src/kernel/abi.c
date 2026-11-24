@@ -260,38 +260,6 @@ static unsigned int pagegive(unsigned int itask, void *stack)
 
 }
 
-static unsigned int pagetake(unsigned int itask, void *stack)
-{
-
-    struct {void *caller; unsigned int ichannel; struct page_handoff *handoff; unsigned int flags;} *args = stack;
-
-    if (args->handoff && checkargs(args->handoff, sizeof (struct page_handoff)))
-    {
-
-        struct page_handoff handoff = page_take(itask, args->ichannel);
-
-        if (handoff.page)
-        {
-
-            buffer_copy(args->handoff, &handoff, sizeof (struct page_handoff));
-
-            return MESSAGE_OK;
-
-        }
-
-        if (args->flags & PAGE_FLAG_BLOCK)
-            kernel_signal(itask, TASK_SIGNAL_BLOCK);
-
-        return MESSAGE_RETRY;
-
-    }
-
-    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "pagetake check failed");
-
-    return MESSAGE_FAILED;
-
-}
-
 static unsigned int pagehand(unsigned int itask, void *stack)
 {
 
@@ -346,7 +314,7 @@ void abi_setup(void)
     abi_setcallback(0x09, announce);
     abi_setcallback(0x0A, pagealloc);
     abi_setcallback(0x0B, pagegive);
-    abi_setcallback(0x0C, pagetake);
+    abi_setcallback(0x0C, debug);
     abi_setcallback(0x0D, pagefree);
     abi_setcallback(0x0E, pagehand);
     abi_setcallback(0x0F, debug);

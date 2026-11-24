@@ -7,7 +7,6 @@ unsigned int call_pagealloc(unsigned int flags);
 unsigned int call_pagefree(unsigned int page);
 unsigned int call_pagehand(unsigned int page, unsigned int target);
 unsigned int call_pagegive(unsigned int page, unsigned int target, unsigned int count);
-unsigned int call_pagetake(unsigned int ichannel, struct page_handoff *handoff, unsigned int flags);
 unsigned int call_pick(unsigned int ichannel, struct message *messages, unsigned int count, unsigned int flags);
 unsigned int call_place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int call_spawn(unsigned int target, unsigned int id);

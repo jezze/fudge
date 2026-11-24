@@ -47,7 +47,6 @@ static unsigned int readfree(void)
 static void onmain(struct message *message)
 {
 
-    struct page_handoff handoff;
     /* services hold pages of their own, such as the disk services' block pages, so what comes back is measured against the start */
     unsigned int before = readfree();
     unsigned int free;
@@ -81,9 +80,6 @@ static void onmain(struct message *message)
             channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "page %u does not keep its bytes\n", &held[i]);
 
     }
-
-    if (call_pagetake(0, &handoff, 0) != MESSAGE_RETRY)
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "take without a page did not ask to retry\n");
 
     if (count && call_pagegive(held[0], message->source, PAGE_SIZE + 1) == MESSAGE_OK)
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "a count larger than a page was given\n");

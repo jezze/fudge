@@ -9,7 +9,6 @@
 .set CALL_INDEX_ANNOUNCE,               0x09
 .set CALL_INDEX_PAGEALLOC,              0x0A
 .set CALL_INDEX_PAGEGIVE,               0x0B
-.set CALL_INDEX_PAGETAKE,               0x0C
 .set CALL_INDEX_PAGEFREE,               0x0D
 .set CALL_INDEX_PAGEHAND,               0x0E
 
@@ -38,5 +37,4 @@ call pagealloc, CALL_INDEX_PAGEALLOC
 call pagefree, CALL_INDEX_PAGEFREE
 call pagehand, CALL_INDEX_PAGEHAND
 call pagegive, CALL_INDEX_PAGEGIVE
-call pagetake, CALL_INDEX_PAGETAKE
 

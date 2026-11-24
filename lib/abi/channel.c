@@ -32,7 +32,6 @@ struct inbox
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
-static unsigned int started;
 static struct message *active[CHANNEL_ACTIVE];
 static unsigned int nactive;
 static unsigned int relieving;
@@ -69,7 +68,6 @@ static void setpipe(struct message *message)
     struct message_pipe *received = message_validate(MESSAGE_TYPE_MAIN, message->data, message->length);
 
     owner = message->source;
-    started = 1;
 
     if (received)
     {
@@ -110,6 +108,10 @@ static void locate(unsigned int ichannel, struct message *message)
 
     unsigned int page = ichannel * MESSAGE_SLOTS + message->slot;
 
+    /* a page given to the task has no slot to find the done flags from */
+    if (message->slot >= MESSAGE_SLOTS)
+        return;
+
     /* the done page follows the slots: found from where any picked message's slot lies */
     inboxes[ichannel].done = (volatile unsigned char *)message->data + MESSAGE_SLOTSIZE * (MESSAGE_PAGES - page) + ichannel * MESSAGE_SLOTS;
 
@@ -125,28 +127,6 @@ static void finish(unsigned int ichannel, struct message *message)
 
 }
 
-static unsigned int isend(struct message *message)
-{
-
-    return message->type == MESSAGE_TYPE_TERM || message->type == MESSAGE_TYPE_STATUS;
-
-}
-
-static unsigned int takepage(unsigned int ichannel, struct message *message)
-{
-
-    struct page_data input = page_trytake(ichannel);
-
-    if (!input.data)
-        return 0;
-
-    message_init(message, MESSAGE_TYPE_DATA, input.source, input.count, input.data);
-
-    message->slot = CHANNEL_SLOTPAGE;
-
-    return 1;
-
-}
 
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
@@ -168,10 +148,8 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     if (status == MESSAGE_OK)
     {
 
-        locate(ichannel, &inbox->messages[inbox->count]);
-
         while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].type)
-            inbox->count++;
+            locate(ichannel, &inbox->messages[inbox->count++]);
 
     }
 
@@ -179,32 +157,18 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
 
 }
 
-/* a program gets no data on channel 0 before its MAIN; mail comes before pages, but TERM and STATUS wait for the pages given before them */
+/* pages come in the mailbox with the mail, in the order all of it was sent */
 static unsigned int take(unsigned int ichannel, struct message *message, unsigned int flags)
 {
 
     struct inbox *inbox = &inboxes[ichannel];
-    unsigned int status = MESSAGE_OK;
 
     channel_done(ichannel);
 
-    for (;;)
+    if (inbox->index == inbox->count)
     {
 
-        if (inbox->index == inbox->count)
-            status = fill(ichannel, inbox, 0);
-
-        if (status == MESSAGE_FAILED)
-            return status;
-
-        if ((ichannel || started) && (inbox->index == inbox->count || isend(&inbox->messages[inbox->index])) && takepage(ichannel, message))
-            return MESSAGE_OK;
-
-        if (inbox->index < inbox->count)
-            break;
-
-        /* mail that came while waiting may be a TERM sent after pages that came with it, so the pages are looked for again */
-        status = fill(ichannel, inbox, flags);
+        unsigned int status = fill(ichannel, inbox, flags);
 
         if (status != MESSAGE_OK)
             return status;
@@ -763,10 +727,13 @@ static void abortdrain(void)
         if (call_pick(i, messages, MESSAGE_SLOTS, 0) != MESSAGE_OK)
             continue;
 
-        locate(i, &messages[0]);
-
         for (j = 0; j < MESSAGE_SLOTS && messages[j].type; j++)
+        {
+
+            locate(i, &messages[j]);
             finish(i, &messages[j]);
+
+        }
 
     }
 

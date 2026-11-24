@@ -56,14 +56,6 @@ static void onmain(struct message *message)
         if (count != expected || !buffer_match(output, first, count))
         {
 
-            struct page_handoff handoff;
-            unsigned int late = 0;
-
-            while (call_pagetake(1, &handoff, 0) == MESSAGE_OK)
-                late++;
-
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%u pages were still queued after the status\n", &late);
-
             flatten(first, expected);
             flatten(output, count);
             channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%s differed in round %u: first [%w] now [%w]\n", commands[index], &round, first, &expected, output, &count);

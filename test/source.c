@@ -61,8 +61,6 @@ static void onmain(struct message *message)
 
     }
 
-    if (!page_give(page_alloc(), target, 0))
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "source could not end the stream\n");
 
 }
 

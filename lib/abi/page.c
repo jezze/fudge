@@ -75,37 +75,6 @@ unsigned int page_give(void *data, unsigned int target, unsigned int count)
 
 }
 
-static struct page_data take(unsigned int ichannel, unsigned int flags)
-{
-
-    struct page_handoff handoff;
-    struct page_data result;
-    unsigned int status;
-
-    while ((status = call_pagetake(ichannel, &handoff, flags)) == MESSAGE_RETRY && flags);
-
-    result.data = (status == MESSAGE_OK) ? getdata(handoff.page) : 0;
-    result.count = (status == MESSAGE_OK) ? handoff.count : 0;
-    result.source = (status == MESSAGE_OK) ? handoff.source : 0;
-
-    return result;
-
-}
-
-struct page_data page_take(unsigned int ichannel)
-{
-
-    return take(ichannel, PAGE_FLAG_BLOCK);
-
-}
-
-struct page_data page_trytake(unsigned int ichannel)
-{
-
-    return take(ichannel, 0);
-
-}
-
 unsigned int page_free(void *data)
 {
 

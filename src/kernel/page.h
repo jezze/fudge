@@ -24,7 +24,7 @@ unsigned int page_getheld(unsigned int itask);
 struct page_info page_getinfo(unsigned int page);
 unsigned int page_alloc(unsigned int itask);
 unsigned int page_give(unsigned int itask, unsigned int page, unsigned int target, unsigned int count, unsigned int source);
-struct page_handoff page_take(unsigned int itask, unsigned int ichannel);
+void page_picked(void *data);
 unsigned int page_free(unsigned int itask, unsigned int page);
 unsigned int page_hand(unsigned int itask, unsigned int page, unsigned int target);
 struct page_lease page_borrow(unsigned int source, unsigned int page);

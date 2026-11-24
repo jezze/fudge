@@ -25,11 +25,37 @@ static unsigned int readfree(void)
 
 }
 
+/* wired as sh would wire it: a stage's input is the one before it, and it passes TERM on to the next when it ends */
+static void start(unsigned int target, unsigned int prev, unsigned int next)
+{
+
+    struct message_pipe pipe;
+
+    message_initpipe(&pipe);
+
+    pipe.prev = prev;
+
+    if (next)
+    {
+
+        pipe.nterms = 1;
+        pipe.terms[0].event = MESSAGE_TYPE_TERM;
+        pipe.terms[0].to = MESSAGE_TYPE_TERM;
+        pipe.terms[0].target = next;
+
+    }
+
+    channel_send(1, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
+
+    if (!prev)
+        channel_send(1, target, MESSAGE_TYPE_TERM, 0, 0);
+
+}
+
 static void onmain(struct message *message)
 {
 
     unsigned int targets[STAGES];
-    struct message_pipe pipe;
     struct message current;
     unsigned int bytes = BYTES;
     unsigned int delay = DELAY;
@@ -62,15 +88,9 @@ static void onmain(struct message *message)
     channel_send_fmt(1, targets[0], MESSAGE_TYPE_OPTION, "target\\0%u\\0bytes\\0%u\\0", &targets[1], &bytes);
     channel_send_fmt(1, targets[1], MESSAGE_TYPE_OPTION, "target\\0%u\\0", &targets[2]);
     channel_send_fmt(1, targets[2], MESSAGE_TYPE_OPTION, "bytes\\0%u\\0delay\\0%u\\0report\\0%u\\0", &bytes, &delay, &report);
-    message_initpipe(&pipe);
-
-    for (i = 0; i < STAGES; i++)
-    {
-
-        channel_send(1, targets[i], MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
-        channel_send(1, targets[i], MESSAGE_TYPE_TERM, 0, 0);
-
-    }
+    start(targets[2], targets[1], 0);
+    start(targets[1], targets[0], targets[2]);
+    start(targets[0], 0, targets[1]);
 
     while (done < STAGES && channel_pick(1, &current))
     {

@@ -7,6 +7,7 @@
 #include "mailbox.h"
 #include "kernel.h"
 #include "debug.h"
+#include "page.h"
 
 static void reclaim(struct mailbox *mailbox)
 {
@@ -48,8 +49,14 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
         buffer_copy(&messages[n], message, sizeof (struct message));
         list_remove_unsafe(&mailbox->queued, item);
 
-        mailbox->done[message->slot] = 0;
-        mailbox->held |= 1 << message->slot;
+        /* a page given to the task has no slot */
+        if (message->slot < MESSAGE_SLOTS)
+        {
+
+            mailbox->done[message->slot] = 0;
+            mailbox->held |= 1 << message->slot;
+
+        }
 
         n++;
 
@@ -144,7 +151,21 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, uns
     spinlock_release(&mailbox->spinlock);
 
     if (n)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < n; i++)
+        {
+
+            if (messages[i].slot == MESSAGE_SLOTS)
+                page_picked(messages[i].data);
+
+        }
+
         return MESSAGE_OK;
+
+    }
 
     if (flags & MESSAGE_FLAG_BLOCK)
         mailbox_sleep(mailbox);

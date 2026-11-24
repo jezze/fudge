@@ -12,7 +12,6 @@
 .set CALL_INDEX_ANNOUNCE,               0x09
 .set CALL_INDEX_PAGEALLOC,              0x0A
 .set CALL_INDEX_PAGEGIVE,               0x0B
-.set CALL_INDEX_PAGETAKE,               0x0C
 .set CALL_INDEX_PAGEFREE,               0x0D
 .set CALL_INDEX_PAGEHAND,               0x0E
 .set CALL_FRAME,                        48
@@ -76,14 +75,6 @@ call_pagegive:
     movl %esi, 12(%rsp)
     movl %edx, 16(%rsp)
     callindex CALL_INDEX_PAGEGIVE
-
-.global call_pagetake
-call_pagetake:
-    subq $CALL_FRAME, %rsp
-    movl %edi, 8(%rsp)
-    movq %rsi, 16(%rsp)
-    movl %edx, 24(%rsp)
-    callindex CALL_INDEX_PAGETAKE
 
 .global call_pick
 call_pick:

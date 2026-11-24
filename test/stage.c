@@ -8,27 +8,30 @@ struct block
 
 };
 
-static unsigned int invert(unsigned int target, struct block *input, unsigned int count)
+/* in place, so the page goes on as it came */
+static void invert(unsigned int target, struct message *message)
 {
 
+    struct block *block = message->data;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
-        input->bytes[i] = ~input->bytes[i];
+    for (i = 0; i < message->length; i++)
+        block->bytes[i] = ~block->bytes[i];
 
-    return page_give(input, target, count);
+    channel_send(0, target, CHANNEL_PAGE, message->length, message->data);
 
 }
 
 /* a filled output page is given away before the next one is taken from the pool */
-static unsigned int expand(unsigned int target, struct block *input, unsigned int count)
+static void expand(unsigned int target, struct message *message)
 {
 
+    struct block *input = message->data;
     struct block *output = 0;
     unsigned int used = 0;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < message->length; i++)
     {
 
         if (!output)
@@ -45,8 +48,7 @@ static unsigned int expand(unsigned int target, struct block *input, unsigned in
         if (used == PAGE_SIZE)
         {
 
-            if (!page_give(output, target, used))
-                return 0;
+            page_give(output, target, used);
 
             output = 0;
 
@@ -54,53 +56,20 @@ static unsigned int expand(unsigned int target, struct block *input, unsigned in
 
     }
 
-    if (output && !page_give(output, target, used))
-        return 0;
-
-    return page_free(input);
+    if (output)
+        page_give(output, target, used);
 
 }
 
-static void onmain(struct message *message)
+static void ondata(struct message *message)
 {
 
     unsigned int target = option_getdecimal("target");
-    unsigned int doubling = cstring_match(option_getstring("mode"), "double");
 
-    for (;;)
-    {
-
-        struct page_data input = page_take(0);
-
-        if (!input.data)
-        {
-
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "stage could not take\n");
-
-            return;
-
-        }
-
-        if (!input.count)
-        {
-
-            if (!page_give(input.data, target, 0))
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "stage could not end the stream\n");
-
-            return;
-
-        }
-
-        if (!((doubling) ? expand(target, input.data, input.count) : invert(target, input.data, input.count)))
-        {
-
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "stage could not give\n");
-
-            return;
-
-        }
-
-    }
+    if (cstring_match(option_getstring("mode"), "double"))
+        expand(target, message);
+    else
+        invert(target, message);
 
 }
 
@@ -109,7 +78,7 @@ void init(void)
 
     option_add("target", "0");
     option_add("mode", "invert");
-    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
 
 }
 

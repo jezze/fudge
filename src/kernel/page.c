@@ -19,21 +19,13 @@ struct pagerow
     unsigned int source;
     unsigned int queued;
     unsigned int next;
+    struct message message;
+    struct list_item item;
 
 };
 
-struct pagequeue
-{
-
-    unsigned int head;
-    unsigned int tail;
-
-};
-
-/* pages are numbered from 1, so row 0 and an empty queue both mean none */
+/* pages are numbered from 1, so row 0 means none; a given page waits in the receiver's mailbox as its own message, in order with the mail */
 static struct pagerow rows[PAGE_COUNT + 1];
-/* pages are given to a channel, like mail, so a task takes them where it waits */
-static struct pagequeue queues[POOL_TASKS][TASK_MAILBOXES];
 static unsigned char waiting[POOL_TASKS];
 /* a page counts against the task that took it from the pool until someone frees it, wherever it is by then */
 static unsigned int charged[POOL_TASKS];
@@ -173,13 +165,13 @@ unsigned int page_alloc(unsigned int itask)
 
 }
 
-static unsigned int givetask(unsigned int itask, unsigned int page, unsigned int target, unsigned int ichannel, unsigned int count, unsigned int source)
+static unsigned int givetask(unsigned int itask, unsigned int page, struct mailbox *mailbox, unsigned int count, unsigned int source)
 {
 
-    struct task *task = pool_gettask(target);
+    struct task *task = pool_gettask(mailbox->itask);
     unsigned int status = MESSAGE_FAILED;
 
-    if (!task || ichannel >= TASK_MAILBOXES)
+    if (!task)
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -188,30 +180,30 @@ static unsigned int givetask(unsigned int itask, unsigned int page, unsigned int
     if (rows[page].owner == itask && !rows[page].queued && task->state != TASK_STATE_DEAD)
     {
 
-        struct pagequeue *queue = &queues[target][ichannel];
-
-        rows[page].owner = target;
+        rows[page].owner = mailbox->itask;
         rows[page].count = count;
         rows[page].source = source;
         rows[page].queued = 1;
-        rows[page].next = 0;
-
-        if (queue->tail)
-            rows[queue->tail].next = page;
-        else
-            queue->head = page;
-
-        queue->tail = page;
         status = MESSAGE_OK;
 
     }
 
     spinlock_release(&spinlock);
 
-    if (status == MESSAGE_OK)
-        kernel_signal(target, TASK_SIGNAL_UNBLOCK);
+    if (status != MESSAGE_OK)
+        return status;
 
-    return status;
+    message_init(&rows[page].message, MESSAGE_TYPE_DATA, source, count, (void *)(PAGE_VBASE + (unsigned long)(page - 1) * PAGE_SIZE));
+
+    rows[page].message.slot = MESSAGE_SLOTS;
+
+    list_inititem(&rows[page].item, &rows[page].message);
+    spinlock_acquire(&mailbox->spinlock);
+    list_add_unsafe(&mailbox->queued, &rows[page].item);
+    spinlock_release(&mailbox->spinlock);
+    kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
+
+    return MESSAGE_OK;
 
 }
 
@@ -248,46 +240,25 @@ unsigned int page_give(unsigned int itask, unsigned int page, unsigned int targe
     if (!isvalid(page) || count > PAGE_SIZE)
         return MESSAGE_FAILED;
 
-    return (mailbox) ? givetask(itask, page, mailbox->itask, mailbox->ichannel, count, source) : giveservice(itask, page, target, count, source);
+    return (mailbox) ? givetask(itask, page, mailbox, count, source) : giveservice(itask, page, target, count, source);
 
 }
 
-struct page_handoff page_take(unsigned int itask, unsigned int ichannel)
+/* the receiver picked the page's message from its mailbox: from now it holds the page */
+void page_picked(void *data)
 {
 
-    struct page_handoff handoff;
+    unsigned long address = (unsigned long)data;
+    unsigned int page = (address >= PAGE_VBASE) ? (address - PAGE_VBASE) / PAGE_SIZE + 1 : 0;
 
-    handoff.page = 0;
-    handoff.count = 0;
-    handoff.source = 0;
-
-    if (ichannel >= TASK_MAILBOXES)
-        return handoff;
+    if (!isvalid(page))
+        return;
 
     spinlock_acquire(&spinlock);
 
-    if (queues[itask][ichannel].head)
-    {
-
-        struct pagequeue *queue = &queues[itask][ichannel];
-        unsigned int page = queue->head;
-
-        queue->head = rows[page].next;
-
-        if (!queue->head)
-            queue->tail = 0;
-
-        rows[page].queued = 0;
-        rows[page].next = 0;
-        handoff.page = page;
-        handoff.count = rows[page].count;
-        handoff.source = rows[page].source;
-
-    }
+    rows[page].queued = 0;
 
     spinlock_release(&spinlock);
-
-    return handoff;
 
 }
 
@@ -385,14 +356,14 @@ unsigned int page_answer(unsigned int target, struct page_lease *lease, unsigned
     if (!mailbox)
         return MESSAGE_FAILED;
 
-    return givetask(mailbox->itask, lease->page, mailbox->itask, mailbox->ichannel, count, source);
+    return givetask(mailbox->itask, lease->page, mailbox, count, source);
 
 }
 
+/* the task's mailboxes were reset already, so pages still waiting in them are released with the rest */
 void page_untask(unsigned int itask)
 {
 
-    unsigned int ichannel;
     unsigned int page;
 
     spinlock_acquire(&spinlock);
@@ -408,14 +379,6 @@ void page_untask(unsigned int itask)
     }
 
     charged[itask] = 0;
-
-    for (ichannel = 0; ichannel < TASK_MAILBOXES; ichannel++)
-    {
-
-        queues[itask][ichannel].head = 0;
-        queues[itask][ichannel].tail = 0;
-
-    }
 
     waiting[itask] = 0;
 
