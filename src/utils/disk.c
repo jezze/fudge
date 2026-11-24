@@ -3,6 +3,8 @@
 #include <disk.h>
 
 static struct message_blockinfo blockinfo;
+/* the page block data goes in and out through */
+static unsigned long blockbuffer;
 
 static void printpartition(unsigned int source, struct mbr_partition *partition)
 {
@@ -35,7 +37,7 @@ static unsigned int readblock(unsigned int block, unsigned int lba)
 
     request.sector = lba * (blockinfo.blocksize / MESSAGE_SECTORSIZE);
     request.count = blockinfo.blocksize;
-    request.target = 0;
+    request.page = page_number((void *)blockbuffer);
 
     channel_send(1, block, MESSAGE_TYPE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request);
     return channel_wait(1, block, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response) && response.count == request.count;
@@ -80,7 +82,7 @@ static void printgpt(unsigned int source, unsigned int block)
         unsigned int entrycount;
         unsigned int i;
 
-        buffer_copy(&header, (void *)blockinfo.buffer, sizeof (struct gpt_header));
+        buffer_copy(&header, (void *)blockbuffer, sizeof (struct gpt_header));
 
         if (!gpt_validate(&header))
             return;
@@ -101,7 +103,7 @@ static void printgpt(unsigned int source, unsigned int block)
             if (entryoffset % blockinfo.blocksize == 0 && !readblock(block, lba + entryoffset / blockinfo.blocksize))
                 break;
 
-            entry = (struct gpt_entry *)(blockinfo.buffer + entryoffset % blockinfo.blocksize);
+            entry = (struct gpt_entry *)(blockbuffer + entryoffset % blockinfo.blocksize);
 
             if (gpt_isused(entry))
                 printentry(source, i, entry);
@@ -160,7 +162,7 @@ static void onmain(struct message *message)
         if (readblock(block, 0))
         {
 
-            buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
+            buffer_copy(&mbr, (void *)blockbuffer, sizeof (struct mbr));
 
             if (mbr_validate(&mbr))
             {
@@ -185,6 +187,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
+    blockbuffer = (unsigned long)page_alloc();
     option_add("block-service", "block:0");
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
 

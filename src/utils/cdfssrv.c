@@ -42,6 +42,8 @@ struct span
 };
 
 static struct message_blockinfo blockinfo;
+/* the page block data goes in and out through */
+static unsigned long blockbuffer;
 static unsigned int block;
 static unsigned int partsector;
 static unsigned int root;
@@ -50,14 +52,14 @@ static unsigned int suspskip;
 static unsigned char cache[CDFS_SECTORSIZE];
 static unsigned int cached;
 
-static unsigned int sendblockrequest(unsigned int sector, unsigned int count, unsigned int target)
+static unsigned int sendblockrequest(unsigned int sector, unsigned int count)
 {
 
     struct message_blockrequest request;
 
     request.sector = partsector + sector * (CDFS_SECTORSIZE / MESSAGE_SECTORSIZE);
     request.count = count;
-    request.target = target;
+    request.page = page_number((void *)blockbuffer);
 
     if (channel_send(1, block, MESSAGE_TYPE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request))
     {
@@ -78,10 +80,10 @@ static unsigned int readsector(unsigned int sector)
     if (cached != sector + 1)
     {
 
-        if (sendblockrequest(sector, CDFS_SECTORSIZE, 0) != CDFS_SECTORSIZE)
+        if (sendblockrequest(sector, CDFS_SECTORSIZE) != CDFS_SECTORSIZE)
             return 0;
 
-        buffer_copy(cache, (void *)blockinfo.buffer, CDFS_SECTORSIZE);
+        buffer_copy(cache, (void *)blockbuffer, CDFS_SECTORSIZE);
 
         cached = sector + 1;
 
@@ -437,7 +439,7 @@ static struct span getspan(struct node *node, unsigned int offset, unsigned int 
 {
 
     unsigned int skip = offset % CDFS_SECTORSIZE;
-    unsigned int room = blockinfo.buffersize - blockinfo.buffersize % CDFS_SECTORSIZE - skip;
+    unsigned int room = PAGE_SIZE - PAGE_SIZE % CDFS_SECTORSIZE - skip;
     struct span span;
 
     span.count = count;
@@ -466,8 +468,8 @@ static unsigned int readfile(struct node *node, unsigned int offset, unsigned in
 
         struct span span = getspan(node, offset, count, capacity);
 
-        if (sendblockrequest(span.sector, span.sectors * CDFS_SECTORSIZE, 0) == span.sectors * CDFS_SECTORSIZE)
-            return buffer_write(data, capacity, (char *)blockinfo.buffer + offset % CDFS_SECTORSIZE, span.count, 0);
+        if (sendblockrequest(span.sector, span.sectors * CDFS_SECTORSIZE) == span.sectors * CDFS_SECTORSIZE)
+            return buffer_write(data, capacity, (char *)blockbuffer + offset % CDFS_SECTORSIZE, span.count, 0);
 
     }
 
@@ -647,6 +649,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
+    blockbuffer = (unsigned long)page_alloc();
     option_add("service", "cdfs");
     option_add("block-service", "block:0");
     option_add("partsector", "0");

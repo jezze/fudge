@@ -48,12 +48,11 @@ static void onmain(struct message *message)
 {
 
     struct page_handoff handoff;
-    unsigned int free = readfree();
+    /* services hold pages of their own, such as the disk services' block pages, so what comes back is measured against the start */
+    unsigned int before = readfree();
+    unsigned int free;
     unsigned int count;
     unsigned int i;
-
-    if (free != PAGE_COUNT)
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%u pages free at start\n", &free);
 
     count = allocall();
 
@@ -103,10 +102,10 @@ static void onmain(struct message *message)
 
     free = readfree();
 
-    if (free != PAGE_COUNT)
+    if (free != before)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%u pages free at the end\n", &free);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%u pages free at the end, %u at the start\n", &free, &before);
         system_run(message->source, "mq -query .held -format \"held page {page} owner {owner} origin {origin} queued {queued} count {count} source {source}\" sysinfo:pages.mq");
 
     }

@@ -7,6 +7,8 @@
 #define UNITSIZE                        260
 
 static struct message_blockinfo blockinfo;
+/* the page block data goes in and out through */
+static unsigned long blockbuffer;
 static unsigned int block;
 static unsigned int partsector;
 static unsigned int sectorsize;
@@ -35,7 +37,7 @@ static void sendblockrequest(unsigned int event, unsigned int reply, unsigned in
 
     request.sector = partsector + sector * (sectorsize / MESSAGE_SECTORSIZE);
     request.count = count * sectorsize;
-    request.target = 0;
+    request.page = page_number((void *)blockbuffer);
 
     if (channel_send(1, block, event, sizeof (struct message_blockrequest), &request))
         channel_wait(1, block, reply, sizeof (struct message_blockresponse), &response);
@@ -47,7 +49,7 @@ static void *readsectors(unsigned int sector, unsigned int count)
 
     sendblockrequest(MESSAGE_TYPE_BLOCKREADREQUEST, MESSAGE_TYPE_BLOCKREADRESPONSE, sector, count);
 
-    return (void *)blockinfo.buffer;
+    return (void *)blockbuffer;
 
 }
 
@@ -246,14 +248,14 @@ static unsigned int allocate(void)
         if (!used)
         {
 
-            unsigned int chunk = blockinfo.buffersize / sectorsize;
+            unsigned int chunk = PAGE_SIZE / sectorsize;
             unsigned int i;
 
             nextfree = cluster - 1;
 
             setcluster(cluster, FAT_CLUSTER_MASK);
             addfree(0, 1);
-            buffer_clear((void *)blockinfo.buffer, (clustersize < blockinfo.buffersize) ? clustersize : blockinfo.buffersize);
+            buffer_clear((void *)blockbuffer, (clustersize < PAGE_SIZE) ? clustersize : PAGE_SIZE);
 
             for (i = 0; i < clustersize / sectorsize; i += chunk)
                 writesectors(clustersector(cluster) + i, (clustersize / sectorsize - i < chunk) ? clustersize / sectorsize - i : chunk);
@@ -834,8 +836,8 @@ static unsigned int readfile(unsigned int first, unsigned int size, unsigned int
         if (count > size - offset)
             count = size - offset;
 
-        if (count > blockinfo.buffersize - skip)
-            count = blockinfo.buffersize - skip;
+        if (count > PAGE_SIZE - skip)
+            count = PAGE_SIZE - skip;
 
         cluster = findcluster(first, offset / clustersize, 0);
 
@@ -1238,8 +1240,8 @@ static unsigned int writerange(unsigned int first, unsigned int offset, unsigned
         if (length > clustersize - position % clustersize)
             length = clustersize - position % clustersize;
 
-        if (length > blockinfo.buffersize - skip)
-            length = blockinfo.buffersize - skip;
+        if (length > PAGE_SIZE - skip)
+            length = PAGE_SIZE - skip;
 
         sectors = (skip + length + sectorsize - 1) / sectorsize;
         sector = clustersector(cluster) + (position % clustersize) / sectorsize;
@@ -1248,9 +1250,9 @@ static unsigned int writerange(unsigned int first, unsigned int offset, unsigned
             readsectors(sector, sectors);
 
         if (buffer)
-            buffer_copy((char *)blockinfo.buffer + skip, (char *)buffer + total, length);
+            buffer_copy((char *)blockbuffer + skip, (char *)buffer + total, length);
         else
-            buffer_clear((char *)blockinfo.buffer + skip, length);
+            buffer_clear((char *)blockbuffer + skip, length);
 
         writesectors(sector, sectors);
 
@@ -1607,6 +1609,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
+    blockbuffer = (unsigned long)page_alloc();
     option_add("service", "fat");
     option_add("block-service", "block:0");
     option_add("clock-service", "clock:0");

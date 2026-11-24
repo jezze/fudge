@@ -182,8 +182,8 @@ static unsigned int writeblock(unsigned int block, unsigned int *buffer)
 static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
-    unsigned int *buffer = (unsigned int *)kernel_getbuffer(session->target);
-    unsigned int count = (session->count > TASK_BUFFERSIZE) ? TASK_BUFFERSIZE : session->count;
+    unsigned int *buffer = (unsigned int *)session->buffer;
+    unsigned int count = (session->count > PAGE_SIZE) ? PAGE_SIZE : session->count;
     unsigned int i;
 
     count -= count % BLOCKSIZE;

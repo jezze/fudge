@@ -143,7 +143,7 @@ static void handleirq(unsigned int irq)
 static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
-    void *buffer = (void *)kernel_getbuffer(session->target);
+    void *buffer = (void *)session->buffer;
 
     if (!buffer)
     {
@@ -164,8 +164,8 @@ static unsigned int blockinterface_startsession(struct block_session *session)
     active = 1;
     blockbuffer = buffer;
 
-    if (session->count > TASK_BUFFERSIZE)
-        session->count = TASK_BUFFERSIZE;
+    if (session->count > PAGE_SIZE)
+        session->count = PAGE_SIZE;
 
     if (dma)
     {

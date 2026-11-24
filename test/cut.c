@@ -36,6 +36,7 @@ static void onmain(struct message *message)
     unsigned int report = REPORT;
     unsigned int count = 0;
     unsigned int killed = 0;
+    unsigned int before = readfree();
     unsigned int done = 0;
     unsigned int i;
 
@@ -115,10 +116,10 @@ static void onmain(struct message *message)
 
     }
 
-    for (i = 0; i < TRIES && (count = readfree()) != PAGE_COUNT; i++);
+    for (i = 0; i < TRIES && (count = readfree()) != before; i++);
 
-    if (count != PAGE_COUNT)
-        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "only %u pages came back\n", &count);
+    if (count != before)
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "only %u of %u pages came back\n", &count, &before);
 
 }
 

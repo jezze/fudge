@@ -5,6 +5,8 @@
 #define SERVICE_PATHSIZE                64
 
 static struct message_blockinfo blockinfo;
+/* the page block data goes in and out through */
+static unsigned long blockbuffer;
 static unsigned char gptefi[16] = {0x28, 0x73, 0x2A, 0xC1, 0x1F, 0xF8, 0xD2, 0x11, 0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B};
 static unsigned char gptbasic[16] = {0xA2, 0xA0, 0xD0, 0xEB, 0xE5, 0xB9, 0x33, 0x44, 0x87, 0xC0, 0x68, 0xB6, 0xB7, 0x26, 0x99, 0xC7};
 static unsigned char gptlinux[16] = {0xAF, 0x3D, 0xC6, 0x0F, 0x83, 0x84, 0x72, 0x47, 0x8E, 0x79, 0x3D, 0x69, 0xD8, 0x47, 0x7D, 0xE4};
@@ -17,7 +19,7 @@ static unsigned int sendblockreadrequest(unsigned int target, unsigned int secto
 
     request.sector = sector;
     request.count = count;
-    request.target = 0;
+    request.page = page_number((void *)blockbuffer);
 
     channel_send(1, target, MESSAGE_TYPE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request);
     return (channel_wait(1, target, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response)) ? response.count : 0;
@@ -45,7 +47,7 @@ static void mountfat(unsigned int source, unsigned int target, unsigned int sect
 
     sendblockreadrequest(target, sector, 512);
 
-    if (fat_validate((struct fat *)blockinfo.buffer))
+    if (fat_validate((struct fat *)blockbuffer))
         system_run(source, "initrd:bin/fatsrv -service %s -block-service %s:%u -partsector %u &", name, service, &index, &sector);
 
 }
@@ -55,7 +57,7 @@ static void mountext2(unsigned int source, unsigned int target, unsigned int sec
 
     sendblockreadrequest(target, sector + 1024 / MESSAGE_SECTORSIZE, 1024);
 
-    if (ext2_validate((struct ext2_superblock *)blockinfo.buffer))
+    if (ext2_validate((struct ext2_superblock *)blockbuffer))
         system_run(source, "initrd:bin/ext2srv -service %s -block-service %s:%u -partsector %u &", name, service, &index, &sector);
 
 }
@@ -63,7 +65,7 @@ static void mountext2(unsigned int source, unsigned int target, unsigned int sec
 static unsigned int mountcdfs(unsigned int source, unsigned int target, char *name, char *service, unsigned int index)
 {
 
-    if (sendblockreadrequest(target, CDFS_DESCRIPTORSECTOR * (CDFS_SECTORSIZE / MESSAGE_SECTORSIZE), CDFS_SECTORSIZE) == CDFS_SECTORSIZE && cdfs_validate((struct cdfs_descriptor *)blockinfo.buffer))
+    if (sendblockreadrequest(target, CDFS_DESCRIPTORSECTOR * (CDFS_SECTORSIZE / MESSAGE_SECTORSIZE), CDFS_SECTORSIZE) == CDFS_SECTORSIZE && cdfs_validate((struct cdfs_descriptor *)blockbuffer))
         return system_run(source, "initrd:bin/cdfssrv -service %s -block-service %s:%u &", name, service, &index);
 
     return 0;
@@ -117,7 +119,7 @@ static void mountgpt(unsigned int source, unsigned int target, unsigned int ipar
         unsigned int first;
         unsigned int last;
 
-        buffer_copy(&header, (void *)blockinfo.buffer, sizeof (struct gpt_header));
+        buffer_copy(&header, (void *)blockbuffer, sizeof (struct gpt_header));
 
         if (!gpt_validate(&header) || ipartition >= gpt_read32(header.entrycount))
             return;
@@ -127,7 +129,7 @@ static void mountgpt(unsigned int source, unsigned int target, unsigned int ipar
         if (sendblockreadrequest(target, (gpt_read32(header.entrylba) + entryoffset / blockinfo.blocksize) * getsectors(), blockinfo.blocksize) != blockinfo.blocksize)
             return;
 
-        buffer_copy(&entry, (void *)(blockinfo.buffer + entryoffset % blockinfo.blocksize), sizeof (struct gpt_entry));
+        buffer_copy(&entry, (void *)(blockbuffer + entryoffset % blockinfo.blocksize), sizeof (struct gpt_entry));
 
         first = gpt_read32(entry.firstlba);
         last = gpt_read32(entry.lastlba);
@@ -174,7 +176,7 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
 
         struct mbr mbr;
 
-        buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
+        buffer_copy(&mbr, (void *)blockbuffer, sizeof (struct mbr));
 
         if (!mbr_validate(&mbr))
             return;
@@ -198,6 +200,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
+    blockbuffer = (unsigned long)page_alloc();
     option_add("service", "block");
     option_add("index", "0");
     option_add("partition", "0");

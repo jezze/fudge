@@ -17,7 +17,7 @@
 #define ATTEMPTS                        3
 #define ID_CAPABILITIES                 49
 #define ID_CAPABILITIES_DMA             (1 << 8)
-#define BOUNCESIZE                      (TASK_BUFFERSIZE + BLOCKSIZE)
+#define BOUNCESIZE                      (PAGE_SIZE + BLOCKSIZE)
 
 static struct base_driver driver;
 static struct block_interface blockinterface;
@@ -154,11 +154,11 @@ static void handleirq(unsigned int irq)
 static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
-    void *buffer = (void *)kernel_getbuffer(session->target);
+    void *buffer = (void *)session->buffer;
     unsigned int lba = session->sector / (BLOCKSIZE / MESSAGE_SECTORSIZE);
 
-    if (session->count > TASK_BUFFERSIZE)
-        session->count = TASK_BUFFERSIZE;
+    if (session->count > PAGE_SIZE)
+        session->count = PAGE_SIZE;
 
     if (!buffer || session->type != BLOCK_TYPE_READ || !session->count)
     {

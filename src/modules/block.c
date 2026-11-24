@@ -12,8 +12,6 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
 
         struct message_blockinfo blockinfo;
 
-        blockinfo.buffer = KERNEL_VBUFFER;
-        blockinfo.buffersize = TASK_BUFFERSIZE;
         blockinfo.blocksize = interface->blocksize;
         blockinfo.blockcount = interface->blockcount;
 
@@ -34,8 +32,9 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
     {
 
         struct block_session *session = &interface->sessions[0];
+        struct page_lease lease = page_borrow(source, request->page);
 
-        if (request->target && !kernel_getbuffer(request->target))
+        if (lease.status != MESSAGE_OK)
             return MESSAGE_FAILED;
 
         if (!session->source)
@@ -46,11 +45,12 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
             if (status != MESSAGE_OK)
                 return status;
 
+            /* the driver fills the page the requester brought, which stays the requester's */
             session->type = BLOCK_TYPE_READ;
             session->source = source;
-            session->target = (request->target) ? request->target : source;
+            session->buffer = (unsigned long)lease.data;
             session->sector = request->sector;
-            session->count = request->count;
+            session->count = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
             session->offset = 0;
 
             status = interface->startsession(session);
@@ -85,6 +85,10 @@ static unsigned int onblockwriterequest(struct block_interface *interface, unsig
     {
 
         struct block_session *session = &interface->sessions[0];
+        struct page_lease lease = page_borrow(source, request->page);
+
+        if (lease.status != MESSAGE_OK)
+            return MESSAGE_FAILED;
 
         if (!session->source)
         {
@@ -96,9 +100,9 @@ static unsigned int onblockwriterequest(struct block_interface *interface, unsig
 
             session->type = BLOCK_TYPE_WRITE;
             session->source = source;
-            session->target = source;
+            session->buffer = (unsigned long)lease.data;
             session->sector = request->sector;
-            session->count = request->count;
+            session->count = (request->count < PAGE_SIZE) ? request->count : PAGE_SIZE;
             session->offset = 0;
 
             status = interface->startsession(session);

@@ -315,8 +315,6 @@ struct message_audioinfo
 struct message_blockinfo
 {
 
-    unsigned long buffer;
-    unsigned int buffersize;
     unsigned int blocksize;
     unsigned int blockcount;
 
@@ -327,7 +325,7 @@ struct message_blockrequest
 
     unsigned int count;
     unsigned int sector;
-    unsigned int target;
+    unsigned int page;
 
 };
 
