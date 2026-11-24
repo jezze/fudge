@@ -91,7 +91,7 @@ static void onmain(struct message *message)
 
             break;
 
-        case MESSAGE_TYPE_DATA:
+        case MESSAGE_TYPE_READY:
             if (i == 0)
             {
 

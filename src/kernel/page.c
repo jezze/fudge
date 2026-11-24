@@ -208,6 +208,27 @@ unsigned int page_send(unsigned int itask, unsigned int page, struct mailbox *ma
 
 }
 
+/* data placed by the kernel for a task: the page is taken for the receiver and counts against it; at its limit the message fails, as into a full mailbox */
+unsigned int page_deliver(struct mailbox *mailbox, unsigned int event, unsigned int source, unsigned int count, void *data)
+{
+
+    unsigned int page = (count <= PAGE_SIZE) ? page_alloc(mailbox->itask) : 0;
+    unsigned int status;
+
+    if (!page)
+        return MESSAGE_FAILED;
+
+    buffer_copy((void *)(base + (unsigned long)(page - 1) * PAGE_SIZE), data, count);
+
+    status = page_send(mailbox->itask, page, mailbox, event, count, source);
+
+    if (status != MESSAGE_OK)
+        page_free(mailbox->itask, page);
+
+    return status;
+
+}
+
 /* the receiver picked the page's message from its mailbox: from now it holds the page */
 void page_picked(void *data)
 {

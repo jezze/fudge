@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-/* sends a window of mail from channel 0 before reading any echo; a full channel 0 is relieved while sending */
+/* control mail, so the mailbox is what is tested: sends a window of it from channel 0 before reading any echo; a full channel 0 is relieved while sending */
 #define WINDOW                          (MESSAGE_SLOTS * 4)
 
 static unsigned int peer;
@@ -79,7 +79,7 @@ static void onmain(struct message *message)
     }
 
     for (i = 0; i < WINDOW; i++)
-        channel_send(0, peer, MESSAGE_TYPE_DATA, sizeof (unsigned int), &i);
+        channel_send(0, peer, MESSAGE_TYPE_INFO, sizeof (unsigned int), &i);
 
     while (received < WINDOW && channel_process(0));
 
@@ -97,7 +97,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
-    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_INFO, ondata);
     channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }

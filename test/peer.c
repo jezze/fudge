@@ -4,7 +4,7 @@
 static void ondata(struct message *message)
 {
 
-    channel_send(0, message->source, MESSAGE_TYPE_DATA, message->length, message->data);
+    channel_send(0, message->source, message->type, message->length, message->data);
 
 }
 
@@ -12,6 +12,7 @@ void init(void)
 {
 
     channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_INFO, ondata);
 
 }
 

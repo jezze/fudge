@@ -33,6 +33,29 @@ void message_initpipe(struct message_pipe *pipe)
 
 }
 
+/* data goes in pages; every other message is control, carried in the mailbox */
+unsigned int message_isdata(unsigned int type)
+{
+
+    switch (type)
+    {
+
+    case MESSAGE_TYPE_DATA:
+    case MESSAGE_TYPE_QUERYREQUEST:
+    case MESSAGE_TYPE_QUERYRESPONSE:
+    case MESSAGE_TYPE_VIDEOCMAP:
+    case MESSAGE_TYPE_LOGINFO:
+    case MESSAGE_TYPE_STATRESPONSE:
+    case MESSAGE_TYPE_WMTEXT:
+    case MESSAGE_TYPE_CONFIG:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 void *message_validate(unsigned int type, void *data, unsigned int count)
 {
 

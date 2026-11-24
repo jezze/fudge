@@ -40,7 +40,7 @@ static void showimage(void)
     if (!wm || !path[0])
         return;
 
-    channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"Image Viewer (%s)\"\n= frame flow \"%s\"\n", path + fs_dirlength(path), flows[mode]);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= window label \"Image Viewer (%s)\"\n= frame flow \"%s\"\n", path + fs_dirlength(path), flows[mode]);
 
     if (memid)
     {
@@ -52,7 +52,7 @@ static void showimage(void)
         size[count] = 0;
 
         if (count)
-            channel_send_fmt(0, wm, CHANNEL_PAGE, "= image source \"mem:%s\" %s", memname, size);
+            channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= image source \"mem:%s\" %s", memname, size);
 
     }
 
@@ -104,7 +104,7 @@ static void onpath(struct message *message)
 {
 
     if (path[0])
-        channel_send_fmt(0, wm, CHANNEL_PAGE, "= image source \"\"\n");
+        channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= image source \"\"\n");
 
     cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
     showimage();
@@ -133,7 +133,7 @@ static void onwmevent(struct message *message)
 
             }
 
-            channel_send_fmt(0, message->source, CHANNEL_PAGE, "= mode label \"%s\"\n= frame flow \"%s\"\n", labels[mode], flows[mode]);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "= mode label \"%s\"\n= frame flow \"%s\"\n", labels[mode], flows[mode]);
 
         }
 

@@ -567,7 +567,7 @@ static void showwindow(char *path)
     unsigned int height = VISIBLE_SCANLINES;
 
     channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-    channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"NES (%s)\"\n= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", path + fs_dirlength(path), screenname, &width, &height);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= window label \"NES (%s)\"\n= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", path + fs_dirlength(path), screenname, &width, &height);
 
 }
 

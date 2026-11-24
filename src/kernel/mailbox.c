@@ -81,6 +81,9 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
 
     unsigned int status = MESSAGE_FAILED;
 
+    if (mailbox->itask && message_isdata(event))
+        return page_deliver(mailbox, event, source, count, data);
+
     if (count > MESSAGE_SLOTSIZE)
         debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "Mail of %u bytes does not fit a slot", &count);
 

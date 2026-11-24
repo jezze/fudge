@@ -1,6 +1,3 @@
-/* an event no mail has: data sent with it goes as DATA in a page */
-#define CHANNEL_PAGE                    0x100
-
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int channel_send_fmt(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, ...);
 unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, void **args);

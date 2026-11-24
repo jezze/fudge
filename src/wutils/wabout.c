@@ -718,7 +718,7 @@ static void onmain(struct message *message)
             setupgraphics();
             setupsound();
             setupaudio();
-            channel_send_fmt(0, wm, CHANNEL_PAGE, "= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &width, &height);
+            channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &width, &height);
             channel_send(0, timer, MESSAGE_TYPE_LINK, 0, 0);
 
         }

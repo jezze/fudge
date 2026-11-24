@@ -770,7 +770,7 @@ static void showwindow(void)
     char *alfi = "initrd:data/alfi/doom.alfi";
 
     channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-    channel_send_fmt(0, wm, CHANNEL_PAGE, "= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
 
 }
 

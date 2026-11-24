@@ -995,7 +995,7 @@ static void render(void)
         return;
 
     fs_munmap(1, image->target, image->id);
-    channel_send_fmt(0, wm, CHANNEL_PAGE, "= page source \"mem:%s\" width \"%u\" height \"%u\"\n", image->name, &viewwidth, &height);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= page source \"mem:%s\" width \"%u\" height \"%u\"\n", image->name, &viewwidth, &height);
 
     nextimage = (nextimage + 1) % IMAGES;
 
@@ -1013,19 +1013,19 @@ static void showstate(void)
         title[0] = '\0';
 
     if (title[0])
-        channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"%s - Browser\"\n", title);
+        channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= window label \"%s - Browser\"\n", title);
     else
-        channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"Browser\"\n");
+        channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= window label \"Browser\"\n");
 
     copystring(typed, URLSIZE, current, cstring_length(current));
-    channel_send_fmt(0, wm, CHANNEL_PAGE, "= address label \"%s\"\n= back mode \"%s\"\n= forward mode \"%s\"\n", current, (historyindex > 0) ? "normal" : "disabled", (historyindex + 1 < historycount) ? "normal" : "disabled");
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= address label \"%s\"\n= back mode \"%s\"\n= forward mode \"%s\"\n", current, (historyindex > 0) ? "normal" : "disabled", (historyindex + 1 < historycount) ? "normal" : "disabled");
 
 }
 
 static void showscheme(void)
 {
 
-    channel_send_fmt(0, wm, CHANNEL_PAGE, "= scheme label \"%s\"\n", (scheme == CSS_SCHEME_DARK) ? "Light" : "Dark");
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= scheme label \"%s\"\n", (scheme == CSS_SCHEME_DARK) ? "Light" : "Dark");
 
 }
 
@@ -1170,7 +1170,7 @@ static void navigate(char *url, unsigned int push)
         pushhistory(target);
 
     copystring(current, URLSIZE, target, cstring_length(target));
-    channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"Loading - Browser\"\n");
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= window label \"Loading - Browser\"\n");
 
     copystring(fetched, URLSIZE, target, cstring_length(target));
 

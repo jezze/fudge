@@ -15,8 +15,6 @@
 #define CHANNEL_SLOTKEPT                (MESSAGE_SLOTS + 1)
 /* handlers may run inside handlers, as relieve does */
 #define CHANNEL_ACTIVE                  8
-/* a payload larger than this goes in a page; everything an event or a reply carries fits */
-#define CHANNEL_INLINE                  64
 
 struct inbox
 {
@@ -375,8 +373,21 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
     unsigned int status;
 
-    if (count > CHANNEL_INLINE)
+    if (message_isdata(event))
         return placepage(ichannel, target, event, count, data);
+
+    /* control is small and never cut short: one too large fails, and the receiver learns why */
+    if (count > MESSAGE_SLOTSIZE)
+    {
+
+        char *error = "Control message too long\n";
+
+        while (call_place(ichannel, target, MESSAGE_TYPE_ERROR, cstring_length(error), error, 0) == MESSAGE_RETRY)
+            relieve();
+
+        return 0;
+
+    }
 
     while ((status = call_place(ichannel, target, event, count, data, 0)) == MESSAGE_RETRY)
         relieve();
@@ -388,9 +399,6 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    if (event == CHANNEL_PAGE)
-        return placepage(ichannel, target, MESSAGE_TYPE_DATA, count, data);
-
     if (event == MESSAGE_TYPE_ERROR && status == MESSAGE_STATUS_OK)
         status = MESSAGE_STATUS_ERROR;
 
@@ -398,9 +406,6 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
     {
 
         struct message_route *route = findroute(event);
-
-        if (route && route->to == MESSAGE_TYPE_DATA)
-            return placepage(ichannel, resolve(route->target), MESSAGE_TYPE_DATA, count, data);
 
         if (route)
             return place(ichannel, resolve(route->target), route->to, count, data);

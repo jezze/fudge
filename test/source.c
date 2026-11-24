@@ -27,8 +27,9 @@ static void onmain(struct message *message)
         if (!block)
         {
 
+            /* control, so it needs no page of the ones this task has run out of */
             if (!announced++)
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "source waiting\n");
+                channel_send(0, message->source, MESSAGE_TYPE_READY, 0, 0);
 
             block = page_alloc();
 

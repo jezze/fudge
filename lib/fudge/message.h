@@ -541,4 +541,5 @@ struct message_clockinfo
 
 void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, void *data);
 void message_initpipe(struct message_pipe *pipe);
+unsigned int message_isdata(unsigned int type);
 void *message_validate(unsigned int type, void *data, unsigned int count);

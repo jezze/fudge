@@ -326,7 +326,7 @@ static void flush(void)
 {
 
     if (outcount)
-        channel_send(0, wm, CHANNEL_PAGE, outcount, out);
+        channel_send(0, wm, MESSAGE_TYPE_DATA, outcount, out);
 
     outcount = 0;
 
@@ -1809,7 +1809,7 @@ static void onpath(struct message *message)
 
     }
 
-    channel_send_fmt(0, wm, CHANNEL_PAGE, "= save mode \"normal\"\n= %s label \"%s\"\n", selecting, path);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= save mode \"normal\"\n= %s label \"%s\"\n", selecting, path);
 
 }
 
@@ -1915,11 +1915,11 @@ static void onwmevent(struct message *message)
 
                 char data[512];
 
-                channel_send(0, message->source, CHANNEL_PAGE, writenetworkfields(data, 512, 0, getselected(&config.network)), data);
+                channel_send(0, message->source, MESSAGE_TYPE_DATA, writenetworkfields(data, 512, 0, getselected(&config.network)), data);
 
             }
 
-            channel_send_fmt(0, message->source, CHANNEL_PAGE, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
 
         }
 
@@ -1930,7 +1930,7 @@ static void onwmevent(struct message *message)
 
             setfield(id, kv_getstring(event, "value="));
 
-            channel_send_fmt(0, message->source, CHANNEL_PAGE, "= save mode \"normal\"\n");
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "= save mode \"normal\"\n");
 
         }
 
@@ -1952,7 +1952,7 @@ static void onwmevent(struct message *message)
             else if (devices && getselected(devices))
                 getselected(devices)->enabled = enabled;
 
-            channel_send_fmt(0, message->source, CHANNEL_PAGE, "= %s-enabled label \"%s\"\n= save mode \"normal\"\n", kind, (enabled) ? "On" : "Off");
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "= %s-enabled label \"%s\"\n= save mode \"normal\"\n", kind, (enabled) ? "On" : "Off");
 
         }
 
@@ -1965,7 +1965,7 @@ static void onwmevent(struct message *message)
             if (index < config.ncolors)
                 copystring(config.colors[index].value, 16, value, cstring_length(value));
 
-            channel_send_fmt(0, message->source, CHANNEL_PAGE, "= s%u color \"%s\"\n= save mode \"normal\"\n", &index, value);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "= s%u color \"%s\"\n= save mode \"normal\"\n", &index, value);
 
         }
 
@@ -1975,7 +1975,7 @@ static void onwmevent(struct message *message)
             static char data[0x8000];
 
             if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(option_getstring("video-config"), data, writevideo(data, 0x8000)) && savefile(option_getstring("keyboard-config"), data, writekeyboard(data, 0x8000)) && savefile(option_getstring("mouse-config"), data, writemouse(data, 0x8000)) && savefile(option_getstring("touch-config"), data, writetouch(data, 0x8000)) && savefile(config.bindingpath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)) && savefile(option_getstring("audio-config"), data, writeaudio(data, 0x8000)) && savefile(option_getstring("localization-config"), data, writelocalization(data, 0x8000)) && savefile(option_getstring("network-config"), data, writenetwork(data, 0x8000)))
-                channel_send_fmt(0, message->source, CHANNEL_PAGE, "= save mode \"disabled\"\n");
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "= save mode \"disabled\"\n");
 
         }
 

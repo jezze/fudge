@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-/* the same window as window0 but from channel 1, where echoes pile up while this task is still sending */
+/* control mail, so the mailbox is what is tested: the same window as window0 but from channel 1, where echoes pile up while this task is still sending */
 #define WINDOW                          (MESSAGE_SLOTS * 4)
 
 static unsigned int start(void)
@@ -50,14 +50,14 @@ static void onmain(struct message *message)
     }
 
     for (i = 0; i < WINDOW; i++)
-        channel_send(1, peer, MESSAGE_TYPE_DATA, sizeof (unsigned int), &i);
+        channel_send(1, peer, MESSAGE_TYPE_INFO, sizeof (unsigned int), &i);
 
     for (i = 0; i < WINDOW; i++)
     {
 
         unsigned int value;
 
-        if (channel_wait(1, peer, MESSAGE_TYPE_DATA, sizeof (unsigned int), &value) != sizeof (unsigned int) || value != i)
+        if (channel_wait(1, peer, MESSAGE_TYPE_INFO, sizeof (unsigned int), &value) != sizeof (unsigned int) || value != i)
         {
 
             channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "echo %u wrong\n", &i);
