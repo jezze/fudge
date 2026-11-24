@@ -110,8 +110,8 @@ static void locate(unsigned int ichannel, struct message *message)
 
     unsigned int page = ichannel * MESSAGE_SLOTS + message->slot;
 
-    /* the done page follows the message pages: found from where any picked message's page lies */
-    inboxes[ichannel].done = (volatile unsigned char *)message->data + MESSAGE_SIZE * (MESSAGE_PAGES - page) + ichannel * MESSAGE_SLOTS;
+    /* the done page follows the slots: found from where any picked message's slot lies */
+    inboxes[ichannel].done = (volatile unsigned char *)message->data + MESSAGE_SLOTSIZE * (MESSAGE_PAGES - page) + ichannel * MESSAGE_SLOTS;
 
 }
 

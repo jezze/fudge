@@ -3,7 +3,8 @@
 #define POOL_TASKMMUSIZE                0x20000
 #define POOL_PERTASK                    (TASK_CODESIZE + TASK_STACKSIZE + MMAP_SIZE + POOL_TASKMMUSIZE + MESSAGE_AREASIZE)
 #define POOL_CHUNK                      0x04880000
-#define POOL_TASKS                      (POOL_CHUNK / POOL_PERTASK)
+/* fixed: the memory layouts of most arches leave room for this many tasks, and no more */
+#define POOL_TASKS                      29
 #define POOL_MAILBOXES                  (POOL_TASKS * POOL_TASKMAILBOXES)
 #define POOL_TASKNODES                  8
 #define POOL_NODES                      (256 + POOL_TASKS * POOL_TASKNODES)

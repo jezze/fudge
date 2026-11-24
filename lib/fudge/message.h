@@ -1,7 +1,9 @@
 #define MESSAGE_SIZE                    0x1000
+/* mail carries control, not data, so a slot is small; data goes in pages */
+#define MESSAGE_SLOTSIZE                0x200
 #define MESSAGE_SLOTS                   16
 #define MESSAGE_PAGES                   64
-#define MESSAGE_AREASIZE                ((MESSAGE_PAGES + 1) * MESSAGE_SIZE)
+#define MESSAGE_AREASIZE                (MESSAGE_PAGES * MESSAGE_SLOTSIZE + MESSAGE_SIZE)
 #define MESSAGE_OK                      0x01
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_FAILED                  0x03

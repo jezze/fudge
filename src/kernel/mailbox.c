@@ -74,7 +74,10 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
 
     unsigned int status = MESSAGE_FAILED;
 
-    if (mailbox->itask && count <= MESSAGE_SIZE)
+    if (count > MESSAGE_SLOTSIZE)
+        debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "Mail of %u bytes does not fit a slot", &count);
+
+    if (mailbox->itask && count <= MESSAGE_SLOTSIZE)
     {
 
         status = MESSAGE_RETRY;
@@ -91,8 +94,8 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
             struct list_item *item = mailbox->free.head;
             struct message *message = item->data;
 
-            message_init(message, event, source, count, (void *)(mailbox->vpages + MESSAGE_SIZE * message->slot));
-            buffer_copy((void *)(mailbox->pages + MESSAGE_SIZE * message->slot), data, count);
+            message_init(message, event, source, count, (void *)(mailbox->vpages + MESSAGE_SLOTSIZE * message->slot));
+            buffer_copy((void *)(mailbox->pages + MESSAGE_SLOTSIZE * message->slot), data, count);
             list_move_unsafe(&mailbox->queued, &mailbox->free, item);
 
             status = MESSAGE_OK;
@@ -265,9 +268,9 @@ void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int 
 
     mailbox->itask = itask;
     mailbox->ichannel = ichannel;
-    mailbox->pages = pages + MESSAGE_SIZE * MESSAGE_SLOTS * ichannel;
-    mailbox->vpages = KERNEL_VMAILBOX + MESSAGE_SIZE * MESSAGE_SLOTS * ichannel;
-    mailbox->done = (volatile unsigned char *)(pages + MESSAGE_SIZE * MESSAGE_PAGES + MESSAGE_SLOTS * ichannel);
+    mailbox->pages = pages + MESSAGE_SLOTSIZE * MESSAGE_SLOTS * ichannel;
+    mailbox->vpages = KERNEL_VMAILBOX + MESSAGE_SLOTSIZE * MESSAGE_SLOTS * ichannel;
+    mailbox->done = (volatile unsigned char *)(pages + MESSAGE_SLOTSIZE * MESSAGE_PAGES + MESSAGE_SLOTS * ichannel);
 
     for (i = 0; i < MESSAGE_SLOTS; i++)
         mailbox->done[i] = 0;
