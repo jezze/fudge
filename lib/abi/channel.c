@@ -368,6 +368,19 @@ static unsigned int placepage(unsigned int ichannel, unsigned int target, unsign
 
 }
 
+/* control is small and never cut short: one too large fails, reported where this task reports its errors */
+static unsigned int toolong(void)
+{
+
+    char *error = "Control message too long\n";
+
+    if (owner)
+        channel_send(0, owner, MESSAGE_TYPE_ERROR, cstring_length(error), error);
+
+    return 0;
+
+}
+
 static unsigned int place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
@@ -376,18 +389,8 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
     if (message_isdata(event))
         return placepage(ichannel, target, event, count, data);
 
-    /* control is small and never cut short: one too large fails, and the receiver learns why */
     if (count > MESSAGE_SLOTSIZE)
-    {
-
-        char *error = "Control message too long\n";
-
-        while (call_place(ichannel, target, MESSAGE_TYPE_ERROR, cstring_length(error), error, 0) == MESSAGE_RETRY)
-            relieve();
-
-        return 0;
-
-    }
+        return toolong();
 
     while ((status = call_place(ichannel, target, event, count, data, 0)) == MESSAGE_RETRY)
         relieve();
@@ -413,6 +416,37 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
     }
 
     return place(ichannel, target, event, count, data);
+
+}
+
+unsigned int channel_sendoption(unsigned int ichannel, unsigned int target, char *key, char *value)
+{
+
+    struct message_option option;
+
+    if (cstring_length(key) >= MESSAGE_KEYSIZE || cstring_length(value) >= MESSAGE_VALUESIZE)
+        return toolong();
+
+    buffer_clear(&option, sizeof (struct message_option));
+    buffer_copy(option.key, key, cstring_length(key));
+    buffer_copy(option.value, value, cstring_length(value));
+
+    return channel_send(ichannel, target, MESSAGE_TYPE_OPTION, sizeof (struct message_option), &option);
+
+}
+
+unsigned int channel_sendpath(unsigned int ichannel, unsigned int target, char *path)
+{
+
+    struct message_path message;
+
+    if (cstring_length(path) >= MESSAGE_PATHSIZE)
+        return toolong();
+
+    buffer_clear(&message, sizeof (struct message_path));
+    buffer_copy(message.path, path, cstring_length(path));
+
+    return channel_send(ichannel, target, MESSAGE_TYPE_PATH, sizeof (struct message_path), &message);
 
 }
 

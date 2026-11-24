@@ -807,7 +807,7 @@ static void onterm(struct message *message)
     run(option_getstring("pwd"));
 
     if (option_getdecimal("export"))
-        channel_send_fmt(0, output, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0", option_getstring("pwd"));
+        channel_sendoption(0, output, "pwd", option_getstring("pwd"));
 
 }
 

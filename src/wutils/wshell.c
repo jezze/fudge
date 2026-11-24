@@ -952,7 +952,9 @@ static void onmain(struct message *message)
 
             struct message_pipe pipe;
 
-            channel_send_fmt(0, shell, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0console-service\\0\\0keyboard-service\\0\\0", option_getstring("pwd"));
+            channel_sendoption(0, shell, "pwd", option_getstring("pwd"));
+            channel_sendoption(0, shell, "console-service", "");
+            channel_sendoption(0, shell, "keyboard-service", "");
             message_initpipe(&pipe);
             channel_send(0, shell, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 

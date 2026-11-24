@@ -25,6 +25,19 @@ L:=\
 include $(DIR_MK)/tbin.mk
 
 B:=\
+    $(DIR_TEST)/control \
+
+O:=\
+    $(DIR_TEST)/control.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
     $(DIR_TEST)/cut \
 
 O:=\
@@ -107,6 +120,19 @@ B:=\
 
 O:=\
     $(DIR_TEST)/init.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/tbin.mk
+
+B:=\
+    $(DIR_TEST)/longmsg \
+
+O:=\
+    $(DIR_TEST)/longmsg.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \

@@ -266,7 +266,8 @@ static void run(void)
 
     }
 
-    channel_send_fmt(0, sh, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
+    channel_sendoption(0, sh, "pwd", option_getstring("pwd"));
+    channel_sendoption(0, sh, "export", "1");
     message_initpipe(&pipe);
     channel_send(0, sh, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
     channel_send(0, sh, MESSAGE_TYPE_DATA, linecount, line);

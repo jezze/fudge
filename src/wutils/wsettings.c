@@ -1992,7 +1992,8 @@ static void onwmevent(struct message *message)
 
                 struct message_pipe pipe;
 
-                channel_send_fmt(0, target, MESSAGE_TYPE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+                channel_sendoption(0, target, "mode", "select");
+                channel_sendoption(0, target, "wm-service", option_getstring("wm-service"));
                 message_initpipe(&pipe);
                 channel_send(0, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
                 channel_send(0, target, MESSAGE_TYPE_TERM, 0, 0);

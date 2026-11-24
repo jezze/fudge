@@ -2,6 +2,9 @@
 /* mail carries control, not data, so a slot is small; data goes in pages */
 #define MESSAGE_SLOTSIZE                0x200
 #define MESSAGE_SLOTS                   16
+#define MESSAGE_KEYSIZE                 32
+#define MESSAGE_VALUESIZE               192
+#define MESSAGE_PATHSIZE                240
 #define MESSAGE_PAGES                   64
 #define MESSAGE_AREASIZE                (MESSAGE_PAGES * MESSAGE_SLOTSIZE + MESSAGE_SIZE)
 #define MESSAGE_OK                      0x01
@@ -125,6 +128,22 @@ struct message_route
 };
 
 /* a complete routing table for one stage; target 0 means the owner */
+/* control messages have a fixed size: one option, one path */
+struct message_option
+{
+
+    char key[MESSAGE_KEYSIZE];
+    char value[MESSAGE_VALUESIZE];
+
+};
+
+struct message_path
+{
+
+    char path[MESSAGE_PATHSIZE];
+
+};
+
 struct message_pipe
 {
 

@@ -4,6 +4,16 @@
 /* real pipelines run side by side; a freeze shows as a hang, pressure on a mailbox as the kernel's retry log */
 #define HELPERS                         4
 
+static void setoption(unsigned int target, char *key, unsigned int value)
+{
+
+    char text[16];
+
+    cstring_write_fmt(text, 16, 0, "%u\\0", &value);
+    channel_sendoption(1, target, key, text);
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -30,7 +40,7 @@ static void onmain(struct message *message)
         struct message_pipe pipe;
 
         message_initpipe(&pipe);
-        channel_send_fmt(1, helpers[i], MESSAGE_TYPE_OPTION, "command\\0%u\\0", &i);
+        setoption(helpers[i], "command", i);
         channel_send(1, helpers[i], MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
         channel_send(1, helpers[i], MESSAGE_TYPE_TERM, 0, 0);
 

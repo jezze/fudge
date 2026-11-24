@@ -198,18 +198,14 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
 
         struct job_command *command = &job->commands[i - 1];
         struct message_pipe pipe;
-        char options[MESSAGE_SIZE];
-        unsigned int count;
         unsigned int j;
 
         setpipe(job, i - 1, &pipe);
-
-        count = cstring_write_fmt(options, MESSAGE_SIZE, 0, "pwd\\0%s\\0", pwd);
+        channel_sendoption(ichannel, command->target, "pwd", pwd);
 
         for (j = 0; j < command->noptions; j++)
-            count += cstring_write_fmt(options, MESSAGE_SIZE, count, "%s\\0%s\\0", command->keys[j], command->values[j]);
+            channel_sendoption(ichannel, command->target, command->keys[j], command->values[j]);
 
-        channel_send(ichannel, command->target, MESSAGE_TYPE_OPTION, count, options);
         channel_send(ichannel, command->target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 
         for (j = 0; j < command->npaths; j++)
@@ -218,7 +214,8 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
             char absolute[1024];
             unsigned int length = fs_absolute(absolute, 1024, pwd, command->paths[j]);
 
-            channel_send(ichannel, command->target, MESSAGE_TYPE_PATH, length + 1, absolute);
+            if (length)
+                channel_sendpath(ichannel, command->target, absolute);
 
         }
 

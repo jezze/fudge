@@ -12,6 +12,16 @@ struct block
 
 };
 
+static void setoption(unsigned int target, char *key, unsigned int value)
+{
+
+    char text[16];
+
+    cstring_write_fmt(text, 16, 0, "%u\\0", &value);
+    channel_sendoption(1, target, key, text);
+
+}
+
 static unsigned char expected(unsigned int at)
 {
 
@@ -45,8 +55,11 @@ static void onmain(struct message *message)
 
     }
 
-    channel_send_fmt(1, source, MESSAGE_TYPE_OPTION, "target\\0%u\\0bytes\\0%u\\0report\\0%u\\0", &tr, &bytes, &report);
-    channel_send_fmt(1, tr, MESSAGE_TYPE_OPTION, "f\\0a\\0t\\0b\\0");
+    setoption(source, "target", tr);
+    setoption(source, "bytes", bytes);
+    setoption(source, "report", report);
+    channel_sendoption(1, tr, "f", "a");
+    channel_sendoption(1, tr, "t", "b");
     message_initpipe(&pipe);
 
     pipe.prev = source;

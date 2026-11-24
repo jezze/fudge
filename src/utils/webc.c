@@ -35,7 +35,10 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         struct message_pipe pipe;
         struct message message;
 
-        channel_send_fmt(2, target, MESSAGE_TYPE_OPTION, "mode\\0%s\\0remote-address\\0%s\\0remote-port\\0%s\\0server-name\\0%s\\0", mode, address, port, url->host);
+        channel_sendoption(2, target, "mode", mode);
+        channel_sendoption(2, target, "remote-address", address);
+        channel_sendoption(2, target, "remote-port", port);
+        channel_sendoption(2, target, "server-name", url->host);
         message_initpipe(&pipe);
         channel_send(2, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 

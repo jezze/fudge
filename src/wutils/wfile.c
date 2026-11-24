@@ -227,7 +227,7 @@ static void updatecontent(unsigned int wm)
             if (cstring_length(command))
                 system_run(0, "%s \"%s\" &", command, path);
             else
-                channel_send_fmt(0, opener, MESSAGE_TYPE_PATH, "%s\\0", path);
+                channel_sendpath(0, opener, path);
 
             channel_close(0);
 
@@ -395,7 +395,7 @@ static void savefile(void)
         char full[256];
 
         fs_absolute(full, 256, path, filename);
-        channel_send_fmt(0, saver, MESSAGE_TYPE_PATH, "%s\\0", full);
+        channel_sendpath(0, saver, full);
         channel_close(0);
 
     }

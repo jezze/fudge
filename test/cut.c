@@ -15,6 +15,16 @@ static char *names[STAGES] = {
     "sink"
 };
 
+static void setoption(unsigned int target, char *key, unsigned int value)
+{
+
+    char text[16];
+
+    cstring_write_fmt(text, 16, 0, "%u\\0", &value);
+    channel_sendoption(1, target, key, text);
+
+}
+
 static unsigned int readfree(void)
 {
 
@@ -85,9 +95,12 @@ static void onmain(struct message *message)
 
     }
 
-    channel_send_fmt(1, targets[0], MESSAGE_TYPE_OPTION, "target\\0%u\\0bytes\\0%u\\0", &targets[1], &bytes);
-    channel_send_fmt(1, targets[1], MESSAGE_TYPE_OPTION, "target\\0%u\\0", &targets[2]);
-    channel_send_fmt(1, targets[2], MESSAGE_TYPE_OPTION, "bytes\\0%u\\0delay\\0%u\\0report\\0%u\\0", &bytes, &delay, &report);
+    setoption(targets[0], "target", targets[1]);
+    setoption(targets[0], "bytes", bytes);
+    setoption(targets[1], "target", targets[2]);
+    setoption(targets[2], "bytes", bytes);
+    setoption(targets[2], "delay", delay);
+    setoption(targets[2], "report", report);
     start(targets[2], targets[1], 0);
     start(targets[1], targets[0], targets[2]);
     start(targets[0], 0, targets[1]);

@@ -16,7 +16,11 @@ static unsigned int start(char *command, unsigned int length, unsigned int input
         struct message_pipe pipe;
         unsigned int offset;
 
-        channel_send_fmt(1, sh, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0input\\0%u\\0", option_getstring("pwd"), &input);
+        char value[16];
+
+        cstring_write_fmt(value, 16, 0, "%u\\0", &input);
+        channel_sendoption(1, sh, "pwd", option_getstring("pwd"));
+        channel_sendoption(1, sh, "input", value);
         message_initpipe(&pipe);
         channel_send(1, sh, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 

@@ -4,6 +4,16 @@
 #define SENDERS                         8
 #define COUNT                           256
 
+static void setoption(unsigned int target, char *key, unsigned int value)
+{
+
+    char text[16];
+
+    cstring_write_fmt(text, 16, 0, "%u\\0", &value);
+    channel_sendoption(1, target, key, text);
+
+}
+
 static void start(unsigned int target)
 {
 
@@ -11,7 +21,7 @@ static void start(unsigned int target)
     unsigned int count = COUNT;
 
     message_initpipe(&pipe);
-    channel_send_fmt(1, target, MESSAGE_TYPE_OPTION, "count\\0%u\\0", &count);
+    setoption(target, "count", count);
     channel_send(1, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
     channel_send(1, target, MESSAGE_TYPE_TERM, 0, 0);
 

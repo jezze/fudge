@@ -13,6 +13,16 @@ static char *names[STAGES] = {
 };
 
 /* wired as sh would wire it: a stage's input is the one before it, and it passes TERM on to the next when it ends */
+static void setoption(unsigned int target, char *key, unsigned int value)
+{
+
+    char text[16];
+
+    cstring_write_fmt(text, 16, 0, "%u\\0", &value);
+    channel_sendoption(1, target, key, text);
+
+}
+
 static void start(unsigned int target, unsigned int prev, unsigned int next)
 {
 
@@ -68,9 +78,11 @@ static void onmain(struct message *message)
 
     }
 
-    channel_send_fmt(1, targets[0], MESSAGE_TYPE_OPTION, "target\\0%u\\0bytes\\0%u\\0", &targets[1], &bytes);
-    channel_send_fmt(1, targets[1], MESSAGE_TYPE_OPTION, "target\\0%u\\0", &targets[2]);
-    channel_send_fmt(1, targets[2], MESSAGE_TYPE_OPTION, "bytes\\0%u\\0delay\\0%u\\0", &bytes, &delay);
+    setoption(targets[0], "target", targets[1]);
+    setoption(targets[0], "bytes", bytes);
+    setoption(targets[1], "target", targets[2]);
+    setoption(targets[2], "bytes", bytes);
+    setoption(targets[2], "delay", delay);
     start(targets[2], targets[1], 0);
     start(targets[1], targets[0], targets[2]);
     start(targets[0], 0, targets[1]);

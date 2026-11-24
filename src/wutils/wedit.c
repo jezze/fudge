@@ -295,7 +295,8 @@ static void choose(char *mode)
 
         choosing = (cstring_match(mode, "save")) ? CHOOSE_SAVE : CHOOSE_OPEN;
 
-        channel_send_fmt(0, target, MESSAGE_TYPE_OPTION, "mode\\0%s\\0wm-service\\0%s\\0", mode, option_getstring("wm-service"));
+        channel_sendoption(0, target, "mode", mode);
+        channel_sendoption(0, target, "wm-service", option_getstring("wm-service"));
         message_initpipe(&pipe);
         channel_send(0, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
         channel_send(0, target, MESSAGE_TYPE_TERM, 0, 0);

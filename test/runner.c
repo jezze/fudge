@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define TESTS                           17
+#define TESTS                           18
 #define PATHSIZE                        64
 #define DEADLINE                        30000
 #define GRACE                           5000
@@ -20,6 +20,7 @@ struct test
 /* known: why the test is expected to fail; a known test that passes is reported so it can be taken off; tests that count the whole pool come before audio, which keeps pages while it plays, and tests that may leave tasks holding pages go last */
 static struct test tests[TESTS] = {
     {"spawn", 0},
+    {"control", 0},
     {"pingpong", 0},
     {"flood", 0},
     {"window0", "relieve runs a newer message inside an older one's retrying send, so replies overtake"},

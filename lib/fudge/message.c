@@ -62,6 +62,12 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     switch (type)
     {
 
+    case MESSAGE_TYPE_OPTION:
+        return checksize(data, count, sizeof (struct message_option));
+
+    case MESSAGE_TYPE_PATH:
+        return checksize(data, count, sizeof (struct message_path));
+
     case MESSAGE_TYPE_MAIN:
         return checksize(data, count, sizeof (struct message_pipe));
 

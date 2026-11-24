@@ -25,8 +25,11 @@ static void onpath(struct message *message)
             char *path = message->data;
             unsigned int length = cstring_length(path);
             char *slash = (length && path[length - 1] != '/' && path[length - 1] != ':') ? "/" : "";
+            char pwd[MESSAGE_SIZE];
 
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_OPTION, "pwd\\0%s%s\\0", path, slash);
+            /* formatted in full, so a directory too long for an option fails rather than being cut short */
+            cstring_write_fmt(pwd, MESSAGE_SIZE, 0, "%s%s\\0", path, slash);
+            channel_sendoption(0, message->source, "pwd", pwd);
 
         }
 
