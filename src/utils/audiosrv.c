@@ -352,7 +352,7 @@ static unsigned int flush(void)
 
         struct device *device = &devices.list[i];
 
-        if (device->pending && call_place(0, device->target, MESSAGE_TYPE_DATA, device->pending, device->output) == MESSAGE_RETRY)
+        if (device->pending && call_place(0, device->target, MESSAGE_TYPE_DATA, device->pending, device->output, 0) == MESSAGE_RETRY)
             done = 0;
         else
             device->pending = 0;

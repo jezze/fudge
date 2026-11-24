@@ -15,6 +15,8 @@
 #define CHANNEL_SLOTKEPT                (MESSAGE_SLOTS + 1)
 /* handlers may run inside handlers, as relieve does */
 #define CHANNEL_ACTIVE                  8
+/* a payload larger than this goes in a page; everything an event or a reply carries fits */
+#define CHANNEL_INLINE                  64
 
 struct inbox
 {
@@ -330,24 +332,37 @@ static unsigned int handover(void *data)
 
 }
 
-/* pipe data goes in a page, the one it came in if the handler sends that on; the page is the receiver's to free once read */
-static unsigned int placepage(unsigned int target, unsigned int count, void *data)
+/* the payload goes in a page, the one it came in if the handler sends that on; the page is the receiver's to free once read */
+static unsigned int placepage(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
+    unsigned int status;
     void *page;
 
     if (count > PAGE_SIZE)
         return 0;
 
     if (handover(data))
-        return (page_give(data, target, count)) ? MESSAGE_TYPE_DATA : 0;
+    {
 
-    page = page_alloc();
+        page = data;
 
-    buffer_copy(page, data, count);
+    }
 
-    if (page_give(page, target, count))
-        return MESSAGE_TYPE_DATA;
+    else
+    {
+
+        page = page_alloc();
+
+        buffer_copy(page, data, count);
+
+    }
+
+    while ((status = call_place(ichannel, target, event, count, 0, page_number(page))) == MESSAGE_RETRY)
+        relieve();
+
+    if (status == MESSAGE_OK)
+        return event;
 
     page_free(page);
 
@@ -360,7 +375,10 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
     unsigned int status;
 
-    while ((status = call_place(ichannel, target, event, count, data)) == MESSAGE_RETRY)
+    if (count > CHANNEL_INLINE)
+        return placepage(ichannel, target, event, count, data);
+
+    while ((status = call_place(ichannel, target, event, count, data, 0)) == MESSAGE_RETRY)
         relieve();
 
     return (status == MESSAGE_OK) ? event : 0;
@@ -371,7 +389,7 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
 {
 
     if (event == CHANNEL_PAGE)
-        return placepage(target, count, data);
+        return placepage(ichannel, target, MESSAGE_TYPE_DATA, count, data);
 
     if (event == MESSAGE_TYPE_ERROR && status == MESSAGE_STATUS_OK)
         status = MESSAGE_STATUS_ERROR;
@@ -382,7 +400,7 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
         struct message_route *route = findroute(event);
 
         if (route && route->to == MESSAGE_TYPE_DATA)
-            return placepage(resolve(route->target), count, data);
+            return placepage(ichannel, resolve(route->target), MESSAGE_TYPE_DATA, count, data);
 
         if (route)
             return place(ichannel, resolve(route->target), route->to, count, data);
@@ -747,7 +765,7 @@ static void abortplace(unsigned int ichannel, unsigned int target, unsigned int 
 
         abortdrain();
 
-    } while (call_place(ichannel, target, event, count, data) == MESSAGE_RETRY);
+    } while (call_place(ichannel, target, event, count, data, 0) == MESSAGE_RETRY);
 
 }
 

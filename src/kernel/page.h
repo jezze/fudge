@@ -23,7 +23,7 @@ unsigned int page_getfree(void);
 unsigned int page_getheld(unsigned int itask);
 struct page_info page_getinfo(unsigned int page);
 unsigned int page_alloc(unsigned int itask);
-unsigned int page_give(unsigned int itask, unsigned int page, unsigned int target, unsigned int count, unsigned int source);
+unsigned int page_send(unsigned int itask, unsigned int page, struct mailbox *mailbox, unsigned int event, unsigned int count, unsigned int source);
 void page_picked(void *data);
 unsigned int page_free(unsigned int itask, unsigned int page);
 unsigned int page_hand(unsigned int itask, unsigned int page, unsigned int target);

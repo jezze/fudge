@@ -69,7 +69,7 @@ unsigned int page_give(void *data, unsigned int target, unsigned int count)
 
     unsigned int status;
 
-    while ((status = call_pagegive(getpage(data), target, count)) == MESSAGE_RETRY);
+    while ((status = call_place(0, target, MESSAGE_TYPE_DATA, count, 0, getpage(data))) == MESSAGE_RETRY);
 
     return status == MESSAGE_OK;
 

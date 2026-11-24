@@ -4,6 +4,7 @@
 #include "service.h"
 #include "task.h"
 #include "pool.h"
+#include "mailbox.h"
 #include "kernel.h"
 #include "memsrv.h"
 #include "page.h"

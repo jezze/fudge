@@ -8,7 +8,6 @@
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
 .set CALL_INDEX_PAGEALLOC,              0x0A
-.set CALL_INDEX_PAGEGIVE,               0x0B
 .set CALL_INDEX_PAGEFREE,               0x0D
 .set CALL_INDEX_PAGEHAND,               0x0E
 .set CALL_FRAME,                        48
@@ -67,14 +66,6 @@ call_pagehand:
     str w1, [sp, #12]
     callindex CALL_INDEX_PAGEHAND
 
-.global call_pagegive
-call_pagegive:
-    sub sp, sp, #CALL_FRAME
-    str w0, [sp, #8]
-    str w1, [sp, #12]
-    str w2, [sp, #16]
-    callindex CALL_INDEX_PAGEGIVE
-
 .global call_pick
 call_pick:
     sub sp, sp, #CALL_FRAME
@@ -92,6 +83,7 @@ call_place:
     str w2, [sp, #16]
     str w3, [sp, #20]
     str x4, [sp, #24]
+    str w5, [sp, #32]
     callindex CALL_INDEX_PLACE
 
 .global call_spawn

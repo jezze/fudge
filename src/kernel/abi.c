@@ -152,9 +152,10 @@ static unsigned int pick(unsigned int itask, void *stack)
 static unsigned int place(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int target; unsigned int event; unsigned int count; void *data;} *args = stack;
+    struct {void *caller; unsigned int ichannel; unsigned int target; unsigned int event; unsigned int count; void *data; unsigned int page;} *args = stack;
 
-    if ((args->data && args->count && checkargs(args->data, args->count)) || (!args->data && !args->count))
+    /* with a page, the payload is in the page and the page goes with the message */
+    if ((args->page && args->count <= PAGE_SIZE) || (args->data && args->count && checkargs(args->data, args->count)) || (!args->data && !args->count))
     {
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
@@ -171,7 +172,7 @@ static unsigned int place(unsigned int itask, void *stack)
             struct task *task = pool_gettask(itask);
 
             /* a full target never puts the sender to sleep, it retries; the target is woken in case it waits on another channel and must run its full channel 0 */
-            status = kernel_place(inode, args->target, args->event, args->count, args->data);
+            status = (args->page) ? page_send(itask, args->page, target, args->event, args->count, inode) : kernel_place(inode, args->target, args->event, args->count, args->data);
 
             if (status == MESSAGE_RETRY)
             {
@@ -199,7 +200,25 @@ static unsigned int place(unsigned int itask, void *stack)
         if (status != MESSAGE_OK)
             return status;
 
-        status = kernel_place(inode, args->target, args->event, args->count, args->data);
+        if (args->page)
+        {
+
+            /* a service in the kernel reads the page in place, and the page is freed once it took the message */
+            struct page_lease lease = page_borrow(inode, args->page);
+
+            status = (lease.status == MESSAGE_OK) ? kernel_place(inode, args->target, args->event, args->count, lease.data) : MESSAGE_FAILED;
+
+            if (status == MESSAGE_OK)
+                page_free(itask, args->page);
+
+        }
+
+        else
+        {
+
+            status = kernel_place(inode, args->target, args->event, args->count, args->data);
+
+        }
 
         mailbox_unreservereply(mailbox);
 
@@ -247,16 +266,6 @@ static unsigned int pagealloc(unsigned int itask, void *stack)
         kernel_signal(itask, TASK_SIGNAL_BLOCK);
 
     return page;
-
-}
-
-static unsigned int pagegive(unsigned int itask, void *stack)
-{
-
-    struct {void *caller; unsigned int page; unsigned int target; unsigned int count;} *args = stack;
-
-    /* the receiver learns who gave the page by the giver's channel 0, as a message names its sender */
-    return page_give(itask, args->page, args->target, args->count, kernel_getchannelinode(itask, 0));
 
 }
 
@@ -313,7 +322,7 @@ void abi_setup(void)
     abi_setcallback(0x08, unload);
     abi_setcallback(0x09, announce);
     abi_setcallback(0x0A, pagealloc);
-    abi_setcallback(0x0B, pagegive);
+    abi_setcallback(0x0B, debug);
     abi_setcallback(0x0C, debug);
     abi_setcallback(0x0D, pagefree);
     abi_setcallback(0x0E, pagehand);

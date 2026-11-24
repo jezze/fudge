@@ -11,7 +11,6 @@
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
 .set CALL_INDEX_PAGEALLOC,              0x0A
-.set CALL_INDEX_PAGEGIVE,               0x0B
 .set CALL_INDEX_PAGEFREE,               0x0D
 .set CALL_INDEX_PAGEHAND,               0x0E
 
@@ -56,12 +55,6 @@ call_pagefree:
 .global call_pagehand
 call_pagehand:
     movl $CALL_INDEX_PAGEHAND, %eax
-    int $CALL_INTERRUPT
-    ret
-
-.global call_pagegive
-call_pagegive:
-    movl $CALL_INDEX_PAGEGIVE, %eax
     int $CALL_INTERRUPT
     ret
 

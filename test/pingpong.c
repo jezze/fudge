@@ -3,8 +3,8 @@
 
 #define ROUNDS                          1024
 
-static char sent[MESSAGE_SLOTSIZE];
-static char received[MESSAGE_SLOTSIZE];
+static char sent[MESSAGE_SIZE];
+static char received[MESSAGE_SIZE];
 
 static unsigned int start(void)
 {
@@ -54,7 +54,7 @@ static void onmain(struct message *message)
     for (i = 0; i < ROUNDS; i++)
     {
 
-        unsigned int count = 1 + (i * 97) % MESSAGE_SLOTSIZE;
+        unsigned int count = 1 + (i * 97) % MESSAGE_SIZE;
         unsigned int j;
 
         for (j = 0; j < count; j++)
@@ -69,7 +69,7 @@ static void onmain(struct message *message)
 
         }
 
-        if (channel_wait(1, peer, MESSAGE_TYPE_DATA, MESSAGE_SLOTSIZE, received) != count || !buffer_match(sent, received, count))
+        if (channel_wait(1, peer, MESSAGE_TYPE_DATA, MESSAGE_SIZE, received) != count || !buffer_match(sent, received, count))
         {
 
             channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "round %u echo differs\n", &i);

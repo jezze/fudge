@@ -165,13 +165,14 @@ unsigned int page_alloc(unsigned int itask)
 
 }
 
-static unsigned int givetask(unsigned int itask, unsigned int page, struct mailbox *mailbox, unsigned int count, unsigned int source)
+/* the page goes to the task as a message of its own, in order with the mail, from the channel it was sent on */
+unsigned int page_send(unsigned int itask, unsigned int page, struct mailbox *mailbox, unsigned int event, unsigned int count, unsigned int source)
 {
 
     struct task *task = pool_gettask(mailbox->itask);
     unsigned int status = MESSAGE_FAILED;
 
-    if (!task)
+    if (!task || !isvalid(page) || count > PAGE_SIZE)
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -193,7 +194,7 @@ static unsigned int givetask(unsigned int itask, unsigned int page, struct mailb
     if (status != MESSAGE_OK)
         return status;
 
-    message_init(&rows[page].message, MESSAGE_TYPE_DATA, source, count, (void *)(PAGE_VBASE + (unsigned long)(page - 1) * PAGE_SIZE));
+    message_init(&rows[page].message, event, source, count, (void *)(PAGE_VBASE + (unsigned long)(page - 1) * PAGE_SIZE));
 
     rows[page].message.slot = MESSAGE_SLOTS;
 
@@ -204,43 +205,6 @@ static unsigned int givetask(unsigned int itask, unsigned int page, struct mailb
     kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
 
     return MESSAGE_OK;
-
-}
-
-/* a service in the kernel reads the page in place while it is given; it is freed once taken, or stays with the giver on a retry */
-static unsigned int giveservice(unsigned int itask, unsigned int page, unsigned int target, unsigned int count, unsigned int source)
-{
-
-    unsigned int owned;
-    unsigned int status;
-
-    spinlock_acquire(&spinlock);
-
-    owned = rows[page].owner == itask && !rows[page].queued;
-
-    spinlock_release(&spinlock);
-
-    if (!owned)
-        return MESSAGE_FAILED;
-
-    status = kernel_place(source, target, MESSAGE_TYPE_DATA, count, (void *)(base + (unsigned long)(page - 1) * PAGE_SIZE));
-
-    if (status == MESSAGE_OK)
-        page_free(itask, page);
-
-    return status;
-
-}
-
-unsigned int page_give(unsigned int itask, unsigned int page, unsigned int target, unsigned int count, unsigned int source)
-{
-
-    struct mailbox *mailbox = pool_getnodemailbox(target);
-
-    if (!isvalid(page) || count > PAGE_SIZE)
-        return MESSAGE_FAILED;
-
-    return (mailbox) ? givetask(itask, page, mailbox, count, source) : giveservice(itask, page, target, count, source);
 
 }
 
@@ -356,7 +320,7 @@ unsigned int page_answer(unsigned int target, struct page_lease *lease, unsigned
     if (!mailbox)
         return MESSAGE_FAILED;
 
-    return givetask(mailbox->itask, lease->page, mailbox, count, source);
+    return page_send(mailbox->itask, lease->page, mailbox, MESSAGE_TYPE_DATA, count, source);
 
 }
 

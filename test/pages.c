@@ -81,7 +81,7 @@ static void onmain(struct message *message)
 
     }
 
-    if (count && call_pagegive(held[0], message->source, PAGE_SIZE + 1) == MESSAGE_OK)
+    if (count && call_place(0, message->source, MESSAGE_TYPE_DATA, PAGE_SIZE + 1, 0, held[0]) == MESSAGE_OK)
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "a count larger than a page was given\n");
 
     freeall(count);
