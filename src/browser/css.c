@@ -276,8 +276,8 @@ static char *agent =
     "mark{background-color:yellow}"
     "hr{border:1px inset gray;margin:.5em 0}"
     "fieldset{border:2px groove gray;padding:.35em .75em .625em;margin:0 2px}"
-    "button{display:inline-block;padding:1px 6px;border:2px outset #c0c0c0;background-color:#e0e0e0}"
-    "input,select,textarea{display:inline-block;border:2px inset #c0c0c0;padding:1px 2px}"
+    "button{display:inline-block;padding:1px 6px;border:2px outset #c0c0c0;background-color:#e0e0e0;color:#000}"
+    "input,select,textarea{display:inline-block;border:2px inset #c0c0c0;padding:1px 2px;background-color:#fff;color:#000}"
     "img{display:inline-block}"
     "nobr{white-space:nowrap}";
 
@@ -1133,6 +1133,9 @@ static void parseselector(struct css_sheet *sheet, char *text, unsigned int star
         combinator = COMBINATOR_NONE;
 
     }
+
+    if (sheet->selectorcount >= CSS_SELECTORS)
+        sheet->full = 1;
 
     if (!offset || offset < end || combinator != COMBINATOR_NONE || sheet->selectorcount >= CSS_SELECTORS)
     {
@@ -3985,6 +3988,13 @@ static void finish(struct css_style *style)
 
 }
 
+static unsigned int isatomic(unsigned int tag)
+{
+
+    return tag == HTML_TAG_IMG || tag == HTML_TAG_INPUT || tag == HTML_TAG_SELECT || tag == HTML_TAG_TEXTAREA || tag == HTML_TAG_BUTTON;
+
+}
+
 static void computeelement(struct css_sheet *sheet, struct html_document *document, struct context *context, unsigned int node)
 {
 
@@ -4016,6 +4026,9 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
     }
 
     sheet->declarationcount = declarationmark;
+
+    if (context->style->display == CSS_DISPLAY_INLINE && isatomic(document->nodes[node].tag))
+        context->style->display = CSS_DISPLAY_INLINEBLOCK;
 
     finish(context->style);
 
