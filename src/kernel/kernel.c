@@ -487,7 +487,7 @@ static unsigned int loadbinary(struct mmap_header *header, unsigned long base, u
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack)
 {
 
     struct task *task = pool_gettask(itask);
@@ -502,12 +502,11 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned in
         task_reset(task);
         mmap_initheader(header);
         mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-        mmap_allocate(header, MMAP_TYPE_NORMAL, buffer, KERNEL_VBUFFER, TASK_BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
         mmap_allocate(header, MMAP_TYPE_NORMAL, pool_getpages(itask), KERNEL_VMAILBOX, MESSAGE_AREASIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
         mmap_allocate(header, MMAP_TYPE_NORMAL, page_getbase(), PAGE_VBASE, PAGE_COUNT * PAGE_SIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
         if (format->map(base, MEMSRV_PAGESIZE, code, TASK_CODESIZE, header) && loadbinary(header, base, id))
-            task_register(task, mmap, buffer, format->findentry(base), KERNEL_VSTACK);
+            task_register(task, mmap, format->findentry(base), KERNEL_VSTACK);
 
         inode = (task->thread.ip) ? kernel_getchannelinode(itask, 0) : 0;
 
@@ -517,15 +516,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned in
     }
 
     return inode;
-
-}
-
-unsigned long kernel_getbuffer(unsigned int inode)
-{
-
-    struct task *task = pool_gettask(kernel_getinodetask(inode));
-
-    return (task) ? task->buffer : 0;
 
 }
 

@@ -1,7 +1,7 @@
 #define POOL_CORES                      256
 #define POOL_TASKMAILBOXES              2
 #define POOL_TASKMMUSIZE                0x20000
-#define POOL_PERTASK                    (TASK_CODESIZE + TASK_STACKSIZE + TASK_BUFFERSIZE + MMAP_SIZE + POOL_TASKMMUSIZE + MESSAGE_AREASIZE)
+#define POOL_PERTASK                    (TASK_CODESIZE + TASK_STACKSIZE + MMAP_SIZE + POOL_TASKMMUSIZE + MESSAGE_AREASIZE)
 #define POOL_CHUNK                      0x04880000
 #define POOL_TASKS                      (POOL_CHUNK / POOL_PERTASK)
 #define POOL_MAILBOXES                  (POOL_TASKS * POOL_TASKMAILBOXES)

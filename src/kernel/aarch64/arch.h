@@ -14,8 +14,6 @@
 #define ARCH_PAGES_SIZE                 (MESSAGE_AREASIZE * POOL_TASKS)
 #define ARCH_RAMDISK_BASE               0x41200000
 #define ARCH_RAMDISK_SIZE               0x00E00000
-#define ARCH_TASK_BUFFERBASE            0x42000000
-#define ARCH_TASK_BUFFERSIZE            (TASK_BUFFERSIZE * POOL_TASKS)
 #define ARCH_FRAMEBUFFER_BASE           0x42200000
 #define ARCH_FRAMEBUFFER_SIZE           0x01E00000
 #define ARCH_MEM_BASE                   0x44000000

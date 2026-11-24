@@ -234,7 +234,7 @@ static unsigned long findgap(struct mmap_header *header, unsigned int size)
     unsigned long vaddress = KERNEL_VMEM;
     struct mmap_entry *entry;
 
-    while (vaddress + size <= KERNEL_VBUFFER)
+    while (vaddress + size <= KERNEL_VMEMEND)
     {
 
         if (!(entry = findoverlap(header, vaddress, size)))

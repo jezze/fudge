@@ -178,7 +178,7 @@ static unsigned int createtask(unsigned long base, unsigned int id)
     {
 
         struct mmap_header *header = (struct mmap_header *)(unsigned long)(ARCH_MMAP_BASE + MMAP_SIZE * ntask);
-        unsigned int inode = kernel_loadtask(ntask, base, id, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + TASK_CODESIZE * ntask, ARCH_TASK_STACKBASE + TASK_STACKSIZE * ntask, ARCH_TASK_BUFFERBASE + TASK_BUFFERSIZE * ntask);
+        unsigned int inode = kernel_loadtask(ntask, base, id, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + TASK_CODESIZE * ntask, ARCH_TASK_STACKBASE + TASK_STACKSIZE * ntask);
 
         if (inode)
         {
@@ -461,7 +461,6 @@ static void setupmmap(void)
     arch_kmap(ARCH_MMU_TASKBASE, ARCH_MMU_TASKBASE, ARCH_MMU_TASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_PAGES_BASE, ARCH_PAGES_BASE, ARCH_PAGES_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_PAGEPOOL_BASE, ARCH_PAGEPOOL_BASE, ARCH_PAGEPOOL_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_TASK_BUFFERBASE, ARCH_TASK_BUFFERBASE, ARCH_TASK_BUFFERSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_TASK_CODEBASE, ARCH_TASK_CODEBASE, ARCH_TASK_CODESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MEM_BASE, ARCH_MEM_BASE, ARCH_MEM_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_UART_BASE, ARCH_UART_BASE, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);

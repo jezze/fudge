@@ -3,7 +3,7 @@
 #define KERNEL_VSTACK                   0x80000000
 #define KERNEL_VMAILBOX                 0x40000000
 #define KERNEL_VMEM                     0x50000000
-#define KERNEL_VBUFFER                  0x70000000
+#define KERNEL_VMEMEND                  0x70000000
 #define KERNEL_VMMAP                    0xC0000000
 
 struct core *kernel_getcore(void);
@@ -22,7 +22,6 @@ void kernel_unreserve(unsigned int inode);
 unsigned int kernel_announce(unsigned int inode, char *name);
 void kernel_notify(struct resource *resource, unsigned int event, unsigned int count, void *data);
 void kernel_starttask(unsigned int itask);
-unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer);
-unsigned long kernel_getbuffer(unsigned int inode);
+unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack);
 void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(unsigned int itask));
 void kernel_setup(void);

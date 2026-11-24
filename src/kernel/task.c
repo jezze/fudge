@@ -26,11 +26,10 @@ void task_signal(struct task *task, unsigned int signal)
 
 }
 
-void task_register(struct task *task, unsigned long mmap, unsigned long buffer, unsigned long ip, unsigned long sp)
+void task_register(struct task *task, unsigned long mmap, unsigned long ip, unsigned long sp)
 {
 
     task->mmap = mmap;
-    task->buffer = buffer;
     task->start.ip = ip;
     task->start.sp = sp;
     task->thread.ip = ip;
@@ -48,7 +47,6 @@ void task_reset(struct task *task)
     task->aborted = 0;
     task->started = 0;
     task->mmap = 0;
-    task->buffer = 0;
     task->signals.kill = 0;
     task->signals.block = 0;
     task->signals.unblock = 0;
