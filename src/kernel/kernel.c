@@ -502,7 +502,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long base, unsigned in
         task_reset(task);
         mmap_initheader(header);
         mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-        mmap_allocate(header, MMAP_TYPE_NORMAL, pool_getpages(itask), KERNEL_VMAILBOX, MESSAGE_AREASIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
         mmap_allocate(header, MMAP_TYPE_NORMAL, page_getbase(), PAGE_VBASE, PAGE_COUNT * PAGE_SIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
         if (format->map(base, MEMSRV_PAGESIZE, code, TASK_CODESIZE, header) && loadbinary(header, base, id))

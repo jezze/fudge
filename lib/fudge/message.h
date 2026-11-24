@@ -1,6 +1,5 @@
 #define MESSAGE_SIZE                    0x1000
 /* mail carries control, not data, so a slot is small; data goes in pages */
-#define MESSAGE_SLOTSIZE                0x200
 #define MESSAGE_SLOTS                   16
 /* every control message fits this; data goes in pages */
 #define MESSAGE_CONTROLSIZE             256
@@ -11,7 +10,7 @@
 #define MESSAGE_IDSIZE                  32
 #define MESSAGE_CONSOLESIZE             32
 #define MESSAGE_PAGES                   64
-#define MESSAGE_AREASIZE                (MESSAGE_PAGES * MESSAGE_SLOTSIZE + MESSAGE_SIZE)
+#define MESSAGE_AREASIZE                (MESSAGE_PAGES * MESSAGE_CONTROLSIZE)
 #define MESSAGE_OK                      0x01
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_FAILED                  0x03
@@ -120,6 +119,15 @@ struct message
     unsigned int length;
     void *data;
     unsigned int slot;
+
+};
+
+/* a message as a task picks it: the header, and the payload of mail copied out with it */
+struct message_box
+{
+
+    struct message message;
+    unsigned char payload[MESSAGE_CONTROLSIZE];
 
 };
 

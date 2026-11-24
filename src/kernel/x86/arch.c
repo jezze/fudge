@@ -658,7 +658,7 @@ void arch_setup1(unsigned int ramkb)
     if (ARCH_END - ARCH_CHUNK_BASE > POOL_CHUNK)
         stop("The chunk layout is larger than POOL_CHUNK");
 
-    if (ARCH_END > KERNEL_VMAILBOX)
+    if (ARCH_END > PAGE_VBASE)
         stop("The chunk overlaps the task virtual addresses");
 
     if (ramkb && ramkb < needkb)

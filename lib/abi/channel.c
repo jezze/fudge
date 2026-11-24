@@ -19,11 +19,10 @@
 struct inbox
 {
 
-    struct message messages[MESSAGE_SLOTS];
-    volatile unsigned char *done;
+    struct message_box boxes[MESSAGE_SLOTS];
+    struct message_box handedbox;
     unsigned int index;
     unsigned int count;
-    unsigned int handed;
     void *handedpage;
     unsigned int state;
 
@@ -103,27 +102,23 @@ static unsigned int frominput(unsigned int ichannel, unsigned int source)
 
 }
 
-static void locate(unsigned int ichannel, struct message *message)
-{
-
-    unsigned int page = ichannel * MESSAGE_SLOTS + message->slot;
-
-    /* a page given to the task has no slot to find the done flags from */
-    if (message->slot >= MESSAGE_SLOTS)
-        return;
-
-    /* the done page follows the slots: found from where any picked message's slot lies */
-    inboxes[ichannel].done = (volatile unsigned char *)message->data + MESSAGE_SLOTSIZE * (MESSAGE_PAGES - page) + ichannel * MESSAGE_SLOTS;
-
-}
-
+/* mail was copied out when picked, so only a page given with a message is left to give back */
 static void finish(unsigned int ichannel, struct message *message)
 {
 
-    if (message->slot < MESSAGE_SLOTS)
-        inboxes[ichannel].done[message->slot] = 1;
-    else if (message->slot == CHANNEL_SLOTPAGE)
+    if (message->slot == CHANNEL_SLOTPAGE)
         page_free(message->data);
+
+}
+
+/* a box is moved or copied whole: mail data is its own payload, a page stays where it is */
+static void copybox(struct message_box *to, struct message_box *from)
+{
+
+    buffer_copy(to, from, sizeof (struct message_box));
+
+    if (to->message.slot < MESSAGE_SLOTS)
+        to->message.data = to->payload;
 
 }
 
@@ -135,7 +130,7 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     unsigned int i;
 
     for (i = 0; inbox->index + i < inbox->count; i++)
-        buffer_copy(&inbox->messages[i], &inbox->messages[inbox->index + i], sizeof (struct message));
+        copybox(&inbox->boxes[i], &inbox->boxes[inbox->index + i]);
 
     inbox->index = 0;
     inbox->count = i;
@@ -143,13 +138,13 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     if (inbox->count == MESSAGE_SLOTS)
         return MESSAGE_OK;
 
-    status = call_pick(ichannel, &inbox->messages[inbox->count], MESSAGE_SLOTS - inbox->count, flags);
+    status = call_pick(ichannel, &inbox->boxes[inbox->count], MESSAGE_SLOTS - inbox->count, flags);
 
     if (status == MESSAGE_OK)
     {
 
-        while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].type)
-            locate(ichannel, &inbox->messages[inbox->count++]);
+        while (inbox->count < MESSAGE_SLOTS && inbox->boxes[inbox->count].message.type)
+            inbox->count++;
 
     }
 
@@ -158,7 +153,8 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
 }
 
 /* pages come in the mailbox with the mail, in the order all of it was sent */
-static unsigned int take(unsigned int ichannel, struct message *message, unsigned int flags)
+/* into a box of the caller's: a handler may pick more on the same channel before it is done with this one */
+static unsigned int take(unsigned int ichannel, struct message_box *box, unsigned int flags)
 {
 
     struct inbox *inbox = &inboxes[ichannel];
@@ -175,19 +171,23 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 
     }
 
-    buffer_copy(message, &inbox->messages[inbox->index++], sizeof (struct message));
+    copybox(box, &inbox->boxes[inbox->index++]);
 
     return MESSAGE_OK;
 
 }
 
-static void hand(unsigned int ichannel, struct message *message)
+/* the message is the caller's until its next pick on the channel: its box is kept, and so is a page given with it */
+static void hand(unsigned int ichannel, struct message_box *box, struct message *message)
 {
 
-    if (message->slot < MESSAGE_SLOTS)
-        inboxes[ichannel].handed = message->slot + 1;
-    else if (message->slot == CHANNEL_SLOTPAGE)
-        inboxes[ichannel].handedpage = message->data;
+    struct inbox *inbox = &inboxes[ichannel];
+
+    copybox(&inbox->handedbox, box);
+    buffer_copy(message, &inbox->handedbox.message, sizeof (struct message));
+
+    if (message->slot == CHANNEL_SLOTPAGE)
+        inbox->handedpage = message->data;
 
 }
 
@@ -237,21 +237,21 @@ static void relieve(void)
 {
 
     struct inbox *inbox = &inboxes[0];
-    struct message message;
+    struct message_box box;
 
     /* someone may be retrying a send into our full channel 0: run its oldest message, but never from inside another one */
-    if (relieving || inbox->handed || inbox->handedpage || !canpick(0))
+    if (relieving || !canpick(0))
         return;
 
     fill(0, inbox, 0);
 
-    if (inbox->count - inbox->index >= CHANNEL_FULL && take(0, &message, 0) == MESSAGE_OK)
+    if (inbox->count - inbox->index >= CHANNEL_FULL && take(0, &box, 0) == MESSAGE_OK)
     {
 
         relieving = 1;
 
-        dispatch(0, &message);
-        finish(0, &message);
+        dispatch(0, &box.message);
+        finish(0, &box.message);
 
         relieving = 0;
 
@@ -259,13 +259,13 @@ static void relieve(void)
 
 }
 
-static unsigned int pick(unsigned int ichannel, struct message *message)
+static unsigned int pick(unsigned int ichannel, struct message_box *box)
 {
 
     while (canpick(ichannel))
     {
 
-        unsigned int status = take(ichannel, message, MESSAGE_FLAG_BLOCK);
+        unsigned int status = take(ichannel, box, MESSAGE_FLAG_BLOCK);
 
         switch (status)
         {
@@ -277,7 +277,7 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
             continue;
 
         case MESSAGE_OK:
-            return message->type;
+            return box->message.type;
 
         case MESSAGE_FAILED:
             return 0;
@@ -496,10 +496,11 @@ unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsig
 unsigned int channel_pick(unsigned int ichannel, struct message *message)
 {
 
-    unsigned int event = pick(ichannel, message);
+    struct message_box box;
+    unsigned int event = pick(ichannel, &box);
 
     if (event)
-        hand(ichannel, message);
+        hand(ichannel, &box, message);
 
     return event;
 
@@ -508,15 +509,15 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message)
 unsigned int channel_process(unsigned int ichannel)
 {
 
-    struct message message;
+    struct message_box box;
 
-    if (pick(ichannel, &message))
+    if (pick(ichannel, &box))
     {
 
-        dispatch(ichannel, &message);
-        finish(ichannel, &message);
+        dispatch(ichannel, &box.message);
+        finish(ichannel, &box.message);
 
-        return message.type;
+        return box.message.type;
 
     }
 
@@ -527,17 +528,17 @@ unsigned int channel_process(unsigned int ichannel)
 unsigned int channel_drain(unsigned int ichannel)
 {
 
-    struct message message;
+    struct message_box box;
 
     while (canpick(ichannel))
     {
 
-        switch (take(ichannel, &message, 0))
+        switch (take(ichannel, &box, 0))
         {
 
         case MESSAGE_OK:
-            dispatch(ichannel, &message);
-            finish(ichannel, &message);
+            dispatch(ichannel, &box.message);
+            finish(ichannel, &box.message);
 
             break;
 
@@ -572,33 +573,35 @@ void channel_loop(unsigned int ichannel)
 static unsigned int poll(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int pages, struct message *message)
 {
 
-    while (pick(ichannel, message))
+    struct message_box box;
+
+    while (pick(ichannel, &box))
     {
 
         /* a reply given in a page is the caller's, not data for the listeners */
-        if (pages && message->source == source && message->slot == CHANNEL_SLOTPAGE)
+        if (pages && box.message.source == source && box.message.slot == CHANNEL_SLOTPAGE)
         {
 
-            hand(ichannel, message);
+            hand(ichannel, &box, message);
 
             return MESSAGE_TYPE_DATA;
 
         }
 
-        dispatch(ichannel, message);
+        dispatch(ichannel, &box.message);
 
-        if (!pages && message->source == source && message->type == event)
+        if (!pages && box.message.source == source && box.message.type == event)
         {
 
-            hand(ichannel, message);
+            hand(ichannel, &box, message);
 
             return event;
 
         }
 
-        finish(ichannel, message);
+        finish(ichannel, &box.message);
 
-        if (message->source == source && message->type == MESSAGE_TYPE_STATUS)
+        if (box.message.source == source && box.message.type == MESSAGE_TYPE_STATUS)
             return 0;
 
     }
@@ -733,13 +736,9 @@ void channel_done(unsigned int ichannel)
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    if (inbox->handed)
-        inbox->done[inbox->handed - 1] = 1;
-
     if (inbox->handedpage)
         page_free(inbox->handedpage);
 
-    inbox->handed = 0;
     inbox->handedpage = 0;
 
 }
@@ -790,7 +789,7 @@ void channel_exit(unsigned int ichannel)
 static void abortdrain(void)
 {
 
-    struct message messages[MESSAGE_SLOTS];
+    struct message_box boxes[MESSAGE_SLOTS];
     unsigned int i;
 
     for (i = 0; i < CHANNEL_MAILBOXES; i++)
@@ -798,16 +797,11 @@ static void abortdrain(void)
 
         unsigned int j;
 
-        if (call_pick(i, messages, MESSAGE_SLOTS, 0) != MESSAGE_OK)
+        if (call_pick(i, boxes, MESSAGE_SLOTS, 0) != MESSAGE_OK)
             continue;
 
-        for (j = 0; j < MESSAGE_SLOTS && messages[j].type; j++)
-        {
-
-            locate(i, &messages[j]);
-            finish(i, &messages[j]);
-
-        }
+        for (j = 0; j < MESSAGE_SLOTS && boxes[j].message.type; j++)
+            finish(i, &boxes[j].message);
 
     }
 

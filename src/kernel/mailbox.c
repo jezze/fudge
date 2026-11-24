@@ -9,33 +9,8 @@
 #include "debug.h"
 #include "page.h"
 
-static void reclaim(struct mailbox *mailbox)
-{
-
-    unsigned int i;
-
-    spinlock_acquire(&mailbox->spinlock);
-
-    for (i = 0; i < MESSAGE_SLOTS; i++)
-    {
-
-        if ((mailbox->held & (1 << i)) && mailbox->done[i])
-        {
-
-            mailbox->done[i] = 0;
-            mailbox->held &= ~(1 << i);
-
-            list_add_unsafe(&mailbox->free, &mailbox->items[i]);
-
-        }
-
-    }
-
-    spinlock_release(&mailbox->spinlock);
-
-}
-
-static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsigned int count)
+/* mail is copied out with its payload and its slot is free again at once; a page given to the task stays where it is */
+static unsigned int pick(struct mailbox *mailbox, struct message_box *boxes, unsigned int count)
 {
 
     unsigned int n = 0;
@@ -46,15 +21,17 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
         struct list_item *item = mailbox->queued.head;
         struct message *message = item->data;
 
-        buffer_copy(&messages[n], message, sizeof (struct message));
         list_remove_unsafe(&mailbox->queued, item);
+        buffer_copy(&boxes[n].message, message, sizeof (struct message));
 
-        /* a page given to the task has no slot */
         if (message->slot < MESSAGE_SLOTS)
         {
 
-            mailbox->done[message->slot] = 0;
-            mailbox->held |= 1 << message->slot;
+            buffer_copy(boxes[n].payload, (void *)(mailbox->pages + MESSAGE_CONTROLSIZE * message->slot), message->length);
+
+            boxes[n].message.data = boxes[n].payload;
+
+            list_add_unsafe(&mailbox->free, item);
 
         }
 
@@ -63,7 +40,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
     }
 
     if (n < count)
-        messages[n].type = 0;
+        boxes[n].message.type = 0;
 
     return n;
 
@@ -92,7 +69,6 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
 
         status = MESSAGE_RETRY;
 
-        reclaim(mailbox);
         spinlock_acquire(&mailbox->spinlock);
 
         if (promise && *promise)
@@ -104,8 +80,8 @@ static unsigned int place(struct mailbox *mailbox, unsigned int *promise, unsign
             struct list_item *item = mailbox->free.head;
             struct message *message = item->data;
 
-            message_init(message, event, source, count, (void *)(mailbox->vpages + MESSAGE_SLOTSIZE * message->slot));
-            buffer_copy((void *)(mailbox->pages + MESSAGE_SLOTSIZE * message->slot), data, count);
+            message_init(message, event, source, count, 0);
+            buffer_copy((void *)(mailbox->pages + MESSAGE_CONTROLSIZE * message->slot), data, count);
             list_move_unsafe(&mailbox->queued, &mailbox->free, item);
 
             status = MESSAGE_OK;
@@ -141,15 +117,14 @@ void mailbox_sleep(struct mailbox *mailbox)
 
 }
 
-unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int flags)
+unsigned int mailbox_pick(struct mailbox *mailbox, struct message_box *boxes, unsigned int count, unsigned int flags)
 {
 
     unsigned int n;
 
-    reclaim(mailbox);
     spinlock_acquire(&mailbox->spinlock);
 
-    n = pick(mailbox, messages, count);
+    n = pick(mailbox, boxes, count);
 
     spinlock_release(&mailbox->spinlock);
 
@@ -161,8 +136,8 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *messages, uns
         for (i = 0; i < n; i++)
         {
 
-            if (messages[i].slot == MESSAGE_SLOTS)
-                page_picked(messages[i].data);
+            if (boxes[i].message.slot == MESSAGE_SLOTS)
+                page_picked(boxes[i].message.data);
 
         }
 
@@ -191,7 +166,6 @@ static unsigned int shift(struct mailbox *mailbox, unsigned int *from, unsigned 
 
     unsigned int moved = 0;
 
-    reclaim(mailbox);
     spinlock_acquire(&mailbox->spinlock);
 
     if ((from) ? *from : unpromised(mailbox))
@@ -273,7 +247,6 @@ void mailbox_reset(struct mailbox *mailbox)
 
     mailbox->itask = 0;
     mailbox->ichannel = 0;
-    mailbox->held = 0;
     mailbox->reply = 0;
     mailbox->reserved = 0;
 
@@ -288,16 +261,9 @@ void mailbox_reset(struct mailbox *mailbox)
 void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel, unsigned long pages)
 {
 
-    unsigned int i;
-
     mailbox->itask = itask;
     mailbox->ichannel = ichannel;
-    mailbox->pages = pages + MESSAGE_SLOTSIZE * MESSAGE_SLOTS * ichannel;
-    mailbox->vpages = KERNEL_VMAILBOX + MESSAGE_SLOTSIZE * MESSAGE_SLOTS * ichannel;
-    mailbox->done = (volatile unsigned char *)(pages + MESSAGE_SLOTSIZE * MESSAGE_PAGES + MESSAGE_SLOTS * ichannel);
-
-    for (i = 0; i < MESSAGE_SLOTS; i++)
-        mailbox->done[i] = 0;
+    mailbox->pages = pages + MESSAGE_CONTROLSIZE * MESSAGE_SLOTS * ichannel;
 
 }
 
