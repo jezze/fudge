@@ -797,7 +797,7 @@ static void showwindow(void)
     unsigned int height = SCREENHEIGHT;
 
     channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &width, &height);
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "= screen source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &width, &height);
 
 }
 

@@ -406,6 +406,9 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
+    if (event == CHANNEL_PAGE)
+        return placepage(target, count, data);
+
     if (event == MESSAGE_TYPE_ERROR && status == MESSAGE_STATUS_OK)
         status = MESSAGE_STATUS_ERROR;
 

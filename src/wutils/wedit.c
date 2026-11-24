@@ -52,7 +52,7 @@ static void sendchunk(char *data, unsigned int count)
 
     offset += buffer_write(buffer, MESSAGE_SIZE, "\"\n", 2, offset);
 
-    channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, offset, buffer);
+    channel_send(0, wm, CHANNEL_PAGE, offset, buffer);
 
     chunks++;
 
@@ -68,14 +68,14 @@ static void setwrap(void)
     for (i = 0; i < chunks; i++)
         offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "= chunk%u wrap \"%s\"\n", &i, wraps[wrap]);
 
-    channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, offset, buffer);
+    channel_send(0, wm, CHANNEL_PAGE, offset, buffer);
 
 }
 
 static void setbuttons(void)
 {
 
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"%s\"\n= saveas mode \"%s\"\n", (loaded && exists) ? "normal" : "disabled", (loaded) ? "normal" : "disabled");
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "= save mode \"%s\"\n= saveas mode \"%s\"\n", (loaded && exists) ? "normal" : "disabled", (loaded) ? "normal" : "disabled");
 
 }
 
@@ -83,9 +83,9 @@ static void settitle(void)
 {
 
     if (path[0])
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
+        channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
     else
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Text Editor\"\n");
+        channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"Text Editor\"\n");
 
 }
 
@@ -100,7 +100,7 @@ static void clearfile(void)
         offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "- chunk%u\n", &i);
 
     if (offset)
-        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, offset, buffer);
+        channel_send(0, wm, CHANNEL_PAGE, offset, buffer);
 
     chunks = 0;
     loaded = 0;
@@ -141,7 +141,7 @@ static void showfile(void)
             if (offset >= MAXSIZE)
             {
 
-                channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n", &chunks);
+                channel_send_fmt(0, wm, CHANNEL_PAGE, "+ text id \"chunk%u\" in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n", &chunks);
 
                 chunks++;
 
@@ -155,7 +155,7 @@ static void showfile(void)
         else
         {
 
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" label \"Could not open %s\"\n", &chunks, path);
+            channel_send_fmt(0, wm, CHANNEL_PAGE, "+ text id \"chunk%u\" in \"content\" label \"Could not open %s\"\n", &chunks, path);
 
             chunks++;
 
@@ -174,7 +174,7 @@ static void showfile(void)
 
     }
 
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n", &chunks, wraps[wrap]);
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n", &chunks, wraps[wrap]);
     sendcursor(0);
 
     chunks++;

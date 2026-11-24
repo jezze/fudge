@@ -13,7 +13,7 @@
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
-#define NUM_EVENTS                      75
+#define NUM_EVENTS                      74
 
 static struct job job;
 static char script[SCRIPTSIZE];
@@ -300,7 +300,6 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"wmungrab", MESSAGE_TYPE_WMUNGRAB},
     {"wmkeypress", MESSAGE_TYPE_WMKEYPRESS},
     {"wmkeyrelease", MESSAGE_TYPE_WMKEYRELEASE},
-    {"wmrenderdata", MESSAGE_TYPE_WMRENDERDATA},
     {"wmrenderfile", MESSAGE_TYPE_WMRENDERFILE},
     {"wmflush", MESSAGE_TYPE_WMFLUSH},
     {"wmevent", MESSAGE_TYPE_WMEVENT},

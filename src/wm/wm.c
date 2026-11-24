@@ -5012,6 +5012,7 @@ static void render(unsigned int source, unsigned int count, void *data)
 
 }
 
+/* what a client gives in a page is its markup */
 static void onwmrenderdata(struct message *message)
 {
 
@@ -5296,7 +5297,7 @@ void init(void)
     channel_bind(MESSAGE_TYPE_WMREAD, onwmread);
     channel_bind(MESSAGE_TYPE_WMCURSOR, onwmcursor);
     channel_bind(MESSAGE_TYPE_WMSELECT, onwmselect);
-    channel_bind(MESSAGE_TYPE_WMRENDERDATA, onwmrenderdata);
+    channel_bind(MESSAGE_TYPE_DATA, onwmrenderdata);
     channel_bind(MESSAGE_TYPE_WMRENDERFILE, onwmrenderfile);
     channel_bind(MESSAGE_TYPE_WMUNGRAB, onwmungrab);
     channel_bind(MESSAGE_TYPE_WMUNMAP, onwmunmap);

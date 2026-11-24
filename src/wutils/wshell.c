@@ -756,7 +756,7 @@ static void flushoutput(struct output *output)
 {
 
     if (output->count && wm)
-        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, output->count, output->data);
+        channel_send(0, wm, CHANNEL_PAGE, output->count, output->data);
 
     output->count = 0;
 

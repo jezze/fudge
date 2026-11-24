@@ -18,7 +18,7 @@ static int accumulator;
 static void refresh(unsigned int wm, int value)
 {
 
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= result label \"%i\"\n", &value);
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "= result label \"%i\"\n", &value);
 
 }
 
@@ -36,7 +36,7 @@ static void fail(unsigned int wm)
 {
 
     clear();
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= result label \"Error\"\n");
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "= result label \"Error\"\n");
 
 }
 

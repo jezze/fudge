@@ -22,7 +22,7 @@ static char filename[256];
 static void updatepath(unsigned int wm)
 {
 
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= path label \"%s\"\n", path);
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "= path label \"%s\"\n", path);
 
 }
 
@@ -50,9 +50,9 @@ static void setbuttons(unsigned int wm)
         return;
 
     if (opener)
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= open mode \"%s\"\n", (count == 1) ? "normal" : "disabled");
+        channel_send_fmt(0, wm, CHANNEL_PAGE, "= open mode \"%s\"\n", (count == 1) ? "normal" : "disabled");
     else
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, pastemode, mode);
+        channel_send_fmt(0, wm, CHANNEL_PAGE, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, pastemode, mode);
 
 }
 
@@ -62,7 +62,7 @@ static void sendcontent(unsigned int wm)
     rows = 0;
     listing = 0;
 
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "@- files\n@- actions\n= info display \"none\"\n= notfound display \"none\"\n");
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "@- files\n@- actions\n= info display \"none\"\n= notfound display \"none\"\n");
     setbuttons(wm);
 
 }
@@ -95,7 +95,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
             if (c + 512 > MESSAGE_SIZE)
             {
 
-                channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
+                channel_send(0, wm, CHANNEL_PAGE, c, d);
 
                 c = 0;
 
@@ -119,7 +119,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
     }
 
     if (c)
-        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
+        channel_send(0, wm, CHANNEL_PAGE, c, d);
 
     rows = (row < ROWS) ? row : ROWS;
     listing = 1;
@@ -181,11 +181,11 @@ static void showfile(unsigned int wm, struct record *record)
         start = buffer_eachbyte(path, length, ':', 0);
 
     sendcontent(wm);
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= info display \"block\"\n= info-name label \"%s\"\n= info-path label \"Path: %s\"\n", path + start, path);
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= info-size label \"Size: %u bytes\"\n= info-id label \"Id: %u\"\n", &record->size, &record->id);
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "= info display \"block\"\n= info-name label \"%s\"\n= info-path label \"Path: %s\"\n", path + start, path);
+    channel_send_fmt(0, wm, CHANNEL_PAGE, "= info-size label \"Size: %u bytes\"\n= info-id label \"Id: %u\"\n", &record->size, &record->id);
 
     for (i = 0; getline(labels, nlabels, i, label, 64); i++)
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "@ actions %u label \"%s\"\n", &i, label);
+        channel_send_fmt(0, wm, CHANNEL_PAGE, "@ actions %u label \"%s\"\n", &i, label);
 
 }
 
@@ -200,7 +200,7 @@ static void updatecontent(unsigned int wm)
     {
 
         sendcontent(wm);
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= notfound display \"block\"\n");
+        channel_send_fmt(0, wm, CHANNEL_PAGE, "= notfound display \"block\"\n");
 
     }
 
@@ -211,7 +211,7 @@ static void updatecontent(unsigned int wm)
         {
 
             cstring_write_fmt(filename, 256, 0, "%s\\0", path + fs_dirlength(path));
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= name label \"%s\"\n", filename);
+            channel_send_fmt(0, wm, CHANNEL_PAGE, "= name label \"%s\"\n", filename);
 
             path[fs_dirlength(path)] = '\0';
 
@@ -418,7 +418,7 @@ static void sendvolumes(unsigned int wm)
         if (c + 512 > MESSAGE_SIZE)
         {
 
-            channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
+            channel_send(0, wm, CHANNEL_PAGE, c, d);
 
             c = 0;
 
@@ -429,7 +429,7 @@ static void sendvolumes(unsigned int wm)
     }
 
     if (c)
-        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
+        channel_send(0, wm, CHANNEL_PAGE, c, d);
 
 }
 
@@ -452,9 +452,9 @@ static void onmain(struct message *message)
         channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
         if (saver)
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Save As\"\n= browse display \"none\"\n= saveas display \"block\"\n");
+            channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"Save As\"\n= browse display \"none\"\n= saveas display \"block\"\n");
         else if (opener)
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Open\"\n= browse display \"none\"\n= openas display \"block\"\n");
+            channel_send_fmt(0, wm, CHANNEL_PAGE, "= window label \"Open\"\n= browse display \"none\"\n= openas display \"block\"\n");
 
         sendvolumes(wm);
         changepath(wm, "initrd:");
