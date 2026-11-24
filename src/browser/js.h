@@ -1,8 +1,8 @@
-#define JS_NODES                        4096
-#define JS_OBJECTS                      1024
-#define JS_PROPERTIES                   4096
-#define JS_STRINGSIZE                   0x8000
-#define JS_INTERNS                      1024
+#define JS_NODES                        16384
+#define JS_OBJECTS                      4096
+#define JS_PROPERTIES                   16384
+#define JS_STRINGSIZE                   0x20000
+#define JS_INTERNS                      4096
 #define JS_LISTENERS                    64
 #define JS_NATIVES                      24
 #define JS_MEDIA                        HTML_NODES

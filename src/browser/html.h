@@ -1,6 +1,6 @@
-#define HTML_NODES                      2048
-#define HTML_ATTRIBUTES                 4096
-#define HTML_TEXTSIZE                   0x18000
+#define HTML_NODES                      16384
+#define HTML_ATTRIBUTES                 32768
+#define HTML_TEXTSIZE                   0x80000
 #define HTML_DEPTH                      40
 #define HTML_NODE_DOCUMENT              0
 #define HTML_NODE_ELEMENT               1

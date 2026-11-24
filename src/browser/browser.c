@@ -12,7 +12,7 @@
 #include "../wutils/kv.h"
 
 #define URLSIZE                         512
-#define SOURCESIZE                      0x40000
+#define SOURCESIZE                      0x100000
 #define HISTORY                         32
 #define IMAGES                          2
 #define NAMES                           16
@@ -38,6 +38,18 @@ struct image
 
 };
 
+struct store
+{
+
+    struct html_document document;
+    struct css_sheet sheet;
+    struct css_style styles[HTML_NODES];
+    struct layout layout;
+    struct js_engine js;
+    char source[SOURCESIZE];
+
+};
+
 struct page
 {
 
@@ -46,14 +58,15 @@ struct page
 
 };
 
-static struct html_document document;
-static struct css_sheet sheet;
-static struct css_style styles[HTML_NODES];
-static struct layout layout;
-static struct js_engine js;
+static struct html_document *document;
+static struct css_sheet *sheet;
+static struct css_style *styles;
+static struct layout *layout;
+static struct js_engine *js;
 static struct font_face faces[FONT_FACES];
 static struct image images[IMAGES];
 static struct image heap;
+static struct image tables;
 static struct layout_picture pictures[PICTURES];
 static unsigned int picturehashes[PICTURES];
 static unsigned int picturecount;
@@ -62,7 +75,7 @@ static struct png png;
 static unsigned int pngcount;
 static unsigned int pngtarget;
 static unsigned int pngid;
-static char source[SOURCESIZE];
+static char *source;
 static char history[HISTORY][URLSIZE];
 static char current[URLSIZE];
 static char fetched[URLSIZE];
@@ -725,7 +738,7 @@ static void showerror(char *url)
 
     count += cstring_write(source, SOURCESIZE, "</code></p></body></html>", count);
 
-    html_parse(&document, source, count);
+    html_parse(document, source, count);
 
 }
 
@@ -734,14 +747,14 @@ static void loadstyles(void)
 
     unsigned int node;
 
-    css_reset(&sheet);
+    css_reset(sheet);
     copystring(base, URLSIZE, current, cstring_length(current));
 
-    for (node = 1; node < document.nodecount; node++)
+    for (node = 1; node < document->nodecount; node++)
     {
 
-        struct html_node *element = &document.nodes[node];
-        char *media = (element->type == HTML_NODE_ELEMENT) ? html_getattribute(&document, node, "media") : 0;
+        struct html_node *element = &document->nodes[node];
+        char *media = (element->type == HTML_NODE_ELEMENT) ? html_getattribute(document, node, "media") : 0;
 
         if (media && !(matchprefix(media, cstring_length(media), "all") || matchprefix(media, cstring_length(media), "screen")))
             continue;
@@ -749,17 +762,17 @@ static void loadstyles(void)
         if (element->tag == HTML_TAG_STYLE && element->first)
         {
 
-            struct html_node *text = &document.nodes[element->first];
+            struct html_node *text = &document->nodes[element->first];
 
-            css_parse(&sheet, html_getstring(&document, text->text), text->length, CSS_ORIGIN_AUTHOR);
+            css_parse(sheet, html_getstring(document, text->text), text->length, CSS_ORIGIN_AUTHOR);
 
         }
 
         if (element->tag == HTML_TAG_LINK)
         {
 
-            char *rel = html_getattribute(&document, node, "rel");
-            char *href = html_getattribute(&document, node, "href");
+            char *rel = html_getattribute(document, node, "rel");
+            char *href = html_getattribute(document, node, "href");
             char url[URLSIZE];
 
             if (rel && href && cstring_match_substring(rel, "stylesheet") && !cstring_match_substring(rel, "alternate") && resolve(url, URLSIZE, base, href) && issafe(url))
@@ -768,16 +781,16 @@ static void loadstyles(void)
                 struct page sheetpage = load(url);
 
                 if (sheetpage.count)
-                    css_parse(&sheet, source, sheetpage.count, CSS_ORIGIN_AUTHOR);
+                    css_parse(sheet, source, sheetpage.count, CSS_ORIGIN_AUTHOR);
 
             }
 
         }
 
-        if (element->type == HTML_NODE_ELEMENT && cstring_match(html_getstring(&document, element->name), "base"))
+        if (element->type == HTML_NODE_ELEMENT && cstring_match(html_getstring(document, element->name), "base"))
         {
 
-            char *href = html_getattribute(&document, node, "href");
+            char *href = html_getattribute(document, node, "href");
             char url[URLSIZE];
 
             if (href && resolve(url, URLSIZE, current, href))
@@ -942,16 +955,16 @@ static void loadpictures(void)
     picturecount = 0;
     heapused = 0;
 
-    buffer_clear(layout.picture, sizeof (unsigned short) * HTML_NODES);
+    buffer_clear(layout->picture, sizeof (unsigned short) * HTML_NODES);
 
-    for (node = 1; node < document.nodecount; node++)
+    for (node = 1; node < document->nodecount; node++)
     {
 
-        char *src = (document.nodes[node].tag == HTML_TAG_IMG) ? html_getattribute(&document, node, "src") : 0;
+        char *src = (document->nodes[node].tag == HTML_TAG_IMG) ? html_getattribute(document, node, "src") : 0;
         char url[URLSIZE];
 
         if (src && resolve(url, URLSIZE, base, src) && issafe(url))
-            layout.picture[node] = loadpicture(url);
+            layout->picture[node] = loadpicture(url);
 
     }
 
@@ -969,11 +982,11 @@ static void render(void)
     if (!wm || !viewwidth || !image->id)
         return;
 
-    css_compute(&sheet, &document, styles, viewwidth, viewheight, scheme);
-    layout_document(&layout, viewwidth);
+    css_compute(sheet, document, styles, viewwidth, viewheight, scheme);
+    layout_document(layout, viewwidth);
 
     limit = MAXBYTES / 4 / viewwidth;
-    height = (layout.height > (int)viewheight) ? (unsigned int)layout.height : viewheight;
+    height = (layout->height > (int)viewheight) ? (unsigned int)layout->height : viewheight;
     height = (height > limit) ? limit : height;
     height = (height > MAXHEIGHT) ? MAXHEIGHT : height;
 
@@ -986,7 +999,7 @@ static void render(void)
     canvas.heap = (heapused) ? fs_mmap(1, heap.target, heap.id, 0) : 0;
 
     if (canvas.pixels)
-        paint_document(&canvas, &layout);
+        paint_document(&canvas, layout);
 
     if (canvas.heap)
         fs_munmap(1, heap.target, heap.id);
@@ -1004,11 +1017,11 @@ static void render(void)
 static void showstate(void)
 {
 
-    unsigned int titlenode = html_gettitle(&document);
+    unsigned int titlenode = html_gettitle(document);
     char title[TITLESIZE];
 
     if (titlenode)
-        sanitize(title, TITLESIZE, html_getstring(&document, document.nodes[titlenode].text), document.nodes[titlenode].length);
+        sanitize(title, TITLESIZE, html_getstring(document, document->nodes[titlenode].text), document->nodes[titlenode].length);
     else
         title[0] = '\0';
 
@@ -1057,9 +1070,9 @@ static void pushhistory(char *url)
 static unsigned int isscript(unsigned int node)
 {
 
-    char *type = html_getattribute(&document, node, "type");
+    char *type = html_getattribute(document, node, "type");
 
-    if (document.nodes[node].tag != HTML_TAG_SCRIPT)
+    if (document->nodes[node].tag != HTML_TAG_SCRIPT)
         return 0;
 
     return !type || !type[0] || matchsuffix(type, "javascript") || matchsuffix(type, "ecmascript");
@@ -1069,10 +1082,10 @@ static unsigned int isscript(unsigned int node)
 static void runscripts(void)
 {
 
-    unsigned int count = document.nodecount;
+    unsigned int count = document->nodecount;
     unsigned int node;
 
-    js_reset(&js, &document, scheme == CSS_SCHEME_DARK);
+    js_reset(js, document, scheme == CSS_SCHEME_DARK);
 
     for (node = 1; node < count; node++)
     {
@@ -1083,7 +1096,7 @@ static void runscripts(void)
         if (!isscript(node))
             continue;
 
-        src = html_getattribute(&document, node, "src");
+        src = html_getattribute(document, node, "src");
 
         if (src)
         {
@@ -1094,25 +1107,25 @@ static void runscripts(void)
                 struct page script = load(url);
 
                 if (script.count)
-                    js_run(&js, source, script.count);
+                    js_run(js, source, script.count);
 
             }
 
         }
 
-        else if (document.nodes[node].first)
+        else if (document->nodes[node].first)
         {
 
-            struct html_node *text = &document.nodes[document.nodes[node].first];
+            struct html_node *text = &document->nodes[document->nodes[node].first];
 
-            js_run(&js, html_getstring(&document, text->text), text->length);
+            js_run(js, html_getstring(document, text->text), text->length);
 
         }
 
     }
 
-    js_dispatch(&js, 0, "DOMContentLoaded");
-    js_dispatch(&js, 0, "load");
+    js_dispatch(js, 0, "DOMContentLoaded");
+    js_dispatch(js, 0, "load");
 
 }
 
@@ -1124,16 +1137,16 @@ static unsigned int clicknode(unsigned int node)
     while (node)
     {
 
-        if (js_haslistener(&js, node, "click"))
+        if (js_haslistener(js, node, "click"))
         {
 
-            js_dispatch(&js, node, "click");
+            js_dispatch(js, node, "click");
 
             handled = 1;
 
         }
 
-        node = document.nodes[node].parent;
+        node = document->nodes[node].parent;
 
     }
 
@@ -1218,9 +1231,9 @@ static void navigate(char *url, unsigned int push)
     if (!loaded.count)
         showerror(target);
     else if (loaded.kind == PAGE_TEXT)
-        html_parsetext(&document, source, loaded.count);
+        html_parsetext(document, source, loaded.count);
     else
-        html_parse(&document, source, loaded.count);
+        html_parse(document, source, loaded.count);
 
     loadstyles();
     runscripts();
@@ -1240,6 +1253,25 @@ static void loadfonts(void)
 
 }
 
+static unsigned int mapstore(struct image *image)
+{
+
+    struct store *store = (image->id) ? fs_mmap(1, image->target, image->id, sizeof (struct store)) : 0;
+
+    if (!store)
+        return 0;
+
+    document = &store->document;
+    sheet = &store->sheet;
+    styles = store->styles;
+    layout = &store->layout;
+    js = &store->js;
+    source = store->source;
+
+    return 1;
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -1251,26 +1283,35 @@ static void onmain(struct message *message)
         char *alfi = "initrd:data/alfi/browser.alfi";
         char *url = option_getstring("url");
 
-        layout.document = &document;
-        layout.styles = styles;
-        layout.gradients = sheet.gradients;
-        layout.faces = faces;
-        layout.pictures = pictures;
+        createimage(&tables, createimage(&heap, createimage(&images[1], createimage(&images[0], 0))));
 
-        loadfonts();
-        createimage(&heap, createimage(&images[1], createimage(&images[0], 0)));
-        channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        if (mapstore(&tables))
+        {
 
-        if (cstring_match(option_getstring("scheme"), "dark"))
-            scheme = CSS_SCHEME_DARK;
+            layout->document = document;
+            layout->styles = styles;
+            layout->gradients = sheet->gradients;
+            layout->faces = faces;
+            layout->pictures = pictures;
 
-        showscheme();
-        navigate((url[0]) ? url : "about:home", 1);
-        channel_hold(0);
-        channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
+            loadfonts();
+            channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+
+            if (cstring_match(option_getstring("scheme"), "dark"))
+                scheme = CSS_SCHEME_DARK;
+
+            showscheme();
+            navigate((url[0]) ? url : "about:home", 1);
+            channel_hold(0);
+            channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
+            fs_munmap(1, tables.target, tables.id);
+
+        }
+
         removeimage(&images[0]);
         removeimage(&images[1]);
         removeimage(&heap);
+        removeimage(&tables);
 
     }
 
@@ -1346,9 +1387,9 @@ static void onwmevent(struct message *message)
         {
 
             scheme = (scheme == CSS_SCHEME_DARK) ? CSS_SCHEME_LIGHT : CSS_SCHEME_DARK;
-            js.dark = scheme == CSS_SCHEME_DARK;
+            js->dark = scheme == CSS_SCHEME_DARK;
 
-            js_dispatch(&js, JS_MEDIA, "change");
+            js_dispatch(js, JS_MEDIA, "change");
             showscheme();
             render();
 
@@ -1377,12 +1418,12 @@ static void onwmevent(struct message *message)
 
             unsigned int x = kv_getvalue(event, "x=", 10);
             unsigned int y = kv_getvalue(event, "y=", 10);
-            unsigned int anchor = layout_findlink(&layout, x, y);
+            unsigned int anchor = layout_findlink(layout, x, y);
             char url[URLSIZE];
 
-            if (clicknode(layout_findnode(&layout, x, y)))
+            if (clicknode(layout_findnode(layout, x, y)))
                 render();
-            else if (anchor && resolve(url, URLSIZE, base, html_getattribute(&document, anchor, "href")))
+            else if (anchor && resolve(url, URLSIZE, base, html_getattribute(document, anchor, "href")))
                 navigate(url, 1);
 
         }

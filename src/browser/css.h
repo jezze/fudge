@@ -1,9 +1,9 @@
-#define CSS_PARTS                       4096
-#define CSS_SELECTORS                   2048
-#define CSS_DECLARATIONS                4096
-#define CSS_RULES                       2048
-#define CSS_POOLSIZE                    0x10000
-#define CSS_CUSTOMS                     2048
+#define CSS_PARTS                       32768
+#define CSS_SELECTORS                   16384
+#define CSS_DECLARATIONS                32768
+#define CSS_RULES                       16384
+#define CSS_POOLSIZE                    0x80000
+#define CSS_CUSTOMS                     16384
 #define CSS_GRADIENTS                   64
 #define CSS_STOPS                       6
 #define CSS_ORIGIN_AGENT                0

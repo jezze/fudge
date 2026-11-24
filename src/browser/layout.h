@@ -1,6 +1,6 @@
-#define LAYOUT_FRAGMENTS                4096
+#define LAYOUT_FRAGMENTS                16384
 #define LAYOUT_ITEMS                    512
-#define LAYOUT_TEXTSIZE                 0x4000
+#define LAYOUT_TEXTSIZE                 0x10000
 #define LAYOUT_FRAGMENT_TEXT            0
 #define LAYOUT_FRAGMENT_GENERATED       1
 #define LAYOUT_FRAGMENT_MARKER          2
