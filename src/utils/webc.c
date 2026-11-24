@@ -27,7 +27,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
     char *mode = (secure) ? "tls" : "tcp";
     char *port = (url->port) ? url->port : ((secure) ? "443" : "80");
 
-    unsigned int target = fs_spawn(2, "initrd:bin/socket");
+    unsigned int target = fs_spawn(1, "initrd:bin/socket");
 
     if (target)
     {
@@ -35,19 +35,19 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         struct message_pipe pipe;
         struct message *message;
 
-        channel_sendoption(2, target, "mode", mode);
-        channel_sendoption(2, target, "remote-address", address);
-        channel_sendoption(2, target, "remote-port", port);
-        channel_sendoption(2, target, "server-name", url->host);
+        channel_sendoption(1, target, "mode", mode);
+        channel_sendoption(1, target, "remote-address", address);
+        channel_sendoption(1, target, "remote-port", port);
+        channel_sendoption(1, target, "server-name", url->host);
         message_initpipe(&pipe);
-        channel_send(2, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
+        channel_send(1, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 
-        if ((message = channel_poll(2, target, MESSAGE_TYPE_READY)))
+        if ((message = channel_poll(1, target, MESSAGE_TYPE_READY)))
         {
 
-            channel_send_fmt(2, target, MESSAGE_TYPE_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", (url->path) ? url->path : "", url->host);
+            channel_send_fmt(1, target, MESSAGE_TYPE_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", (url->path) ? url->path : "", url->host);
 
-            while ((message = channel_poll(2, target, MESSAGE_TYPE_DATA)))
+            while ((message = channel_poll(1, target, MESSAGE_TYPE_DATA)))
                 channel_forward(0, source, MESSAGE_TYPE_DATA, message);
 
         }

@@ -9,7 +9,7 @@
 #define MESSAGE_TEXTSIZE                240
 #define MESSAGE_IDSIZE                  32
 #define MESSAGE_CONSOLESIZE             32
-#define MESSAGE_CHANNELS                4
+#define MESSAGE_CHANNELS                2
 #define MESSAGE_OK                      0x01
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_FAILED                  0x03
