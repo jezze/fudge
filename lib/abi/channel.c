@@ -501,41 +501,30 @@ unsigned int channel_process(unsigned int ichannel)
 
 }
 
+/* what is waiting is handled without blocking: 1 if the channel is empty now, 0 if it closed */
 unsigned int channel_drain(unsigned int ichannel)
 {
 
     struct message_box box;
+    unsigned int status = MESSAGE_FAILED;
 
-    while (canpick(ichannel))
+    while (canpick(ichannel) && (status = take(ichannel, &box, 0)) == MESSAGE_OK)
     {
 
-        switch (take(ichannel, &box, 0))
-        {
-
-        case MESSAGE_OK:
-            dispatch(ichannel, &box.message);
-            finish(&box.message);
-
-            break;
-
-        case MESSAGE_RETRY:
-            return 1;
-
-        default:
-            return 0;
-
-        }
+        dispatch(ichannel, &box.message);
+        finish(&box.message);
 
     }
 
-    return 0;
+    return canpick(ichannel) && status == MESSAGE_RETRY;
 
 }
 
+/* until the channel is closed; a term only ends channel_loop */
 void channel_hold(unsigned int ichannel)
 {
 
-    while (canpick(ichannel) && channel_process(ichannel));
+    while (channel_process(ichannel));
 
 }
 
