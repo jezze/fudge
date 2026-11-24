@@ -369,7 +369,7 @@ static unsigned int placepage(unsigned int ichannel, unsigned int target, unsign
 }
 
 /* control is small and never cut short: one too large fails, reported where this task reports its errors */
-static unsigned int toolong(void)
+unsigned int channel_toolong(void)
 {
 
     char *error = "Control message too long\n";
@@ -390,7 +390,7 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
         return placepage(ichannel, target, event, count, data);
 
     if (count > MESSAGE_SLOTSIZE)
-        return toolong();
+        return channel_toolong();
 
     while ((status = call_place(ichannel, target, event, count, data, 0)) == MESSAGE_RETRY)
         relieve();
@@ -402,8 +402,27 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    if (event == MESSAGE_TYPE_ERROR && status == MESSAGE_STATUS_OK)
-        status = MESSAGE_STATUS_ERROR;
+    struct message_error error;
+
+    /* an error is a fixed control message: the text given, up to its end, goes in the struct */
+    if (event == MESSAGE_TYPE_ERROR)
+    {
+
+        unsigned int length = buffer_findbyte(data, count, '\0');
+
+        if (length >= MESSAGE_TEXTSIZE)
+            return channel_toolong();
+
+        buffer_clear(&error, sizeof (struct message_error));
+        buffer_copy(error.text, data, length);
+
+        count = sizeof (struct message_error);
+        data = &error;
+
+        if (status == MESSAGE_STATUS_OK)
+            status = MESSAGE_STATUS_ERROR;
+
+    }
 
     if (!ichannel && (target == owner || (pipe.prev && target == pipe.prev)))
     {
@@ -425,7 +444,7 @@ unsigned int channel_sendoption(unsigned int ichannel, unsigned int target, char
     struct message_option option;
 
     if (cstring_length(key) >= MESSAGE_KEYSIZE || cstring_length(value) >= MESSAGE_VALUESIZE)
-        return toolong();
+        return channel_toolong();
 
     buffer_clear(&option, sizeof (struct message_option));
     buffer_copy(option.key, key, cstring_length(key));
@@ -441,7 +460,7 @@ unsigned int channel_sendpath(unsigned int ichannel, unsigned int target, char *
     struct message_path message;
 
     if (cstring_length(path) >= MESSAGE_PATHSIZE)
-        return toolong();
+        return channel_toolong();
 
     buffer_clear(&message, sizeof (struct message_path));
     buffer_copy(message.path, path, cstring_length(path));
@@ -794,13 +813,16 @@ void channel_abort(unsigned int ichannel)
     if (owner)
     {
 
-        char *error = "Process aborted\n";
+        struct message_error error;
         struct message_route *route = (ichannel) ? 0 : findroute(MESSAGE_TYPE_ERROR);
 
+        buffer_clear(&error, sizeof (struct message_error));
+        buffer_copy(error.text, "Process aborted\n", 16);
+
         if (route)
-            abortplace(ichannel, resolve(route->target), route->to, cstring_length(error), error);
+            abortplace(ichannel, resolve(route->target), route->to, sizeof (struct message_error), &error);
         else
-            abortplace(ichannel, owner, MESSAGE_TYPE_ERROR, cstring_length(error), error);
+            abortplace(ichannel, owner, MESSAGE_TYPE_ERROR, sizeof (struct message_error), &error);
 
     }
 

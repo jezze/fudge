@@ -914,8 +914,12 @@ static void ondata(struct message *message)
 static void onerror(struct message *message)
 {
 
+    struct message_error *error = message_validate(MESSAGE_TYPE_ERROR, message->data, message->length);
+
     feed(&term, "[ERROR] ", 8);
-    feed(&term, message->data, message->length);
+
+    if (error)
+        feed(&term, error->text, cstring_length(error->text));
 
 }
 

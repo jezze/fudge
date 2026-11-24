@@ -105,6 +105,7 @@ static unsigned int run(unsigned int id, char *name)
     {
 
         struct message_status *status;
+        struct message_error *error;
 
         if (message.type == MESSAGE_TYPE_TIMEREXPIRE && expired(&message, id))
         {
@@ -136,7 +137,10 @@ static unsigned int run(unsigned int id, char *name)
 
         case MESSAGE_TYPE_DATA:
         case MESSAGE_TYPE_ERROR:
-            channel_send_fmt(0, output, MESSAGE_TYPE_DATA, "test %s: %w", name, message.data, &message.length);
+            error = message_validate(MESSAGE_TYPE_ERROR, message.data, message.length);
+
+            if (error)
+                channel_send_fmt(0, output, MESSAGE_TYPE_DATA, "test %s: %s", name, error->text);
 
             break;
 

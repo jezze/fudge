@@ -1434,15 +1434,28 @@ static void sendtextevent(unsigned int source, char *action, char *text)
     if (source)
     {
 
-        struct {struct message_wmevent wmevent; char data[EVENTDATA_SIZE];} message;
-        unsigned int count = cstring_write_fmt(message.data, EVENTDATA_SIZE - 1, 0, "%s", action);
+        struct {struct message_wmevent wmevent; char data[MESSAGE_TEXTSIZE];} message;
+        unsigned int alength = cstring_length(action);
+        unsigned int tlength = cstring_length(text);
 
-        count += buffer_write(message.data, EVENTDATA_SIZE - 1, text, utf8_fit(text, cstring_length(text), EVENTDATA_SIZE - 1 - count), count);
-        message.data[count] = '\0';
+        /* a control message of fixed size: an event that does not fit fails rather than losing its end */
+        if (alength + tlength >= MESSAGE_TEXTSIZE)
+        {
+
+            channel_toolong();
+
+            return;
+
+        }
+
+        buffer_clear(&message, sizeof (message));
+        buffer_copy(message.data, action, alength);
+        buffer_copy(message.data + alength, text, tlength);
+
         message.wmevent.type = 1;
-        message.wmevent.length = count + 1;
+        message.wmevent.length = alength + tlength + 1;
 
-        channel_send(0, source, MESSAGE_TYPE_WMEVENT, sizeof (struct message_wmevent) + message.wmevent.length, &message);
+        channel_send(0, source, MESSAGE_TYPE_WMEVENT, sizeof (message), &message);
 
     }
 

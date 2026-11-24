@@ -123,7 +123,7 @@ static void onmain(struct message *message)
             break;
 
         case MESSAGE_TYPE_ERROR:
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%w", current.data, &current.length);
+            channel_send(0, message->source, MESSAGE_TYPE_ERROR, current.length, current.data);
 
             break;
 

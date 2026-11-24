@@ -68,6 +68,9 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     case MESSAGE_TYPE_PATH:
         return checksize(data, count, sizeof (struct message_path));
 
+    case MESSAGE_TYPE_ERROR:
+        return checksize(data, count, sizeof (struct message_error));
+
     case MESSAGE_TYPE_MAIN:
         return checksize(data, count, sizeof (struct message_pipe));
 
@@ -233,13 +236,14 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
         return 0;
 
+    /* the text follows the header in a field of fixed size */
     case MESSAGE_TYPE_WMEVENT:
-        if (count >= sizeof (struct message_wmevent))
+        if (count == sizeof (struct message_wmevent) + MESSAGE_TEXTSIZE)
         {
 
             struct message_wmevent *wmevent = data;
 
-            return checkpayload(data, count, sizeof (struct message_wmevent), wmevent->length);
+            return (wmevent->length <= MESSAGE_TEXTSIZE) ? data : 0;
 
         }
 

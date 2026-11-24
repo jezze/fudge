@@ -121,7 +121,7 @@ static void onmain(struct message *message)
         /* after the kill, failing and aborting is what the stages are expected to do */
         case MESSAGE_TYPE_ERROR:
             if (!killed)
-                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%w", current.data, &current.length);
+                channel_send(0, message->source, MESSAGE_TYPE_ERROR, current.length, current.data);
 
             break;
 

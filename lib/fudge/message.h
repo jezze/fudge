@@ -5,6 +5,7 @@
 #define MESSAGE_KEYSIZE                 32
 #define MESSAGE_VALUESIZE               192
 #define MESSAGE_PATHSIZE                240
+#define MESSAGE_TEXTSIZE                240
 #define MESSAGE_PAGES                   64
 #define MESSAGE_AREASIZE                (MESSAGE_PAGES * MESSAGE_SLOTSIZE + MESSAGE_SIZE)
 #define MESSAGE_OK                      0x01
@@ -134,6 +135,13 @@ struct message_option
 
     char key[MESSAGE_KEYSIZE];
     char value[MESSAGE_VALUESIZE];
+
+};
+
+struct message_error
+{
+
+    char text[MESSAGE_TEXTSIZE];
 
 };
 

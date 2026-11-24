@@ -66,7 +66,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         return MESSAGE_OK;
 
     case MESSAGE_TYPE_ERROR:
-        notify(source, DEBUG_ERROR, count, data);
+        notify(source, DEBUG_ERROR, buffer_findbyte(data, count, '\0'), data);
 
         return MESSAGE_OK;
 

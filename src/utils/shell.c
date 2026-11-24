@@ -626,8 +626,12 @@ static void onstatus(struct message *message)
 static void onerror(struct message *message)
 {
 
+    struct message_error *error = message_validate(MESSAGE_TYPE_ERROR, message->data, message->length);
+
     print("[ERROR] ", 8);
-    printoutput(message->data, message->length);
+
+    if (error)
+        printoutput(error->text, cstring_length(error->text));
 
 }
 
