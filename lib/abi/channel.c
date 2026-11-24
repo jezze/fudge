@@ -666,28 +666,6 @@ void channel_done(unsigned int ichannel)
 
 }
 
-unsigned int channel_keep(struct message *message)
-{
-
-    unsigned int i;
-
-    if (message->slot != CHANNEL_SLOTPAGE)
-        return 0;
-
-    message->slot = CHANNEL_SLOTKEPT;
-
-    for (i = 0; i < CHANNEL_MAILBOXES; i++)
-    {
-
-        if (inboxes[i].handedpage == message->data)
-            inboxes[i].handedpage = 0;
-
-    }
-
-    return 1;
-
-}
-
 void channel_bind(unsigned int event, void (*callback)(struct message *message))
 {
 
