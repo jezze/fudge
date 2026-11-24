@@ -52,7 +52,7 @@ static void onmain(struct message *message)
     unsigned int started;
     unsigned int done = 0;
     unsigned int i;
-    struct message current;
+    struct message *current;
 
     for (started = 0; started < SENDERS; started++)
     {
@@ -75,25 +75,25 @@ static void onmain(struct message *message)
     for (i = 0; i < started; i++)
         start(targets[i]);
 
-    while (done < started && channel_pick(1, &current))
+    while (done < started && (current = channel_pick(1)))
     {
 
         struct message_status *status;
         unsigned int value;
 
-        i = find(targets, current.source);
+        i = find(targets, current->source);
 
         if (i == SENDERS)
             continue;
 
-        switch (current.type)
+        switch (current->type)
         {
 
         case MESSAGE_TYPE_DATA:
-            if (current.length != sizeof (unsigned int))
+            if (current->length != sizeof (unsigned int))
                 break;
 
-            buffer_copy(&value, current.data, sizeof (unsigned int));
+            buffer_copy(&value, current->data, sizeof (unsigned int));
 
             if (value != next[i])
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "sender %u sent %u, expected %u\n", &i, &value, &next[i]);
@@ -103,7 +103,7 @@ static void onmain(struct message *message)
             break;
 
         case MESSAGE_TYPE_STATUS:
-            status = message_validate(MESSAGE_TYPE_STATUS, current.data, current.length);
+            status = message_validate(MESSAGE_TYPE_STATUS, current->data, current->length);
 
             if (!status || status->code != MESSAGE_STATUS_OK)
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "sender %u did not exit cleanly\n", &i);

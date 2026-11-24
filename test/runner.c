@@ -82,7 +82,7 @@ static unsigned int run(unsigned int id, char *name)
     char path[PATHSIZE];
     unsigned int strikes = 0;
     unsigned int target;
-    struct message message;
+    struct message *message;
 
     cstring_write_fmt(path, PATHSIZE, 0, "initrd:test/%s\\0", name);
     channel_send_fmt(0, output, MESSAGE_TYPE_DATA, "test %s start\n", name);
@@ -102,13 +102,13 @@ static unsigned int run(unsigned int id, char *name)
     channel_send(1, target, MESSAGE_TYPE_TERM, 0, 0);
     arm(id, DEADLINE);
 
-    while (channel_pick(1, &message))
+    while ((message = channel_pick(1)))
     {
 
         struct message_status *status;
         struct message_error *error;
 
-        if (message.type == MESSAGE_TYPE_TIMEREXPIRE && expired(&message, id))
+        if (message->type == MESSAGE_TYPE_TIMEREXPIRE && expired(message, id))
         {
 
             if (strikes++)
@@ -130,15 +130,15 @@ static unsigned int run(unsigned int id, char *name)
 
         }
 
-        if (message.source != target)
+        if (message->source != target)
             continue;
 
-        switch (message.type)
+        switch (message->type)
         {
 
         case MESSAGE_TYPE_DATA:
         case MESSAGE_TYPE_ERROR:
-            error = message_validate(MESSAGE_TYPE_ERROR, message.data, message.length);
+            error = message_validate(MESSAGE_TYPE_ERROR, message->data, message->length);
 
             if (error)
                 channel_send_fmt(0, output, MESSAGE_TYPE_DATA, "test %s: %s", name, error->text);
@@ -146,7 +146,7 @@ static unsigned int run(unsigned int id, char *name)
             break;
 
         case MESSAGE_TYPE_STATUS:
-            status = message_validate(MESSAGE_TYPE_STATUS, message.data, message.length);
+            status = message_validate(MESSAGE_TYPE_STATUS, message->data, message->length);
 
             arm(id, 0);
 

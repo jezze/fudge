@@ -1,17 +1,17 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void output(unsigned int source, void *buffer, unsigned int count)
+static void output(unsigned int source, struct message *message)
 {
 
-    channel_send(0, source, MESSAGE_TYPE_DATA, count, buffer);
+    channel_forward(0, source, MESSAGE_TYPE_DATA, message);
 
 }
 
 static void ondata(struct message *message)
 {
 
-    output(message->source, message->data, message->length);
+    output(message->source, message);
 
 }
 

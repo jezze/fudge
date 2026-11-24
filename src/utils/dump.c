@@ -3,10 +3,11 @@
 
 static unsigned int page;
 
-static void print(unsigned int source, void *buffer, unsigned int count)
+static void print(unsigned int source, struct message *message)
 {
 
-    unsigned char *b = buffer;
+    unsigned char *b = message->data;
+    unsigned int count = message->length;
     unsigned int i;
 
     for (i = 0; i < count; i += 16)
@@ -66,7 +67,7 @@ static void print(unsigned int source, void *buffer, unsigned int count)
 static void ondata(struct message *message)
 {
 
-    print(message->source, message->data, message->length);
+    print(message->source, message);
 
 }
 

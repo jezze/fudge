@@ -24,13 +24,13 @@ static void checkline(unsigned int source)
 
 }
 
-static void check(unsigned int source, void *buffer, unsigned int count)
+static void check(unsigned int source, struct message *message)
 {
 
-    unsigned char *b = buffer;
+    unsigned char *b = message->data;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < message->length; i++)
     {
 
         line[linecount++] = b[i];
@@ -59,7 +59,7 @@ static void flush(unsigned int source)
 static void ondata(struct message *message)
 {
 
-    check(message->source, message->data, message->length);
+    check(message->source, message);
 
 }
 

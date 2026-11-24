@@ -682,28 +682,28 @@ struct socket *socket_accept_udp(struct socket *local, struct socket *remotes, u
 unsigned int socket_receive(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
 {
 
-    struct message message;
+    struct message *message;
 
-    while (channel_poll(ichannel, target, MESSAGE_TYPE_DATA, &message))
+    while ((message = channel_poll(ichannel, target, MESSAGE_TYPE_DATA)))
     {
 
         struct socket *remote;
 
-        remote = socket_accept_arp(local, remotes, nremotes, message.length, message.data);
+        remote = socket_accept_arp(local, remotes, nremotes, message->length, message->data);
 
         if (remote)
         {
 
-            socket_handle_arp(ichannel, target, local, remote, message.length, message.data);
+            socket_handle_arp(ichannel, target, local, remote, message->length, message->data);
 
         }
 
-        remote = socket_accept_tcp(local, remotes, nremotes, message.length, message.data);
+        remote = socket_accept_tcp(local, remotes, nremotes, message->length, message->data);
 
         if (remote)
         {
 
-            unsigned int payloadcount = socket_handle_tcp(ichannel, target, local, remote, router, message.length, message.data, count, buffer);
+            unsigned int payloadcount = socket_handle_tcp(ichannel, target, local, remote, router, message->length, message->data, count, buffer);
 
             if (payloadcount)
                 return payloadcount;
@@ -718,12 +718,12 @@ unsigned int socket_receive(unsigned int ichannel, unsigned int target, struct s
 
         }
 
-        remote = socket_accept_udp(local, remotes, nremotes, message.length, message.data);
+        remote = socket_accept_udp(local, remotes, nremotes, message->length, message->data);
 
         if (remote)
         {
 
-            unsigned int payloadcount = socket_handle_udp(ichannel, target, local, remote, router, message.length, message.data, count, buffer);
+            unsigned int payloadcount = socket_handle_udp(ichannel, target, local, remote, router, message->length, message->data, count, buffer);
 
             if (payloadcount)
                 return payloadcount;
@@ -757,7 +757,7 @@ void socket_listen_tcp(unsigned int target, struct socket *local, struct socket 
 void socket_connect_tcp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router)
 {
 
-    struct message message;
+    struct message *message;
     char data[MESSAGE_SIZE];
 
     remote->info.tcp.state = TCP_STATE_SYNSENT;
@@ -765,13 +765,13 @@ void socket_connect_tcp(unsigned int ichannel, unsigned int target, struct socke
 
     send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_SYN, MESSAGE_SIZE, 0, 0));
 
-    while (channel_poll(ichannel, target, MESSAGE_TYPE_DATA, &message))
+    while ((message = channel_poll(ichannel, target, MESSAGE_TYPE_DATA)))
     {
 
         char buffer[SOCKET_MTUSIZE];
 
-        socket_handle_arp(ichannel, target, local, remote, message.length, message.data);
-        socket_handle_tcp(ichannel, target, local, remote, router, message.length, message.data, SOCKET_MTUSIZE, buffer);
+        socket_handle_arp(ichannel, target, local, remote, message->length, message->data);
+        socket_handle_tcp(ichannel, target, local, remote, router, message->length, message->data, SOCKET_MTUSIZE, buffer);
 
         if (remote->info.tcp.state == TCP_STATE_ESTABLISHED || remote->info.tcp.state == TCP_STATE_CLOSED)
             break;
@@ -784,7 +784,7 @@ void socket_resolveremote(unsigned int ichannel, unsigned int target, struct soc
 {
 
     struct socket multicast;
-    struct message message;
+    struct message *message;
     char data[MESSAGE_SIZE];
     unsigned char haddress[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -792,10 +792,10 @@ void socket_resolveremote(unsigned int ichannel, unsigned int target, struct soc
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE);
     send(ichannel, target, data, buildarp(data, SOCKET_MTUSIZE, local, remote, &multicast, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_poll(ichannel, target, MESSAGE_TYPE_DATA, &message))
+    while ((message = channel_poll(ichannel, target, MESSAGE_TYPE_DATA)))
     {
 
-        socket_handle_arp(ichannel, target, local, remote, message.length, message.data);
+        socket_handle_arp(ichannel, target, local, remote, message->length, message->data);
 
         if (remote->resolved)
             break;

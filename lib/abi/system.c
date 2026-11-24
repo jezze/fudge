@@ -47,23 +47,23 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
     if (start(command, cstring_write_fmtv(command, MESSAGE_SIZE, 0, fmt, args), 0))
     {
 
-        struct message message;
+        struct message *message;
         struct message_status *status;
 
-        while (channel_pick(1, &message))
+        while ((message = channel_pick(1)))
         {
 
-            switch (message.type)
+            switch (message->type)
             {
 
             case MESSAGE_TYPE_ERROR:
             case MESSAGE_TYPE_DATA:
-                channel_send(0, target, message.type, message.length, message.data);
+                channel_forward(0, target, message->type, message);
 
                 break;
 
             case MESSAGE_TYPE_STATUS:
-                status = message_validate(MESSAGE_TYPE_STATUS, message.data, message.length);
+                status = message_validate(MESSAGE_TYPE_STATUS, message->data, message->length);
 
                 return status && status->code == MESSAGE_STATUS_OK;
 
@@ -88,7 +88,7 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
     {
 
         char *data = input;
-        struct message message;
+        struct message *message;
         unsigned int offset;
 
         for (offset = 0; offset < inputcount; offset += MESSAGE_SIZE)
@@ -96,14 +96,14 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
 
         channel_send(1, sh, MESSAGE_TYPE_TERM, 0, 0);
 
-        while (channel_pick(1, &message))
+        while ((message = channel_pick(1)))
         {
 
-            switch (message.type)
+            switch (message->type)
             {
 
             case MESSAGE_TYPE_DATA:
-                total += buffer_write(output, outputcount, message.data, message.length, total);
+                total += buffer_write(output, outputcount, message->data, message->length, total);
 
                 break;
 

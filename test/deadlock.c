@@ -30,7 +30,7 @@ static void onmain(struct message *message)
     unsigned int failed = 0;
     unsigned int echoes = 0;
     unsigned int i;
-    struct message current;
+    struct message *current;
 
     if (!peer)
     {
@@ -51,16 +51,16 @@ static void onmain(struct message *message)
 
     channel_send(1, peer, MESSAGE_TYPE_TERM, 0, 0);
 
-    while (channel_pick(1, &current))
+    while ((current = channel_pick(1)))
     {
 
-        if (current.source != peer)
+        if (current->source != peer)
             continue;
 
-        if (current.type == MESSAGE_TYPE_INFO)
+        if (current->type == MESSAGE_TYPE_INFO)
             echoes++;
 
-        if (current.type == MESSAGE_TYPE_STATUS)
+        if (current->type == MESSAGE_TYPE_STATUS)
             break;
 
     }

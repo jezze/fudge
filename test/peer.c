@@ -4,7 +4,7 @@
 static void ondata(struct message *message)
 {
 
-    channel_send(0, message->source, message->type, message->length, message->data);
+    channel_forward(0, message->source, message->type, message);
 
 }
 

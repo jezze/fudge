@@ -3,14 +3,14 @@
 
 static unsigned int lines;
 
-static void output(unsigned int source, void *buffer, unsigned int count)
+static void output(unsigned int source, struct message *message)
 {
 
-    char *data = buffer;
+    char *data = message->data;
     unsigned int max = option_getdecimal("n");
     unsigned int i;
 
-    for (i = 0; i < count && lines < max; i++)
+    for (i = 0; i < message->length && lines < max; i++)
     {
 
         if (data[i] == '\n')
@@ -26,7 +26,7 @@ static void output(unsigned int source, void *buffer, unsigned int count)
 static void ondata(struct message *message)
 {
 
-    output(message->source, message->data, message->length);
+    output(message->source, message);
 
 }
 

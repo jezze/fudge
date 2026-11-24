@@ -14,13 +14,13 @@ static char getbyte(unsigned int offset)
 
 }
 
-static void store(unsigned int source, void *data, unsigned int count)
+static void store(unsigned int source, struct message *message)
 {
 
-    char *b = data;
+    char *b = message->data;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < message->length; i++)
     {
 
         buffer[(start + length) % BUFFER_SIZE] = b[i];
@@ -80,7 +80,7 @@ static void flush(unsigned int source)
 static void ondata(struct message *message)
 {
 
-    store(message->source, message->data, message->length);
+    store(message->source, message);
 
 }
 

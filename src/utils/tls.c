@@ -105,10 +105,11 @@ static void addanchor(void)
 
 }
 
-static void onpemdata(unsigned int source, void *buffer, unsigned int count)
+static void onpemdata(unsigned int source, struct message *message)
 {
 
-    unsigned char *data = buffer;
+    unsigned char *data = message->data;
+    unsigned int count = message->length;
 
     while (count)
     {

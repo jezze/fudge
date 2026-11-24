@@ -18,7 +18,7 @@ static void invert(unsigned int target, struct message *message)
     for (i = 0; i < message->length; i++)
         block->bytes[i] = ~block->bytes[i];
 
-    channel_send(0, target, MESSAGE_TYPE_DATA, message->length, message->data);
+    channel_forward(0, target, MESSAGE_TYPE_DATA, message);
 
 }
 

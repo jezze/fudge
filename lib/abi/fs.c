@@ -10,14 +10,6 @@
 #define FS_NAMESIZE                     32
 #define READSIZE                        0x8000
 
-struct readreply
-{
-
-    unsigned int count;
-    void *data;
-
-};
-
 unsigned int fs_auth(char *path)
 {
 
@@ -217,16 +209,14 @@ unsigned int fs_munmap(unsigned int ichannel, unsigned int target, unsigned int 
 }
 
 /* the reader brings the page, so it counts against the reader and the reader sleeps for one at its limit; the service fills it and gives it back */
-static struct readreply readreply(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int count, unsigned int offset)
+/* the reply is held until the next pick on this channel or channel_done, unless forwarded first */
+static struct message *readreply(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int count, unsigned int offset)
 {
 
-    struct readreply reply;
     struct message_readrequest request;
-    struct message message;
+    struct message *message;
     void *page = page_alloc();
 
-    reply.count = 0;
-    reply.data = 0;
     request.id = id;
     request.offset = offset;
     request.count = count;
@@ -238,37 +228,29 @@ static struct readreply readreply(unsigned int ichannel, unsigned int target, un
 
         page_free(page);
 
-        return reply;
+        return 0;
 
     }
 
-    /* the page is freed at the next pick on this channel or by channel_done, unless given on first */
-    if (channel_send(ichannel, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_pollreply(ichannel, target, &message) == MESSAGE_TYPE_DATA)
-    {
-
-        reply.count = (message.length < count) ? message.length : count;
-        reply.data = message.data;
-
-        return reply;
-
-    }
+    if (channel_send(ichannel, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request) && (message = channel_pollreply(ichannel, target)))
+        return message;
 
     /* no answer: the page is still this task's unless a task took it, and then it goes back with that task */
     page_free(page);
 
-    return reply;
+    return 0;
 
 }
 
 unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct readreply reply = readreply(ichannel, target, id, count, offset);
+    struct message *message = readreply(ichannel, target, id, count, offset);
+    unsigned int total = (message) ? buffer_read(buffer, count, message->data, message->length, 0) : 0;
 
-    buffer_copy(buffer, reply.data, reply.count);
     channel_done(ichannel);
 
-    return reply.count;
+    return total;
 
 }
 
@@ -287,12 +269,12 @@ unsigned int fs_read_full(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
-unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path, void (*each)(unsigned int source, void *buffer, unsigned int count))
+unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path, void (*each)(unsigned int source, struct message *message))
 {
 
     unsigned int target = fs_auth(path);
     unsigned int id = (target) ? fs_walk(ichannel, target, 0, path) : 0;
-    struct readreply reply;
+    struct message *message;
     struct record record;
     unsigned int offset = 0;
 
@@ -323,19 +305,15 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
 
     }
 
-    while ((reply = readreply(ichannel, target, id, READSIZE, offset)).count)
+    while ((message = readreply(ichannel, target, id, READSIZE, offset)) && message->length)
     {
 
-        unsigned char *data = reply.data;
-        unsigned int i;
+        offset += message->length;
 
-        for (i = 0; i < reply.count; i += MESSAGE_SIZE)
-            each(source, data + i, (reply.count - i < MESSAGE_SIZE) ? reply.count - i : MESSAGE_SIZE);
+        each(source, message);
 
-        /* unless each gave the page on, it goes back to the pool now */
+        /* unless each forwarded the page, it goes back to the pool now */
         channel_done(ichannel);
-
-        offset += reply.count;
 
     }
 

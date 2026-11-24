@@ -118,7 +118,7 @@ static void onmain(struct message *message)
         unsigned int timer = channel_lookup(option_getstring("timer-service"));
         char address[32];
         struct mtwist_state state;
-        struct message m;
+        struct message *m;
 
         mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
         socket_bind_ipv4s(&router, system_address(option_getstring("ethernet-service"), "router-address", "route", address, 32));
@@ -140,27 +140,27 @@ static void onmain(struct message *message)
 
             socket_listen_tcp(ethernet, &local, remotes, 64, &router);
 
-            while (channel_poll(0, ethernet, MESSAGE_TYPE_DATA, &m))
+            while ((m = channel_poll(0, ethernet, MESSAGE_TYPE_DATA)))
             {
 
                 struct socket *remote;
 
-                remote = socket_accept_arp(&local, remotes, 64, m.length, m.data);
+                remote = socket_accept_arp(&local, remotes, 64, m->length, m->data);
 
                 if (remote)
                 {
 
-                    socket_handle_arp(0, ethernet, &local, remote, m.length, m.data);
+                    socket_handle_arp(0, ethernet, &local, remote, m->length, m->data);
 
                 }
 
-                remote = socket_accept_tcp(&local, remotes, 64, m.length, m.data);
+                remote = socket_accept_tcp(&local, remotes, 64, m->length, m->data);
 
                 if (remote)
                 {
 
                     unsigned char buffer[4096];
-                    unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, m.length, m.data, 4096, buffer);
+                    unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, m->length, m->data, 4096, buffer);
 
                     if (count)
                     {

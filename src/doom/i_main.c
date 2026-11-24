@@ -200,7 +200,6 @@ void I_uSleep(unsigned long usecs)
 {
 
     struct message_timerrequest timerrequest;
-    struct message message;
 
     I_UpdateSound();
 
@@ -211,7 +210,7 @@ void I_uSleep(unsigned long usecs)
     if (closed || !channel_send(0, timer, MESSAGE_TYPE_TIMERREQUEST, sizeof (struct message_timerrequest), &timerrequest))
         return;
 
-    if (!channel_poll(0, timer, MESSAGE_TYPE_TIMEREXPIRE, &message))
+    if (!channel_poll(0, timer, MESSAGE_TYPE_TIMEREXPIRE))
     {
 
         closed = 1;

@@ -6,13 +6,13 @@ static unsigned int words;
 static unsigned int lines;
 static unsigned int whitespace = 1;
 
-static void sum(unsigned int source, void *buffer, unsigned int count)
+static void sum(unsigned int source, struct message *message)
 {
 
-    char *data = buffer;
+    char *data = message->data;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < message->length; i++)
     {
 
         switch (data[i])
@@ -48,7 +48,7 @@ static void sum(unsigned int source, void *buffer, unsigned int count)
 static void ondata(struct message *message)
 {
 
-    sum(message->source, message->data, message->length);
+    sum(message->source, message);
 
 }
 

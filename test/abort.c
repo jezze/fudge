@@ -25,7 +25,7 @@ static void onmain(struct message *message)
 
     unsigned int peer = start();
     unsigned int value = 1;
-    struct message current;
+    struct message *current;
     struct message_status *status;
 
     if (!peer)
@@ -52,7 +52,7 @@ static void onmain(struct message *message)
     if (call_kill(peer) != MESSAGE_OK)
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "kill failed\n");
 
-    if (!channel_poll(1, peer, MESSAGE_TYPE_STATUS, &current))
+    if (!(current = channel_poll(1, peer, MESSAGE_TYPE_STATUS)))
     {
 
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "peer gave no status\n");
@@ -61,7 +61,7 @@ static void onmain(struct message *message)
 
     }
 
-    status = message_validate(MESSAGE_TYPE_STATUS, current.data, current.length);
+    status = message_validate(MESSAGE_TYPE_STATUS, current->data, current->length);
 
     if (!status || status->code != MESSAGE_STATUS_ABORTED)
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "status was not an abort\n");

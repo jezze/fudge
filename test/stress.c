@@ -21,7 +21,7 @@ static void onmain(struct message *message)
     unsigned int started;
     unsigned int done = 0;
     unsigned int i;
-    struct message current;
+    struct message *current;
 
     /* spawning waits on channel 1 and drops other mail there, so all are spawned before any starts */
     for (started = 0; started < HELPERS; started++)
@@ -49,18 +49,18 @@ static void onmain(struct message *message)
     if (started < HELPERS)
         channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "only %u helpers started\n", &started);
 
-    while (done < started && channel_pick(1, &current))
+    while (done < started && (current = channel_pick(1)))
     {
 
-        for (i = 0; i < started && helpers[i] != current.source; i++);
+        for (i = 0; i < started && helpers[i] != current->source; i++);
 
         if (i == started)
             continue;
 
-        if (current.type == MESSAGE_TYPE_ERROR)
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%w", current.data, &current.length);
+        if (current->type == MESSAGE_TYPE_ERROR)
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%w", current->data, &current->length);
 
-        if (current.type == MESSAGE_TYPE_STATUS)
+        if (current->type == MESSAGE_TYPE_STATUS)
             done++;
 
     }

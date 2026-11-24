@@ -53,7 +53,7 @@ static void onmain(struct message *message)
 {
 
     unsigned int targets[STAGES];
-    struct message current;
+    struct message *current;
     unsigned int bytes = BYTES;
     unsigned int delay = DELAY;
     unsigned int done = 0;
@@ -87,21 +87,21 @@ static void onmain(struct message *message)
     setoption(targets[2], "delay", delay);
     start(targets[0], 0, targets[1]);
 
-    while (done < STAGES && channel_pick(1, &current))
+    while (done < STAGES && (current = channel_pick(1)))
     {
 
         struct message_status *status;
 
-        for (i = 0; i < STAGES && targets[i] != current.source; i++);
+        for (i = 0; i < STAGES && targets[i] != current->source; i++);
 
         if (i == STAGES)
             continue;
 
-        switch (current.type)
+        switch (current->type)
         {
 
         case MESSAGE_TYPE_ERROR:
-            channel_send(0, message->source, MESSAGE_TYPE_ERROR, current.length, current.data);
+            channel_send(0, message->source, MESSAGE_TYPE_ERROR, current->length, current->data);
 
             break;
 
@@ -117,7 +117,7 @@ static void onmain(struct message *message)
             break;
 
         case MESSAGE_TYPE_STATUS:
-            status = message_validate(MESSAGE_TYPE_STATUS, current.data, current.length);
+            status = message_validate(MESSAGE_TYPE_STATUS, current->data, current->length);
 
             if (!status || status->code != MESSAGE_STATUS_OK)
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "%s did not exit cleanly\n", names[i]);

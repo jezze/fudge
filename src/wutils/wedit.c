@@ -205,15 +205,15 @@ static unsigned int writefile(void)
     unsigned int count = 0;
     unsigned int total = 0;
     unsigned int saved = 0;
-    struct message message;
+    struct message *message;
 
     channel_sendid(0, wm, MESSAGE_TYPE_WMREAD, "content");
 
-    while (channel_poll(0, wm, MESSAGE_TYPE_WMTEXT, &message) && message.length)
+    while ((message = channel_poll(0, wm, MESSAGE_TYPE_WMTEXT)) && message->length)
     {
 
-        count += buffer_write(savedata, SAVESIZE, message.data, message.length, count);
-        total += message.length;
+        count += buffer_write(savedata, SAVESIZE, message->data, message->length, count);
+        total += message->length;
 
     }
 

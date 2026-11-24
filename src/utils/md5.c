@@ -4,17 +4,17 @@
 
 static struct md5 sum;
 
-static void sumdata(unsigned int source, void *buffer, unsigned int count)
+static void sumdata(unsigned int source, struct message *message)
 {
 
-    md5_read(&sum, buffer, count);
+    md5_read(&sum, message->data, message->length);
 
 }
 
 static void ondata(struct message *message)
 {
 
-    sumdata(message->source, message->data, message->length);
+    sumdata(message->source, message);
 
 }
 

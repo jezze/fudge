@@ -27,11 +27,9 @@ static unsigned int start(void)
 static unsigned int finish(unsigned int target)
 {
 
-    struct message message;
-
     channel_send(1, target, MESSAGE_TYPE_TERM, 0, 0);
 
-    return channel_poll(1, target, MESSAGE_TYPE_STATUS, &message);
+    return (channel_poll(1, target, MESSAGE_TYPE_STATUS)) ? 1 : 0;
 
 }
 

@@ -727,7 +727,7 @@ static void ondata(struct message *message)
 {
 
     if (job_exist(&job, message->source))
-        channel_send(0, output, MESSAGE_TYPE_DATA, message->length, message->data);
+        channel_forward(0, output, MESSAGE_TYPE_DATA, message);
     else if (running)
         job_sendfirst(&job, 0, MESSAGE_TYPE_DATA, message->length, message->data);
     else
@@ -739,7 +739,7 @@ static void onerror(struct message *message)
 {
 
     if (job_exist(&job, message->source))
-        channel_send(0, output, MESSAGE_TYPE_ERROR, message->length, message->data);
+        channel_forward(0, output, MESSAGE_TYPE_ERROR, message);
 
 }
 
@@ -750,10 +750,10 @@ static void onmain(struct message *message)
 
 }
 
-static void appenddata(unsigned int source, void *buffer, unsigned int count)
+static void appenddata(unsigned int source, struct message *message)
 {
 
-    append(buffer, count);
+    append(message->data, message->length);
 
 }
 

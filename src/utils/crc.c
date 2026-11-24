@@ -4,17 +4,17 @@
 
 static struct crc sum;
 
-static void sumdata(unsigned int source, void *buffer, unsigned int count)
+static void sumdata(unsigned int source, struct message *message)
 {
 
-    crc_read(&sum, buffer, count);
+    crc_read(&sum, message->data, message->length);
 
 }
 
 static void ondata(struct message *message)
 {
 
-    sumdata(message->source, message->data, message->length);
+    sumdata(message->source, message);
 
 }
 

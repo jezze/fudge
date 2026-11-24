@@ -7,18 +7,15 @@
 #define CHANNEL_STATE_OPENED            0
 #define CHANNEL_STATE_CLOSING           1
 #define CHANNEL_STATE_CLOSED            2
-/* handlers may run inside handlers, as relieve does */
-#define CHANNEL_ACTIVE                  8
 
 struct inbox
 {
 
     struct message_box boxes[MESSAGE_SLOTS];
-    struct message_box handedbox;
+    struct message_box held;
     unsigned int index;
     unsigned int count;
     unsigned int used;
-    void *handedpage;
     unsigned int state;
 
 };
@@ -26,8 +23,6 @@ struct inbox
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static struct inbox inboxes[MESSAGE_CHANNELS];
 static unsigned int owner;
-static struct message *active[CHANNEL_ACTIVE];
-static unsigned int nactive;
 static unsigned int status;
 static struct message_pipe pipe;
 
@@ -52,6 +47,35 @@ static unsigned int resolve(unsigned int target)
 {
 
     return (target) ? target : owner;
+
+}
+
+/* where a message to the owner or the previous stage really goes: to = the event sent, target = the task */
+static struct message_route route(unsigned int ichannel, unsigned int target, unsigned int event)
+{
+
+    struct message_route result;
+
+    result.event = event;
+    result.to = event;
+    result.target = target;
+
+    if (!ichannel && (target == owner || (pipe.prev && target == pipe.prev)))
+    {
+
+        struct message_route *found = findroute(event);
+
+        if (found)
+        {
+
+            result.to = found->to;
+            result.target = resolve(found->target);
+
+        }
+
+    }
+
+    return result;
 
 }
 
@@ -172,17 +196,15 @@ static unsigned int take(unsigned int ichannel, struct message_box *box, unsigne
 
 }
 
-/* the message is the caller's until its next pick on the channel: its box is kept, and so is a page given with it */
-static void hand(unsigned int ichannel, struct message_box *box, struct message *message)
+/* the message is the caller's until its next pick on the channel, and so is a page given with it */
+static struct message *hand(unsigned int ichannel, struct message_box *box)
 {
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    copybox(&inbox->handedbox, box);
-    buffer_copy(message, &inbox->handedbox.message, sizeof (struct message));
+    copybox(&inbox->held, box);
 
-    if (message->page)
-        inbox->handedpage = message->data;
+    return &inbox->held.message;
 
 }
 
@@ -201,14 +223,8 @@ static void dispatch(unsigned int ichannel, struct message *message)
     if (message->type == MESSAGE_TYPE_MAIN && !ichannel)
         setpipe(message);
 
-    if (nactive < CHANNEL_ACTIVE)
-        active[nactive++] = message;
-
     if (message->type < CHANNEL_EVENTS && listeners[message->type])
         listeners[message->type](message);
-
-    if (nactive && active[nactive - 1] == message)
-        nactive--;
 
     switch (message->type)
     {
@@ -276,78 +292,36 @@ static unsigned int pick(unsigned int ichannel, struct message_box *box)
 
 }
 
-/* the data is a page this task was handed and still holds: from here it is not freed, as it is about to be given on */
-static unsigned int handover(void *data)
-{
-
-    unsigned int i;
-
-    for (i = nactive; i > 0; i--)
-    {
-
-        struct message *message = active[i - 1];
-
-        if (message->page && message->data == data)
-        {
-
-            message->page = 0;
-
-            return 1;
-
-        }
-
-    }
-
-    for (i = 0; i < MESSAGE_CHANNELS; i++)
-    {
-
-        if (inboxes[i].handedpage == data)
-        {
-
-            inboxes[i].handedpage = 0;
-
-            return 1;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-/* the payload goes in a page, the one it came in if the handler sends that on; the page is the receiver's to free once read */
-static unsigned int placepage(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+/* the payload is the data given, or the page given */
+static unsigned int deliver(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data, unsigned int page)
 {
 
     unsigned int status;
-    void *page;
 
-    inboxes[ichannel].used = 1;
+    if (ichannel < MESSAGE_CHANNELS)
+        inboxes[ichannel].used = 1;
+
+    while ((status = call_place(ichannel, target, event, count, data, page)) == MESSAGE_RETRY)
+        relieve();
+
+    return status == MESSAGE_OK;
+
+}
+
+/* the payload goes in a new page; the page is the receiver's to free once read */
+static unsigned int placepage(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    void *page;
 
     if (count > PAGE_SIZE)
         return 0;
 
-    if (handover(data))
-    {
+    page = page_alloc();
 
-        page = data;
+    buffer_copy(page, data, count);
 
-    }
-
-    else
-    {
-
-        page = page_alloc();
-
-        buffer_copy(page, data, count);
-
-    }
-
-    while ((status = call_place(ichannel, target, event, count, 0, page_number(page))) == MESSAGE_RETRY)
-        relieve();
-
-    if (status == MESSAGE_OK)
+    if (deliver(ichannel, target, event, count, 0, page_number(page)))
         return event;
 
     page_free(page);
@@ -372,27 +346,20 @@ unsigned int channel_toolong(void)
 static unsigned int place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    unsigned int status;
-
-    if (ichannel < MESSAGE_CHANNELS)
-        inboxes[ichannel].used = 1;
-
     if (message_isdata(event))
         return placepage(ichannel, target, event, count, data);
 
     if (count > MESSAGE_CONTROLSIZE)
         return channel_toolong();
 
-    while ((status = call_place(ichannel, target, event, count, data, 0)) == MESSAGE_RETRY)
-        relieve();
-
-    return (status == MESSAGE_OK) ? event : 0;
+    return (deliver(ichannel, target, event, count, data, 0)) ? event : 0;
 
 }
 
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
+    struct message_route to;
     struct message_error error;
 
     /* an error is a fixed control message: the text given, up to its end, goes in the struct */
@@ -415,17 +382,31 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
 
     }
 
-    if (!ichannel && (target == owner || (pipe.prev && target == pipe.prev)))
+    to = route(ichannel, target, event);
+
+    return place(ichannel, to.target, to.to, count, data);
+
+}
+
+/* data that came in a page goes on in that page; the message no longer holds it */
+unsigned int channel_forward(unsigned int ichannel, unsigned int target, unsigned int event, struct message *message)
+{
+
+    struct message_route to = route(ichannel, target, event);
+
+    if (message->page && message_isdata(to.to))
     {
 
-        struct message_route *route = findroute(event);
+        if (!deliver(ichannel, to.target, to.to, message->length, 0, message->page))
+            return 0;
 
-        if (route)
-            return place(ichannel, resolve(route->target), route->to, count, data);
+        message->page = 0;
+
+        return to.to;
 
     }
 
-    return place(ichannel, target, event, count, data);
+    return channel_send(ichannel, target, event, message->length, message->data);
 
 }
 
@@ -484,16 +465,12 @@ unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsig
 
 }
 
-unsigned int channel_pick(unsigned int ichannel, struct message *message)
+struct message *channel_pick(unsigned int ichannel)
 {
 
     struct message_box box;
-    unsigned int event = pick(ichannel, &box);
 
-    if (event)
-        hand(ichannel, &box, message);
-
-    return event;
+    return (pick(ichannel, &box)) ? hand(ichannel, &box) : 0;
 
 }
 
@@ -561,7 +538,7 @@ void channel_loop(unsigned int ichannel)
 
 }
 
-static unsigned int poll(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int pages, struct message *message)
+static struct message *poll(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int pages)
 {
 
     struct message_box box;
@@ -571,24 +548,12 @@ static unsigned int poll(unsigned int ichannel, unsigned int source, unsigned in
 
         /* a reply given in a page is the caller's, not data for the listeners */
         if (pages && box.message.source == source && box.message.page)
-        {
-
-            hand(ichannel, &box, message);
-
-            return MESSAGE_TYPE_DATA;
-
-        }
+            return hand(ichannel, &box);
 
         dispatch(ichannel, &box.message);
 
         if (!pages && box.message.source == source && box.message.type == event)
-        {
-
-            hand(ichannel, &box, message);
-
-            return event;
-
-        }
+            return hand(ichannel, &box);
 
         finish(&box.message);
 
@@ -601,27 +566,27 @@ static unsigned int poll(unsigned int ichannel, unsigned int source, unsigned in
 
 }
 
-unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message)
+struct message *channel_poll(unsigned int ichannel, unsigned int source, unsigned int event)
 {
 
-    return poll(ichannel, source, event, 0, message);
+    return poll(ichannel, source, event, 0);
 
 }
 
 /* a reply comes in a page from the source; mail from the source meanwhile goes to the listeners as usual */
-unsigned int channel_pollreply(unsigned int ichannel, unsigned int source, struct message *message)
+struct message *channel_pollreply(unsigned int ichannel, unsigned int source)
 {
 
-    return poll(ichannel, source, 0, 1, message);
+    return poll(ichannel, source, 0, 1);
 
 }
 
 unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct message message;
+    struct message *message = channel_poll(ichannel, source, event);
 
-    return (channel_poll(ichannel, source, event, &message)) ? buffer_read(data, count, message.data, message.length, 0) : 0;
+    return (message) ? buffer_read(data, count, message->data, message->length, 0) : 0;
 
 }
 
@@ -656,7 +621,7 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 {
 
     struct message_readrequest request;
-    struct message message;
+    struct message *message;
     void *page = page_alloc();
     unsigned int value = 0;
 
@@ -675,11 +640,11 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 
     }
 
-    if (channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_pollreply(1, target, &message) == MESSAGE_TYPE_DATA)
+    if (channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request) && (message = channel_pollreply(1, target)))
     {
 
-        if (message.length <= 16)
-            value = cstring_read_value(message.data, message.length, 10);
+        if (message->length <= 16)
+            value = cstring_read_value(message->data, message->length, 10);
 
         channel_done(1);
 
@@ -725,12 +690,11 @@ unsigned int channel_lookup(char *name)
 void channel_done(unsigned int ichannel)
 {
 
-    struct inbox *inbox = &inboxes[ichannel];
+    struct message *message = &inboxes[ichannel].held.message;
 
-    if (inbox->handedpage)
-        page_free(inbox->handedpage);
+    finish(message);
 
-    inbox->handedpage = 0;
+    message->page = 0;
 
 }
 
@@ -819,15 +783,11 @@ void channel_abort(unsigned int ichannel)
     {
 
         struct message_error error;
-        struct message_route *route = (ichannel) ? 0 : findroute(MESSAGE_TYPE_ERROR);
+        struct message_route to = route(ichannel, owner, MESSAGE_TYPE_ERROR);
 
         buffer_clear(&error, sizeof (struct message_error));
         buffer_copy(error.text, "Process aborted\n", 16);
-
-        if (route)
-            abortplace(ichannel, resolve(route->target), route->to, sizeof (struct message_error), &error);
-        else
-            abortplace(ichannel, owner, MESSAGE_TYPE_ERROR, sizeof (struct message_error), &error);
+        abortplace(ichannel, to.target, to.to, sizeof (struct message_error), &error);
 
     }
 

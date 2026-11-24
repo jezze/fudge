@@ -66,7 +66,7 @@ static void onmain(struct message *message)
 {
 
     unsigned int targets[STAGES];
-    struct message current;
+    struct message *current;
     unsigned int bytes = BYTES;
     unsigned int delay = DELAY;
     unsigned int report = REPORT;
@@ -105,23 +105,23 @@ static void onmain(struct message *message)
     start(targets[1], targets[0], targets[2]);
     start(targets[0], 0, targets[1]);
 
-    while (done < STAGES && channel_pick(1, &current))
+    while (done < STAGES && (current = channel_pick(1)))
     {
 
         struct message_status *status;
 
-        for (i = 0; i < STAGES && targets[i] != current.source; i++);
+        for (i = 0; i < STAGES && targets[i] != current->source; i++);
 
         if (i == STAGES)
             continue;
 
-        switch (current.type)
+        switch (current->type)
         {
 
         /* after the kill, failing and aborting is what the stages are expected to do */
         case MESSAGE_TYPE_ERROR:
             if (!killed)
-                channel_send(0, message->source, MESSAGE_TYPE_ERROR, current.length, current.data);
+                channel_send(0, message->source, MESSAGE_TYPE_ERROR, current->length, current->data);
 
             break;
 
@@ -132,7 +132,7 @@ static void onmain(struct message *message)
             break;
 
         case MESSAGE_TYPE_STATUS:
-            status = message_validate(MESSAGE_TYPE_STATUS, current.data, current.length);
+            status = message_validate(MESSAGE_TYPE_STATUS, current->data, current->length);
 
             if (i == 1 && (!status || status->code != MESSAGE_STATUS_ABORTED))
                 channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "stage was not aborted\n");

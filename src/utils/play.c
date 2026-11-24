@@ -3,10 +3,10 @@
 
 static unsigned int event;
 
-static void senddata(unsigned int source, void *buffer, unsigned int count)
+static void senddata(unsigned int source, struct message *message)
 {
 
-    channel_send(0, source, event, count, buffer);
+    channel_forward(0, source, event, message);
 
 }
 

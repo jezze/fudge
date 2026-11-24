@@ -29,13 +29,13 @@ static char parsechar(char *s)
 
 }
 
-static void replace(unsigned int source, void *data, unsigned int count)
+static void replace(unsigned int source, struct message *message)
 {
 
-    char *buffer = data;
+    char *buffer = message->data;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < message->length; i++)
     {
 
         if (buffer[i] == from)
@@ -43,7 +43,7 @@ static void replace(unsigned int source, void *data, unsigned int count)
 
     }
 
-    channel_send(0, source, MESSAGE_TYPE_DATA, count, buffer);
+    channel_forward(0, source, MESSAGE_TYPE_DATA, message);
 
 }
 
@@ -51,7 +51,7 @@ static void replace(unsigned int source, void *data, unsigned int count)
 static void ondata(struct message *message)
 {
 
-    replace(message->source, message->data, message->length);
+    replace(message->source, message);
 
 }
 

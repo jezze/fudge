@@ -33,7 +33,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
     {
 
         struct message_pipe pipe;
-        struct message message;
+        struct message *message;
 
         channel_sendoption(2, target, "mode", mode);
         channel_sendoption(2, target, "remote-address", address);
@@ -42,13 +42,13 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         message_initpipe(&pipe);
         channel_send(2, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 
-        if (channel_poll(2, target, MESSAGE_TYPE_READY, &message))
+        if ((message = channel_poll(2, target, MESSAGE_TYPE_READY)))
         {
 
             channel_send_fmt(2, target, MESSAGE_TYPE_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", (url->path) ? url->path : "", url->host);
 
-            while (channel_poll(2, target, MESSAGE_TYPE_DATA, &message))
-                channel_send(0, source, MESSAGE_TYPE_DATA, message.length, message.data);
+            while ((message = channel_poll(2, target, MESSAGE_TYPE_DATA)))
+                channel_forward(0, source, MESSAGE_TYPE_DATA, message);
 
         }
 

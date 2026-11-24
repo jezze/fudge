@@ -44,7 +44,7 @@ static void onmain(struct message *message)
     unsigned int wrong = 0;
     unsigned int done = 0;
     struct message_pipe pipe;
-    struct message current;
+    struct message *current;
 
     if (!source || !tr)
     {
@@ -80,35 +80,35 @@ static void onmain(struct message *message)
     channel_send(1, source, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
     channel_send(1, source, MESSAGE_TYPE_TERM, 0, 0);
 
-    while (done < STAGES && channel_pick(1, &current))
+    while (done < STAGES && (current = channel_pick(1)))
     {
 
-        if (current.source != source && current.source != tr)
+        if (current->source != source && current->source != tr)
             continue;
 
-        switch (current.type)
+        switch (current->type)
         {
 
         case MESSAGE_TYPE_DATA:
             /* the address comes first; the source also says when it waits for pages */
-            if (current.source == source)
+            if (current->source == source)
             {
 
                 if (!reported)
-                    reported = cstring_read_value(current.data, current.length, 10);
+                    reported = cstring_read_value(current->data, current->length, 10);
 
             }
 
             else
             {
 
-                struct block *block = current.data;
+                struct block *block = current->data;
                 unsigned int i;
 
                 if (!position)
-                    first = (unsigned long)current.data;
+                    first = (unsigned long)current->data;
 
-                for (i = 0; i < current.length; i++)
+                for (i = 0; i < current->length; i++)
                 {
 
                     if (block->bytes[i] != expected(position + i))
@@ -116,14 +116,14 @@ static void onmain(struct message *message)
 
                 }
 
-                position += current.length;
+                position += current->length;
 
             }
 
             break;
 
         case MESSAGE_TYPE_ERROR:
-            channel_send(0, message->source, MESSAGE_TYPE_ERROR, current.length, current.data);
+            channel_send(0, message->source, MESSAGE_TYPE_ERROR, current->length, current->data);
 
             break;
 
