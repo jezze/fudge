@@ -95,26 +95,62 @@
 #define BAUDRATE_57600                  0x0002
 #define BAUDRATE_115200                 0x0001
 #define BUFFERSIZE                      16
+#define TIMEOUT                         100000
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
 static unsigned short io;
 
+static unsigned int stuck;
+
+/* bounded: a line that keeps the transmitter full is stuck, and its bytes are dropped without waiting until it empties again */
+static unsigned int waittransmit(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ((stuck) ? 1 : TIMEOUT); i++)
+    {
+
+        if (io_inb(io + REG_LSR) & REG_LSR_TRANSMIT)
+        {
+
+            stuck = 0;
+
+            return 1;
+
+        }
+
+    }
+
+    stuck = 1;
+
+    return 0;
+
+}
+
 unsigned char uart_get(void)
 {
 
-    while (!(io_inb(io + REG_LSR) & REG_LSR_READY));
+    unsigned int i;
 
-    return io_inb(io);
+    for (i = 0; i < TIMEOUT; i++)
+    {
+
+        if (io_inb(io + REG_LSR) & REG_LSR_READY)
+            return io_inb(io);
+
+    }
+
+    return 0;
 
 }
 
 void uart_put(unsigned char c)
 {
 
-    while (!(io_inb(io + REG_LSR) & REG_LSR_TRANSMIT));
-
-    io_outb(io, c);
+    if (waittransmit())
+        io_outb(io, c);
 
 }
 

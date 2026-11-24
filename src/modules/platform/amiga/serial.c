@@ -14,6 +14,7 @@
 #define REG_SERDAT_STOP                 0x0100
 #define REG_SERPER                      0x32
 #define REG_SERPER_115200               30
+#define TIMEOUT                         100000
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
@@ -28,6 +29,34 @@ static void handleirq(unsigned int irq)
 
 }
 
+static unsigned int stuck;
+
+/* bounded: a line that keeps the transmitter full is stuck, and its bytes are dropped without waiting until it empties again */
+static unsigned int waittransmit(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ((stuck) ? 1 : TIMEOUT); i++)
+    {
+
+        if (custom[REG_SERDATR / 2] & REG_SERDATR_TBE)
+        {
+
+            stuck = 0;
+
+            return 1;
+
+        }
+
+    }
+
+    stuck = 1;
+
+    return 0;
+
+}
+
 static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 {
 
@@ -37,9 +66,8 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
     for (i = 0; i < count; i++)
     {
 
-        while (!(custom[REG_SERDATR / 2] & REG_SERDATR_TBE));
-
-        custom[REG_SERDAT / 2] = REG_SERDAT_STOP | b[i];
+        if (waittransmit())
+            custom[REG_SERDAT / 2] = REG_SERDAT_STOP | b[i];
 
     }
 

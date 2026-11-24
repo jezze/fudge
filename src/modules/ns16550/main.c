@@ -18,6 +18,7 @@
 #define REG_LSR_RX                      (1 << 0)
 #define REG_LSR_THRE                    (1 << 5)
 #define BUFFERSIZE                      16
+#define TIMEOUT                         100000
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
@@ -37,6 +38,34 @@ static void handleirq(unsigned int irq)
 
 }
 
+static unsigned int stuck;
+
+/* bounded: a line that keeps the transmitter full is stuck, and its bytes are dropped without waiting until it empties again */
+static unsigned int waittransmit(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ((stuck) ? 1 : TIMEOUT); i++)
+    {
+
+        if (uart[REG_LSR] & REG_LSR_THRE)
+        {
+
+            stuck = 0;
+
+            return 1;
+
+        }
+
+    }
+
+    stuck = 1;
+
+    return 0;
+
+}
+
 static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 {
 
@@ -46,9 +75,8 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
     for (i = 0; i < count; i++)
     {
 
-        while (!(uart[REG_LSR] & REG_LSR_THRE));
-
-        uart[REG_DATA] = b[i];
+        if (waittransmit())
+            uart[REG_DATA] = b[i];
 
     }
 
