@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define TESTS                           18
+#define TESTS                           19
 #define PATHSIZE                        64
 #define DEADLINE                        30000
 #define GRACE                           5000
@@ -23,8 +23,9 @@ static struct test tests[TESTS] = {
     {"control", 0},
     {"pingpong", 0},
     {"flood", 0},
-    {"window0", "relieve runs a newer message inside an older one's retrying send, so replies overtake"},
-    {"window1", "replies piling up in channel 1 are not relieved while its task sends"},
+    {"window0", 0},
+    {"window1", 0},
+    {"deadlock", 0},
     {"abort", 0},
     {"stale", 0},
     {"files", 0},

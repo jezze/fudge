@@ -9,7 +9,6 @@
 #define CHANNEL_STATE_CLOSING           1
 #define CHANNEL_STATE_CLOSED            2
 /* task mail is refused once a slot for replies is all that is left; the message being run holds one more */
-#define CHANNEL_FULL                    (MESSAGE_SLOTS - 2)
 /* data that came in a page has no mailbox slot; these slots say so, and whether the page is still to be freed */
 #define CHANNEL_SLOTPAGE                MESSAGE_SLOTS
 #define CHANNEL_SLOTKEPT                (MESSAGE_SLOTS + 1)
@@ -23,6 +22,7 @@ struct inbox
     struct message_box handedbox;
     unsigned int index;
     unsigned int count;
+    unsigned int used;
     void *handedpage;
     unsigned int state;
 
@@ -33,7 +33,6 @@ static struct inbox inboxes[CHANNEL_MAILBOXES];
 static unsigned int owner;
 static struct message *active[CHANNEL_ACTIVE];
 static unsigned int nactive;
-static unsigned int relieving;
 static unsigned int status;
 static struct message_pipe pipe;
 
@@ -159,6 +158,8 @@ static unsigned int take(unsigned int ichannel, struct message_box *box, unsigne
 
     struct inbox *inbox = &inboxes[ichannel];
 
+    inbox->used = 1;
+
     channel_done(ichannel);
 
     if (inbox->index == inbox->count)
@@ -233,27 +234,18 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
 }
 
+/* while a send waits, queued mail is moved into the inbox on every channel, which frees its slots for whoever waits on this task; nothing is handled out of turn */
 static void relieve(void)
 {
 
-    struct inbox *inbox = &inboxes[0];
-    struct message_box box;
+    unsigned int i;
 
-    /* someone may be retrying a send into our full channel 0: run its oldest message, but never from inside another one */
-    if (relieving || !canpick(0))
-        return;
-
-    fill(0, inbox, 0);
-
-    if (inbox->count - inbox->index >= CHANNEL_FULL && take(0, &box, 0) == MESSAGE_OK)
+    /* only channels already in use: a pick on any other would take a mailbox from the pool for nothing */
+    for (i = 0; i < CHANNEL_MAILBOXES; i++)
     {
 
-        relieving = 1;
-
-        dispatch(0, &box.message);
-        finish(0, &box.message);
-
-        relieving = 0;
+        if (inboxes[i].used && canpick(i))
+            fill(i, &inboxes[i], 0);
 
     }
 
@@ -337,6 +329,8 @@ static unsigned int placepage(unsigned int ichannel, unsigned int target, unsign
     unsigned int status;
     void *page;
 
+    inboxes[ichannel].used = 1;
+
     if (count > PAGE_SIZE)
         return 0;
 
@@ -385,6 +379,9 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 {
 
     unsigned int status;
+
+    if (ichannel < CHANNEL_MAILBOXES)
+        inboxes[ichannel].used = 1;
 
     if (message_isdata(event))
         return placepage(ichannel, target, event, count, data);
@@ -797,7 +794,7 @@ static void abortdrain(void)
 
         unsigned int j;
 
-        if (call_pick(i, boxes, MESSAGE_SLOTS, 0) != MESSAGE_OK)
+        if (!inboxes[i].used || call_pick(i, boxes, MESSAGE_SLOTS, 0) != MESSAGE_OK)
             continue;
 
         for (j = 0; j < MESSAGE_SLOTS && boxes[j].message.type; j++)

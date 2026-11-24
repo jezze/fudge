@@ -103,6 +103,7 @@ test/abort
 test/audio
 test/control
 test/cut
+test/deadlock
 test/disks
 test/emit
 test/expand

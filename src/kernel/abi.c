@@ -177,7 +177,24 @@ static unsigned int place(unsigned int itask, void *stack)
             if (status == MESSAGE_RETRY)
             {
 
+                struct task *peer = pool_gettask(target->itask);
+
                 kernel_signal(target->itask, TASK_SIGNAL_UNBLOCK);
+
+                task->sendingto = target->itask;
+
+                /* each waits for room in the other's mailbox that neither will ever make: the send fails rather than both waiting forever */
+                if (peer && peer->sendingto == itask && task->retries >= TASK_RETRIESDEADLOCK && peer->retries >= TASK_RETRIESDEADLOCK)
+                {
+
+                    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "Tasks %u and %u wait to send to each other", &itask, &target->itask);
+
+                    task->retries = 0;
+                    task->sendingto = 0;
+
+                    return MESSAGE_FAILED;
+
+                }
 
                 if (++task->retries == TASK_RETRIESLOG)
                     debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "task %u keeps retrying a send to task %u", &itask, &target->itask);
@@ -185,7 +202,12 @@ static unsigned int place(unsigned int itask, void *stack)
             }
 
             else
+            {
+
                 task->retries = 0;
+                task->sendingto = 0;
+
+            }
 
             return status;
 

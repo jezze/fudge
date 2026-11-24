@@ -2,7 +2,7 @@
 #include <abi.h>
 
 /* control mail, so the mailbox is what is tested: the same window as window0 but from channel 1, where echoes pile up while this task is still sending */
-#define WINDOW                          (MESSAGE_SLOTS * 4)
+#define WINDOW                          MESSAGE_SLOTS
 
 static unsigned int start(void)
 {

@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 
-/* control mail, so the mailbox is what is tested: sends a window of it from channel 0 before reading any echo; a full channel 0 is relieved while sending */
-#define WINDOW                          (MESSAGE_SLOTS * 4)
+/* control mail, so the mailbox is what is tested: sends a mailbox full from channel 0 before reading any echo, which fits what both sides can hold; every echo must come, in order */
+#define WINDOW                          MESSAGE_SLOTS
 
 static unsigned int peer;
 static unsigned int received;
