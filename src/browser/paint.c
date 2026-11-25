@@ -622,7 +622,7 @@ static unsigned int transform(unsigned int codepoint, unsigned int mode)
 
 }
 
-static void painttext(struct paint_canvas *canvas, struct layout *layout, struct layout_fragment *fragment, unsigned int color, unsigned int mode, struct shade *shade)
+static void painttext(struct paint_canvas *canvas, struct layout *layout, struct layout_fragment *fragment, struct css_style *style, unsigned int color, struct shade *shade)
 {
 
     struct font_face *face = &layout->faces[fragment->face];
@@ -643,7 +643,7 @@ static void painttext(struct paint_canvas *canvas, struct layout *layout, struct
         {
 
             if (!space)
-                x += paintglyph(canvas, face, ' ', x, fragment->y, fragment->scale, color, shade);
+                x += paintglyph(canvas, face, ' ', x, fragment->y, fragment->scale, color, shade) + style->letterspacing;
 
             space = 1;
             i++;
@@ -654,7 +654,7 @@ static void painttext(struct paint_canvas *canvas, struct layout *layout, struct
 
         space = 0;
         i += utf8_read(text + i, fragment->length - i, &codepoint);
-        x += paintglyph(canvas, face, transform(codepoint, mode), x, fragment->y, fragment->scale, color, shade);
+        x += paintglyph(canvas, face, transform(codepoint, style->transform), x, fragment->y, fragment->scale, color, shade) + style->letterspacing;
 
     }
 
@@ -772,7 +772,7 @@ static void paintfragment(struct paint_canvas *canvas, struct layout *layout, st
         {
 
             initshade(&shade, &layout->gradients[clipstyle->gradient - 1], &layout->boxes[clip], style->opacity);
-            painttext(canvas, layout, fragment, color, style->transform, &shade);
+            painttext(canvas, layout, fragment, style, color, &shade);
 
             return;
 
@@ -791,7 +791,7 @@ static void paintfragment(struct paint_canvas *canvas, struct layout *layout, st
 
     }
 
-    painttext(canvas, layout, fragment, color, style->transform, 0);
+    painttext(canvas, layout, fragment, style, color, 0);
 
     if (style->decoration & CSS_DECORATION_UNDERLINE)
         fill(canvas, fragment->x, fragment->y + fragment->ascent + fragment->scale, fragment->w, fragment->scale, color);

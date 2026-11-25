@@ -138,6 +138,7 @@ struct layout
     unsigned int forcenode;
     unsigned int heightnode;
     unsigned int wrapped;
+    int natural;
     int forceheight;
     unsigned int baselinedepth;
     int baseline;

@@ -69,6 +69,10 @@
 #define CSS_FLOAT_RIGHT                 2
 #define CSS_CLEAR_LEFT                  1
 #define CSS_CLEAR_RIGHT                 2
+#define CSS_VALIGN_BASELINE             0
+#define CSS_VALIGN_TOP                  1
+#define CSS_VALIGN_MIDDLE               2
+#define CSS_VALIGN_BOTTOM               3
 #define CSS_PSEUDO_NONE                 0
 #define CSS_PSEUDO_BEFORE               1
 #define CSS_PSEUDO_AFTER                2
@@ -114,6 +118,7 @@ struct css_style
     unsigned char stacked;
     unsigned char opacity;
     unsigned char textclip;
+    unsigned char valign;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;
@@ -127,6 +132,8 @@ struct css_style
     unsigned short shrink;
     short order;
     short zindex;
+    short valignoffset;
+    short letterspacing;
     short shadowx;
     short shadowy;
     short shadowblur;

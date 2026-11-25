@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      93
+#define PROPERTIES                      95
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -74,6 +74,8 @@
 #define PROP_BOXSHADOW                  90
 #define PROP_BACKGROUNDCLIP             91
 #define PROP_WEBKITBACKGROUNDCLIP       92
+#define PROP_VERTICALALIGN              93
+#define PROP_LETTERSPACING              94
 #define PROP_CUSTOM                     255
 #define POOL_EXACT                      0
 #define POOL_LOWER                      1
@@ -278,7 +280,7 @@ static char *properties[PROPERTIES] = {
     "row-gap", "column-gap", "grid-gap", "fill",
     "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow",
     "float", "clear", "overflow", "overflow-x", "overflow-y",
-    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip"
+    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip", "vertical-align", "letter-spacing"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -295,7 +297,8 @@ static char *agent =
     "table{display:table;border-spacing:2px}"
     "tr{display:table-row}"
     "thead,tbody,tfoot{display:table-row-group}"
-    "td,th{display:table-cell;padding:1px}"
+    "thead,tbody,tfoot,tr{vertical-align:middle}"
+    "td,th{display:table-cell;padding:1px;vertical-align:inherit}"
     "th{font-weight:bold;text-align:center}"
     "caption{text-align:center}"
     "body{margin:8px}"
@@ -322,6 +325,8 @@ static char *agent =
     "a:link{color:#0000ee;text-decoration:underline}"
     "center{text-align:center}"
     "small,sub,sup{font-size:smaller}"
+    "sub{vertical-align:sub}"
+    "sup{vertical-align:super}"
     "big{font-size:larger}"
     "mark{background-color:yellow}"
     "hr{border:1px inset gray;margin:.5em 0}"
@@ -3508,6 +3513,17 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
         break;
 
+    case PROP_LETTERSPACING:
+        style->letterspacing = from->letterspacing;
+
+        break;
+
+    case PROP_VERTICALALIGN:
+        style->valign = from->valign;
+        style->valignoffset = from->valignoffset;
+
+        break;
+
     case PROP_BOXSHADOW:
         style->shadow = from->shadow;
         style->shadowx = from->shadowx;
@@ -3632,6 +3648,50 @@ static void setopacity(struct context *context, char *value, unsigned int length
 
     if (!milli)
         context->style->hidden = 1;
+
+}
+
+static void setletterspacing(struct context *context, char *value, unsigned int length)
+{
+
+    struct lengthvalue parsed = parselength(context, value, length, context->style->fontsize);
+
+    if (matchword(value, length, "normal"))
+        context->style->letterspacing = 0;
+    else if (parsed.valid && parsed.length.unit == CSS_UNIT_PX)
+        context->style->letterspacing = parsed.length.value;
+
+}
+
+static void setvalign(struct context *context, char *value, unsigned int length)
+{
+
+    struct css_style *style = context->style;
+    int size = context->parent->fontsize;
+    struct lengthvalue parsed;
+
+    style->valign = CSS_VALIGN_BASELINE;
+    style->valignoffset = 0;
+
+    /* text-top and text-bottom are close enough to the line's own edges */
+    if (matchword(value, length, "top") || matchword(value, length, "text-top"))
+        style->valign = CSS_VALIGN_TOP;
+    else if (matchword(value, length, "bottom") || matchword(value, length, "text-bottom"))
+        style->valign = CSS_VALIGN_BOTTOM;
+    else if (matchword(value, length, "middle"))
+        style->valign = CSS_VALIGN_MIDDLE;
+    else if (matchword(value, length, "super"))
+        style->valignoffset = size / 3;
+    else if (matchword(value, length, "sub"))
+        style->valignoffset = -size / 5;
+
+    if (style->valign != CSS_VALIGN_BASELINE || style->valignoffset)
+        return;
+
+    parsed = parselength(context, value, length, style->fontsize);
+
+    if (parsed.valid && parsed.length.unit == CSS_UNIT_PX)
+        style->valignoffset = parsed.length.value;
 
 }
 
@@ -4234,6 +4294,16 @@ static void apply(struct context *context, unsigned int property, char *value)
     case PROP_BACKGROUNDCLIP:
     case PROP_WEBKITBACKGROUNDCLIP:
         style->textclip = matchword(value, length, "text");
+
+        break;
+
+    case PROP_VERTICALALIGN:
+        setvalign(context, value, length);
+
+        break;
+
+    case PROP_LETTERSPACING:
+        setletterspacing(context, value, length);
 
         break;
 
@@ -5208,6 +5278,7 @@ static void inherit(struct css_style *style, struct css_style *parent)
     style->hidden = parent->hidden;
     style->transform = parent->transform;
     style->opacity = parent->opacity;
+    style->letterspacing = parent->letterspacing;
 
 }
 

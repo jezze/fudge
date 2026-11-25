@@ -40,6 +40,7 @@ struct metrics
     int ascent;
     int descent;
     int space;
+    int spacing;
 
 };
 
@@ -71,6 +72,7 @@ struct cell
     unsigned int fragmentstart;
     unsigned int fragmentend;
     int height;
+    int natural;
     int margins;
 
 };
@@ -162,7 +164,8 @@ static struct metrics getmetrics(struct layout *layout, struct css_style *style)
     face = &layout->faces[metrics.choice.face];
     metrics.glyphheight = face->height * metrics.choice.scale;
     metrics.glyphascent = face->ascent * metrics.choice.scale;
-    metrics.space = font_getglyph(face, ' ')->width * metrics.choice.scale;
+    metrics.spacing = style->letterspacing;
+    metrics.space = font_getglyph(face, ' ')->width * metrics.choice.scale + metrics.spacing;
     lineheight = (style->lineheight) ? style->lineheight : max(metrics.glyphheight + 2, style->fontsize * 6 / 5);
     halfleading = (lineheight - metrics.glyphheight) / 2;
     metrics.ascent = halfleading + metrics.glyphascent;
@@ -200,7 +203,7 @@ static int measuretext(struct layout *layout, struct metrics *metrics, char *tex
 
         space = 0;
         i += utf8_read(text + i, length - i, &codepoint);
-        width += font_getglyph(face, codepoint)->width * metrics->choice.scale;
+        width += font_getglyph(face, codepoint)->width * metrics->choice.scale + metrics->spacing;
 
     }
 
@@ -221,7 +224,7 @@ static unsigned int fitbytes(struct layout *layout, struct metrics *metrics, cha
         unsigned int codepoint;
         unsigned int size = utf8_read(text + i, length - i, &codepoint);
 
-        used += font_getglyph(face, codepoint)->width * metrics->choice.scale;
+        used += font_getglyph(face, codepoint)->width * metrics->choice.scale + metrics->spacing;
 
         if (used > width && i)
             break;
@@ -488,6 +491,43 @@ static void placemarker(struct layout *layout, int baseline)
 
 }
 
+static struct css_style *getitemstyle(struct layout *layout, struct flow *flow, struct layout_item *item)
+{
+
+    unsigned int parent = getnode(layout, item->node)->parent;
+
+    if (item->atomic)
+        return getstyle(layout, item->node);
+
+    /* text takes the alignment of the inline element around it, not of the block it flows in */
+    return (parent == flow->node) ? 0 : getstyle(layout, parent);
+
+}
+
+static int alignitem(struct css_style *style, struct layout_item *item, int top, int baseline, int height, int middle)
+{
+
+    if (!style)
+        return baseline;
+
+    switch (style->valign)
+    {
+
+    case CSS_VALIGN_TOP:
+        return top + item->ascent;
+
+    case CSS_VALIGN_BOTTOM:
+        return top + height - item->descent;
+
+    case CSS_VALIGN_MIDDLE:
+        return baseline - middle - (item->ascent + item->descent) / 2 + item->ascent;
+
+    }
+
+    return baseline - style->valignoffset;
+
+}
+
 static void flushline(struct layout *layout, struct flow *flow, unsigned int forced)
 {
 
@@ -496,6 +536,8 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
     int ascent = strut.ascent;
     int descent = strut.descent;
     int used = flow->x - flow->left;
+    int middle = style->fontsize / 4;
+    int tallest = 0;
     int dx = 0;
     int baseline;
     unsigned int i;
@@ -524,10 +566,39 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
     for (i = flow->itemstart; i < layout->itemcount; i++)
     {
 
-        ascent = max(ascent, layout->items[i].ascent);
-        descent = max(descent, layout->items[i].descent);
+        struct layout_item *item = &layout->items[i];
+        struct css_style *itemstyle = getitemstyle(layout, flow, item);
+        int height = item->ascent + item->descent;
+        unsigned int valign = (itemstyle) ? itemstyle->valign : CSS_VALIGN_BASELINE;
+        int offset = (itemstyle) ? itemstyle->valignoffset : 0;
+
+        switch (valign)
+        {
+
+        case CSS_VALIGN_TOP:
+        case CSS_VALIGN_BOTTOM:
+            tallest = max(tallest, height);
+
+            break;
+
+        case CSS_VALIGN_MIDDLE:
+            ascent = max(ascent, height / 2 + middle);
+            descent = max(descent, height - height / 2 - middle);
+
+            break;
+
+        default:
+            ascent = max(ascent, item->ascent + offset);
+            descent = max(descent, item->descent - offset);
+
+            break;
+
+        }
 
     }
+
+    /* boxes hung from the top or bottom only make the line taller once the rest has set it */
+    descent = max(descent, tallest - ascent);
 
     if (style->align == CSS_ALIGN_CENTER)
         dx = max((flow->right - flow->left - used) / 2, 0);
@@ -540,11 +611,12 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
     {
 
         struct layout_item *item = &layout->items[i];
+        int itembaseline = alignitem(getitemstyle(layout, flow, item), item, flow->y, baseline, ascent + descent, middle);
 
         if (item->atomic)
         {
 
-            translate(layout, item->node, item->fragmentstart, item->fragmentend, dx, baseline - item->ascent - flow->y, 1);
+            translate(layout, item->node, item->fragmentstart, item->fragmentend, dx, itembaseline - item->ascent - flow->y, 1);
 
         }
 
@@ -552,7 +624,7 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
         {
 
             layout->fragments[item->fragmentstart].x += dx;
-            layout->fragments[item->fragmentstart].y = baseline - item->shift;
+            layout->fragments[item->fragmentstart].y = itembaseline - item->shift;
 
         }
 
@@ -1063,6 +1135,7 @@ static int measure(struct layout *layout, unsigned int node, int availw)
     struct css_style *style = getstyle(layout, node);
     struct layout_measure *cached = &layout->measures[node];
     unsigned int fragmentcount = layout->fragmentcount;
+    unsigned int floatcount = layout->floatcount;
     unsigned int textcount = layout->textcount;
     unsigned int marker = layout->marker;
     unsigned int truncated = layout->truncated;
@@ -1110,6 +1183,7 @@ static int measure(struct layout *layout, unsigned int node, int availw)
     layout->measuring--;
     layout->truncated = layout->truncated || truncated;
     layout->fragmentcount = fragmentcount;
+    layout->floatcount = floatcount;
     layout->textcount = textcount;
     layout->marker = marker;
     layout->extent = extent;
@@ -1391,7 +1465,11 @@ static int leadingmargin(struct layout *layout, unsigned int node, int availw)
         if (!isvisible(style) || style->floating)
             continue;
 
-        if (style->display == CSS_DISPLAY_INLINE || style->display == CSS_DISPLAY_INLINEBLOCK || style->clear)
+        /* an inline that starts with a block lets that block's margin through, as if it were not there */
+        if (style->display == CSS_DISPLAY_INLINE)
+            return leadingmargin(layout, child, availw);
+
+        if (style->display == CSS_DISPLAY_INLINEBLOCK || style->clear)
             return 0;
 
         return collapse(resolve(&style->margin[CSS_TOP], availw), leadingmargin(layout, child, availw));
@@ -1896,6 +1974,7 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
         cells[count].node = cell;
         cells[count].fragmentstart = layout->fragmentcount;
         cells[count].height = layoutblock(layout, cell, x, box->y + top, width) + cells[count].margins;
+        cells[count].natural = layout->natural + cells[count].margins;
         cells[count].fragmentend = layout->fragmentcount;
         rowheight = max(rowheight, cells[count].height);
         x += width + columns->spacing;
@@ -1908,8 +1987,12 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
     {
 
         struct layout_box *cellbox = &layout->boxes[cells[i].node];
+        unsigned int valign = getstyle(layout, cells[i].node)->valign;
+        int space = rowheight - cells[i].natural;
 
-        translate(layout, cells[i].node, cells[i].fragmentstart, cells[i].fragmentend, 0, (rowheight - cells[i].height) / 2, 0);
+        /* baseline is taken as top, which it is for cells starting with a line of the same font */
+        if (valign == CSS_VALIGN_MIDDLE || valign == CSS_VALIGN_BOTTOM)
+            translate(layout, cells[i].node, cells[i].fragmentstart, cells[i].fragmentend, 0, (valign == CSS_VALIGN_MIDDLE) ? space / 2 : space, 0);
 
         cellbox->h = rowheight - cells[i].margins;
 
@@ -1920,7 +2003,16 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
 
 }
 
-static void layouttable(struct layout *layout, struct flow *flow, unsigned int table, struct columns *columns)
+static unsigned int tablepass(struct layout *layout, unsigned int node)
+{
+
+    unsigned int tag = getnode(layout, node)->tag;
+
+    return (tag == HTML_TAG_THEAD) ? 0 : (tag == HTML_TAG_TFOOT) ? 2 : 1;
+
+}
+
+static void layouttablepass(struct layout *layout, struct flow *flow, unsigned int table, struct columns *columns, unsigned int pass)
 {
 
     unsigned int child;
@@ -1930,7 +2022,7 @@ static void layouttable(struct layout *layout, struct flow *flow, unsigned int t
 
         unsigned int display;
 
-        if (!iscell(layout, child))
+        if (!iscell(layout, child) || tablepass(layout, child) != pass)
             continue;
 
         display = getstyle(layout, child)->display;
@@ -1976,6 +2068,15 @@ static void layouttable(struct layout *layout, struct flow *flow, unsigned int t
 
     }
 
+}
+
+static void layouttable(struct layout *layout, struct flow *flow, unsigned int table, struct columns *columns)
+{
+
+    /* the header goes first and the footer last, wherever they are in the source */
+    layouttablepass(layout, flow, table, columns, 0);
+    layouttablepass(layout, flow, table, columns, 1);
+    layouttablepass(layout, flow, table, columns, 2);
     flushline(layout, flow, 0);
 
     flow->y += columns->spacing;
@@ -2208,7 +2309,8 @@ static void alignflexitem(struct layout *layout, struct layout_flexitem *item, u
     struct css_style *style = getstyle(layout, item->node);
     int delta = (align == CSS_FLEX_CENTER) ? space / 2 : (align == CSS_FLEX_END) ? space : 0;
 
-    if (space <= 0)
+    /* an item taller than its line still centers on it or hangs from its end */
+    if (space <= 0 && !delta)
         return;
 
     if (align == CSS_FLEX_STRETCH && !horizontal && style->height.unit != CSS_UNIT_PX && !isreplaced(layout, item->node))
@@ -2328,19 +2430,16 @@ static void flexsizes(struct layout *layout, unsigned int start, unsigned int en
 
 }
 
-static int flexheight(struct layout *layout, unsigned int node, int availw)
+static int flexminimum(struct layout *layout, unsigned int node, int availw)
 {
 
     struct css_style *style = getstyle(layout, node);
     int vertical = style->borderwidth[CSS_TOP] + style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_TOP], availw) + resolve(&style->padding[CSS_BOTTOM], availw);
-    int inner = (style->borderbox) ? vertical : 0;
-    int height = layout->boxes[node].definite - 1;
 
-    /* a min-height gives the content room to share too, once it is more than the content */
-    if (style->minheight.unit == CSS_UNIT_PX && style->minheight.value > 0 && style->minheight.value - inner > height)
-        height = style->minheight.value - inner;
+    if (style->minheight.unit != CSS_UNIT_PX)
+        return 0;
 
-    return height;
+    return max(style->minheight.value - ((style->borderbox) ? vertical : 0), 0);
 
 }
 
@@ -2396,7 +2495,8 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
     int availw = flow->right - flow->left;
     int gap = style->columngap;
     unsigned int justify = (style->reverse && style->justify == CSS_FLEX_START) ? CSS_FLEX_END : (style->reverse && style->justify == CSS_FLEX_END) ? CSS_FLEX_START : style->justify;
-    int fixed = flexheight(layout, node, availw);
+    int fixed = layout->boxes[node].definite - 1;
+    int minimum = flexminimum(layout, node, availw);
     unsigned int base = layout->flexcount;
     unsigned int ordered = isordered(layout, node);
     unsigned int start;
@@ -2554,8 +2654,9 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
 
         }
 
-        if (fixed >= 0 && start == base && end == layout->flexcount)
-            cross = max(cross, fixed);
+        /* a single line is as tall as a container with a height, even when its items are taller */
+        if (start == base && end == layout->flexcount)
+            cross = max((fixed >= 0) ? fixed : cross, minimum);
 
         /* a stretched item has a definite height, so the line is placed again for children sized by percent */
         if (!layout->measuring && needsrestretch(layout, style, start, end, cross))
@@ -2623,7 +2724,8 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
     struct css_style *style = getstyle(layout, node);
     int availw = flow->right - flow->left;
     int gap = (style->rowgap) ? style->rowgap : style->columngap;
-    int fixed = flexheight(layout, node, availw);
+    int fixed = layout->boxes[node].definite - 1;
+    int minimum = flexminimum(layout, node, availw);
     unsigned int base = layout->flexcount;
     unsigned int ordered = isordered(layout, node);
     unsigned int child;
@@ -2676,6 +2778,10 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
     }
 
     /* justify-content needs a height to share, so only a container with one gets it */
+    /* a min-height only gives room when the items leave some */
+    if (fixed < 0 && minimum > y - flow->y)
+        fixed = minimum;
+
     if (fixed >= 0 && !layout->measuring && layout->flexcount > base)
     {
 
@@ -2828,6 +2934,30 @@ static unsigned int findcontainer(struct layout *layout, unsigned int node)
 
 }
 
+static int staticshift(struct layout *layout, unsigned int node, int top, int outer)
+{
+
+    unsigned int parent = getnode(layout, node)->parent;
+    struct css_style *style = getstyle(layout, parent);
+    struct layout_box *box = &layout->boxes[parent];
+    unsigned int align = getalign(style, getstyle(layout, node));
+    int inner = box->y + style->borderwidth[CSS_TOP] + resolve(&style->padding[CSS_TOP], box->w);
+    int space = box->h - style->borderwidth[CSS_TOP] - style->borderwidth[CSS_BOTTOM] - resolve(&style->padding[CSS_TOP], box->w) - resolve(&style->padding[CSS_BOTTOM], box->w) - outer;
+
+    /* a box taken out of a flex row still lines up with the other items when nothing places it */
+    if (!(style->flexbox || style->display == CSS_DISPLAY_FLEX) || style->column)
+        return 0;
+
+    if (align == CSS_FLEX_CENTER)
+        return inner + space / 2 - top;
+
+    if (align == CSS_FLEX_END)
+        return inner + space - top;
+
+    return 0;
+
+}
+
 static void placeabsolute(struct layout *layout, unsigned int container, struct layout_absolute *absolute)
 {
 
@@ -2901,6 +3031,8 @@ static void placeabsolute(struct layout *layout, unsigned int container, struct 
 
     if (!hastop && hasbottom)
         translate(layout, absolute->node, fragmentstart, layout->fragmentcount, 0, cy + ch - resolve(&style->inset[CSS_BOTTOM], ch) - mb - height - y, 1);
+    else if (!hastop)
+        translate(layout, absolute->node, fragmentstart, layout->fragmentcount, 0, staticshift(layout, absolute->node, y - mt, mt + height + mb), 1);
 
     layout->extent = extent;
 
@@ -3201,10 +3333,18 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     trailing = (isopen(layout, node, CSS_BOTTOM) && !box->definite && !(style->minheight.unit == CSS_UNIT_PX && style->minheight.value > 0)) ? flow.pending : 0;
     contentheight = flow.y + max(flow.pending - trailing, 0) - (top + bt + pt);
 
-    /* without clearfix pseudo elements every block grows to hold its own floats */
-    contentheight = max(contentheight, floatbottom(layout, floatstart, top + bt + pt) - (top + bt + pt));
-    layout->floatcount = floatstart;
+    /* only a formatting context root holds its floats, elsewhere they reach into what follows until cleared */
+    if (isroot(layout, node))
+    {
+
+        contentheight = max(contentheight, floatbottom(layout, floatstart, top + bt + pt) - (top + bt + pt));
+        layout->floatcount = floatstart;
+
+    }
+
     layout->floatbase = floatbase;
+
+    layout->natural = bt + pt + contentheight + pb + bb;
 
     if (box->definite)
         contentheight = box->definite - 1;
