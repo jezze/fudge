@@ -4,7 +4,8 @@
 #define JS_STRINGSIZE                   0x20000
 #define JS_INTERNS                      4096
 #define JS_LISTENERS                    64
-#define JS_NATIVES                      24
+#define JS_NATIVES                      40
+#define JS_TIMERS                       32
 #define JS_MEDIA                        HTML_NODES
 #define JS_UNDEFINED                    0
 #define JS_NULL                         1
@@ -74,6 +75,8 @@ struct js_engine
     struct js_listener listeners[JS_LISTENERS];
     unsigned short elements[HTML_NODES];
     unsigned int natives[JS_NATIVES];
+    unsigned int timers[JS_TIMERS];
+    unsigned int timercount;
     unsigned int nodecount;
     unsigned int objectcount;
     unsigned int propertycount;
@@ -97,3 +100,4 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
 void js_run(struct js_engine *js, char *source, unsigned int count);
 unsigned int js_haslistener(struct js_engine *js, unsigned int node, char *type);
 void js_dispatch(struct js_engine *js, unsigned int node, char *type);
+void js_runtimers(struct js_engine *js);

@@ -42,6 +42,7 @@
 #define NODE_FOREACH                    35
 #define NODE_SWITCH                     36
 #define NODE_CASE                       37
+#define NODE_SEQUENCE                   38
 #define LOOP_OF                         1
 #define LOOP_IN                         2
 #define PATTERN_ARRAY                   1
@@ -96,6 +97,8 @@
 #define KIND_STORAGE                    9
 #define KIND_MEDIA                      10
 #define KIND_CONSOLE                    11
+#define KIND_CLASSLIST                  12
+#define KIND_STYLE                      13
 #define NATIVE_NOOP                     0
 #define NATIVE_GETELEMENTBYID           1
 #define NATIVE_ADDEVENTLISTENER         2
@@ -113,6 +116,32 @@
 #define NATIVE_TOUPPERCASE              14
 #define NATIVE_TOLOWERCASE              15
 #define NATIVE_QUERYSELECTOR            16
+#define NATIVE_CLASSADD                 17
+#define NATIVE_CLASSREMOVE              18
+#define NATIVE_CLASSTOGGLE              19
+#define NATIVE_CLASSCONTAINS            20
+#define NATIVE_QUERYSELECTORALL         21
+#define NATIVE_BYCLASS                  22
+#define NATIVE_BYTAG                    23
+#define NATIVE_FOREACH                  24
+#define NATIVE_CLOSEST                  25
+#define NATIVE_MATCHES                  26
+#define NATIVE_STARTSWITH               27
+#define NATIVE_ENDSWITH                 28
+#define NATIVE_INCLUDES                 29
+#define NATIVE_TRIM                     30
+#define NATIVE_SPLIT                    31
+#define NATIVE_SLICE                    32
+#define NATIVE_REPLACE                  33
+#define NATIVE_MAX                      34
+#define NATIVE_MIN                      35
+#define NATIVE_ROUND                    36
+#define NATIVE_ABS                      37
+#define NATIVE_SETTIMEOUT               38
+#define NATIVE_CHARAT                   39
+#define SELECTORSIZE                    128
+#define STYLESIZE                       512
+#define TEXTSIZE                        1024
 
 struct token
 {
@@ -151,6 +180,14 @@ struct binary
     unsigned int op;
     unsigned int precedence;
     unsigned int logical;
+
+};
+
+struct declaration
+{
+
+    unsigned int start;
+    unsigned int length;
 
 };
 
@@ -1454,7 +1491,18 @@ static unsigned int parseexpression(struct parser *parser)
     unsigned int node = parseassignment(parser);
 
     while (!parser->failed && accept(parser, ","))
-        node = parseassignment(parser);
+    {
+
+        unsigned int sequence = newnode(parser, NODE_SEQUENCE);
+
+        if (!sequence)
+            break;
+
+        parser->js->nodes[sequence].a = node;
+        parser->js->nodes[sequence].b = parseassignment(parser);
+        node = sequence;
+
+    }
 
     return node;
 
@@ -2006,6 +2054,516 @@ static unsigned int mediamatches(struct js_engine *js, char *query)
 
 }
 
+static unsigned int isselectorend(char c)
+{
+
+    return c == '#' || c == '.' || c == '[' || c == ':';
+
+}
+
+static unsigned int equalspan(char *text, char *span, unsigned int length)
+{
+
+    return cstring_length(text) == length && buffer_match(text, span, length);
+
+}
+
+static unsigned int hasword(char *list, char *word, unsigned int length)
+{
+
+    unsigned int i = 0;
+
+    while (list && list[i])
+    {
+
+        unsigned int start;
+
+        while (list[i] && isspace(list[i]))
+            i++;
+
+        start = i;
+
+        while (list[i] && !isspace(list[i]))
+            i++;
+
+        if (i - start == length && length && buffer_match(list + start, word, length))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int matchattribute(struct js_engine *js, unsigned int node, char *text, unsigned int length)
+{
+
+    unsigned int equal = buffer_findbyte(text, length, '=');
+    char name[SELECTORSIZE];
+    char *attribute;
+
+    if (equal >= SELECTORSIZE)
+        return 0;
+
+    buffer_copy(name, text, equal);
+
+    name[equal] = '\0';
+    attribute = html_getattribute(js->document, node, name);
+
+    if (!attribute || equal >= length)
+        return attribute != 0;
+
+    text += equal + 1;
+    length -= equal + 1;
+
+    if (length >= 2 && (text[0] == '"' || text[0] == '\''))
+    {
+
+        text++;
+        length -= 2;
+
+    }
+
+    return equalspan(attribute, text, length);
+
+}
+
+static unsigned int matchcompound(struct js_engine *js, unsigned int node, char *text, unsigned int length)
+{
+
+    struct html_document *document = js->document;
+    unsigned int i = 0;
+
+    if (!node || document->nodes[node].type != HTML_NODE_ELEMENT)
+        return 0;
+
+    while (i < length && !isselectorend(text[i]))
+        i++;
+
+    if (i && !(i == 1 && text[0] == '*') && !equalspan(html_getstring(document, document->nodes[node].name), text, i))
+        return 0;
+
+    while (i < length)
+    {
+
+        char kind = text[i++];
+        unsigned int start = i;
+
+        if (kind == '[')
+        {
+
+            while (i < length && text[i] != ']')
+                i++;
+
+            if (!matchattribute(js, node, text + start, i - start))
+                return 0;
+
+            i++;
+
+            continue;
+
+        }
+
+        while (i < length && !isselectorend(text[i]))
+            i++;
+
+        if (kind == '#' && !equalspan(html_getattribute(document, node, "id") ? html_getattribute(document, node, "id") : "", text + start, i - start))
+            return 0;
+
+        if (kind == '.' && !hasword(html_getattribute(document, node, "class"), text + start, i - start))
+            return 0;
+
+        if (kind == ':')
+            return 0;
+
+    }
+
+    return 1;
+
+}
+
+static unsigned int matchselector(struct js_engine *js, unsigned int node, char *text, unsigned int length)
+{
+
+    struct html_document *document = js->document;
+    unsigned int end = length;
+    unsigned int start;
+    unsigned int child = 0;
+
+    while (end && isspace(text[end - 1]))
+        end--;
+
+    start = end;
+
+    while (start && !isspace(text[start - 1]) && text[start - 1] != '>')
+        start--;
+
+    if (start == end || !matchcompound(js, node, text + start, end - start))
+        return 0;
+
+    while (start && isspace(text[start - 1]))
+        start--;
+
+    if (start && text[start - 1] == '>')
+    {
+
+        child = 1;
+        start--;
+
+        while (start && isspace(text[start - 1]))
+            start--;
+
+    }
+
+    if (!start)
+        return 1;
+
+    for (node = document->nodes[node].parent; node; node = document->nodes[node].parent)
+    {
+
+        if (matchselector(js, node, text, start))
+            return 1;
+
+        if (child)
+            return 0;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int matchlist(struct js_engine *js, unsigned int node, char *text)
+{
+
+    unsigned int length = cstring_length(text);
+    unsigned int start = 0;
+
+    while (start < length)
+    {
+
+        unsigned int end = start + buffer_findbyte(text + start, length - start, ',');
+
+        while (start < end && isspace(text[start]))
+            start++;
+
+        if (end > start && matchselector(js, node, text + start, end - start))
+            return 1;
+
+        start = end + 1;
+
+    }
+
+    return 0;
+
+}
+
+static struct js_value newarray(struct js_engine *js)
+{
+
+    unsigned int object = newobject(js, KIND_ARRAY, 0, 0);
+
+    if (!object)
+        throwerror(js, "Out of objects");
+
+    return (object) ? value(JS_OBJECT, object) : undefined();
+
+}
+
+static void pusharray(struct js_engine *js, struct js_value *array, struct js_value *item)
+{
+
+    if (array->type == JS_OBJECT)
+        putproperty(js, array->number, numberstring(js, js->objects[array->number].data++), item);
+
+}
+
+static struct js_value query(struct js_engine *js, unsigned int root, char *selector, unsigned int all)
+{
+
+    struct js_value result = (all) ? newarray(js) : value(JS_NULL, 0);
+    unsigned int node;
+
+    for (node = html_next(js->document, root, root); node; node = html_next(js->document, node, root))
+    {
+
+        if (matchlist(js, node, selector))
+        {
+
+            struct js_value element = elementvalue(js, node);
+
+            if (!all)
+                return element;
+
+            pusharray(js, &result, &element);
+
+        }
+
+    }
+
+    return result;
+
+}
+
+static unsigned int collecttext(struct js_engine *js, unsigned int root, char *out, unsigned int size)
+{
+
+    struct html_document *document = js->document;
+    unsigned int count = 0;
+    unsigned int node;
+
+    for (node = html_next(document, root, root); node; node = html_next(document, node, root))
+    {
+
+        struct html_node *text = &document->nodes[node];
+
+        if (text->type == HTML_NODE_TEXT && count + text->length < size)
+        {
+
+            buffer_copy(out + count, html_getstring(document, text->text), text->length);
+
+            count += text->length;
+
+        }
+
+    }
+
+    out[count] = '\0';
+
+    return count;
+
+}
+
+static unsigned int stylename(char *name, char *out)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    if (cstring_match(name, "cssFloat"))
+        name = "float";
+
+    for (i = 0; name[i] && count + 2 < SELECTORSIZE; i++)
+    {
+
+        if (name[i] >= 'A' && name[i] <= 'Z')
+        {
+
+            out[count++] = '-';
+            out[count++] = name[i] + 32;
+
+        }
+
+        else
+        {
+
+            out[count++] = name[i];
+
+        }
+
+    }
+
+    out[count] = '\0';
+
+    return count;
+
+}
+
+static struct declaration findstyle(char *style, char *name, unsigned int length)
+{
+
+    struct declaration found;
+    unsigned int i = 0;
+
+    found.start = 0;
+    found.length = 0;
+
+    while (style && style[i])
+    {
+
+        unsigned int start;
+        unsigned int end;
+
+        while (style[i] && (isspace(style[i]) || style[i] == ';'))
+            i++;
+
+        start = i;
+
+        while (style[i] && style[i] != ';')
+            i++;
+
+        end = start + buffer_findbyte(style + start, i - start, ':');
+
+        while (end > start && isspace(style[end - 1]))
+            end--;
+
+        if (end - start == length && buffer_match(style + start, name, length))
+        {
+
+            found.start = start;
+            found.length = i - start;
+
+            break;
+
+        }
+
+    }
+
+    return found;
+
+}
+
+static void setstyle(struct js_engine *js, unsigned int node, char *property, char *newvalue)
+{
+
+    char *style = html_getattribute(js->document, node, "style");
+    char name[SELECTORSIZE];
+    char out[STYLESIZE];
+    unsigned int length = stylename(property, name);
+    unsigned int count = 0;
+    unsigned int i = 0;
+
+    while (style && style[i])
+    {
+
+        unsigned int start;
+        unsigned int end;
+
+        while (style[i] && (isspace(style[i]) || style[i] == ';'))
+            i++;
+
+        start = i;
+
+        while (style[i] && style[i] != ';')
+            i++;
+
+        end = start + buffer_findbyte(style + start, i - start, ':');
+
+        while (end > start && isspace(style[end - 1]))
+            end--;
+
+        if (i > start && !(end - start == length && buffer_match(style + start, name, length)) && count + i - start + 2 < STYLESIZE)
+        {
+
+            buffer_copy(out + count, style + start, i - start);
+
+            count += i - start;
+            out[count++] = ';';
+
+        }
+
+    }
+
+    if (newvalue[0])
+        count += cstring_write_fmt(out, STYLESIZE - 1, count, "%s:%s;", name, newvalue);
+
+    out[count] = '\0';
+
+    html_setattribute(js->document, node, "style", out);
+
+    js->changed = 1;
+
+}
+
+static struct js_value getstyle(struct js_engine *js, unsigned int node, char *property)
+{
+
+    char *style = html_getattribute(js->document, node, "style");
+    char name[SELECTORSIZE];
+    struct declaration found = findstyle(style, name, stylename(property, name));
+    unsigned int colon;
+
+    if (!found.length)
+        return value(JS_STRING, internstring(js, ""));
+
+    colon = buffer_findbyte(style + found.start, found.length, ':') + 1;
+
+    while (colon < found.length && isspace(style[found.start + colon]))
+        colon++;
+
+    return value(JS_STRING, addstring(js, style + found.start + colon, found.length - colon));
+
+}
+
+static void setclass(struct js_engine *js, unsigned int node, char *word, unsigned int add)
+{
+
+    char *list = html_getattribute(js->document, node, "class");
+    char out[STYLESIZE];
+    unsigned int length = cstring_length(word);
+    unsigned int count = 0;
+    unsigned int i = 0;
+
+    if (!length || hasword(list, word, length) == add)
+        return;
+
+    while (list && list[i])
+    {
+
+        unsigned int start;
+
+        while (list[i] && isspace(list[i]))
+            i++;
+
+        start = i;
+
+        while (list[i] && !isspace(list[i]))
+            i++;
+
+        if (i > start && !(i - start == length && buffer_match(list + start, word, length)) && count + i - start + 2 < STYLESIZE)
+        {
+
+            if (count)
+                out[count++] = ' ';
+
+            buffer_copy(out + count, list + start, i - start);
+
+            count += i - start;
+
+        }
+
+    }
+
+    if (add && count + length + 2 < STYLESIZE)
+    {
+
+        if (count)
+            out[count++] = ' ';
+
+        buffer_copy(out + count, word, length);
+
+        count += length;
+
+    }
+
+    out[count] = '\0';
+
+    html_setattribute(js->document, node, "class", out);
+
+    js->changed = 1;
+
+}
+
+static struct js_value cachedobject(struct js_engine *js, struct js_value *target, unsigned int name, unsigned int kind, unsigned int data)
+{
+
+    struct js_property *property = findproperty(js, target->number, name);
+    struct js_value created;
+
+    if (property)
+        return property->value;
+
+    created = value(JS_OBJECT, newobject(js, kind, 0, data));
+
+    if (!created.number)
+        return undefined();
+
+    putproperty(js, target->number, name, &created);
+
+    return created;
+
+}
+
 static struct js_value getproperty(struct js_engine *js, struct js_value *target, unsigned int name)
 {
 
@@ -2027,6 +2585,30 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         if (cstring_match(text, "toLowerCase"))
             return value(JS_OBJECT, nativefor(js, NATIVE_TOLOWERCASE));
+
+        if (cstring_match(text, "startsWith"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_STARTSWITH));
+
+        if (cstring_match(text, "endsWith"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_ENDSWITH));
+
+        if (cstring_match(text, "includes"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_INCLUDES));
+
+        if (cstring_match(text, "trim"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_TRIM));
+
+        if (cstring_match(text, "split"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_SPLIT));
+
+        if (cstring_match(text, "slice") || cstring_match(text, "substring"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_SLICE));
+
+        if (cstring_match(text, "replace"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REPLACE));
+
+        if (cstring_match(text, "charAt"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CHARAT));
 
         return undefined();
 
@@ -2059,6 +2641,15 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "join"))
             return value(JS_OBJECT, nativefor(js, NATIVE_JOIN));
 
+        if (cstring_match(text, "forEach"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_FOREACH));
+
+        if (cstring_match(text, "includes"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_INCLUDES));
+
+        if (cstring_match(text, "slice"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_SLICE));
+
         break;
 
     case KIND_ELEMENT:
@@ -2079,6 +2670,75 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         if (cstring_match(text, "tagName"))
             return value(JS_STRING, internstring(js, html_getstring(js->document, js->document->nodes[object->data].name)));
+
+        if (cstring_match(text, "classList"))
+            return cachedobject(js, target, name, KIND_CLASSLIST, object->data);
+
+        if (cstring_match(text, "style"))
+            return cachedobject(js, target, name, KIND_STYLE, object->data);
+
+        if (cstring_match(text, "querySelector"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_QUERYSELECTOR));
+
+        if (cstring_match(text, "querySelectorAll"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_QUERYSELECTORALL));
+
+        if (cstring_match(text, "getElementsByClassName"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_BYCLASS));
+
+        if (cstring_match(text, "getElementsByTagName"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_BYTAG));
+
+        if (cstring_match(text, "closest"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CLOSEST));
+
+        if (cstring_match(text, "matches"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_MATCHES));
+
+        if (cstring_match(text, "parentNode") || cstring_match(text, "parentElement"))
+            return elementvalue(js, js->document->nodes[object->data].parent);
+
+        if (cstring_match(text, "firstElementChild") || cstring_match(text, "nextElementSibling") || cstring_match(text, "previousElementSibling"))
+        {
+
+            unsigned int node = (text[0] == 'f') ? js->document->nodes[object->data].first : (text[0] == 'n') ? js->document->nodes[object->data].next : js->document->nodes[object->data].prev;
+
+            while (node && js->document->nodes[node].type != HTML_NODE_ELEMENT)
+                node = (text[0] == 'p') ? js->document->nodes[node].prev : js->document->nodes[node].next;
+
+            return elementvalue(js, node);
+
+        }
+
+        if (cstring_match(text, "children"))
+        {
+
+            struct js_value children = newarray(js);
+            unsigned int node;
+
+            for (node = js->document->nodes[object->data].first; node; node = js->document->nodes[node].next)
+            {
+
+                struct js_value child = elementvalue(js, node);
+
+                if (child.type == JS_OBJECT)
+                    pusharray(js, &children, &child);
+
+            }
+
+            return children;
+
+        }
+
+        if (cstring_match(text, "textContent") || cstring_match(text, "innerText"))
+        {
+
+            char content[TEXTSIZE];
+            unsigned int length = collecttext(js, object->data, content, TEXTSIZE);
+
+            return value(JS_STRING, addstring(js, content, length));
+
+        }
 
         if (attributename(text))
         {
@@ -2107,6 +2767,15 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "querySelector"))
             return value(JS_OBJECT, nativefor(js, NATIVE_QUERYSELECTOR));
 
+        if (cstring_match(text, "querySelectorAll"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_QUERYSELECTORALL));
+
+        if (cstring_match(text, "getElementsByClassName"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_BYCLASS));
+
+        if (cstring_match(text, "getElementsByTagName"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_BYTAG));
+
         if (cstring_match(text, "addEventListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_ADDEVENTLISTENER));
 
@@ -2116,7 +2785,37 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "addEventListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_ADDEVENTLISTENER));
 
+        if (cstring_match(text, "setTimeout") || cstring_match(text, "requestAnimationFrame"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_SETTIMEOUT));
+
         break;
+
+    case KIND_CLASSLIST:
+        if (cstring_match(text, "add"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CLASSADD));
+
+        if (cstring_match(text, "remove"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CLASSREMOVE));
+
+        if (cstring_match(text, "toggle"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CLASSTOGGLE));
+
+        if (cstring_match(text, "contains"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CLASSCONTAINS));
+
+        break;
+
+    case KIND_STYLE:
+        if (cstring_match(text, "cssText"))
+        {
+
+            char *style = html_getattribute(js->document, object->data, "style");
+
+            return (style) ? stringvalue(js, style) : value(JS_STRING, internstring(js, ""));
+
+        }
+
+        return getstyle(js, object->data, text);
 
     case KIND_STORAGE:
         if (cstring_match(text, "getItem"))
@@ -2172,6 +2871,40 @@ static void setproperty(struct js_engine *js, struct js_value *target, unsigned 
     }
 
     object = &js->objects[target->number];
+
+    if (object->kind == KIND_STYLE)
+    {
+
+        if (cstring_match(getstring(js, name), "cssText"))
+        {
+
+            html_setattribute(js->document, object->data, "style", getstring(js, tostring(js, newvalue)));
+
+            js->changed = 1;
+
+        }
+
+        else
+        {
+
+            setstyle(js, object->data, getstring(js, name), getstring(js, tostring(js, newvalue)));
+
+        }
+
+        return;
+
+    }
+
+    if (object->kind == KIND_ELEMENT && (cstring_match(getstring(js, name), "textContent") || cstring_match(getstring(js, name), "innerText")))
+    {
+
+        html_settext(js->document, object->data, getstring(js, tostring(js, newvalue)));
+
+        js->changed = 1;
+
+        return;
+
+    }
 
     if (object->kind == KIND_ELEMENT && attributename(getstring(js, name)))
     {
@@ -2330,27 +3063,323 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         return value(JS_NULL, 0);
 
     case NATIVE_QUERYSELECTOR:
+    case NATIVE_QUERYSELECTORALL:
+        return query(js, element, getstring(js, tostring(js, first)), native->data == NATIVE_QUERYSELECTORALL);
+
+    case NATIVE_BYCLASS:
+    case NATIVE_BYTAG:
         {
 
-            char *selector = getstring(js, tostring(js, first));
+            char selector[SELECTORSIZE];
+            char *name = getstring(js, tostring(js, first));
+            unsigned int count = 0;
 
-            for (node = 1; node < js->document->nodecount; node++)
+            if (native->data == NATIVE_BYCLASS)
+                selector[count++] = '.';
+
+            for (i = 0; name[i] && count + 1 < SELECTORSIZE; i++)
+                selector[count++] = (native->data == NATIVE_BYCLASS && name[i] == ' ') ? '.' : name[i];
+
+            selector[count] = '\0';
+
+            return query(js, element, selector, 1);
+
+        }
+
+    case NATIVE_CLOSEST:
+        for (node = element; node && js->document->nodes[node].type == HTML_NODE_ELEMENT; node = js->document->nodes[node].parent)
+        {
+
+            if (matchlist(js, node, getstring(js, tostring(js, first))))
+                return elementvalue(js, node);
+
+        }
+
+        return value(JS_NULL, 0);
+
+    case NATIVE_MATCHES:
+        return value(JS_BOOLEAN, element && matchlist(js, element, getstring(js, tostring(js, first))));
+
+    case NATIVE_CLASSADD:
+    case NATIVE_CLASSREMOVE:
+        for (i = 0; kind == KIND_CLASSLIST && i < call->count; i++)
+            setclass(js, js->objects[self->number].data, getstring(js, tostring(js, &call->arguments[i])), native->data == NATIVE_CLASSADD);
+
+        return undefined();
+
+    case NATIVE_CLASSTOGGLE:
+    case NATIVE_CLASSCONTAINS:
+        if (kind == KIND_CLASSLIST)
+        {
+
+            unsigned int owner = js->objects[self->number].data;
+            char *word = getstring(js, tostring(js, first));
+            unsigned int has = hasword(html_getattribute(js->document, owner, "class"), word, cstring_length(word));
+
+            if (native->data == NATIVE_CLASSCONTAINS)
+                return value(JS_BOOLEAN, has);
+
+            has = (call->count >= 2) ? truthy(js, second) : !has;
+
+            setclass(js, owner, word, has);
+
+            return value(JS_BOOLEAN, has);
+
+        }
+
+        return value(JS_BOOLEAN, 0);
+
+    case NATIVE_FOREACH:
+        if (self->type == JS_OBJECT && js->objects[self->number].kind == KIND_ARRAY && isfunction(js, first))
+        {
+
+            for (i = 0; i < js->objects[self->number].data && !js->throwing; i++)
             {
 
-                struct html_node *candidate = &js->document->nodes[node];
-                char *id = (candidate->type == HTML_NODE_ELEMENT) ? html_getattribute(js->document, node, "id") : 0;
+                struct call each;
+                struct js_value item = getproperty(js, self, numberstring(js, i));
+                unsigned int argument;
 
-                if (candidate->type != HTML_NODE_ELEMENT)
-                    continue;
+                copyvalue(&each.function, first);
+                copyvalue(&each.self, &item);
+                copyvalue(&each.arguments[0], &item);
+                copyvalue(&each.arguments[1], &item);
+                copyvalue(&each.arguments[2], self);
 
-                if ((selector[0] == '#' && id && cstring_match(id, selector + 1)) || cstring_match(html_getstring(js->document, candidate->name), selector))
-                    return elementvalue(js, node);
+                each.arguments[1].type = JS_NUMBER;
+                each.arguments[1].number = i;
+                each.count = 3;
+
+                for (argument = 3; argument < ARGUMENTS; argument++)
+                {
+
+                    each.arguments[argument].type = JS_UNDEFINED;
+                    each.arguments[argument].number = 0;
+
+                }
+
+                callfunction(js, &each);
 
             }
 
         }
 
-        return value(JS_NULL, 0);
+        return undefined();
+
+    case NATIVE_SETTIMEOUT:
+        if (isfunction(js, first) && js->timercount < JS_TIMERS)
+            js->timers[js->timercount++] = first->number;
+
+        return value(JS_NUMBER, js->timercount);
+
+    case NATIVE_MAX:
+    case NATIVE_MIN:
+        {
+
+            int result = (call->count) ? tonumber(js, first) : 0;
+
+            for (i = 1; i < call->count; i++)
+            {
+
+                int number = tonumber(js, &call->arguments[i]);
+
+                if ((native->data == NATIVE_MAX) ? number > result : number < result)
+                    result = number;
+
+            }
+
+            return value(JS_NUMBER, result);
+
+        }
+
+    case NATIVE_ROUND:
+        return value(JS_NUMBER, tonumber(js, first));
+
+    case NATIVE_ABS:
+        return value(JS_NUMBER, (tonumber(js, first) < 0) ? -tonumber(js, first) : tonumber(js, first));
+
+    case NATIVE_STARTSWITH:
+    case NATIVE_ENDSWITH:
+    case NATIVE_INCLUDES:
+        if (self->type == JS_STRING)
+        {
+
+            char *haystack = getstring(js, self->number);
+            char *needle = getstring(js, tostring(js, first));
+            unsigned int length = cstring_length(haystack);
+            unsigned int size = cstring_length(needle);
+
+            if (size > length)
+                return value(JS_BOOLEAN, 0);
+
+            if (native->data == NATIVE_STARTSWITH)
+                return value(JS_BOOLEAN, buffer_match(haystack, needle, size));
+
+            if (native->data == NATIVE_ENDSWITH)
+                return value(JS_BOOLEAN, buffer_match(haystack + length - size, needle, size));
+
+            for (i = 0; i + size <= length; i++)
+            {
+
+                if (buffer_match(haystack + i, needle, size))
+                    return value(JS_BOOLEAN, 1);
+
+            }
+
+            return value(JS_BOOLEAN, 0);
+
+        }
+
+        if (native->data == NATIVE_INCLUDES && self->type == JS_OBJECT && js->objects[self->number].kind == KIND_ARRAY)
+        {
+
+            for (i = 0; i < js->objects[self->number].data; i++)
+            {
+
+                struct js_value item = getproperty(js, self, numberstring(js, i));
+
+                if (strictequal(js, &item, first))
+                    return value(JS_BOOLEAN, 1);
+
+            }
+
+        }
+
+        return value(JS_BOOLEAN, 0);
+
+    case NATIVE_TRIM:
+        if (self->type == JS_STRING)
+        {
+
+            char *text = getstring(js, self->number);
+            unsigned int end = cstring_length(text);
+            unsigned int start = 0;
+
+            while (start < end && isspace(text[start]))
+                start++;
+
+            while (end > start && isspace(text[end - 1]))
+                end--;
+
+            return value(JS_STRING, addstring(js, text + start, end - start));
+
+        }
+
+        return undefined();
+
+    case NATIVE_CHARAT:
+        if (self->type == JS_STRING)
+        {
+
+            unsigned int index = tonumber(js, first);
+
+            return (index < cstring_length(getstring(js, self->number))) ? value(JS_STRING, addstring(js, getstring(js, self->number) + index, 1)) : value(JS_STRING, internstring(js, ""));
+
+        }
+
+        return undefined();
+
+    case NATIVE_SLICE:
+        {
+
+            unsigned int array = self->type == JS_OBJECT && js->objects[self->number].kind == KIND_ARRAY;
+            int length = (array) ? (int)js->objects[self->number].data : (self->type == JS_STRING) ? (int)cstring_length(getstring(js, self->number)) : 0;
+            int start = (call->count) ? tonumber(js, first) : 0;
+            int end = (call->count >= 2 && second->type != JS_UNDEFINED) ? tonumber(js, second) : length;
+            struct js_value result;
+
+            start = (start < 0) ? ((start + length < 0) ? 0 : start + length) : ((start > length) ? length : start);
+            end = (end < 0) ? ((end + length < 0) ? 0 : end + length) : ((end > length) ? length : end);
+            end = (end < start) ? start : end;
+
+            if (self->type == JS_STRING)
+                return value(JS_STRING, addstring(js, getstring(js, self->number) + start, end - start));
+
+            if (!array)
+                return undefined();
+
+            result = newarray(js);
+
+            for (; start < end; start++)
+            {
+
+                struct js_value item = getproperty(js, self, numberstring(js, start));
+
+                pusharray(js, &result, &item);
+
+            }
+
+            return result;
+
+        }
+
+    case NATIVE_SPLIT:
+        if (self->type == JS_STRING)
+        {
+
+            struct js_value result = newarray(js);
+            char *separator = getstring(js, tostring(js, first));
+            unsigned int size = cstring_length(separator);
+            unsigned int start = 0;
+
+            for (i = 0; getstring(js, self->number)[i]; i++)
+            {
+
+                struct js_value piece;
+
+                if (size && !buffer_match(getstring(js, self->number) + i, separator, size))
+                    continue;
+
+                piece = value(JS_STRING, addstring(js, getstring(js, self->number) + start, (size) ? i - start : 1));
+
+                pusharray(js, &result, &piece);
+
+                start = (size) ? i + size : i + 1;
+                i = (size) ? i + size - 1 : i;
+
+            }
+
+            if (size)
+            {
+
+                struct js_value piece = value(JS_STRING, addstring(js, getstring(js, self->number) + start, cstring_length(getstring(js, self->number) + start)));
+
+                pusharray(js, &result, &piece);
+
+            }
+
+            return result;
+
+        }
+
+        return undefined();
+
+    case NATIVE_REPLACE:
+        if (self->type == JS_STRING && first->type == JS_STRING)
+        {
+
+            char *text = getstring(js, self->number);
+            char *pattern = getstring(js, first->number);
+            unsigned int size = cstring_length(pattern);
+
+            for (i = 0; i + size <= cstring_length(text); i++)
+            {
+
+                if (buffer_match(text + i, pattern, size))
+                {
+
+                    unsigned int head = addstring(js, text, i);
+                    unsigned int tail = concat(js, tostring(js, second), addstring(js, getstring(js, self->number) + i + size, cstring_length(getstring(js, self->number) + i + size)));
+
+                    return value(JS_STRING, concat(js, head, tail));
+
+                }
+
+            }
+
+        }
+
+        return (self->type == JS_STRING) ? value(JS_STRING, self->number) : undefined();
 
     case NATIVE_ADDEVENTLISTENER:
         if (call->count >= 2 && isfunction(js, second) && js->listenercount < JS_LISTENERS)
@@ -3017,6 +4046,11 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
 
         return evaluate(js, (truthy(js, &a)) ? node->b : node->c, scope);
 
+    case NODE_SEQUENCE:
+        evaluate(js, node->a, scope);
+
+        return (js->throwing) ? undefined() : evaluate(js, node->b, scope);
+
     }
 
     return undefined();
@@ -3425,6 +4459,17 @@ static void addglobal(struct js_engine *js, char *name, unsigned int object)
 
 }
 
+static void addmethod(struct js_engine *js, char *owner, char *name, unsigned int native)
+{
+
+    struct js_value method = value(JS_OBJECT, js->natives[native]);
+    struct js_property *property = findproperty(js, js->global, internstring(js, owner));
+
+    if (property && property->value.type == JS_OBJECT && property->value.number)
+        putproperty(js, property->value.number, internstring(js, name), &method);
+
+}
+
 void js_reset(struct js_engine *js, struct html_document *document, unsigned int dark)
 {
 
@@ -3443,6 +4488,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     js->throwing = 0;
     js->changed = 0;
     js->errors = 0;
+    js->timercount = 0;
 
     buffer_clear(js->elements, sizeof (unsigned short) * HTML_NODES);
     internstring(js, "");
@@ -3462,6 +4508,16 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addglobal(js, "sessionStorage", js->storage);
     addglobal(js, "console", newobject(js, KIND_CONSOLE, 0, 0));
     addglobal(js, "matchMedia", js->natives[NATIVE_MATCHMEDIA]);
+    addglobal(js, "setTimeout", js->natives[NATIVE_SETTIMEOUT]);
+    addglobal(js, "requestAnimationFrame", js->natives[NATIVE_SETTIMEOUT]);
+    addglobal(js, "Math", newobject(js, KIND_PLAIN, 0, 0));
+    addmethod(js, "Math", "max", NATIVE_MAX);
+    addmethod(js, "Math", "min", NATIVE_MIN);
+    addmethod(js, "Math", "round", NATIVE_ROUND);
+    addmethod(js, "Math", "floor", NATIVE_ROUND);
+    addmethod(js, "Math", "ceil", NATIVE_ROUND);
+    addmethod(js, "Math", "trunc", NATIVE_ROUND);
+    addmethod(js, "Math", "abs", NATIVE_ABS);
 
 }
 
@@ -3568,3 +4624,38 @@ void js_dispatch(struct js_engine *js, unsigned int node, char *type)
     }
 
 }
+void js_runtimers(struct js_engine *js)
+{
+
+    unsigned int count = js->timercount;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        struct call call;
+        unsigned int argument;
+
+        call.function = value(JS_OBJECT, js->timers[i]);
+        call.self = undefined();
+        call.count = 0;
+
+        for (argument = 0; argument < ARGUMENTS; argument++)
+            call.arguments[argument] = undefined();
+
+        js->steps = 0;
+        js->throwing = 0;
+
+        callfunction(js, &call);
+
+        if (js->throwing)
+            js->errors++;
+
+        js->throwing = 0;
+
+    }
+
+    js->timercount = 0;
+
+}
+

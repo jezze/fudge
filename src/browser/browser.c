@@ -1444,6 +1444,7 @@ static void runscripts(void)
 
     js_dispatch(js, 0, "DOMContentLoaded");
     js_dispatch(js, 0, "load");
+    js_runtimers(js);
 
 }
 
