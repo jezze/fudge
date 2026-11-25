@@ -1994,7 +1994,7 @@ static unsigned int parsestatement(struct parser *parser)
 static unsigned int getelement(struct js_engine *js, unsigned int node)
 {
 
-    if (!node || node >= HTML_NODES || js->document->nodes[node].type != HTML_NODE_ELEMENT)
+    if (!node || node >= HTML_NODES || js->document->nodes[node].type != HTML_NODE_ELEMENT || html_isgenerated(js->document, node))
         return 0;
 
     if (!js->elements[node])
@@ -2287,7 +2287,7 @@ static struct js_value query(struct js_engine *js, unsigned int root, char *sele
     for (node = html_next(js->document, root, root); node; node = html_next(js->document, node, root))
     {
 
-        if (matchlist(js, node, selector))
+        if (!html_isgenerated(js->document, node) && matchlist(js, node, selector))
         {
 
             struct js_value element = elementvalue(js, node);
@@ -2317,7 +2317,7 @@ static unsigned int collecttext(struct js_engine *js, unsigned int root, char *o
 
         struct html_node *text = &document->nodes[node];
 
-        if (text->type == HTML_NODE_TEXT && count + text->length < size)
+        if (text->type == HTML_NODE_TEXT && !html_isgenerated(document, node) && count + text->length < size)
         {
 
             buffer_copy(out + count, html_getstring(document, text->text), text->length);
@@ -2703,7 +2703,7 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
             unsigned int node = (text[0] == 'f') ? js->document->nodes[object->data].first : (text[0] == 'n') ? js->document->nodes[object->data].next : js->document->nodes[object->data].prev;
 
-            while (node && js->document->nodes[node].type != HTML_NODE_ELEMENT)
+            while (node && (js->document->nodes[node].type != HTML_NODE_ELEMENT || html_isgenerated(js->document, node)))
                 node = (text[0] == 'p') ? js->document->nodes[node].prev : js->document->nodes[node].next;
 
             return elementvalue(js, node);
@@ -2787,6 +2787,10 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         if (cstring_match(text, "setTimeout") || cstring_match(text, "requestAnimationFrame"))
             return value(JS_OBJECT, nativefor(js, NATIVE_SETTIMEOUT));
+
+        /* the page is laid out as one picture that is never scrolled */
+        if (cstring_match(text, "scrollY") || cstring_match(text, "scrollX") || cstring_match(text, "pageYOffset") || cstring_match(text, "pageXOffset"))
+            return value(JS_NUMBER, 0);
 
         break;
 

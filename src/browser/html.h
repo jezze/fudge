@@ -40,6 +40,8 @@
 #define HTML_TAG_HR                     32
 #define HTML_TAG_CAPTION                33
 #define HTML_TAG_SVG                    34
+#define HTML_TAG_BEFORE                 35
+#define HTML_TAG_AFTER                  36
 
 struct html_node
 {
@@ -80,6 +82,8 @@ struct html_document
     unsigned int head;
     unsigned int body;
     unsigned int full;
+    unsigned int generated;
+    unsigned int generatedtext;
 
 };
 
@@ -90,5 +94,9 @@ unsigned int html_setattribute(struct html_document *document, unsigned int node
 void html_removeattribute(struct html_document *document, unsigned int node, char *name);
 unsigned int html_settext(struct html_document *document, unsigned int node, char *text);
 unsigned int html_next(struct html_document *document, unsigned int node, unsigned int root);
+unsigned int html_isgenerated(struct html_document *document, unsigned int node);
+unsigned int html_addgenerated(struct html_document *document, unsigned int parent, unsigned int tag, char *text, unsigned int length);
+void html_linkgenerated(struct html_document *document);
+void html_dropgenerated(struct html_document *document);
 void html_parse(struct html_document *document, char *source, unsigned int count);
 void html_parsetext(struct html_document *document, char *source, unsigned int count);

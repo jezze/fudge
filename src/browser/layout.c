@@ -650,6 +650,8 @@ static void placeword(struct layout *layout, struct flow *flow, struct text *tex
     if (text->wrap && !isempty(layout, flow) && flow->x + spacewidth + width > flow->right)
     {
 
+        layout->wrapped++;
+
         closefragment(text);
         flushline(layout, flow, 0);
 
@@ -666,6 +668,8 @@ static void placeword(struct layout *layout, struct flow *flow, struct text *tex
 
         if (split >= end - start)
             break;
+
+        layout->wrapped++;
 
         placepiece(layout, flow, text, start, start + split, measuretext(layout, &text->metrics, data + start, split, 0), 0);
         closefragment(text);
@@ -1084,7 +1088,7 @@ static int measure(struct layout *layout, unsigned int node, int availw)
 
     layoutblock(layout, node, 0, 0, availw);
 
-    needed = layout->extent - ml;
+    needed = layout->extent - ml - resolve(&style->margin[CSS_RIGHT], availw);
 
     if (style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT || isreplaced(layout, node))
         needed = layout->boxes[node].w;
@@ -1134,6 +1138,8 @@ static void placeatomic(struct layout *layout, struct flow *flow, unsigned int n
 
     if (wrap && !isempty(layout, flow) && flow->x + spacewidth + gap + ml + width + mr > flow->right)
     {
+
+        layout->wrapped++;
 
         flushline(layout, flow, 0);
 
@@ -2322,6 +2328,67 @@ static void flexsizes(struct layout *layout, unsigned int start, unsigned int en
 
 }
 
+static int flexheight(struct layout *layout, unsigned int node, int availw)
+{
+
+    struct css_style *style = getstyle(layout, node);
+    int vertical = style->borderwidth[CSS_TOP] + style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_TOP], availw) + resolve(&style->padding[CSS_BOTTOM], availw);
+    int inner = (style->borderbox) ? vertical : 0;
+    int height = layout->boxes[node].definite - 1;
+
+    /* a min-height gives the content room to share too, once it is more than the content */
+    if (style->minheight.unit == CSS_UNIT_PX && style->minheight.value > 0 && style->minheight.value - inner > height)
+        height = style->minheight.value - inner;
+
+    return height;
+
+}
+
+static unsigned int isstretched(struct layout *layout, struct css_style *container, struct layout_flexitem *item)
+{
+
+    struct css_style *style = getstyle(layout, item->node);
+
+    return getalign(container, style) == CSS_FLEX_STRETCH && style->height.unit == CSS_UNIT_AUTO && !isreplaced(layout, item->node);
+
+}
+
+static unsigned int haspercentchild(struct layout *layout, unsigned int node)
+{
+
+    unsigned int child;
+
+    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    {
+
+        if (getnode(layout, child)->type == HTML_NODE_ELEMENT && getstyle(layout, child)->height.unit == CSS_UNIT_PERCENT)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int needsrestretch(struct layout *layout, struct css_style *container, unsigned int start, unsigned int end, int cross)
+{
+
+    unsigned int i;
+
+    for (i = start; i < end; i++)
+    {
+
+        struct layout_flexitem *item = &layout->flexitems[i];
+
+        if (isstretched(layout, container, item) && item->mt + item->height + item->mb < cross && haspercentchild(layout, item->node))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int node)
 {
 
@@ -2329,7 +2396,7 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
     int availw = flow->right - flow->left;
     int gap = style->columngap;
     unsigned int justify = (style->reverse && style->justify == CSS_FLEX_START) ? CSS_FLEX_END : (style->reverse && style->justify == CSS_FLEX_END) ? CSS_FLEX_START : style->justify;
-    int fixed = (style->height.unit == CSS_UNIT_PX) ? style->height.value - ((style->borderbox) ? style->borderwidth[CSS_TOP] + style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_TOP], availw) + resolve(&style->padding[CSS_BOTTOM], availw) : 0) : -1;
+    int fixed = flexheight(layout, node, availw);
     unsigned int base = layout->flexcount;
     unsigned int ordered = isordered(layout, node);
     unsigned int start;
@@ -2374,6 +2441,9 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
         int free;
         int offset = 0;
         int spacing = 0;
+        unsigned int fragmentcount;
+        unsigned int textcount;
+        unsigned int absolutecount;
         int cross = 0;
         int x;
 
@@ -2467,6 +2537,9 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
         }
 
         x = flow->left + offset;
+        fragmentcount = layout->fragmentcount;
+        textcount = layout->textcount;
+        absolutecount = layout->absolutecount;
 
         for (i = start; i < end; i++)
         {
@@ -2483,6 +2556,36 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
 
         if (fixed >= 0 && start == base && end == layout->flexcount)
             cross = max(cross, fixed);
+
+        /* a stretched item has a definite height, so the line is placed again for children sized by percent */
+        if (!layout->measuring && needsrestretch(layout, style, start, end, cross))
+        {
+
+            layout->fragmentcount = fragmentcount;
+            layout->textcount = textcount;
+            layout->absolutecount = absolutecount;
+
+            for (i = start; i < end; i++)
+            {
+
+                struct layout_flexitem *item = &layout->flexitems[i];
+                int left = layout->boxes[item->node].x - item->ml;
+
+                if (isstretched(layout, style, item))
+                {
+
+                    layout->heightnode = item->node;
+                    layout->forceheight = cross - item->mt - item->mb;
+
+                }
+
+                placeflexitem(layout, item, left, y);
+
+                layout->heightnode = 0;
+
+            }
+
+        }
 
         for (i = start; i < end; i++)
         {
@@ -2507,13 +2610,20 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
 
 }
 
+static unsigned int countautomargins(struct css_style *style, unsigned int first, unsigned int second)
+{
+
+    return (style->margin[first].unit == CSS_UNIT_AUTO) + (style->margin[second].unit == CSS_UNIT_AUTO);
+
+}
+
 static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned int node)
 {
 
     struct css_style *style = getstyle(layout, node);
     int availw = flow->right - flow->left;
     int gap = (style->rowgap) ? style->rowgap : style->columngap;
-    int fixed = (style->height.unit == CSS_UNIT_PX) ? style->height.value - ((style->borderbox) ? style->borderwidth[CSS_TOP] + style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_TOP], availw) + resolve(&style->padding[CSS_BOTTOM], availw) : 0) : -1;
+    int fixed = flexheight(layout, node, availw);
     unsigned int base = layout->flexcount;
     unsigned int ordered = isordered(layout, node);
     unsigned int child;
@@ -2539,6 +2649,13 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
 
         childstyle = getstyle(layout, child);
         align = getalign(style, childstyle);
+
+        /* auto margins across a column push the item over instead of stretching it */
+        if (childstyle->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
+            align = (childstyle->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO) ? CSS_FLEX_CENTER : CSS_FLEX_END;
+        else if (childstyle->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO)
+            align = CSS_FLEX_START;
+
         item = &layout->flexitems[layout->flexcount++];
         item->node = child;
         item->ml = resolve(&childstyle->margin[CSS_LEFT], availw);
@@ -2564,10 +2681,62 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
 
         int free = fixed - (y - flow->y);
         unsigned int count = layout->flexcount - base;
+        unsigned int automargins = 0;
+        unsigned int grow = 0;
         int offset = 0;
         int spacing = 0;
 
-        if (free > 0)
+        for (i = base; i < layout->flexcount; i++)
+            automargins += countautomargins(getstyle(layout, layout->flexitems[i].node), CSS_TOP, CSS_BOTTOM);
+
+        for (i = base; i < layout->flexcount; i++)
+            grow += getstyle(layout, layout->flexitems[i].node)->grow;
+
+        /* growing items take the free height first, the box gets taller and the rest moves down */
+        if (free > 0 && grow)
+        {
+
+            for (i = base; i < layout->flexcount; i++)
+            {
+
+                struct layout_flexitem *item = &layout->flexitems[i];
+                int share = free * getstyle(layout, item->node)->grow / (int)grow;
+
+                if (offset)
+                    translate(layout, item->node, item->fragmentstart, item->fragmentend, 0, offset, 1);
+
+                layout->boxes[item->node].h += share;
+                offset += share;
+
+            }
+
+        }
+
+        /* auto margins take the free height before justify-content gets any */
+        else if (free > 0 && automargins)
+        {
+
+            for (i = base; i < layout->flexcount; i++)
+            {
+
+                struct layout_flexitem *item = &layout->flexitems[i];
+                struct css_style *childstyle = getstyle(layout, item->node);
+
+                if (childstyle->margin[CSS_TOP].unit == CSS_UNIT_AUTO)
+                    offset += free / (int)automargins;
+
+                if (offset)
+                    translate(layout, item->node, item->fragmentstart, item->fragmentend, 0, offset, 1);
+
+                if (childstyle->margin[CSS_BOTTOM].unit == CSS_UNIT_AUTO)
+                    offset += free / (int)automargins;
+
+            }
+
+        }
+
+        /* items that overflow are still centered or pushed to the end, past the top if need be */
+        else if (free > 0 || style->justify == CSS_FLEX_CENTER || style->justify == CSS_FLEX_END)
         {
 
             switch (style->justify)
@@ -2682,6 +2851,8 @@ static void placeabsolute(struct layout *layout, unsigned int container, struct 
     unsigned int fragmentstart = layout->fragmentcount;
     int extent = layout->extent;
     unsigned int haswidth = style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT;
+    unsigned int heightnode;
+    int forceheight;
     int width;
     int x;
     int y;
@@ -2703,7 +2874,30 @@ static void placeabsolute(struct layout *layout, unsigned int container, struct 
 
     x = (hasleft) ? cx + left : (hasright) ? cx + cw - right - ml - width - mr : absolute->x;
     y = ((hastop) ? cy + resolve(&style->inset[CSS_TOP], ch) : absolute->y) + mt;
+
+    heightnode = layout->heightnode;
+    forceheight = layout->forceheight;
+
+    /* heights against the containing block are known here, before the box is laid out */
+    if (style->height.unit == CSS_UNIT_PERCENT)
+    {
+
+        layout->heightnode = absolute->node;
+        layout->forceheight = resolve(&style->height, ch) + ((style->borderbox) ? 0 : style->borderwidth[CSS_TOP] + style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_TOP], cw) + resolve(&style->padding[CSS_BOTTOM], cw));
+
+    }
+
+    else if (style->height.unit == CSS_UNIT_AUTO && hastop && hasbottom)
+    {
+
+        layout->heightnode = absolute->node;
+        layout->forceheight = max(ch - resolve(&style->inset[CSS_TOP], ch) - resolve(&style->inset[CSS_BOTTOM], ch) - mt - mb, 0);
+
+    }
+
     height = placesized(layout, absolute->node, x, y, ml + width + mr, width);
+    layout->heightnode = heightnode;
+    layout->forceheight = forceheight;
 
     if (!hastop && hasbottom)
         translate(layout, absolute->node, fragmentstart, layout->fragmentcount, 0, cy + ch - resolve(&style->inset[CSS_BOTTOM], ch) - mb - height - y, 1);
@@ -2802,6 +2996,28 @@ static int floatbottom(struct layout *layout, unsigned int start, int y)
 
 }
 
+static int definiteheight(struct layout *layout, unsigned int node, int availw)
+{
+
+    struct css_style *style = getstyle(layout, node);
+    unsigned int parent = getnode(layout, node)->parent;
+    int vertical = style->borderwidth[CSS_TOP] + style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_TOP], availw) + resolve(&style->padding[CSS_BOTTOM], availw);
+    int inner = (style->borderbox) ? vertical : 0;
+
+    if (layout->heightnode == node)
+        return max(layout->forceheight - vertical, 0);
+
+    if (style->height.unit == CSS_UNIT_PX)
+        return max(style->height.value - inner, 0);
+
+    /* a percentage needs a parent whose height does not depend on its content */
+    if (style->height.unit == CSS_UNIT_PERCENT && parent && layout->boxes[parent].definite)
+        return max(resolve(&style->height, layout->boxes[parent].definite - 1) - inner, 0);
+
+    return -1;
+
+}
+
 static int layoutblock(struct layout *layout, unsigned int node, int x, int top, int availw)
 {
 
@@ -2820,6 +3036,9 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     int extra = bl + br + pl + pr;
     int cw = availw - ml - mr - extra;
     unsigned int constrained = 0;
+    unsigned int sized = 0;
+    unsigned int capped = 0;
+    unsigned int wrapped = layout->wrapped;
     unsigned int floatstart = layout->floatcount;
     unsigned int floatbase = layout->floatbase;
     unsigned int absolutestart = layout->absolutecount;
@@ -2839,6 +3058,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
         cw = resolve(&style->width, availw) - ((style->borderbox) ? extra : 0);
         constrained = 1;
+        sized = 1;
 
     }
 
@@ -2852,6 +3072,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
             cw = limit;
             constrained = 1;
+            capped = 1;
 
         }
 
@@ -2863,6 +3084,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
         cw = layout->forcewidth - extra;
         constrained = 1;
+        sized = 1;
         layout->forcenode = 0;
 
     }
@@ -2877,6 +3099,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
             cw = width;
             constrained = 1;
+            sized = 1;
 
         }
 
@@ -2900,6 +3123,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     box->placed = 1;
     box->x = x + ml;
     box->y = top;
+    box->definite = definiteheight(layout, node, availw) + 1;
 
     if (isroot(layout, node))
         layout->floatbase = floatstart;
@@ -2974,7 +3198,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
         placemarker(layout, top + bt + pt + layout->fragments[layout->marker - 1].ascent);
 
     /* a last child's bottom margin passes through a parent without border, padding or height */
-    trailing = (isopen(layout, node, CSS_BOTTOM) && style->height.unit != CSS_UNIT_PX && !(style->minheight.unit == CSS_UNIT_PX && style->minheight.value > 0)) ? flow.pending : 0;
+    trailing = (isopen(layout, node, CSS_BOTTOM) && !box->definite && !(style->minheight.unit == CSS_UNIT_PX && style->minheight.value > 0)) ? flow.pending : 0;
     contentheight = flow.y + max(flow.pending - trailing, 0) - (top + bt + pt);
 
     /* without clearfix pseudo elements every block grows to hold its own floats */
@@ -2982,8 +3206,8 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     layout->floatcount = floatstart;
     layout->floatbase = floatbase;
 
-    if (style->height.unit == CSS_UNIT_PX)
-        contentheight = max(style->height.value - ((style->borderbox) ? bt + bb + pt + pb : 0), 0);
+    if (box->definite)
+        contentheight = box->definite - 1;
 
     if (style->maxheight.unit == CSS_UNIT_PX)
         contentheight = min(contentheight, max(style->maxheight.value - ((style->borderbox) ? bt + bb + pt + pb : 0), 0));
@@ -2998,8 +3222,13 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     if (layout->extent > 0)
         layout->extent += pr + br;
 
-    if (constrained)
+    /* a max-width only caps the box, it is as wide as the cap when its content had to wrap to fit */
+    if (sized || (capped && layout->wrapped != wrapped))
         layout->extent = max(layout->extent, box->x + box->w);
+
+    /* a parent shrinking to fit makes room for the margin too, measure takes its own box's off again */
+    if (layout->extent > 0)
+        layout->extent += mr;
 
     layout->extent = max(layout->extent, extent);
 
@@ -3130,6 +3359,8 @@ void layout_document(struct layout *layout, unsigned int width, unsigned int hei
     layout->truncated = 0;
     layout->minimum = 0;
     layout->forcenode = 0;
+    layout->heightnode = 0;
+    layout->wrapped = 0;
     layout->flexcount = 0;
     layout->floatcount = 0;
     layout->floatbase = 0;
@@ -3143,6 +3374,7 @@ void layout_document(struct layout *layout, unsigned int width, unsigned int hei
     {
 
         layout->boxes[node].placed = 0;
+        layout->boxes[node].definite = 0;
         layout->measures[node].availw = -1;
 
     }
@@ -3249,3 +3481,4 @@ unsigned int layout_findlink(struct layout *layout, int x, int y)
     return (node) ? findanchor(layout, node) : 0;
 
 }
+

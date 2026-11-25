@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      89
+#define PROPERTIES                      93
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -70,7 +70,14 @@
 #define PROP_BORDERCOLLAPSE             86
 #define PROP_ORDER                      87
 #define PROP_ZINDEX                     88
+#define PROP_CONTENT                    89
+#define PROP_BOXSHADOW                  90
+#define PROP_BACKGROUNDCLIP             91
+#define PROP_WEBKITBACKGROUNDCLIP       92
 #define PROP_CUSTOM                     255
+#define POOL_EXACT                      0
+#define POOL_LOWER                      1
+#define POOL_RAW                        2
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
 #define PART_ID                         3
@@ -89,6 +96,7 @@
 #define PART_LASTOFTYPE                 16
 #define PART_IS                         17
 #define PART_ALTERNATIVE                18
+#define PART_HAS                        19
 #define COMBINATOR_NONE                 0
 #define COMBINATOR_FIRST                1
 #define COMBINATOR_DESCENDANT           2
@@ -121,6 +129,7 @@
 #define PHASES                          3
 #define GRADIENTARGS                    8
 #define GRIDTRACKS                      12
+#define CONTENTSIZE                     128
 
 struct parser
 {
@@ -141,6 +150,7 @@ struct selectorparser
     struct css_sheet *sheet;
     char *text;
     unsigned int specificity;
+    unsigned int pseudo;
 
 };
 
@@ -206,6 +216,15 @@ struct matcher
 
 };
 
+struct content
+{
+
+    char text[CONTENTSIZE];
+    unsigned int length;
+    unsigned int valid;
+
+};
+
 struct context
 {
 
@@ -214,6 +233,7 @@ struct context
     unsigned int node;
     struct css_style *style;
     struct css_style *parent;
+    struct content *content;
     unsigned int rootsize;
     unsigned int width;
     unsigned int height;
@@ -258,7 +278,7 @@ static char *properties[PROPERTIES] = {
     "row-gap", "column-gap", "grid-gap", "fill",
     "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow",
     "float", "clear", "overflow", "overflow-x", "overflow-y",
-    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index"
+    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -474,7 +494,7 @@ static unsigned int findstop(char *text, unsigned int offset, unsigned int end, 
 
 }
 
-static unsigned int pooladd(struct css_sheet *sheet, char *text, unsigned int length, unsigned int value)
+static unsigned int pooladd(struct css_sheet *sheet, char *text, unsigned int length, unsigned int mode)
 {
 
     unsigned int offset = sheet->poolcount;
@@ -496,14 +516,15 @@ static unsigned int pooladd(struct css_sheet *sheet, char *text, unsigned int le
 
         }
 
-        c = (value) ? lower(text[i]) : text[i];
+        c = (mode == POOL_LOWER) ? lower(text[i]) : text[i];
 
-        if (c == '\\' && i + 1 < length)
+        /* raw text keeps its escapes, generated content decodes them itself */
+        if (c == '\\' && i + 1 < length && mode != POOL_RAW)
             c = text[++i];
 
         i++;
 
-        if (value && isspace(c))
+        if (mode != POOL_EXACT && isspace(c))
         {
 
             space = 1;
@@ -651,8 +672,8 @@ static void parsedeclaration(struct css_sheet *sheet, char *text, unsigned int s
 
     sheet->declarations[sheet->declarationcount].property = property;
     sheet->declarations[sheet->declarationcount].important = important;
-    sheet->declarations[sheet->declarationcount].name = (property == PROP_CUSTOM) ? pooladd(sheet, name, namelength, 1) : 0;
-    sheet->declarations[sheet->declarationcount].value = pooladd(sheet, text + start, (end > start) ? end - start : 0, 1);
+    sheet->declarations[sheet->declarationcount].name = (property == PROP_CUSTOM) ? pooladd(sheet, name, namelength, POOL_LOWER) : 0;
+    sheet->declarations[sheet->declarationcount].value = pooladd(sheet, text + start, (end > start) ? end - start : 0, (property == PROP_CONTENT) ? POOL_RAW : POOL_LOWER);
 
     if (sheet->declarations[sheet->declarationcount].value && (property != PROP_CUSTOM || sheet->declarations[sheet->declarationcount].name))
         sheet->declarationcount++;
@@ -934,6 +955,26 @@ static unsigned int parsepseudo(struct selectorparser *selectorparser, unsigned 
         if (cstring_match(name, "is") || cstring_match(name, "matches") || cstring_match(name, "where"))
             return (parselist(selectorparser, stop + 1, close, combinator, 0, !cstring_match(name, "where"))) ? close + 1 : 0;
 
+        if (cstring_match(name, "has"))
+        {
+
+            unsigned int list = sheet->partcount;
+            unsigned int inner = skipspace(text, stop + 1, close);
+            unsigned int child = inner < close && text[inner] == '>';
+
+            if (inner < close && (text[inner] == '+' || text[inner] == '~'))
+                return 0;
+
+            if (!parselist(selectorparser, (child) ? inner + 1 : stop + 1, close, combinator, 0, 1))
+                return 0;
+
+            sheet->parts[list].type = PART_HAS;
+            sheet->parts[list].value = child;
+
+            return close + 1;
+
+        }
+
         if (cstring_match(name, "nth-child"))
         {
 
@@ -1002,7 +1043,7 @@ static unsigned int parseattribute(struct selectorparser *selectorparser, unsign
     if (!part)
         return 0;
 
-    part->name = pooladd(sheet, text + start, stop - start, 1);
+    part->name = pooladd(sheet, text + start, stop - start, POOL_LOWER);
     start = skipspace(text, stop, close);
 
     if (start < close)
@@ -1032,7 +1073,7 @@ static unsigned int parseattribute(struct selectorparser *selectorparser, unsign
         {
 
             stop = skipstring(text, start, close);
-            part->value = pooladd(sheet, text + start + 1, (stop > start + 1) ? stop - start - 2 : 0, 0);
+            part->value = pooladd(sheet, text + start + 1, (stop > start + 1) ? stop - start - 2 : 0, POOL_EXACT);
 
         }
 
@@ -1040,7 +1081,7 @@ static unsigned int parseattribute(struct selectorparser *selectorparser, unsign
         {
 
             stop = readident(text, start, close);
-            part->value = pooladd(sheet, text + start, stop - start, 0);
+            part->value = pooladd(sheet, text + start, stop - start, POOL_EXACT);
 
         }
 
@@ -1098,7 +1139,7 @@ static unsigned int parsesimple(struct selectorparser *selectorparser, unsigned 
         if (!part)
             return 0;
 
-        part->name = pooladd(sheet, text + offset + 1, stop - offset - 1, 0);
+        part->name = pooladd(sheet, text + offset + 1, stop - offset - 1, POOL_EXACT);
         selectorparser->specificity += (c == '#') ? 0x10000 : 0x100;
 
         return (part->name) ? stop : 0;
@@ -1114,7 +1155,7 @@ static unsigned int parsesimple(struct selectorparser *selectorparser, unsigned 
         if (!part)
             return 0;
 
-        part->name = pooladd(sheet, text + offset, stop - offset, 1);
+        part->name = pooladd(sheet, text + offset, stop - offset, POOL_LOWER);
         selectorparser->specificity += 1;
 
         return (part->name) ? stop : 0;
@@ -1144,10 +1185,10 @@ static void setkey(struct css_sheet *sheet, struct css_selector *selector)
 
         struct css_part *part = &sheet->parts[i];
 
-        if (part->type == PART_IS)
+        if (part->type == PART_IS || part->type == PART_HAS)
             i += part->name;
 
-        if (part->negate || part->type == PART_IS)
+        if (part->negate || part->type == PART_IS || part->type == PART_HAS)
             continue;
 
         if (part->type == PART_ID)
@@ -1178,6 +1219,39 @@ static void setkey(struct css_sheet *sheet, struct css_selector *selector)
 
 }
 
+static unsigned int parsepseudoelement(struct selectorparser *selectorparser, unsigned int offset, unsigned int end)
+{
+
+    char *text = selectorparser->text;
+    unsigned int start = (offset + 1 < end && text[offset + 1] == ':') ? offset + 2 : offset + 1;
+    unsigned int stop = readident(text, start, end);
+
+    if (matchword(text + start, stop - start, "before"))
+        selectorparser->pseudo = CSS_PSEUDO_BEFORE;
+    else if (matchword(text + start, stop - start, "after"))
+        selectorparser->pseudo = CSS_PSEUDO_AFTER;
+    else
+        return 0;
+
+    selectorparser->specificity += 1;
+
+    return stop;
+
+}
+
+static unsigned int ispseudoelement(char *text, unsigned int offset, unsigned int end)
+{
+
+    unsigned int start = (offset + 1 < end && text[offset + 1] == ':') ? offset + 2 : offset + 1;
+    unsigned int stop = readident(text, start, end);
+
+    if (text[offset] != ':')
+        return 0;
+
+    return matchword(text + start, stop - start, "before") || matchword(text + start, stop - start, "after");
+
+}
+
 static void parseselector(struct css_sheet *sheet, char *text, unsigned int start, unsigned int end, unsigned int rule)
 {
 
@@ -1191,6 +1265,7 @@ static void parseselector(struct css_sheet *sheet, char *text, unsigned int star
     selectorparser.sheet = sheet;
     selectorparser.text = text;
     selectorparser.specificity = 0;
+    selectorparser.pseudo = CSS_PSEUDO_NONE;
 
     while (end > offset && isspace(text[end - 1]))
         end--;
@@ -1231,6 +1306,20 @@ static void parseselector(struct css_sheet *sheet, char *text, unsigned int star
 
         }
 
+        /* a pseudo element ends the selector, a bare one stands for any element */
+        if (ispseudoelement(text, offset, end))
+        {
+
+            if (combinator != COMBINATOR_NONE && !addpart(sheet, PART_UNIVERSAL, combinator))
+                break;
+
+            offset = parsepseudoelement(&selectorparser, offset, end);
+            combinator = COMBINATOR_NONE;
+
+            break;
+
+        }
+
         offset = parsesimple(&selectorparser, offset, end, combinator);
 
         if (!offset)
@@ -1258,6 +1347,7 @@ static void parseselector(struct css_sheet *sheet, char *text, unsigned int star
     selector->count = sheet->partcount - partstart;
     selector->specificity = selectorparser.specificity;
     selector->rule = rule;
+    selector->pseudo = selectorparser.pseudo;
 
     setkey(sheet, selector);
 
@@ -1881,6 +1971,152 @@ static struct colorvalue parsefunctioncolor(char *text, unsigned int length)
 
 }
 
+static int huechannel(int hue, int chroma)
+{
+
+    int sector = (hue * 1000 / 60) % 2000;
+
+    return chroma * (1000 - ((sector > 1000) ? sector - 1000 : 1000 - sector)) / 1000;
+
+}
+
+static struct colorvalue parsehsl(char *text, unsigned int length)
+{
+
+    int values[4];
+    unsigned int count = 0;
+    unsigned int i = 0;
+    int chroma;
+    int second;
+    int light;
+    int r;
+    int g;
+    int b;
+
+    values[3] = 1000;
+
+    while (i < length && text[i] != '(')
+        i++;
+
+    i++;
+
+    while (i < length && count < 4)
+    {
+
+        struct number number;
+        unsigned int percent;
+
+        while (i < length && (isspace(text[i]) || text[i] == ',' || text[i] == '/'))
+            i++;
+
+        number = parsenumber(text + i, length - i);
+
+        if (!number.length)
+            break;
+
+        i += number.length;
+        percent = i < length && text[i] == '%';
+
+        /* saturation and lightness are percentages even without the sign */
+        values[count] = (percent || count == 1 || count == 2) ? number.milli / 100 : number.milli;
+
+        if (percent)
+            i++;
+
+        /* units after the hue, deg is the only one in use */
+        while (i < length && cstring_isalpha(text[i]))
+            i++;
+
+        count++;
+
+    }
+
+    if (count < 3)
+        return colorvalue(0, 0);
+
+    values[0] = ((values[0] / 1000) % 360 + 360) % 360;
+    values[1] = (values[1] < 0) ? 0 : (values[1] > 1000) ? 1000 : values[1];
+    values[2] = (values[2] < 0) ? 0 : (values[2] > 1000) ? 1000 : values[2];
+    chroma = (1000 - ((values[2] * 2 > 1000) ? values[2] * 2 - 1000 : 1000 - values[2] * 2)) * values[1] / 1000;
+    second = huechannel(values[0], chroma);
+    light = values[2] - chroma / 2;
+    r = (values[0] < 60 || values[0] >= 300) ? chroma : (values[0] < 120 || values[0] >= 240) ? second : 0;
+    g = (values[0] >= 240) ? 0 : (values[0] >= 60 && values[0] < 180) ? chroma : second;
+    b = (values[0] < 120) ? 0 : (values[0] >= 180 && values[0] < 300) ? chroma : second;
+
+    return colorvalue((clampbyte(values[3] * 255 / 1000) << 24) | (clampbyte((r + light) * 255 / 1000) << 16) | (clampbyte((g + light) * 255 / 1000) << 8) | clampbyte((b + light) * 255 / 1000), 1);
+
+}
+
+static struct colorvalue parsecolor(char *text, unsigned int length);
+
+static struct colorvalue parsemixpart(char *text, unsigned int start, unsigned int end, int *percent)
+{
+
+    unsigned int stop;
+
+    start = skipspace(text, start, end);
+
+    while (end > start && isspace(text[end - 1]))
+        end--;
+
+    stop = end;
+
+    /* an optional percentage follows the color */
+    if (stop > start && text[stop - 1] == '%')
+    {
+
+        while (stop > start && !isspace(text[stop - 1]))
+            stop--;
+
+        *percent = parsenumber(text + stop, end - stop).milli / 1000;
+
+        while (stop > start && isspace(text[stop - 1]))
+            stop--;
+
+    }
+
+    return parsecolor(text + start, stop - start);
+
+}
+
+static unsigned int mixchannel(unsigned int a, unsigned int b, int shift, int weight)
+{
+
+    return ((((a >> shift) & 0xFF) * weight + ((b >> shift) & 0xFF) * (100 - weight)) / 100) << shift;
+
+}
+
+static struct colorvalue parsemix(char *text, unsigned int length)
+{
+
+    unsigned int open = buffer_findbyte(text, length, '(');
+    unsigned int close = findclose(text, open, length);
+    unsigned int first = findstop(text, open + 1, close, ",");
+    unsigned int second = findstop(text, first + 1, close, ",");
+    int p1 = -1;
+    int p2 = -1;
+    struct colorvalue a;
+    struct colorvalue b;
+    int weight;
+
+    if (close >= length || second >= close)
+        return colorvalue(0, 0);
+
+    /* every color space is mixed as srgb */
+    a = parsemixpart(text, first + 1, second, &p1);
+    b = parsemixpart(text, second + 1, close, &p2);
+
+    if (!a.valid || !b.valid || a.value == CSS_CURRENTCOLOR || b.value == CSS_CURRENTCOLOR)
+        return colorvalue(0, 0);
+
+    weight = (p1 >= 0 && p2 >= 0 && p1 + p2 > 0) ? p1 * 100 / (p1 + p2) : (p1 >= 0) ? p1 : (p2 >= 0) ? 100 - p2 : 50;
+    weight = (weight < 0) ? 0 : (weight > 100) ? 100 : weight;
+
+    return colorvalue(mixchannel(a.value, b.value, 24, weight) | mixchannel(a.value, b.value, 16, weight) | mixchannel(a.value, b.value, 8, weight) | mixchannel(a.value, b.value, 0, weight), 1);
+
+}
+
 static struct colorvalue parsecolor(char *text, unsigned int length)
 {
 
@@ -1919,6 +2155,12 @@ static struct colorvalue parsecolor(char *text, unsigned int length)
 
     if (length > 4 && (buffer_match(text, "rgb(", 4) || buffer_match(text, "rgba(", 5)))
         return parsefunctioncolor(text, length);
+
+    if (length > 4 && (buffer_match(text, "hsl(", 4) || buffer_match(text, "hsla(", 5)))
+        return parsehsl(text, length);
+
+    if (length > 10 && buffer_match(text, "color-mix(", 10))
+        return parsemix(text, length);
 
     if (matchword(text, length, "transparent"))
         return colorvalue(0, 1);
@@ -3161,8 +3403,13 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
         break;
 
     case PROP_VISIBILITY:
+        style->hidden = from->hidden;
+
+        break;
+
     case PROP_OPACITY:
         style->hidden = from->hidden;
+        style->opacity = from->opacity;
 
         break;
 
@@ -3255,6 +3502,21 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
         break;
 
+    case PROP_BACKGROUNDCLIP:
+    case PROP_WEBKITBACKGROUNDCLIP:
+        style->textclip = from->textclip;
+
+        break;
+
+    case PROP_BOXSHADOW:
+        style->shadow = from->shadow;
+        style->shadowx = from->shadowx;
+        style->shadowy = from->shadowy;
+        style->shadowblur = from->shadowblur;
+        style->shadowspread = from->shadowspread;
+
+        break;
+
     case PROP_JUSTIFYCONTENT:
         style->justify = from->justify;
 
@@ -3338,6 +3600,7 @@ static void initstyle(struct css_style *style)
     style->shrink = 100;
     style->alignitems = CSS_FLEX_STRETCH;
     style->alignself = CSS_FLEX_AUTO;
+    style->opacity = 0xFF;
 
     for (side = 0; side < CSS_SIDES; side++)
     {
@@ -3347,6 +3610,259 @@ static void initstyle(struct css_style *style)
         style->inset[side].unit = CSS_UNIT_AUTO;
 
     }
+
+}
+
+static void setopacity(struct context *context, char *value, unsigned int length)
+{
+
+    struct number number = parsenumber(value, length);
+    int milli = number.milli;
+
+    if (!number.length)
+        return;
+
+    if (number.length < length && value[number.length] == '%')
+        milli /= 100;
+
+    milli = (milli < 0) ? 0 : (milli > 1000) ? 1000 : milli;
+
+    /* a box fades with everything inside it, so the factor multiplies down the tree */
+    context->style->opacity = context->parent->opacity * milli / 1000;
+
+    if (!milli)
+        context->style->hidden = 1;
+
+}
+
+static unsigned int parseshadow(struct context *context, char *value, unsigned int start, unsigned int end)
+{
+
+    struct css_style *style = context->style;
+    unsigned int color = CSS_CURRENTCOLOR;
+    int lengths[4];
+    unsigned int count = 0;
+    unsigned int offset = start;
+
+    while (offset < end)
+    {
+
+        struct span span = nexttoken(value, offset);
+        char *text = value + span.start;
+        struct lengthvalue parsed;
+        struct colorvalue parsedcolor;
+
+        if (!span.length || span.start >= end)
+            break;
+
+        offset = span.start + span.length;
+
+        if (matchword(text, span.length, "inset"))
+            return 0;
+
+        parsed = parselength(context, text, span.length, style->fontsize);
+
+        if (parsed.valid && parsed.length.unit == CSS_UNIT_PX && count < 4)
+        {
+
+            lengths[count++] = parsed.length.value;
+
+            continue;
+
+        }
+
+        parsedcolor = parsecolor(text, span.length);
+
+        if (!parsedcolor.valid)
+            return 0;
+
+        color = parsedcolor.value;
+
+    }
+
+    if (count < 2)
+        return 0;
+
+    style->shadow = color;
+    style->shadowx = lengths[0];
+    style->shadowy = lengths[1];
+    style->shadowblur = (count > 2 && lengths[2] > 0) ? lengths[2] : 0;
+    style->shadowspread = (count > 3) ? lengths[3] : 0;
+
+    return 1;
+
+}
+
+static void setshadow(struct context *context, char *value, unsigned int length)
+{
+
+    unsigned int start = 0;
+
+    context->style->shadow = 0;
+
+    /* only the first outer shadow is drawn, inset ones would need the box drawn first */
+    while (start < length)
+    {
+
+        unsigned int end = findstop(value, start, length, ",");
+
+        if (parseshadow(context, value, start, end))
+            return;
+
+        start = end + 1;
+
+    }
+
+}
+
+static void addcodepoint(struct content *content, unsigned int codepoint)
+{
+
+    /* private use codepoints are icon font glyphs, which have nothing to draw without the font */
+    if ((codepoint >= 0xE000 && codepoint <= 0xF8FF) || codepoint >= 0xF0000)
+        return;
+
+    content->length += utf8_write(content->text + content->length, CONTENTSIZE - 1 - content->length, codepoint);
+
+}
+
+static void addcontent(struct content *content, char *text, unsigned int length)
+{
+
+    unsigned int offset = 0;
+
+    while (offset < length)
+    {
+
+        unsigned int codepoint;
+        unsigned int count = utf8_read(text + offset, length - offset, &codepoint);
+
+        if (!count)
+            break;
+
+        addcodepoint(content, codepoint);
+
+        offset += count;
+
+    }
+
+}
+
+static unsigned int readcontentstring(struct content *content, char *text, unsigned int offset, unsigned int end)
+{
+
+    char quote = text[offset++];
+
+    while (offset < end && text[offset] != quote)
+    {
+
+        unsigned int codepoint = 0;
+        unsigned int digits = 0;
+
+        if (text[offset] != '\\' || offset + 1 >= end)
+        {
+
+            unsigned int count = utf8_read(text + offset, end - offset, &codepoint);
+
+            offset += (count) ? count : 1;
+
+            addcodepoint(content, codepoint);
+
+            continue;
+
+        }
+
+        offset++;
+
+        while (offset < end && digits < 6 && hexdigit(text[offset]) < 16)
+        {
+
+            codepoint = codepoint * 16 + hexdigit(text[offset++]);
+            digits++;
+
+        }
+
+        if (digits)
+        {
+
+            if (offset < end && isspace(text[offset]))
+                offset++;
+
+            addcodepoint(content, codepoint);
+
+        }
+
+        else
+        {
+
+            unsigned int count = utf8_read(text + offset, end - offset, &codepoint);
+
+            offset += (count) ? count : 1;
+
+            if (codepoint != '\n')
+                addcodepoint(content, codepoint);
+
+        }
+
+    }
+
+    return offset + 1;
+
+}
+
+static unsigned int readcontentattribute(struct context *context, char *text, unsigned int offset, unsigned int end)
+{
+
+    unsigned int close = findclose(text, offset + 4, end);
+    unsigned int start = skipspace(text, offset + 5, close);
+    unsigned int stop = readident(text, start, close);
+    char name[NAMESIZE];
+    char *value;
+    unsigned int i;
+
+    if (stop - start >= NAMESIZE)
+        return close + 1;
+
+    for (i = start; i < stop; i++)
+        name[i - start] = lower(text[i]);
+
+    name[stop - start] = '\0';
+    value = html_getattribute(context->document, context->node, name);
+
+    if (value)
+        addcontent(context->content, value, cstring_length(value));
+
+    return close + 1;
+
+}
+
+static void setcontent(struct context *context, char *value, unsigned int length)
+{
+
+    struct content *content = context->content;
+    unsigned int offset = 0;
+
+    content->length = 0;
+    content->valid = !matchword(value, length, "none") && !matchword(value, length, "normal");
+
+    /* counters, quotes and images add nothing but still make the box */
+    while (offset < length && content->valid)
+    {
+
+        char c = value[offset];
+
+        if (c == '"' || c == '\'')
+            offset = readcontentstring(content, value, offset, length);
+        else if (offset + 5 < length && buffer_match(value + offset, "attr(", 5))
+            offset = readcontentattribute(context, value, offset, length);
+        else if (c == '(')
+            offset = findclose(value, offset, length) + 1;
+        else
+            offset++;
+
+    }
+
+    content->text[content->length] = '\0';
 
 }
 
@@ -3563,8 +4079,7 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_OPACITY:
-        if (parsenumber(value, length).length && !parsenumber(value, length).milli)
-            style->hidden = 1;
+        setopacity(context, value, length);
 
         break;
 
@@ -3708,6 +4223,23 @@ static void apply(struct context *context, unsigned int property, char *value)
                 style->order = number.milli / 1000;
 
         }
+
+        break;
+
+    case PROP_BOXSHADOW:
+        setshadow(context, value, length);
+
+        break;
+
+    case PROP_BACKGROUNDCLIP:
+    case PROP_WEBKITBACKGROUNDCLIP:
+        style->textclip = matchword(value, length, "text");
+
+        break;
+
+    case PROP_CONTENT:
+        if (context->content)
+            setcontent(context, value, length);
 
         break;
 
@@ -4129,6 +4661,7 @@ static unsigned int matchpart(struct matcher *matcher, struct css_part *part, un
 }
 
 static unsigned int matchcompound(struct matcher *matcher, unsigned int start, unsigned int end, unsigned int node);
+static unsigned int matchhas(struct matcher *matcher, unsigned int index, unsigned int node);
 
 static unsigned int matchlist(struct matcher *matcher, unsigned int start, unsigned int end, unsigned int node)
 {
@@ -4156,17 +4689,36 @@ static unsigned int matchcompound(struct matcher *matcher, unsigned int start, u
     {
 
         struct css_part *part = &matcher->sheet->parts[i];
-        unsigned int matched = (part->type == PART_IS) ? matchlist(matcher, i + 1, i + 1 + part->name, node) : matchpart(matcher, part, node);
+        unsigned int matched = (part->type == PART_IS) ? matchlist(matcher, i + 1, i + 1 + part->name, node) : (part->type == PART_HAS) ? matchhas(matcher, i, node) : matchpart(matcher, part, node);
 
         if (matched == part->negate)
             return 0;
 
-        if (part->type == PART_IS)
+        if (part->type == PART_IS || part->type == PART_HAS)
             i += part->name;
 
     }
 
     return 1;
+
+}
+
+static unsigned int matchhas(struct matcher *matcher, unsigned int index, unsigned int node)
+{
+
+    struct html_document *document = matcher->document;
+    struct css_part *part = &matcher->sheet->parts[index];
+    unsigned int other;
+
+    for (other = html_next(document, node, node); other; other = (part->value) ? document->nodes[other].next : html_next(document, other, node))
+    {
+
+        if (document->nodes[other].type == HTML_NODE_ELEMENT && matchlist(matcher, index + 1, index + 1 + part->name, other))
+            return 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -4258,7 +4810,7 @@ static unsigned int before(struct match *a, struct match *b)
 
 }
 
-static unsigned int collect(struct css_sheet *sheet, struct html_document *document, unsigned int node, unsigned int width, unsigned int scheme, struct match matches[MATCHES])
+static unsigned int collect(struct css_sheet *sheet, struct html_document *document, unsigned int node, unsigned int width, unsigned int scheme, unsigned int pseudo, struct match matches[MATCHES])
 {
 
     struct matcher matcher;
@@ -4277,7 +4829,7 @@ static unsigned int collect(struct css_sheet *sheet, struct html_document *docum
         struct css_selector *selector = &sheet->selectors[i];
         struct css_rule *rule = &sheet->rules[selector->rule];
 
-        if ((int)width < rule->minwidth || (int)width > rule->maxwidth || (rule->scheme && rule->scheme != scheme))
+        if (selector->pseudo != pseudo || (int)width < rule->minwidth || (int)width > rule->maxwidth || (rule->scheme && rule->scheme != scheme))
             continue;
 
         if (matchkey(sheet, selector, name, id, classes) && matchselector(&matcher, selector->part, selector->part + selector->count, node))
@@ -4655,6 +5207,7 @@ static void inherit(struct css_style *style, struct css_style *parent)
     style->decoration = parent->decoration;
     style->hidden = parent->hidden;
     style->transform = parent->transform;
+    style->opacity = parent->opacity;
 
 }
 
@@ -4677,6 +5230,19 @@ static void finish(struct css_style *style)
 
     }
 
+    if (style->shadow == CSS_CURRENTCOLOR)
+        style->shadow = style->color;
+
+}
+
+static void blockify(struct css_style *style)
+{
+
+    unsigned int outside = style->floating || style->position == CSS_POSITION_ABSOLUTE || style->position == CSS_POSITION_FIXED;
+
+    if (outside && (style->display == CSS_DISPLAY_INLINE || style->display == CSS_DISPLAY_INLINEBLOCK))
+        style->display = CSS_DISPLAY_BLOCK;
+
 }
 
 static unsigned int isatomic(unsigned int tag)
@@ -4690,7 +5256,7 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
 {
 
     struct match matches[MATCHES];
-    unsigned int count = collect(sheet, document, node, context->width, context->scheme, matches);
+    unsigned int count = collect(sheet, document, node, context->width, context->scheme, CSS_PSEUDO_NONE, matches);
     char *styleattr = html_getattribute(document, node, "style");
     unsigned int declarationmark = sheet->declarationcount;
     unsigned int phase;
@@ -4724,10 +5290,62 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
     if (context->style->display == CSS_DISPLAY_INLINE && isatomic(document->nodes[node].tag))
         context->style->display = CSS_DISPLAY_INLINEBLOCK;
 
-    if (context->style->floating && (context->style->display == CSS_DISPLAY_INLINE || context->style->display == CSS_DISPLAY_INLINEBLOCK))
-        context->style->display = CSS_DISPLAY_BLOCK;
-
+    blockify(context->style);
     finish(context->style);
+
+}
+
+static unsigned int hasgenerated(unsigned int tag)
+{
+
+    return tag != HTML_TAG_IMG && tag != HTML_TAG_INPUT && tag != HTML_TAG_SELECT && tag != HTML_TAG_TEXTAREA && tag != HTML_TAG_SVG;
+
+}
+
+static void computepseudo(struct css_sheet *sheet, struct html_document *document, struct context *context, struct css_style *styles, unsigned int pseudo)
+{
+
+    struct match matches[MATCHES];
+    unsigned int count = collect(sheet, document, context->node, context->width, context->scheme, pseudo, matches);
+    struct context pseudocontext;
+    struct content content;
+    struct css_style style;
+    unsigned int generated;
+    unsigned int phase;
+
+    if (!count)
+        return;
+
+    buffer_copy(&pseudocontext, context, sizeof (struct context));
+
+    pseudocontext.style = &style;
+    pseudocontext.parent = context->style;
+    pseudocontext.content = &content;
+    content.length = 0;
+    content.valid = 0;
+
+    inherit(&style, context->style);
+
+    /* custom properties stay with the element, so var() in a pseudo element reads the element's */
+    for (phase = PHASE_FONT; phase < PHASES; phase++)
+    {
+
+        applyrules(&pseudocontext, sheet, matches, count, CSS_ORIGIN_AGENT, 0, phase);
+        applyrules(&pseudocontext, sheet, matches, count, CSS_ORIGIN_AUTHOR, 0, phase);
+        applyrules(&pseudocontext, sheet, matches, count, CSS_ORIGIN_AUTHOR, 1, phase);
+
+    }
+
+    if (!content.valid || style.display == CSS_DISPLAY_NONE)
+        return;
+
+    blockify(&style);
+    finish(&style);
+
+    generated = html_addgenerated(document, context->node, (pseudo == CSS_PSEUDO_BEFORE) ? HTML_TAG_BEFORE : HTML_TAG_AFTER, content.text, content.length);
+
+    if (generated)
+        buffer_copy(&styles[generated], &style, sizeof (struct css_style));
 
 }
 
@@ -5052,8 +5670,10 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
     struct context context;
     unsigned int full = sheet->full;
     unsigned int poolmark = sheet->poolcount;
+    unsigned int count;
     unsigned int node;
 
+    html_dropgenerated(document);
     initstyle(&root);
 
     sheet->customtotal = 0;
@@ -5064,8 +5684,10 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
     context.width = width;
     context.height = height;
     context.scheme = scheme;
+    context.content = 0;
+    count = document->nodecount;
 
-    for (node = 1; node < document->nodecount; node++)
+    for (node = 1; node < count; node++)
     {
 
         unsigned int parent = parentelement(document, node);
@@ -5083,9 +5705,21 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
         if (node == document->html)
             context.rootsize = context.style->fontsize;
 
+        if (context.style->display != CSS_DISPLAY_NONE && hasgenerated(document->nodes[node].tag))
+        {
+
+            computepseudo(sheet, document, &context, styles, CSS_PSEUDO_BEFORE);
+            computepseudo(sheet, document, &context, styles, CSS_PSEUDO_AFTER);
+
+        }
+
     }
+
+    /* generated boxes join the tree only now, so no selector above saw them as children */
+    html_linkgenerated(document);
 
     sheet->poolcount = poolmark;
     sheet->full = full;
 
 }
+

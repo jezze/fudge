@@ -69,6 +69,9 @@
 #define CSS_FLOAT_RIGHT                 2
 #define CSS_CLEAR_LEFT                  1
 #define CSS_CLEAR_RIGHT                 2
+#define CSS_PSEUDO_NONE                 0
+#define CSS_PSEUDO_BEFORE               1
+#define CSS_PSEUDO_AFTER                2
 
 struct css_length
 {
@@ -109,6 +112,8 @@ struct css_style
     unsigned char collapse;
     unsigned char reverse;
     unsigned char stacked;
+    unsigned char opacity;
+    unsigned char textclip;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;
@@ -122,6 +127,11 @@ struct css_style
     unsigned short shrink;
     short order;
     short zindex;
+    short shadowx;
+    short shadowy;
+    short shadowblur;
+    short shadowspread;
+    unsigned int shadow;
     unsigned int color;
     unsigned int fill;
     unsigned int background;
@@ -183,6 +193,7 @@ struct css_selector
     unsigned int rule;
     unsigned int keytype;
     unsigned int key;
+    unsigned int pseudo;
 
 };
 

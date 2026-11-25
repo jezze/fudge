@@ -29,6 +29,7 @@ struct layout_box
     int y;
     int w;
     int h;
+    int definite;
     unsigned int placed;
 
 };
@@ -135,6 +136,9 @@ struct layout
     unsigned int truncated;
     unsigned int minimum;
     unsigned int forcenode;
+    unsigned int heightnode;
+    unsigned int wrapped;
+    int forceheight;
     unsigned int baselinedepth;
     int baseline;
     int forcewidth;

@@ -2,7 +2,7 @@
 #include "html.h"
 
 #define NAMESIZE                        32
-#define TAGS                            35
+#define TAGS                            37
 #define ENTITIES                        48
 
 struct parser
@@ -33,7 +33,7 @@ struct reference
 
 };
 
-static char *tags[TAGS] = {"", "a", "body", "br", "head", "html", "img", "input", "li", "link", "ol", "p", "pre", "script", "select", "style", "table", "td", "textarea", "th", "title", "tr", "ul", "font", "option", "dt", "dd", "dl", "tbody", "thead", "tfoot", "button", "hr", "caption", "svg"};
+static char *tags[TAGS] = {"", "a", "body", "br", "head", "html", "img", "input", "li", "link", "ol", "p", "pre", "script", "select", "style", "table", "td", "textarea", "th", "title", "tr", "ul", "font", "option", "dt", "dd", "dl", "tbody", "thead", "tfoot", "button", "hr", "caption", "svg", "::before", "::after"};
 static struct entity entities[ENTITIES] = {
     {"amp", 38}, {"lt", 60}, {"gt", 62}, {"quot", 34}, {"apos", 39}, {"nbsp", 160}, {"copy", 169}, {"reg", 174},
     {"trade", 0x2122}, {"mdash", 0x2014}, {"ndash", 0x2013}, {"hellip", 0x2026}, {"laquo", 171}, {"raquo", 187}, {"lsquo", 0x2018}, {"rsquo", 0x2019},
@@ -286,6 +286,45 @@ static void appendchild(struct html_document *document, unsigned int parent, uns
         pnode->first = child;
 
     pnode->last = child;
+
+}
+
+static void prependchild(struct html_document *document, unsigned int parent, unsigned int child)
+{
+
+    struct html_node *pnode = &document->nodes[parent];
+    struct html_node *cnode = &document->nodes[child];
+
+    cnode->parent = parent;
+    cnode->next = pnode->first;
+
+    if (pnode->first)
+        document->nodes[pnode->first].prev = child;
+    else
+        pnode->last = child;
+
+    pnode->first = child;
+
+}
+
+static void removechild(struct html_document *document, unsigned int child)
+{
+
+    struct html_node *cnode = &document->nodes[child];
+    struct html_node *pnode = &document->nodes[cnode->parent];
+
+    if (cnode->prev)
+        document->nodes[cnode->prev].next = cnode->next;
+    else if (pnode->first == child)
+        pnode->first = cnode->next;
+
+    if (cnode->next)
+        document->nodes[cnode->next].prev = cnode->prev;
+    else if (pnode->last == child)
+        pnode->last = cnode->prev;
+
+    cnode->prev = 0;
+    cnode->next = 0;
 
 }
 
@@ -905,6 +944,8 @@ static void reset(struct html_document *document)
     document->head = 0;
     document->body = 0;
     document->full = 0;
+    document->generated = 0;
+    document->generatedtext = 0;
     document->text[0] = '\0';
 
     newnode(document, HTML_NODE_DOCUMENT);
@@ -976,6 +1017,8 @@ unsigned int html_setattribute(struct html_document *document, unsigned int node
     struct html_node *element = &document->nodes[node];
     struct html_attribute *attribute = findattribute(document, node, name);
     unsigned int offset;
+
+    html_dropgenerated(document);
 
     if (attribute)
     {
@@ -1057,8 +1100,12 @@ unsigned int html_settext(struct html_document *document, unsigned int node, cha
 {
 
     unsigned int length = cstring_length(text);
-    unsigned int offset = document->textcount;
+    unsigned int offset;
     unsigned int child;
+
+    html_dropgenerated(document);
+
+    offset = document->textcount;
 
     if (!addbytes(document, text, length))
         return 0;
@@ -1119,6 +1166,100 @@ unsigned int html_next(struct html_document *document, unsigned int node, unsign
     }
 
     return 0;
+
+}
+
+unsigned int html_isgenerated(struct html_document *document, unsigned int node)
+{
+
+    return document->generated && node >= document->generated;
+
+}
+
+unsigned int html_addgenerated(struct html_document *document, unsigned int parent, unsigned int tag, char *text, unsigned int length)
+{
+
+    unsigned int node;
+    unsigned int child;
+
+    if (!document->generated)
+    {
+
+        document->generated = document->nodecount;
+        document->generatedtext = document->textcount;
+
+    }
+
+    node = newnode(document, HTML_NODE_ELEMENT);
+
+    if (!node)
+        return 0;
+
+    document->nodes[node].tag = tag;
+    document->nodes[node].name = addname(document, tags[tag], cstring_length(tags[tag]));
+    document->nodes[node].parent = parent;
+
+    if (!length)
+        return node;
+
+    child = newnode(document, HTML_NODE_TEXT);
+
+    if (!child)
+        return node;
+
+    document->nodes[child].text = document->textcount;
+    document->nodes[child].length = length;
+
+    if (addbytes(document, text, length))
+        appendchild(document, node, child);
+
+    return node;
+
+}
+
+void html_linkgenerated(struct html_document *document)
+{
+
+    unsigned int node;
+
+    if (!document->generated)
+        return;
+
+    for (node = document->generated; node < document->nodecount; node++)
+    {
+
+        struct html_node *element = &document->nodes[node];
+
+        if (element->tag == HTML_TAG_BEFORE)
+            prependchild(document, element->parent, node);
+        else if (element->tag == HTML_TAG_AFTER)
+            appendchild(document, element->parent, node);
+
+    }
+
+}
+
+void html_dropgenerated(struct html_document *document)
+{
+
+    unsigned int node;
+
+    if (!document->generated)
+        return;
+
+    for (node = document->generated; node < document->nodecount; node++)
+    {
+
+        unsigned int tag = document->nodes[node].tag;
+
+        if (document->nodes[node].type == HTML_NODE_ELEMENT && (tag == HTML_TAG_BEFORE || tag == HTML_TAG_AFTER))
+            removechild(document, node);
+
+    }
+
+    document->nodecount = document->generated;
+    document->textcount = document->generatedtext;
+    document->generated = 0;
 
 }
 
@@ -1216,3 +1357,4 @@ void html_parsetext(struct html_document *document, char *source, unsigned int c
     }
 
 }
+
