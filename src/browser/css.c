@@ -64,6 +64,8 @@
 #define PART_EMPTY                      14
 #define PART_FIRSTOFTYPE                15
 #define PART_LASTOFTYPE                 16
+#define PART_IS                         17
+#define PART_ALTERNATIVE                18
 #define COMBINATOR_NONE                 0
 #define COMBINATOR_FIRST                1
 #define COMBINATOR_DESCENDANT           2
@@ -787,6 +789,89 @@ static unsigned int parsenth(char *text, unsigned int start, unsigned int end, s
 
 static unsigned int parsesimple(struct selectorparser *selectorparser, unsigned int offset, unsigned int end, unsigned int combinator);
 
+static unsigned int parsealternative(struct selectorparser *selectorparser, unsigned int start, unsigned int end)
+{
+
+    struct css_sheet *sheet = selectorparser->sheet;
+    unsigned int alternative = sheet->partcount;
+    unsigned int offset = skipspace(selectorparser->text, start, end);
+
+    while (end > offset && isspace(selectorparser->text[end - 1]))
+        end--;
+
+    if (offset >= end || !addpart(sheet, PART_ALTERNATIVE, COMBINATOR_NONE))
+        return 0;
+
+    while (offset < end)
+    {
+
+        offset = parsesimple(selectorparser, offset, end, COMBINATOR_NONE);
+
+        if (!offset)
+            return 0;
+
+    }
+
+    sheet->parts[alternative].name = sheet->partcount - alternative - 1;
+
+    return 1;
+
+}
+
+static unsigned int parselist(struct selectorparser *selectorparser, unsigned int start, unsigned int end, unsigned int combinator, unsigned int negate, unsigned int weighted)
+{
+
+    struct css_sheet *sheet = selectorparser->sheet;
+    unsigned int list = sheet->partcount;
+    unsigned int specificity = selectorparser->specificity;
+    unsigned int highest = 0;
+    struct css_part *part = addpart(sheet, PART_IS, combinator);
+
+    if (!part)
+        return 0;
+
+    part->negate = negate;
+
+    while (start <= end)
+    {
+
+        unsigned int stop = findstop(selectorparser->text, start, end, ",");
+        unsigned int partmark = sheet->partcount;
+        unsigned int poolmark = sheet->poolcount;
+
+        selectorparser->specificity = 0;
+
+        if (parsealternative(selectorparser, start, stop))
+        {
+
+            if (selectorparser->specificity > highest)
+                highest = selectorparser->specificity;
+
+        }
+
+        else
+        {
+
+            /* :is and :where forgive alternatives they can not parse, :not does not */
+            if (negate || sheet->full)
+                return 0;
+
+            sheet->partcount = partmark;
+            sheet->poolcount = poolmark;
+
+        }
+
+        start = stop + 1;
+
+    }
+
+    sheet->parts[list].name = sheet->partcount - list - 1;
+    selectorparser->specificity = specificity + ((weighted) ? highest : 0);
+
+    return 1;
+
+}
+
 static unsigned int parsepseudo(struct selectorparser *selectorparser, unsigned int offset, unsigned int end, unsigned int combinator)
 {
 
@@ -816,20 +901,10 @@ static unsigned int parsepseudo(struct selectorparser *selectorparser, unsigned 
             return 0;
 
         if (cstring_match(name, "not"))
-        {
+            return (parselist(selectorparser, stop + 1, close, combinator, 1, 1)) ? close + 1 : 0;
 
-            unsigned int inner = skipspace(text, stop + 1, close);
-            unsigned int first = sheet->partcount;
-            unsigned int next = parsesimple(selectorparser, inner, close, combinator);
-
-            if (!next || skipspace(text, next, close) != close || sheet->partcount != first + 1)
-                return 0;
-
-            sheet->parts[first].negate = 1;
-
-            return close + 1;
-
-        }
+        if (cstring_match(name, "is") || cstring_match(name, "matches") || cstring_match(name, "where"))
+            return (parselist(selectorparser, stop + 1, close, combinator, 0, !cstring_match(name, "where"))) ? close + 1 : 0;
 
         if (cstring_match(name, "nth-child"))
         {
@@ -1041,7 +1116,10 @@ static void setkey(struct css_sheet *sheet, struct css_selector *selector)
 
         struct css_part *part = &sheet->parts[i];
 
-        if (part->negate)
+        if (part->type == PART_IS)
+            i += part->name;
+
+        if (part->negate || part->type == PART_IS)
             continue;
 
         if (part->type == PART_ID)
@@ -3481,6 +3559,25 @@ static unsigned int matchpart(struct matcher *matcher, struct css_part *part, un
 
 }
 
+static unsigned int matchcompound(struct matcher *matcher, unsigned int start, unsigned int end, unsigned int node);
+
+static unsigned int matchlist(struct matcher *matcher, unsigned int start, unsigned int end, unsigned int node)
+{
+
+    unsigned int i;
+
+    for (i = start; i < end; i += matcher->sheet->parts[i].name + 1)
+    {
+
+        if (matchcompound(matcher, i + 1, i + 1 + matcher->sheet->parts[i].name, node))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int matchcompound(struct matcher *matcher, unsigned int start, unsigned int end, unsigned int node)
 {
 
@@ -3490,9 +3587,13 @@ static unsigned int matchcompound(struct matcher *matcher, unsigned int start, u
     {
 
         struct css_part *part = &matcher->sheet->parts[i];
+        unsigned int matched = (part->type == PART_IS) ? matchlist(matcher, i + 1, i + 1 + part->name, node) : matchpart(matcher, part, node);
 
-        if (matchpart(matcher, part, node) == part->negate)
+        if (matched == part->negate)
             return 0;
+
+        if (part->type == PART_IS)
+            i += part->name;
 
     }
 
