@@ -1447,6 +1447,13 @@ static void runscripts(void)
 
 }
 
+static unsigned int istag(unsigned int node, char *name)
+{
+
+    return node && document->nodes[node].type == HTML_NODE_ELEMENT && cstring_match(html_getstring(document, document->nodes[node].name), name);
+
+}
+
 static unsigned int clicknode(unsigned int node)
 {
 
@@ -1454,6 +1461,8 @@ static unsigned int clicknode(unsigned int node)
 
     while (node)
     {
+
+        unsigned int parent = document->nodes[node].parent;
 
         if (js_haslistener(js, node, "click"))
         {
@@ -1464,7 +1473,19 @@ static unsigned int clicknode(unsigned int node)
 
         }
 
-        node = document->nodes[node].parent;
+        if (istag(node, "summary") && istag(parent, "details"))
+        {
+
+            if (html_getattribute(document, parent, "open"))
+                html_removeattribute(document, parent, "open");
+            else
+                html_setattribute(document, parent, "open", "open");
+
+            handled = 1;
+
+        }
+
+        node = parent;
 
     }
 

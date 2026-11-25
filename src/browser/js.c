@@ -39,6 +39,13 @@
 #define NODE_BREAK                      32
 #define NODE_CONTINUE                   33
 #define NODE_EMPTY                      34
+#define NODE_FOREACH                    35
+#define NODE_SWITCH                     36
+#define NODE_CASE                       37
+#define LOOP_OF                         1
+#define LOOP_IN                         2
+#define PATTERN_ARRAY                   1
+#define PATTERN_OBJECT                  2
 #define OP_ADD                          1
 #define OP_SUBTRACT                     2
 #define OP_MULTIPLY                     3
@@ -172,6 +179,7 @@ static struct binary binaries[BINARIES] = {
 };
 
 static struct js_value execlist(struct js_engine *js, unsigned int first, unsigned int scope, struct completion *completion);
+static void execute(struct js_engine *js, unsigned int index, unsigned int scope, struct completion *completion);
 static struct js_value evaluate(struct js_engine *js, unsigned int node, unsigned int scope);
 static unsigned int parseexpression(struct parser *parser);
 static unsigned int parseassignment(struct parser *parser);
@@ -1475,7 +1483,58 @@ static unsigned int parsevariables(struct parser *parser)
         if (!declarator)
             break;
 
-        parser->js->nodes[declarator].value = parsename(parser);
+        if (ispunctuator(parser, "[") || ispunctuator(parser, "{"))
+        {
+
+            unsigned int pattern = (ispunctuator(parser, "[")) ? PATTERN_ARRAY : PATTERN_OBJECT;
+            char *close = (pattern == PATTERN_ARRAY) ? "]" : "}";
+            unsigned int lastname = 0;
+
+            nexttoken(parser);
+
+            parser->js->nodes[declarator].c = pattern;
+
+            while (!parser->failed && !ispunctuator(parser, close))
+            {
+
+                unsigned int name = newnode(parser, NODE_NAME);
+
+                if (!name)
+                    break;
+
+                if (!(pattern == PATTERN_ARRAY && ispunctuator(parser, ",")))
+                    parser->js->nodes[name].value = parsename(parser);
+
+                lastname = appendnode(parser, lastname, name);
+
+                if (!parser->js->nodes[declarator].b)
+                    parser->js->nodes[declarator].b = lastname;
+
+                if (!accept(parser, ","))
+                    break;
+
+            }
+
+            expect(parser, close);
+
+        }
+
+        else
+        {
+
+            parser->js->nodes[declarator].value = parsename(parser);
+
+        }
+
+        if (!last && (isword(parser, "of") || isword(parser, "in")))
+        {
+
+            parser->js->nodes[node].a = declarator;
+            parser->js->nodes[node].value = (isword(parser, "of")) ? LOOP_OF : LOOP_IN;
+
+            break;
+
+        }
 
         if (accept(parser, "="))
             parser->js->nodes[declarator].a = parseassignment(parser);
@@ -1682,6 +1741,24 @@ static unsigned int parsestatement(struct parser *parser)
         else if (!ispunctuator(parser, ";"))
             js->nodes[node].a = parseexpression(parser);
 
+        if (isword(parser, "of") || isword(parser, "in"))
+        {
+
+            js->nodes[node].type = NODE_FOREACH;
+            js->nodes[node].c = (isword(parser, "of")) ? LOOP_OF : LOOP_IN;
+
+            nexttoken(parser);
+
+            js->nodes[node].b = parseassignment(parser);
+
+            expect(parser, ")");
+
+            js->nodes[node].value = parsestatement(parser);
+
+            return node;
+
+        }
+
         expect(parser, ";");
 
         if (!ispunctuator(parser, ";"))
@@ -1695,6 +1772,90 @@ static unsigned int parsestatement(struct parser *parser)
         expect(parser, ")");
 
         js->nodes[node].value = parsestatement(parser);
+
+        return node;
+
+    }
+
+    if (isword(parser, "switch"))
+    {
+
+        unsigned int last = 0;
+
+        nexttoken(parser);
+        expect(parser, "(");
+
+        node = newnode(parser, NODE_SWITCH);
+
+        if (!node)
+            return 0;
+
+        js->nodes[node].a = parseexpression(parser);
+
+        expect(parser, ")");
+        expect(parser, "{");
+
+        while (!parser->failed && !ispunctuator(parser, "}") && parser->token.type != TOKEN_END)
+        {
+
+            unsigned int clause = newnode(parser, NODE_CASE);
+            unsigned int statement = 0;
+
+            if (!clause)
+                break;
+
+            if (isword(parser, "case"))
+            {
+
+                nexttoken(parser);
+
+                js->nodes[clause].a = parseexpression(parser);
+
+            }
+
+            else if (isword(parser, "default"))
+            {
+
+                nexttoken(parser);
+
+                js->nodes[clause].c = 1;
+
+            }
+
+            else
+            {
+
+                parser->failed = 1;
+
+                break;
+
+            }
+
+            expect(parser, ":");
+
+            while (!parser->failed && !isword(parser, "case") && !isword(parser, "default") && !ispunctuator(parser, "}") && parser->token.type != TOKEN_END)
+            {
+
+                unsigned int parsed = parsestatement(parser);
+
+                if (!parsed)
+                    break;
+
+                statement = appendnode(parser, statement, parsed);
+
+                if (!js->nodes[clause].b)
+                    js->nodes[clause].b = statement;
+
+            }
+
+            last = appendnode(parser, last, clause);
+
+            if (!js->nodes[node].b)
+                js->nodes[node].b = last;
+
+        }
+
+        expect(parser, "}");
 
         return node;
 
@@ -2862,6 +3023,204 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
 
 }
 
+static void bindpattern(struct js_engine *js, unsigned int scope, unsigned int declarator, struct js_value *source)
+{
+
+    struct js_node *node = &js->nodes[declarator];
+    unsigned int name;
+    unsigned int index = 0;
+
+    if (!node->c)
+    {
+
+        declare(js, scope, node->value, source);
+
+        return;
+
+    }
+
+    for (name = node->b; name && !js->throwing; name = js->nodes[name].next, index++)
+    {
+
+        struct js_value item;
+
+        if (!js->nodes[name].value)
+            continue;
+
+        item = getproperty(js, source, (node->c == PATTERN_ARRAY) ? numberstring(js, index) : (unsigned int)js->nodes[name].value);
+
+        declare(js, scope, js->nodes[name].value, &item);
+
+    }
+
+}
+
+static unsigned int loopstep(struct js_engine *js, unsigned int body, unsigned int scope, struct completion *completion)
+{
+
+    completion->type = COMPLETION_NORMAL;
+
+    execute(js, body, scope, completion);
+
+    if (completion->type == COMPLETION_BREAK)
+    {
+
+        completion->type = COMPLETION_NORMAL;
+
+        return 0;
+
+    }
+
+    if (completion->type == COMPLETION_CONTINUE)
+        completion->type = COMPLETION_NORMAL;
+
+    return completion->type == COMPLETION_NORMAL && !js->throwing;
+
+}
+
+static void bindloop(struct js_engine *js, struct js_node *node, unsigned int scope, struct js_value *item)
+{
+
+    if (js->nodes[node->a].type == NODE_VAR)
+        bindpattern(js, scope, js->nodes[node->a].a, item);
+    else
+        store(js, node->a, scope, item);
+
+}
+
+static void executeforeach(struct js_engine *js, struct js_node *node, unsigned int scope, struct completion *completion)
+{
+
+    struct js_value source = evaluate(js, node->b, scope);
+    struct js_value item;
+    unsigned int i;
+
+    if (js->throwing)
+        return;
+
+    if (node->c == LOOP_OF && source.type == JS_STRING)
+    {
+
+        for (i = 0; i < cstring_length(getstring(js, source.number)); i++)
+        {
+
+            item = value(JS_STRING, addstring(js, getstring(js, source.number) + i, 1));
+
+            bindloop(js, node, scope, &item);
+
+            if (!loopstep(js, (unsigned int)node->value, scope, completion))
+                break;
+
+        }
+
+        return;
+
+    }
+
+    if (source.type != JS_OBJECT)
+        return;
+
+    if (node->c == LOOP_OF || js->objects[source.number].kind == KIND_ARRAY)
+    {
+
+        for (i = 0; js->objects[source.number].kind == KIND_ARRAY && i < js->objects[source.number].data; i++)
+        {
+
+            item = (node->c == LOOP_OF) ? getproperty(js, &source, numberstring(js, i)) : value(JS_STRING, numberstring(js, i));
+
+            bindloop(js, node, scope, &item);
+
+            if (!loopstep(js, (unsigned int)node->value, scope, completion))
+                break;
+
+        }
+
+        return;
+
+    }
+
+    /* properties are kept newest first, so they are walked from the end to keep their order */
+    for (i = 0;; i++)
+    {
+
+        unsigned int property = js->objects[source.number].property;
+        unsigned int count = 0;
+        unsigned int position;
+
+        while (property)
+        {
+
+            count++;
+            property = js->properties[property].next;
+
+        }
+
+        if (i >= count)
+            break;
+
+        property = js->objects[source.number].property;
+
+        for (position = 0; position + i + 1 < count; position++)
+            property = js->properties[property].next;
+
+        item = value(JS_STRING, js->properties[property].name);
+
+        bindloop(js, node, scope, &item);
+
+        if (!loopstep(js, (unsigned int)node->value, scope, completion))
+            break;
+
+    }
+
+}
+
+static void executeswitch(struct js_engine *js, struct js_node *node, unsigned int scope, struct completion *completion)
+{
+
+    struct js_value subject = evaluate(js, node->a, scope);
+    unsigned int start = 0;
+    unsigned int fallback = 0;
+    unsigned int clause;
+
+    for (clause = node->b; clause && !start && !js->throwing; clause = js->nodes[clause].next)
+    {
+
+        struct js_value test;
+
+        if (js->nodes[clause].c)
+        {
+
+            fallback = clause;
+
+            continue;
+
+        }
+
+        test = evaluate(js, js->nodes[clause].a, scope);
+
+        if (strictequal(js, &subject, &test))
+            start = clause;
+
+    }
+
+    if (js->throwing)
+        return;
+
+    for (clause = (start) ? start : fallback; clause && !js->throwing && completion->type == COMPLETION_NORMAL; clause = js->nodes[clause].next)
+    {
+
+        unsigned int statement;
+
+        for (statement = js->nodes[clause].b; statement && !js->throwing && completion->type == COMPLETION_NORMAL; statement = js->nodes[statement].next)
+            execute(js, statement, scope, completion);
+
+    }
+
+    if (completion->type == COMPLETION_BREAK)
+        completion->type = COMPLETION_NORMAL;
+
+}
+
 static void execute(struct js_engine *js, unsigned int index, unsigned int scope, struct completion *completion)
 {
 
@@ -2886,7 +3245,7 @@ static void execute(struct js_engine *js, unsigned int index, unsigned int scope
 
             result = evaluate(js, js->nodes[child].a, scope);
 
-            declare(js, scope, js->nodes[child].value, &result);
+            bindpattern(js, scope, child, &result);
 
         }
 
@@ -3006,6 +3365,16 @@ static void execute(struct js_engine *js, unsigned int index, unsigned int scope
             copyvalue(&js->thrown, &result);
 
         }
+
+        break;
+
+    case NODE_FOREACH:
+        executeforeach(js, node, scope, completion);
+
+        break;
+
+    case NODE_SWITCH:
+        executeswitch(js, node, scope, completion);
 
         break;
 

@@ -6,6 +6,10 @@ struct paint_canvas
     unsigned int height;
     int top;
     unsigned int *heap;
+    int clipleft;
+    int cliptop;
+    int clipright;
+    int clipbottom;
 
 };
 

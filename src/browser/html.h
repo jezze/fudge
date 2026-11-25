@@ -88,6 +88,7 @@ char *html_getattribute(struct html_document *document, unsigned int node, char 
 unsigned int html_gettitle(struct html_document *document);
 unsigned int html_setattribute(struct html_document *document, unsigned int node, char *name, char *value);
 void html_removeattribute(struct html_document *document, unsigned int node, char *name);
+unsigned int html_settext(struct html_document *document, unsigned int node, char *text);
 unsigned int html_next(struct html_document *document, unsigned int node, unsigned int root);
 void html_parse(struct html_document *document, char *source, unsigned int count);
 void html_parsetext(struct html_document *document, char *source, unsigned int count);

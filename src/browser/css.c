@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      73
+#define PROPERTIES                      87
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -57,6 +57,17 @@
 #define PROP_FLEX                       70
 #define PROP_FLEXWRAP                   71
 #define PROP_FLEXFLOW                   72
+#define PROP_FLOAT                      73
+#define PROP_CLEAR                      74
+#define PROP_OVERFLOW                   75
+#define PROP_OVERFLOWX                  76
+#define PROP_OVERFLOWY                  77
+#define PROP_TOP                        78
+#define PROP_OPACITY                    82
+#define PROP_MAXHEIGHT                  83
+#define PROP_FONTFAMILY                 84
+#define PROP_BORDERSPACING              85
+#define PROP_BORDERCOLLAPSE             86
 #define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
@@ -159,6 +170,7 @@ struct quantity
 {
 
     int milli;
+    int percent;
     unsigned int length;
 
 };
@@ -242,7 +254,9 @@ static char *properties[PROPERTIES] = {
     "max-width", "min-height", "box-sizing", "position", "flex-direction",
     "background-image", "border-radius", "text-transform", "grid-template-columns", "gap",
     "row-gap", "column-gap", "grid-gap", "fill",
-    "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow"
+    "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow",
+    "float", "clear", "overflow", "overflow-x", "overflow-y",
+    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -254,6 +268,7 @@ static struct namedcolor colors[COLORS] = {
 static char *agent =
     "html,address,blockquote,body,center,dd,details,dialog,div,dl,dt,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,hr,legend,main,menu,nav,ol,p,pre,search,section,summary,ul,article,aside,caption,listing,plaintext,xmp,optgroup{display:block}"
     "head,script,style,title,meta,link,base,template,option,datalist,param,area,map,noscript,[hidden],input[type=hidden]{display:none}"
+    "details:not([open])>:not(summary){display:none}"
     "li{display:list-item}"
     "table{display:table;border-spacing:2px}"
     "tr{display:table-row}"
@@ -277,6 +292,7 @@ static char *agent =
     "ol ol,ul ol{margin:0}"
     "dd{margin-left:40px}"
     "pre,listing,xmp,plaintext,textarea{white-space:pre}"
+    "pre,code,kbd,samp,tt,listing,xmp,plaintext,textarea{font-family:monospace}"
     "b,strong{font-weight:bold}"
     "i,em,cite,var,dfn,address{font-style:italic}"
     "u,ins{text-decoration:underline}"
@@ -1356,18 +1372,20 @@ static struct lengthvalue lengthvalue(int value, unsigned int unit, unsigned int
 
     result.length.value = value;
     result.length.unit = unit;
+    result.length.offset = 0;
     result.valid = valid;
 
     return result;
 
 }
 
-static struct quantity quantity(int milli, unsigned int length)
+static struct quantity quantity(int milli, int percent, unsigned int length)
 {
 
     struct quantity result;
 
     result.milli = milli;
+    result.percent = percent;
     result.length = length;
 
     return result;
@@ -1430,7 +1448,7 @@ static struct quantity evaluatefunction(struct evaluator *evaluator, unsigned in
 
         struct quantity next = evaluatesum(evaluator);
 
-        if (next.length != result.length)
+        if (next.length != result.length || next.percent || result.percent)
             evaluator->valid = 0;
 
         if (kind == 1 && next.milli < result.milli)
@@ -1474,7 +1492,7 @@ static struct quantity evaluatevalue(struct evaluator *evaluator)
 
         evaluator->valid = 0;
 
-        return quantity(0, 0);
+        return quantity(0, 0, 0);
 
     }
 
@@ -1517,7 +1535,7 @@ static struct quantity evaluatevalue(struct evaluator *evaluator)
 
         evaluator->valid = 0;
 
-        return quantity(0, 0);
+        return quantity(0, 0, 0);
 
     }
 
@@ -1530,32 +1548,38 @@ static struct quantity evaluatevalue(struct evaluator *evaluator)
     evaluator->offset += unit;
 
     if (!unit && remaining && text[0] == '%')
-        evaluator->valid = 0;
+    {
+
+        evaluator->offset++;
+
+        return quantity(0, number.milli, 1);
+
+    }
 
     if (!unit)
-        return quantity(number.milli, 0);
+        return quantity(number.milli, 0, 0);
 
     if (matchword(text, unit, "px"))
-        return quantity(number.milli, 1);
+        return quantity(number.milli, 0, 1);
 
     if (matchword(text, unit, "em"))
-        return quantity(number.milli * (int)evaluator->fontsize, 1);
+        return quantity(number.milli * (int)evaluator->fontsize, 0, 1);
 
     if (matchword(text, unit, "rem"))
-        return quantity(number.milli * (int)evaluator->context->rootsize, 1);
+        return quantity(number.milli * (int)evaluator->context->rootsize, 0, 1);
 
     if (matchword(text, unit, "vw"))
-        return quantity(number.milli / 100 * (int)evaluator->context->width, 1);
+        return quantity(number.milli / 100 * (int)evaluator->context->width, 0, 1);
 
     if (matchword(text, unit, "vh"))
-        return quantity(number.milli / 100 * (int)evaluator->context->height, 1);
+        return quantity(number.milli / 100 * (int)evaluator->context->height, 0, 1);
 
     if (matchword(text, unit, "pt"))
-        return quantity(number.milli * 4 / 3, 1);
+        return quantity(number.milli * 4 / 3, 0, 1);
 
     evaluator->valid = 0;
 
-    return quantity(0, 0);
+    return quantity(0, 0, 0);
 
 }
 
@@ -1577,7 +1601,22 @@ static struct quantity evaluateproduct(struct evaluator *evaluator)
             if (result.length && next.length)
                 evaluator->valid = 0;
 
-            result.milli = multiply(result.milli, next.milli);
+            if (next.length)
+            {
+
+                result.percent = multiply(next.percent, result.milli);
+                result.milli = multiply(next.milli, result.milli);
+
+            }
+
+            else
+            {
+
+                result.percent = multiply(result.percent, next.milli);
+                result.milli = multiply(result.milli, next.milli);
+
+            }
+
             result.length = result.length || next.length;
 
         }
@@ -1590,6 +1629,7 @@ static struct quantity evaluateproduct(struct evaluator *evaluator)
             if (next.length)
                 evaluator->valid = 0;
 
+            result.percent = divide(result.percent, next.milli);
             result.milli = divide(result.milli, next.milli);
 
         }
@@ -1627,10 +1667,11 @@ static struct quantity evaluatesum(struct evaluator *evaluator)
 
         next = evaluateproduct(evaluator);
 
-        if (next.length != result.length && (next.milli || result.milli))
+        if (next.length != result.length && (next.milli || next.percent || result.milli || result.percent))
             evaluator->valid = 0;
 
         result.milli += sign * next.milli;
+        result.percent += sign * next.percent;
         result.length = result.length || next.length;
 
     }
@@ -1659,6 +1700,17 @@ static struct lengthvalue evaluatelength(struct context *context, char *text, un
 
     if (!evaluator.valid || evaluator.offset != length || (!result.length && result.milli))
         return lengthvalue(0, CSS_UNIT_PX, 0);
+
+    if (result.percent)
+    {
+
+        struct lengthvalue value = lengthvalue(result.percent, CSS_UNIT_PERCENT, 1);
+
+        value.length.offset = roundmilli(result.milli);
+
+        return value;
+
+    }
 
     return lengthvalue(roundmilli(result.milli), CSS_UNIT_PX, 1);
 
@@ -1730,6 +1782,7 @@ static void copylength(struct css_length *to, struct css_length *from)
 
     to->value = from->value;
     to->unit = from->unit;
+    to->offset = from->offset;
 
 }
 
@@ -1974,6 +2027,9 @@ static unsigned int setfontsize(struct context *context, char *text, unsigned in
 
     unsigned int size = fontkeyword(context, text, length);
 
+    if (size && !matchword(text, length, "smaller") && !matchword(text, length, "larger"))
+        context->style->keyword = 1;
+
     if (!size)
     {
 
@@ -1983,6 +2039,10 @@ static unsigned int setfontsize(struct context *context, char *text, unsigned in
             return 0;
 
         size = (value.length.unit == CSS_UNIT_PERCENT) ? (unsigned int)roundmilli(value.length.value * (int)context->parent->fontsize / 100) : (unsigned int)value.length.value;
+
+        /* only sizes relative to a keyword keep the smaller default of monospace text */
+        if (value.length.unit != CSS_UNIT_PERCENT && !(length > 2 && matchword(text + length - 2, 2, "em") && text[length - 3] != 'r'))
+            context->style->keyword = 0;
 
     }
 
@@ -2105,6 +2165,8 @@ static void setfont(struct context *context, char *value)
         if (!setfontsize(context, text, slash))
             return;
 
+        context->style->monospace = matchword(value + spans[count - 1].start, spans[count - 1].length, "monospace") && buffer_findbyte(value, cstring_length(value), ',') == cstring_length(value);
+
         if (slash == length && next < count && value[spans[next].start] == '/')
         {
 
@@ -2176,8 +2238,7 @@ static unsigned int setbasis(struct context *context, char *text, unsigned int l
     if (!value.valid || value.length.unit == CSS_UNIT_AUTO || value.length.value < 0)
         return 0;
 
-    context->style->basis.unit = value.length.unit;
-    context->style->basis.value = value.length.value;
+    copylength(&context->style->basis, &value.length);
 
     return 1;
 
@@ -2528,12 +2589,7 @@ static void setlength(struct context *context, struct css_length *length, char *
     struct lengthvalue parsed = parselength(context, value, cstring_length(value), context->style->fontsize);
 
     if (parsed.valid && !(noauto && parsed.length.unit == CSS_UNIT_AUTO))
-    {
-
-        length->value = parsed.length.value;
-        length->unit = parsed.length.unit;
-
-    }
+        copylength(length, &parsed.length);
 
 }
 
@@ -3095,6 +3151,7 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
         break;
 
     case PROP_VISIBILITY:
+    case PROP_OPACITY:
         style->hidden = from->hidden;
 
         break;
@@ -3124,6 +3181,11 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
         break;
 
+    case PROP_MAXHEIGHT:
+        copylength(&style->maxheight, &from->maxheight);
+
+        break;
+
     case PROP_BOXSIZING:
         style->borderbox = from->borderbox;
 
@@ -3131,6 +3193,38 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
     case PROP_POSITION:
         style->position = from->position;
+
+        break;
+
+    case PROP_FONTFAMILY:
+        style->monospace = from->monospace;
+
+        break;
+
+    case PROP_BORDERSPACING:
+        style->spacing = from->spacing;
+
+        break;
+
+    case PROP_BORDERCOLLAPSE:
+        style->collapse = from->collapse;
+
+        break;
+
+    case PROP_FLOAT:
+        style->floating = from->floating;
+
+        break;
+
+    case PROP_CLEAR:
+        style->clear = from->clear;
+
+        break;
+
+    case PROP_OVERFLOW:
+    case PROP_OVERFLOWX:
+    case PROP_OVERFLOWY:
+        style->overflow = from->overflow;
 
         break;
 
@@ -3160,7 +3254,7 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
     case PROP_FLEX:
         style->grow = from->grow;
         style->shrink = from->shrink;
-        style->basis = from->basis;
+        copylength(&style->basis, &from->basis);
 
         break;
 
@@ -3180,6 +3274,9 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
             if (property == PROP_PADDING || property == PROP_PADDINGTOP + side)
                 copylength(&style->padding[side], &from->padding[side]);
+
+            if (property == PROP_TOP + side)
+                copylength(&style->inset[side], &from->inset[side]);
 
             if (property == PROP_BORDER || property == PROP_BORDERTOP + side || property == PROP_BORDERWIDTH || property == PROP_BORDERTOPWIDTH + side)
                 style->borderwidth[side] = from->borderwidth[side];
@@ -3207,10 +3304,12 @@ static void initstyle(struct css_style *style)
 
     style->color = 0xFF000000;
     style->fontsize = 16;
+    style->keyword = 1;
     style->liststyle = CSS_LIST_DISC;
     style->width.unit = CSS_UNIT_AUTO;
     style->height.unit = CSS_UNIT_AUTO;
     style->maxwidth.unit = CSS_UNIT_NONE;
+    style->maxheight.unit = CSS_UNIT_NONE;
     style->basis.unit = CSS_UNIT_AUTO;
     style->shrink = 100;
     style->alignitems = CSS_FLEX_STRETCH;
@@ -3221,6 +3320,7 @@ static void initstyle(struct css_style *style)
 
         style->borderwidth[side] = 3;
         style->bordercolor[side] = CSS_CURRENTCOLOR;
+        style->inset[side].unit = CSS_UNIT_AUTO;
 
     }
 
@@ -3438,6 +3538,12 @@ static void apply(struct context *context, unsigned int property, char *value)
 
         break;
 
+    case PROP_OPACITY:
+        if (parsenumber(value, length).length && !parsenumber(value, length).milli)
+            style->hidden = 1;
+
+        break;
+
     case PROP_MARGIN:
     case PROP_PADDING:
     case PROP_BORDERWIDTH:
@@ -3480,6 +3586,11 @@ static void apply(struct context *context, unsigned int property, char *value)
 
         break;
 
+    case PROP_MAXHEIGHT:
+        setlength(context, &style->maxheight, value, 1);
+
+        break;
+
     case PROP_BOXSIZING:
         style->borderbox = matchword(value, length, "border-box");
 
@@ -3494,6 +3605,67 @@ static void apply(struct context *context, unsigned int property, char *value)
             style->position = CSS_POSITION_ABSOLUTE;
         else if (matchword(value, length, "fixed"))
             style->position = CSS_POSITION_FIXED;
+
+        break;
+
+    case PROP_FONTFAMILY:
+        style->monospace = matchword(value, length, "monospace");
+
+        break;
+
+    case PROP_BORDERSPACING:
+        {
+
+            struct span spans[FONTTOKENS];
+            struct lengthvalue spacing;
+
+            if (!countspans(value, spans, FONTTOKENS))
+                break;
+
+            spacing = parselength(context, value + spans[0].start, spans[0].length, style->fontsize);
+
+            if (spacing.valid && spacing.length.unit == CSS_UNIT_PX && spacing.length.value >= 0)
+                style->spacing = (spacing.length.value > 255) ? 255 : spacing.length.value;
+
+        }
+
+        break;
+
+    case PROP_BORDERCOLLAPSE:
+        style->collapse = matchword(value, length, "collapse");
+
+        break;
+
+    case PROP_FLOAT:
+        if (matchword(value, length, "none"))
+            style->floating = CSS_FLOAT_NONE;
+        else if (matchword(value, length, "left") || matchword(value, length, "inline-start"))
+            style->floating = CSS_FLOAT_LEFT;
+        else if (matchword(value, length, "right") || matchword(value, length, "inline-end"))
+            style->floating = CSS_FLOAT_RIGHT;
+
+        break;
+
+    case PROP_CLEAR:
+        if (matchword(value, length, "none"))
+            style->clear = 0;
+        else if (matchword(value, length, "left") || matchword(value, length, "inline-start"))
+            style->clear = CSS_CLEAR_LEFT;
+        else if (matchword(value, length, "right") || matchword(value, length, "inline-end"))
+            style->clear = CSS_CLEAR_RIGHT;
+        else if (matchword(value, length, "both") || matchword(value, length, "all"))
+            style->clear = CSS_CLEAR_LEFT | CSS_CLEAR_RIGHT;
+
+        break;
+
+    case PROP_OVERFLOW:
+    case PROP_OVERFLOWX:
+    case PROP_OVERFLOWY:
+        /* nothing scrolls inside a page, so every value but visible clips */
+        if (contains(value, length, "hidden") || contains(value, length, "clip") || contains(value, length, "auto") || contains(value, length, "scroll"))
+            style->overflow = 1;
+        else if (matchword(value, length, "visible"))
+            style->overflow = 0;
 
         break;
 
@@ -3596,6 +3768,16 @@ static void apply(struct context *context, unsigned int property, char *value)
 
         }
 
+        else if (property >= PROP_TOP && property < PROP_TOP + CSS_SIDES)
+        {
+
+            struct lengthvalue parsedlength = parselength(context, value, length, style->fontsize);
+
+            if (parsedlength.valid && parsedlength.length.unit != CSS_UNIT_NONE)
+                copylength(&style->inset[property - PROP_TOP], &parsedlength.length);
+
+        }
+
         else if (property >= PROP_BORDERTOPWIDTH && property < PROP_BORDERTOPWIDTH + CSS_SIDES)
         {
 
@@ -3638,7 +3820,7 @@ static unsigned int phaseof(unsigned int property)
     if (property == PROP_CUSTOM)
         return PHASE_CUSTOM;
 
-    if (property == PROP_FONTSIZE || property == PROP_FONT)
+    if (property == PROP_FONTSIZE || property == PROP_FONT || property == PROP_FONTFAMILY)
         return PHASE_FONT;
 
     return PHASE_OTHER;
@@ -4290,6 +4472,17 @@ static unsigned int findtable(struct html_document *document, unsigned int node)
 
 }
 
+static unsigned int isalttext(struct html_document *document, unsigned int node)
+{
+
+    char *src = html_getattribute(document, node, "src");
+    char *alt = html_getattribute(document, node, "alt");
+
+    /* an image without a source is drawn as its alternative text */
+    return document->nodes[node].tag == HTML_TAG_IMG && (!src || !src[0]) && alt && alt[0];
+
+}
+
 static void applyhints(struct context *context, struct html_document *document, unsigned int node, unsigned int fonts)
 {
 
@@ -4325,10 +4518,10 @@ static void applyhints(struct context *context, struct html_document *document, 
     if (node == document->body && (value = html_getattribute(document, node, "text")))
         applyhint(context, PROP_COLOR, value, "");
 
-    if (element->tag != HTML_TAG_FONT && (value = html_getattribute(document, node, "width")))
+    if (element->tag != HTML_TAG_FONT && !isalttext(document, node) && (value = html_getattribute(document, node, "width")))
         applyhint(context, PROP_WIDTH, value, "px");
 
-    if (element->tag != HTML_TAG_FONT && (value = html_getattribute(document, node, "height")))
+    if (element->tag != HTML_TAG_FONT && !isalttext(document, node) && (value = html_getattribute(document, node, "height")))
         applyhint(context, PROP_HEIGHT, value, "px");
 
     if ((value = html_getattribute(document, node, "align")))
@@ -4339,6 +4532,8 @@ static void applyhints(struct context *context, struct html_document *document, 
 
             if (cstring_match(value, "center"))
                 apply(context, PROP_MARGIN, "0 auto");
+            else if (cstring_match(value, "left") || cstring_match(value, "right"))
+                applyhint(context, PROP_FLOAT, value, "");
 
         }
 
@@ -4350,6 +4545,9 @@ static void applyhints(struct context *context, struct html_document *document, 
         }
 
     }
+
+    if (element->tag == HTML_TAG_BR && (value = html_getattribute(document, node, "clear")))
+        applyhint(context, PROP_CLEAR, value, "");
 
     if (element->tag == HTML_TAG_TD || element->tag == HTML_TAG_TH)
     {
@@ -4380,6 +4578,10 @@ static void inherit(struct css_style *style, struct css_style *parent)
     style->color = parent->color;
     style->fill = parent->fill;
     style->fontsize = parent->fontsize;
+    style->monospace = parent->monospace;
+    style->keyword = parent->keyword;
+    style->spacing = parent->spacing;
+    style->collapse = parent->collapse;
     style->lineheight = parent->lineheight;
     style->lineheightfactor = parent->lineheightfactor;
     style->bold = parent->bold;
@@ -4449,12 +4651,18 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
         applyrules(context, sheet, matches, count, CSS_ORIGIN_AUTHOR, 1, phase);
         applydeclarations(context, sheet, declarationmark, sheet->declarationcount - declarationmark, 1, phase);
 
+        if (phase == PHASE_FONT && context->style->keyword && context->style->monospace != context->parent->monospace)
+            context->style->fontsize = (context->style->monospace) ? context->style->fontsize * 13 / 16 : context->style->fontsize * 16 / 13;
+
     }
 
     sheet->declarationcount = declarationmark;
 
     if (context->style->display == CSS_DISPLAY_INLINE && isatomic(document->nodes[node].tag))
         context->style->display = CSS_DISPLAY_INLINEBLOCK;
+
+    if (context->style->floating && (context->style->display == CSS_DISPLAY_INLINE || context->style->display == CSS_DISPLAY_INLINEBLOCK))
+        context->style->display = CSS_DISPLAY_BLOCK;
 
     finish(context->style);
 

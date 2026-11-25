@@ -1053,6 +1053,38 @@ void html_removeattribute(struct html_document *document, unsigned int node, cha
 
 }
 
+unsigned int html_settext(struct html_document *document, unsigned int node, char *text)
+{
+
+    unsigned int length = cstring_length(text);
+    unsigned int offset = document->textcount;
+    unsigned int child;
+
+    if (!addbytes(document, text, length))
+        return 0;
+
+    child = (length) ? newnode(document, HTML_NODE_TEXT) : 0;
+
+    if (length && !child)
+        return 0;
+
+    document->nodes[node].first = 0;
+    document->nodes[node].last = 0;
+
+    if (child)
+    {
+
+        document->nodes[child].text = offset;
+        document->nodes[child].length = length;
+
+        appendchild(document, node, child);
+
+    }
+
+    return 1;
+
+}
+
 unsigned int html_gettitle(struct html_document *document)
 {
 

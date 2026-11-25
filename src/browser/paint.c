@@ -9,6 +9,7 @@
 #define PLACEHOLDER                     0xFFC0C0C0
 #define SINES                           91
 #define LIMIT                           30000
+#define INLINES                         16
 
 static int sines[SINES] = {
     0, 17, 35, 52, 70, 87, 105, 122, 139, 156, 174, 191, 208, 225, 242, 259, 276, 292, 309, 326,
@@ -34,10 +35,10 @@ static unsigned int blend(unsigned int under, unsigned int color)
 static void fill(struct paint_canvas *canvas, int x, int y, int w, int h, unsigned int color)
 {
 
-    int x0 = (x < 0) ? 0 : x;
-    int y0 = (y < canvas->top) ? canvas->top : y;
-    int x1 = (x + w > (int)canvas->width) ? (int)canvas->width : x + w;
-    int y1 = (y + h > canvas->top + (int)canvas->height) ? canvas->top + (int)canvas->height : y + h;
+    int x0 = (x < canvas->clipleft) ? canvas->clipleft : x;
+    int y0 = (y < canvas->cliptop) ? canvas->cliptop : y;
+    int x1 = (x + w > canvas->clipright) ? canvas->clipright : x + w;
+    int y1 = (y + h > canvas->clipbottom) ? canvas->clipbottom : y + h;
     unsigned int alpha = color >> 24;
     int i;
     int j;
@@ -197,10 +198,10 @@ static unsigned int stopcolor(struct css_gradient *gradient, int t)
 static void paintgradient(struct paint_canvas *canvas, struct css_gradient *gradient, struct layout_box *box, int radius)
 {
 
-    int x0 = (box->x < 0) ? 0 : box->x;
-    int y0 = (box->y < canvas->top) ? canvas->top : box->y;
-    int x1 = (box->x + box->w > (int)canvas->width) ? (int)canvas->width : box->x + box->w;
-    int y1 = (box->y + box->h > canvas->top + (int)canvas->height) ? canvas->top + (int)canvas->height : box->y + box->h;
+    int x0 = (box->x < canvas->clipleft) ? canvas->clipleft : box->x;
+    int y0 = (box->y < canvas->cliptop) ? canvas->cliptop : box->y;
+    int x1 = (box->x + box->w > canvas->clipright) ? canvas->clipright : box->x + box->w;
+    int y1 = (box->y + box->h > canvas->clipbottom) ? canvas->clipbottom : box->y + box->h;
     int sinus = sine(gradient->angle);
     int cosinus = sine(gradient->angle + 90);
     int length = (box->w * ((sinus < 0) ? -sinus : sinus) + box->h * ((cosinus < 0) ? -cosinus : cosinus)) / 1000;
@@ -365,10 +366,10 @@ static void paintpicture(struct paint_canvas *canvas, struct layout_picture *pic
 {
 
     unsigned int *pixels = canvas->heap + picture->offset / 4;
-    int x0 = (x < 0) ? 0 : x;
-    int y0 = (y < canvas->top) ? canvas->top : y;
-    int x1 = (x + w > (int)canvas->width) ? (int)canvas->width : x + w;
-    int y1 = (y + h > canvas->top + (int)canvas->height) ? canvas->top + (int)canvas->height : y + h;
+    int x0 = (x < canvas->clipleft) ? canvas->clipleft : x;
+    int y0 = (y < canvas->cliptop) ? canvas->cliptop : y;
+    int x1 = (x + w > canvas->clipright) ? canvas->clipright : x + w;
+    int y1 = (y + h > canvas->clipbottom) ? canvas->clipbottom : y + h;
     int i;
     int j;
 
@@ -508,24 +509,75 @@ static void paintmarker(struct paint_canvas *canvas, struct layout_fragment *fra
 
 }
 
+static unsigned int isinside(struct html_document *document, unsigned int node, unsigned int ancestor)
+{
+
+    while (node && node != ancestor)
+        node = document->nodes[node].parent;
+
+    return node == ancestor;
+
+}
+
+static void paintinline(struct paint_canvas *canvas, struct layout *layout, unsigned int index, unsigned int node)
+{
+
+    struct layout_fragment *fragment = &layout->fragments[index];
+    struct css_style *style = &layout->styles[node];
+    struct html_document *document = layout->document;
+    unsigned int first = !index || !isinside(document, layout->fragments[index - 1].node, node);
+    unsigned int last = index + 1 >= layout->fragmentcount || !isinside(document, layout->fragments[index + 1].node, node);
+    int bt = style->borderwidth[CSS_TOP];
+    int bb = style->borderwidth[CSS_BOTTOM];
+    int bl = (first) ? style->borderwidth[CSS_LEFT] : 0;
+    int br = (last) ? style->borderwidth[CSS_RIGHT] : 0;
+    int x = fragment->x - ((first) ? bl + padding(&style->padding[CSS_LEFT]) : 0);
+    int y = fragment->y - bt - padding(&style->padding[CSS_TOP]);
+    int w = fragment->x + fragment->w + ((last) ? br + padding(&style->padding[CSS_RIGHT]) : 0) - x;
+    int h = fragment->y + fragment->h + bb + padding(&style->padding[CSS_BOTTOM]) - y;
+
+    fill(canvas, x, y, w, h, style->background);
+    fill(canvas, x, y, w, bt, style->bordercolor[CSS_TOP]);
+    fill(canvas, x, y + h - bb, w, bb, style->bordercolor[CSS_BOTTOM]);
+    fill(canvas, x, y, bl, h, style->bordercolor[CSS_LEFT]);
+    fill(canvas, x + w - br, y, br, h, style->bordercolor[CSS_RIGHT]);
+
+}
+
+static void paintinlines(struct paint_canvas *canvas, struct layout *layout, unsigned int index)
+{
+
+    struct html_document *document = layout->document;
+    struct layout_fragment *fragment = &layout->fragments[index];
+    unsigned int inlines[INLINES];
+    unsigned int count = 0;
+    unsigned int node;
+
+    if (fragment->type != LAYOUT_FRAGMENT_TEXT)
+        return;
+
+    for (node = document->nodes[fragment->node].parent; node && count < INLINES && document->nodes[node].type == HTML_NODE_ELEMENT && layout->styles[node].display == CSS_DISPLAY_INLINE; node = document->nodes[node].parent)
+        inlines[count++] = node;
+
+    while (count--)
+    {
+
+        if (!layout->styles[inlines[count]].hidden)
+            paintinline(canvas, layout, index, inlines[count]);
+
+    }
+
+}
+
 static void paintfragment(struct paint_canvas *canvas, struct layout *layout, struct layout_fragment *fragment)
 {
 
     struct html_document *document = layout->document;
     unsigned int owner = (fragment->type == LAYOUT_FRAGMENT_TEXT) ? document->nodes[fragment->node].parent : fragment->node;
     struct css_style *style = &layout->styles[owner];
-    unsigned int node;
 
     if (style->hidden)
         return;
-
-    if (fragment->type == LAYOUT_FRAGMENT_TEXT)
-    {
-
-        for (node = owner; node && document->nodes[node].type == HTML_NODE_ELEMENT && layout->styles[node].display == CSS_DISPLAY_INLINE; node = document->nodes[node].parent)
-            fill(canvas, fragment->x, fragment->y, fragment->w, fragment->h, layout->styles[node].background);
-
-    }
 
     if (fragment->type == LAYOUT_FRAGMENT_MARKER)
     {
@@ -543,6 +595,81 @@ static void paintfragment(struct paint_canvas *canvas, struct layout *layout, st
 
     if (style->decoration & CSS_DECORATION_LINETHROUGH)
         fill(canvas, fragment->x, fragment->y + fragment->h / 2, fragment->w, fragment->scale, style->color);
+
+}
+
+static void setclip(struct paint_canvas *canvas, struct layout *layout, unsigned int node)
+{
+
+    struct html_document *document = layout->document;
+    unsigned int self = node;
+
+    canvas->clipleft = 0;
+    canvas->cliptop = canvas->top;
+    canvas->clipright = canvas->width;
+    canvas->clipbottom = canvas->top + canvas->height;
+
+    while (node)
+    {
+
+        struct layout_box *box = &layout->boxes[node];
+        struct css_style *style = &layout->styles[node];
+        unsigned int parent = document->nodes[node].parent;
+        int left;
+        int top;
+        int right;
+        int bottom;
+
+        if (document->nodes[node].type != HTML_NODE_ELEMENT)
+        {
+
+            node = parent;
+
+            continue;
+
+        }
+
+        /* a positioned box is only clipped by the boxes that contain it */
+        if (style->position == CSS_POSITION_FIXED)
+            parent = 0;
+
+        if (style->position == CSS_POSITION_ABSOLUTE)
+        {
+
+            while (parent && layout->styles[parent].position == CSS_POSITION_STATIC)
+                parent = document->nodes[parent].parent;
+
+        }
+
+        if (node == self || !style->overflow || !box->placed || node == document->html || node == document->body)
+        {
+
+            node = parent;
+
+            continue;
+
+        }
+
+        left = box->x + style->borderwidth[CSS_LEFT];
+        top = box->y + style->borderwidth[CSS_TOP];
+        right = box->x + box->w - style->borderwidth[CSS_RIGHT];
+        bottom = box->y + box->h - style->borderwidth[CSS_BOTTOM];
+
+        if (canvas->clipleft < left)
+            canvas->clipleft = left;
+
+        if (canvas->cliptop < top)
+            canvas->cliptop = top;
+
+        if (canvas->clipright > right)
+            canvas->clipright = right;
+
+        if (canvas->clipbottom > bottom)
+            canvas->clipbottom = bottom;
+
+        node = parent;
+
+    }
 
 }
 
@@ -585,6 +712,7 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
     unsigned int node = document->html;
     unsigned int i;
 
+    setclip(canvas, layout, 0);
     fill(canvas, 0, canvas->top, canvas->width, canvas->height, paint_getbackground(layout));
 
     while (node)
@@ -595,6 +723,8 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
 
         if (document->nodes[node].type == HTML_NODE_ELEMENT && box->placed && !style->hidden)
         {
+
+            setclip(canvas, layout, node);
 
             if (style->display != CSS_DISPLAY_INLINE)
                 paintbox(canvas, layout, box, style);
@@ -619,6 +749,19 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
     }
 
     for (i = 0; i < layout->fragmentcount; i++)
+    {
+
+        setclip(canvas, layout, layout->fragments[i].node);
+        paintinlines(canvas, layout, i);
+
+    }
+
+    for (i = 0; i < layout->fragmentcount; i++)
+    {
+
+        setclip(canvas, layout, layout->fragments[i].node);
         paintfragment(canvas, layout, &layout->fragments[i]);
+
+    }
 
 }

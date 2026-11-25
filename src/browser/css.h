@@ -63,12 +63,18 @@
 #define CSS_FLEX_AROUND                 5
 #define CSS_FLEX_EVENLY                 6
 #define CSS_FLEX_AUTO                   7
+#define CSS_FLOAT_NONE                  0
+#define CSS_FLOAT_LEFT                  1
+#define CSS_FLOAT_RIGHT                 2
+#define CSS_CLEAR_LEFT                  1
+#define CSS_CLEAR_RIGHT                 2
 
 struct css_length
 {
 
     int value;
-    unsigned int unit;
+    unsigned short unit;
+    short offset;
 
 };
 
@@ -93,6 +99,13 @@ struct css_style
     unsigned char justify;
     unsigned char alignitems;
     unsigned char alignself;
+    unsigned char floating;
+    unsigned char clear;
+    unsigned char overflow;
+    unsigned char monospace;
+    unsigned char keyword;
+    unsigned char spacing;
+    unsigned char collapse;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;
@@ -115,8 +128,10 @@ struct css_style
     struct css_length minwidth;
     struct css_length maxwidth;
     struct css_length minheight;
+    struct css_length maxheight;
     struct css_length radius;
     struct css_length basis;
+    struct css_length inset[CSS_SIDES];
 
 };
 
