@@ -54,6 +54,7 @@
 #define CSS_SCHEME_ANY                  0
 #define CSS_SCHEME_LIGHT                1
 #define CSS_SCHEME_DARK                 2
+#define CSS_CURRENTCOLOR                0x00000001
 
 struct css_length
 {
@@ -89,6 +90,7 @@ struct css_style
     unsigned short rowgap;
     unsigned short columngap;
     unsigned int color;
+    unsigned int fill;
     unsigned int background;
     unsigned int bordercolor[CSS_SIDES];
     struct css_length margin[CSS_SIDES];
@@ -201,6 +203,15 @@ struct css_sheet
 
 };
 
+struct css_color
+{
+
+    unsigned int value;
+    unsigned int valid;
+
+};
+
 void css_reset(struct css_sheet *sheet);
+struct css_color css_parsecolor(char *text, unsigned int length);
 void css_parse(struct css_sheet *sheet, char *text, unsigned int count, unsigned int origin);
 void css_compute(struct css_sheet *sheet, struct html_document *document, struct css_style *styles, unsigned int width, unsigned int height, unsigned int scheme);

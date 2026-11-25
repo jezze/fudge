@@ -379,12 +379,12 @@ static void paintpicture(struct paint_canvas *canvas, struct layout_picture *pic
     {
 
         unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
-        unsigned int *source = pixels + (unsigned int)(j - y) * picture->height / (unsigned int)h * picture->width;
+        unsigned int *source = pixels + (unsigned int)(j - y) * picture->rows / (unsigned int)h * picture->columns;
 
         for (i = x0; i < x1; i++)
         {
 
-            unsigned int color = source[(unsigned int)(i - x) * picture->width / (unsigned int)w];
+            unsigned int color = source[(unsigned int)(i - x) * picture->columns / (unsigned int)w];
             unsigned int alpha = color >> 24;
 
             if (alpha == 0xFF)
@@ -546,6 +546,22 @@ static void paintfragment(struct paint_canvas *canvas, struct layout *layout, st
 
 }
 
+struct paint_area paint_getcontent(struct layout *layout, unsigned int node)
+{
+
+    struct layout_box *box = &layout->boxes[node];
+    struct css_style *style = &layout->styles[node];
+    struct paint_area area;
+
+    area.x = box->x + style->borderwidth[CSS_LEFT] + padding(&style->padding[CSS_LEFT]);
+    area.y = box->y + style->borderwidth[CSS_TOP] + padding(&style->padding[CSS_TOP]);
+    area.w = box->w - style->borderwidth[CSS_LEFT] - style->borderwidth[CSS_RIGHT] - padding(&style->padding[CSS_LEFT]) - padding(&style->padding[CSS_RIGHT]);
+    area.h = box->h - style->borderwidth[CSS_TOP] - style->borderwidth[CSS_BOTTOM] - padding(&style->padding[CSS_TOP]) - padding(&style->padding[CSS_BOTTOM]);
+
+    return area;
+
+}
+
 unsigned int paint_getbackground(struct layout *layout)
 {
 
@@ -583,12 +599,15 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
             if (style->display != CSS_DISPLAY_INLINE)
                 paintbox(canvas, layout, box, style);
 
-            if (document->nodes[node].tag == HTML_TAG_IMG)
+            if (document->nodes[node].tag == HTML_TAG_IMG || document->nodes[node].tag == HTML_TAG_SVG)
             {
 
-                if (layout->picture[node] && canvas->heap)
-                    paintpicture(canvas, &layout->pictures[layout->picture[node] - 1], box->x + style->borderwidth[CSS_LEFT] + padding(&style->padding[CSS_LEFT]), box->y + style->borderwidth[CSS_TOP] + padding(&style->padding[CSS_TOP]), box->w - style->borderwidth[CSS_LEFT] - style->borderwidth[CSS_RIGHT] - padding(&style->padding[CSS_LEFT]) - padding(&style->padding[CSS_RIGHT]), box->h - style->borderwidth[CSS_TOP] - style->borderwidth[CSS_BOTTOM] - padding(&style->padding[CSS_TOP]) - padding(&style->padding[CSS_BOTTOM]));
-                else
+                struct layout_picture *picture = (layout->picture[node]) ? &layout->pictures[layout->picture[node] - 1] : 0;
+                struct paint_area area = paint_getcontent(layout, node);
+
+                if (picture && picture->columns && canvas->heap)
+                    paintpicture(canvas, picture, area.x, area.y, area.w, area.h);
+                else if (document->nodes[node].tag == HTML_TAG_IMG)
                     paintplaceholder(canvas, box);
 
             }

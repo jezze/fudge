@@ -93,7 +93,7 @@ unsigned int base64_decode(unsigned char *src, unsigned int len, unsigned char *
     if (count != 0 && !(count % 4))
     {
 
-        unsigned char *pos = 0;
+        unsigned char *pos = out;
         unsigned char block[4];
         int pad = 0;
 

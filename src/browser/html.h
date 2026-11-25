@@ -39,6 +39,7 @@
 #define HTML_TAG_BUTTON                 31
 #define HTML_TAG_HR                     32
 #define HTML_TAG_CAPTION                33
+#define HTML_TAG_SVG                    34
 
 struct html_node
 {

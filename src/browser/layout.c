@@ -803,10 +803,12 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
     int bb = style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_BOTTOM], availw);
     struct layout_picture *picture = (layout->picture[node]) ? &layout->pictures[layout->picture[node] - 1] : 0;
     unsigned int haswidth = style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT;
-    unsigned int hasheight = style->height.unit == CSS_UNIT_PX;
+    struct css_style *parent = getstyle(layout, getnode(layout, node)->parent);
+    unsigned int haspercent = style->height.unit == CSS_UNIT_PERCENT && parent->height.unit == CSS_UNIT_PX;
+    unsigned int hasheight = style->height.unit == CSS_UNIT_PX || haspercent;
     int width;
     int natural;
-    int height = (hasheight) ? style->height.value : metrics.ascent + metrics.descent;
+    int height = (haspercent) ? resolve(&style->height, parent->height.value) : (hasheight) ? style->height.value : metrics.ascent + metrics.descent;
     char *rows = html_getattribute(layout->document, node, "rows");
 
     getlabel(layout, node, &label);
@@ -820,11 +822,17 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
     if (picture)
     {
 
-        if (!haswidth)
-            width = (hasheight) ? height * (int)picture->width / (int)picture->height : (int)picture->width;
+        int ratiowidth = (int)picture->ratiowidth;
+        int ratioheight = (int)picture->ratioheight;
+
+        /* without a size of its own a picture with only a ratio fills the line, like an svg without width */
+        if (!haswidth && !hasheight)
+            width = (picture->width) ? (int)picture->width : (picture->height && ratioheight) ? (int)picture->height * ratiowidth / ratioheight : (ratioheight) ? max(availw - bl - br - resolve(&style->margin[CSS_LEFT], availw) - resolve(&style->margin[CSS_RIGHT], availw), 0) : 300;
+        else if (!haswidth)
+            width = (ratioheight) ? height * ratiowidth / ratioheight : (picture->width) ? (int)picture->width : 300;
 
         if (!hasheight)
-            height = (haswidth) ? width * (int)picture->height / (int)picture->width : (int)picture->height;
+            height = (!haswidth && picture->width && picture->height) ? (int)picture->height : (ratiowidth) ? width * ratioheight / ratiowidth : (picture->height) ? (int)picture->height : 150;
 
         label.length = 0;
 
@@ -878,7 +886,7 @@ static unsigned int isreplaced(struct layout *layout, unsigned int node)
 
     struct html_node *element = getnode(layout, node);
 
-    return element->tag == HTML_TAG_IMG || element->tag == HTML_TAG_INPUT || element->tag == HTML_TAG_SELECT || element->tag == HTML_TAG_TEXTAREA;
+    return element->tag == HTML_TAG_IMG || element->tag == HTML_TAG_SVG || element->tag == HTML_TAG_INPUT || element->tag == HTML_TAG_SELECT || element->tag == HTML_TAG_TEXTAREA;
 
 }
 

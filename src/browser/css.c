@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      63
+#define PROPERTIES                      64
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -47,6 +47,7 @@
 #define PROP_ROWGAP                     60
 #define PROP_COLUMNGAP                  61
 #define PROP_GRIDGAP                    62
+#define PROP_FILL                       63
 #define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
@@ -85,7 +86,6 @@
 #define KEY_CLASS                       3
 #define MATCHES                         128
 #define COLORS                          40
-#define CURRENTCOLOR                    0x00000001
 #define NOLIMIT                         0x7FFFFFFF
 #define VALUESIZE                       64
 #define FONTTOKENS                      8
@@ -232,7 +232,7 @@ static char *properties[PROPERTIES] = {
     "border-right-style", "border-bottom-style", "border-left-style", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "width", "height", "min-width",
     "max-width", "min-height", "box-sizing", "position", "flex-direction",
     "background-image", "border-radius", "text-transform", "grid-template-columns", "gap",
-    "row-gap", "column-gap", "grid-gap"
+    "row-gap", "column-gap", "grid-gap", "fill"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -1856,7 +1856,7 @@ static struct colorvalue parsecolor(char *text, unsigned int length)
         return colorvalue(0, 1);
 
     if (matchword(text, length, "currentcolor"))
-        return colorvalue(CURRENTCOLOR, 1);
+        return colorvalue(CSS_CURRENTCOLOR, 1);
 
     for (i = 0; i < COLORS; i++)
     {
@@ -2219,7 +2219,7 @@ static void setborderside(struct context *context, unsigned int side, char *valu
     unsigned int count = countspans(value, spans, 4);
     unsigned int width = 3;
     unsigned int style = 0;
-    unsigned int color = CURRENTCOLOR;
+    unsigned int color = CSS_CURRENTCOLOR;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -2515,7 +2515,7 @@ static unsigned int parsestop(struct context *context, struct css_gradient *grad
     if (!color.valid)
         return 0;
 
-    if (color.value == CURRENTCOLOR)
+    if (color.value == CSS_CURRENTCOLOR)
         color.value = context->style->color;
 
     if (count == 1)
@@ -2650,7 +2650,7 @@ static void setbackground(struct context *context, char *value, unsigned int ima
         if (!gradient && isgradient(text, spans[i].length))
             gradient = parsegradient(context, text, spans[i].length);
         else if (parsed.valid && !image)
-            color = (parsed.value == CURRENTCOLOR) ? context->style->color : parsed.value;
+            color = (parsed.value == CSS_CURRENTCOLOR) ? context->style->color : parsed.value;
 
     }
 
@@ -2805,6 +2805,11 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
     case PROP_COLOR:
         style->color = from->color;
+
+        break;
+
+    case PROP_FILL:
+        style->fill = from->fill;
 
         break;
 
@@ -2999,7 +3004,7 @@ static void initstyle(struct css_style *style)
     {
 
         style->borderwidth[side] = 3;
-        style->bordercolor[side] = CURRENTCOLOR;
+        style->bordercolor[side] = CSS_CURRENTCOLOR;
 
     }
 
@@ -3049,7 +3054,17 @@ static void apply(struct context *context, unsigned int property, char *value)
         color = parsecolor(value, length);
 
         if (color.valid)
-            style->color = (color.value == CURRENTCOLOR) ? context->parent->color : color.value;
+            style->color = (color.value == CSS_CURRENTCOLOR) ? context->parent->color : color.value;
+
+        break;
+
+    case PROP_FILL:
+        color = parsecolor(value, length);
+
+        if (matchword(value, length, "none"))
+            style->fill = 0x00FFFFFF;
+        else if (color.valid)
+            style->fill = (color.value) ? color.value : 0x00FFFFFF;
 
         break;
 
@@ -3116,7 +3131,7 @@ static void apply(struct context *context, unsigned int property, char *value)
         color = parsecolor(value, length);
 
         if (color.valid)
-            style->background = (color.value == CURRENTCOLOR) ? style->color : color.value;
+            style->background = (color.value == CSS_CURRENTCOLOR) ? style->color : color.value;
 
         break;
 
@@ -4076,6 +4091,7 @@ static void inherit(struct css_style *style, struct css_style *parent)
     initstyle(style);
 
     style->color = parent->color;
+    style->fill = parent->fill;
     style->fontsize = parent->fontsize;
     style->lineheight = parent->lineheight;
     style->lineheightfactor = parent->lineheightfactor;
@@ -4104,7 +4120,7 @@ static void finish(struct css_style *style)
         if (!style->borderstyle[side])
             style->borderwidth[side] = 0;
 
-        if (style->bordercolor[side] == CURRENTCOLOR)
+        if (style->bordercolor[side] == CSS_CURRENTCOLOR)
             style->bordercolor[side] = style->color;
 
     }
@@ -4411,6 +4427,31 @@ static void parseblock(struct parser *parser, unsigned int start, unsigned int e
         parser->offset = close + 1;
 
     }
+
+}
+
+struct css_color css_parsecolor(char *text, unsigned int length)
+{
+
+    struct css_color result;
+    struct colorvalue color;
+    char lowered[64];
+    unsigned int i;
+
+    result.value = 0;
+    result.valid = 0;
+
+    if (length >= 64)
+        return result;
+
+    for (i = 0; i < length; i++)
+        lowered[i] = (text[i] >= 'A' && text[i] <= 'Z') ? text[i] + 32 : text[i];
+
+    color = parsecolor(lowered, length);
+    result.value = color.value;
+    result.valid = color.valid;
+
+    return result;
 
 }
 

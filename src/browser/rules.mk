@@ -9,6 +9,7 @@ O:=\
     $(DIR_SRC)/browser/js.o \
     $(DIR_SRC)/browser/layout.o \
     $(DIR_SRC)/browser/paint.o \
+    $(DIR_SRC)/browser/svg.o \
     $(DIR_SRC)/wutils/kv.o \
 
 L:=\

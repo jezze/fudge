@@ -10,7 +10,11 @@ struct layout_picture
 
     unsigned int width;
     unsigned int height;
+    unsigned int ratiowidth;
+    unsigned int ratioheight;
     unsigned int offset;
+    unsigned int columns;
+    unsigned int rows;
 
 };
 

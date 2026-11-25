@@ -8,6 +8,7 @@
 #include "font.h"
 #include "layout.h"
 #include "paint.h"
+#include "svg.h"
 #include "js.h"
 #include "../wutils/kv.h"
 
@@ -21,11 +22,14 @@
 #define ERRORSIZE                       128
 #define REDIRECTS                       5
 #define MAXBYTES                        0x2000000
-#define PICTURES                        64
+#define PICTURES                        1024
 #define HEAPSIZE                        0x1000000
 #define PAGE_HTML                       0
 #define PAGE_TEXT                       1
 #define PAGE_OTHER                      2
+#define PICTURE_PNG                     0
+#define PICTURE_SVGFILE                 1
+#define PICTURE_SVGINLINE               2
 
 struct image
 {
@@ -45,7 +49,19 @@ struct store
     struct css_style styles[HTML_NODES];
     struct layout layout;
     struct js_engine js;
+    struct html_document svgdocument;
     char source[SOURCESIZE];
+
+};
+
+struct picturesource
+{
+
+    unsigned int hash;
+    unsigned int kind;
+    unsigned int node;
+    unsigned int source;
+    unsigned int length;
 
 };
 
@@ -67,7 +83,9 @@ static struct image images[IMAGES];
 static struct image heap;
 static struct image tables;
 static struct layout_picture pictures[PICTURES];
-static unsigned int picturehashes[PICTURES];
+static struct picturesource sources[PICTURES];
+static struct html_document *svgdocument;
+static unsigned int heapbase;
 static unsigned int picturecount;
 static unsigned int heapused;
 static struct png png;
@@ -889,10 +907,121 @@ static unsigned int decodepicture(struct layout_picture *picture)
 
     picture->width = png.width;
     picture->height = png.height;
+    picture->ratiowidth = png.width;
+    picture->ratioheight = png.height;
+    picture->columns = png.width;
+    picture->rows = png.height;
     picture->offset = heapused;
     heapused += size;
 
     return 1;
+
+}
+
+static unsigned int issvg(char *data, unsigned int count)
+{
+
+    unsigned int i;
+
+    for (i = 0; i + 4 < count && i < 0x400; i++)
+    {
+
+        if (buffer_match(data + i, "<svg", 4))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static void setsvgpicture(struct layout_picture *picture, struct svg_size *size)
+{
+
+    picture->width = size->width;
+    picture->height = size->height;
+    picture->ratiowidth = size->ratiowidth;
+    picture->ratioheight = size->ratioheight;
+    picture->offset = 0;
+    picture->columns = 0;
+    picture->rows = 0;
+
+}
+
+static unsigned int storesvg(struct layout_picture *picture, struct picturesource *info, unsigned int count)
+{
+
+    unsigned char zero = 0;
+    struct svg_size size;
+    unsigned int root;
+    char *data;
+
+    html_parse(svgdocument, source, count);
+
+    root = svg_findroot(svgdocument);
+
+    if (!root || !heap.id || heapused + count + 4 > HEAPSIZE)
+        return 0;
+
+    if (fs_write(1, heap.target, heap.id, &zero, 1, heapused + count - 1) != 1)
+        return 0;
+
+    data = fs_mmap(1, heap.target, heap.id, 0);
+
+    if (!data)
+        return 0;
+
+    buffer_copy(data + heapused, source, count);
+    fs_munmap(1, heap.target, heap.id);
+
+    size = svg_measure(svgdocument, root, 16);
+
+    setsvgpicture(picture, &size);
+
+    info->kind = PICTURE_SVGFILE;
+    info->source = heapused;
+    info->length = count;
+    heapused = (heapused + count + 3) & ~3;
+
+    return 1;
+
+}
+
+static unsigned int readdata(char *url)
+{
+
+    unsigned int length = cstring_length(url);
+    unsigned int comma = buffer_findbyte(url, length, ',');
+    unsigned int count = 0;
+    unsigned int i;
+
+    if (comma >= length)
+        return 0;
+
+    if (comma >= 12 && buffer_match(url + comma - 7, ";base64", 7))
+        return (length - comma - 1 < SOURCESIZE / 4 * 3) ? base64_decode((unsigned char *)url + comma + 1, length - comma - 1, (unsigned char *)source) : 0;
+
+    for (i = comma + 1; i < length && count < SOURCESIZE; i++)
+    {
+
+        if (url[i] == '%' && i + 2 < length && hexvalue(url[i + 1]) < 16 && hexvalue(url[i + 2]) < 16)
+        {
+
+            source[count++] = hexvalue(url[i + 1]) * 16 + hexvalue(url[i + 2]);
+            i += 2;
+
+        }
+
+        else
+        {
+
+            source[count++] = url[i];
+
+        }
+
+    }
+
+    return count;
 
 }
 
@@ -906,7 +1035,7 @@ static unsigned int loadpicture(char *url)
     for (i = 0; i < picturecount; i++)
     {
 
-        if (picturehashes[i] == hash)
+        if (sources[i].kind != PICTURE_SVGINLINE && sources[i].hash == hash)
             return i + 1;
 
     }
@@ -914,15 +1043,20 @@ static unsigned int loadpicture(char *url)
     if (picturecount >= PICTURES)
         return 0;
 
-    if (findscheme(url))
+    if (buffer_match(url, "data:", 5))
+    {
+
+        pngcount = readdata(url);
+        pngid = 0;
+
+    }
+
+    else if (findscheme(url))
     {
 
         loaded = load(url);
         pngcount = loaded.count;
         pngid = 0;
-
-        if (!pngcount)
-            return 0;
 
     }
 
@@ -931,16 +1065,71 @@ static unsigned int loadpicture(char *url)
 
         pngtarget = fs_auth(url);
         pngid = (pngtarget) ? fs_walk(1, pngtarget, 0, url) : 0;
+        pngcount = (pngid) ? fs_read_full(1, pngtarget, pngid, source, SOURCESIZE, 0) : 0;
 
-        if (!pngid)
+        /* a file that fits is read from memory, a larger one is streamed */
+        if (pngcount < SOURCESIZE)
+            pngid = 0;
+
+    }
+
+    if (!pngcount)
+        return 0;
+
+    sources[picturecount].hash = hash;
+    sources[picturecount].kind = PICTURE_PNG;
+
+    if (!pngid && issvg(source, pngcount))
+    {
+
+        if (!storesvg(&pictures[picturecount], &sources[picturecount], pngcount))
             return 0;
 
     }
 
-    if (!decodepicture(&pictures[picturecount]))
+    else if (!decodepicture(&pictures[picturecount]))
+    {
+
         return 0;
 
-    picturehashes[picturecount] = hash;
+    }
+
+    picturecount++;
+
+    return picturecount;
+
+}
+
+static unsigned int insvg(unsigned int node)
+{
+
+    for (node = document->nodes[node].parent; node; node = document->nodes[node].parent)
+    {
+
+        if (document->nodes[node].tag == HTML_TAG_SVG)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int addinlinesvg(unsigned int node)
+{
+
+    struct svg_size size;
+
+    if (picturecount >= PICTURES || insvg(node))
+        return 0;
+
+    size = svg_measure(document, node, 16);
+
+    setsvgpicture(&pictures[picturecount], &size);
+
+    sources[picturecount].hash = 0;
+    sources[picturecount].kind = PICTURE_SVGINLINE;
+    sources[picturecount].node = node;
     picturecount++;
 
     return picturecount;
@@ -963,10 +1152,121 @@ static void loadpictures(void)
         char *src = (document->nodes[node].tag == HTML_TAG_IMG) ? html_getattribute(document, node, "src") : 0;
         char url[URLSIZE];
 
-        if (src && resolve(url, URLSIZE, base, src) && issafe(url))
+        if (src && buffer_match(src, "data:", 5))
+            layout->picture[node] = loadpicture(src);
+        else if (src && resolve(url, URLSIZE, base, src) && issafe(url))
             layout->picture[node] = loadpicture(url);
+        else if (document->nodes[node].tag == HTML_TAG_SVG)
+            layout->picture[node] = addinlinesvg(node);
 
     }
+
+    heapbase = heapused;
+
+}
+
+static unsigned int placesvg(struct layout_picture *picture, unsigned int node, unsigned int needed)
+{
+
+    struct paint_area area = paint_getcontent(layout, node);
+    unsigned int size;
+
+    if (!layout->boxes[node].placed || area.w <= 0 || area.h <= 0 || area.w > 4096 || area.h > 4096)
+        return needed;
+
+    size = (unsigned int)area.w * (unsigned int)area.h * 4;
+
+    if (needed + size > HEAPSIZE)
+        return needed;
+
+    picture->offset = needed;
+    picture->columns = area.w;
+    picture->rows = area.h;
+
+    return needed + size;
+
+}
+
+static void rasterize(void)
+{
+
+    unsigned int needed = heapbase;
+    unsigned char zero = 0;
+    unsigned int *pixels;
+    unsigned int node;
+    unsigned int i;
+
+    for (i = 0; i < picturecount; i++)
+    {
+
+        if (sources[i].kind != PICTURE_PNG)
+            pictures[i].columns = 0;
+
+    }
+
+    /* each svg is drawn once at the size of its first box, a second box of another size scales it */
+    for (node = 1; node < document->nodecount; node++)
+    {
+
+        unsigned int index = layout->picture[node];
+
+        if (index && sources[index - 1].kind != PICTURE_PNG && !pictures[index - 1].columns)
+            needed = placesvg(&pictures[index - 1], node, needed);
+
+    }
+
+    heapused = needed;
+
+    if (needed == heapbase)
+        return;
+
+    pixels = (fs_write(1, heap.target, heap.id, &zero, 1, needed - 1) == 1) ? fs_mmap(1, heap.target, heap.id, 0) : 0;
+
+    for (i = 0; i < picturecount; i++)
+    {
+
+        struct layout_picture *picture = &pictures[i];
+        struct svg_canvas canvas;
+
+        if (sources[i].kind == PICTURE_PNG || !picture->columns)
+            continue;
+
+        if (!pixels)
+        {
+
+            picture->columns = 0;
+
+            continue;
+
+        }
+
+        canvas.pixels = pixels + picture->offset / 4;
+        canvas.width = picture->columns;
+        canvas.height = picture->rows;
+
+        buffer_clear(canvas.pixels, canvas.width * canvas.height * 4);
+
+        if (sources[i].kind == PICTURE_SVGFILE)
+        {
+
+            html_parse(svgdocument, (char *)pixels + sources[i].source, sources[i].length);
+            svg_render(&canvas, svgdocument, svg_findroot(svgdocument), 0xFF000000, 0);
+
+        }
+
+        else
+        {
+
+            svg_render(&canvas, document, sources[i].node, styles[sources[i].node].color, styles[sources[i].node].fill);
+
+        }
+
+    }
+
+    if (pixels)
+        fs_munmap(1, heap.target, heap.id);
+    else
+        heapused = heapbase;
 
 }
 
@@ -1027,6 +1327,7 @@ static void render(void)
         scrolly = extent - viewheight;
 
     channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= frame extent \"%u\"\n", &extent);
+    rasterize();
     paintpage();
 
 }
@@ -1287,6 +1588,7 @@ static unsigned int mapstore(struct image *image)
     styles = store->styles;
     layout = &store->layout;
     js = &store->js;
+    svgdocument = &store->svgdocument;
     source = store->source;
 
     return 1;
