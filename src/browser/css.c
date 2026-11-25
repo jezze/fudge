@@ -2052,8 +2052,14 @@ static void setfont(struct context *context, char *value)
     {
 
         char *text = value + spans[size].start;
+        unsigned int length = buffer_findbyte(text, spans[size].length, '/');
+        struct number number = parsenumber(text, length);
 
-        if (cstring_isdigit(text[0]) || text[0] == '.' || fontkeyword(context, text, buffer_findbyte(text, spans[size].length, '/')))
+        /* a bare number before the size is a weight */
+        if (number.length && number.length == length)
+            continue;
+
+        if (cstring_isdigit(text[0]) || text[0] == '.' || fontkeyword(context, text, length))
             break;
 
     }
@@ -2084,9 +2090,25 @@ static void setfont(struct context *context, char *value)
         char *text = value + spans[size].start;
         unsigned int length = spans[size].length;
         unsigned int slash = buffer_findbyte(text, length, '/');
+        unsigned int next = size + 1;
 
-        if (setfontsize(context, text, slash) && slash < length)
+        if (!setfontsize(context, text, slash))
+            return;
+
+        if (slash == length && next < count && value[spans[next].start] == '/')
+        {
+
+            text = value + spans[next].start;
+            length = spans[next].length;
+            slash = 0;
+            next++;
+
+        }
+
+        if (slash + 1 < length)
             setlineheight(context, text + slash + 1, length - slash - 1);
+        else if (slash < length && next < count)
+            setlineheight(context, value + spans[next].start, spans[next].length);
 
     }
 

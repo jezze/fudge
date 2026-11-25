@@ -921,6 +921,23 @@ static int measure(struct layout *layout, unsigned int node, int availw)
 
 }
 
+static unsigned int lastline(struct layout *layout, unsigned int start, unsigned int end)
+{
+
+    unsigned int i;
+
+    for (i = end; i > start; i--)
+    {
+
+        if (layout->fragments[i - 1].type != LAYOUT_FRAGMENT_MARKER)
+            return i - 1;
+
+    }
+
+    return NONE;
+
+}
+
 static void placeatomic(struct layout *layout, struct flow *flow, unsigned int node)
 {
 
@@ -937,6 +954,7 @@ static void placeatomic(struct layout *layout, struct flow *flow, unsigned int n
     unsigned int wrap = container->whitespace == CSS_WHITESPACE_NORMAL || container->whitespace == CSS_WHITESPACE_PRELINE;
     unsigned int fragmentstart;
     int height;
+    int ascent;
 
     if (wrap && !isempty(layout, flow) && flow->x + spacewidth + gap + ml + width + mr > flow->right)
     {
@@ -961,7 +979,20 @@ static void placeatomic(struct layout *layout, struct flow *flow, unsigned int n
 
     layout->atomicdepth--;
 
-    additem(layout, node, 1, fragmentstart, layout->fragmentcount, mt + height + mb, 0, 0);
+    ascent = mt + height + mb;
+
+    /* an inline-block with text sits on the baseline of its last line, otherwise on its bottom edge */
+    if (flow->type == FLOW_NORMAL && !isreplaced(layout, node))
+    {
+
+        unsigned int last = lastline(layout, fragmentstart, layout->fragmentcount);
+
+        if (last != NONE)
+            ascent = layout->fragments[last].y + layout->fragments[last].ascent - flow->y;
+
+    }
+
+    additem(layout, node, 1, fragmentstart, layout->fragmentcount, ascent, mt + height + mb - ascent, 0);
 
     flow->x += ml + layout->boxes[node].w + mr;
     flow->space = 0;
