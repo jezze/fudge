@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      64
+#define PROPERTIES                      73
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -48,6 +48,15 @@
 #define PROP_COLUMNGAP                  61
 #define PROP_GRIDGAP                    62
 #define PROP_FILL                       63
+#define PROP_JUSTIFYCONTENT             64
+#define PROP_ALIGNITEMS                 65
+#define PROP_ALIGNSELF                  66
+#define PROP_FLEXGROW                   67
+#define PROP_FLEXSHRINK                 68
+#define PROP_FLEXBASIS                  69
+#define PROP_FLEX                       70
+#define PROP_FLEXWRAP                   71
+#define PROP_FLEXFLOW                   72
 #define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
@@ -232,7 +241,8 @@ static char *properties[PROPERTIES] = {
     "border-right-style", "border-bottom-style", "border-left-style", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "width", "height", "min-width",
     "max-width", "min-height", "box-sizing", "position", "flex-direction",
     "background-image", "border-radius", "text-transform", "grid-template-columns", "gap",
-    "row-gap", "column-gap", "grid-gap", "fill"
+    "row-gap", "column-gap", "grid-gap", "fill",
+    "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -2114,6 +2124,175 @@ static void setfont(struct context *context, char *value)
 
 }
 
+static unsigned int parseflexalign(char *text, unsigned int length)
+{
+
+    if (matchword(text, length, "flex-start") || matchword(text, length, "start") || matchword(text, length, "self-start") || matchword(text, length, "left") || matchword(text, length, "baseline") || matchword(text, length, "first baseline") || matchword(text, length, "last baseline"))
+        return CSS_FLEX_START;
+
+    if (matchword(text, length, "flex-end") || matchword(text, length, "end") || matchword(text, length, "self-end") || matchword(text, length, "right"))
+        return CSS_FLEX_END;
+
+    if (matchword(text, length, "center"))
+        return CSS_FLEX_CENTER;
+
+    if (matchword(text, length, "stretch"))
+        return CSS_FLEX_STRETCH;
+
+    if (matchword(text, length, "space-between"))
+        return CSS_FLEX_BETWEEN;
+
+    if (matchword(text, length, "space-around"))
+        return CSS_FLEX_AROUND;
+
+    if (matchword(text, length, "space-evenly"))
+        return CSS_FLEX_EVENLY;
+
+    /* normal is stretch for align-items and flex-start for justify-content */
+    if (matchword(text, length, "auto") || matchword(text, length, "normal"))
+        return CSS_FLEX_AUTO;
+
+    return 0xFF;
+
+}
+
+static unsigned int setbasis(struct context *context, char *text, unsigned int length)
+{
+
+    struct lengthvalue value;
+
+    if (matchword(text, length, "auto") || matchword(text, length, "content"))
+    {
+
+        context->style->basis.unit = CSS_UNIT_AUTO;
+        context->style->basis.value = 0;
+
+        return 1;
+
+    }
+
+    value = parselength(context, text, length, context->style->fontsize);
+
+    if (!value.valid || value.length.unit == CSS_UNIT_AUTO || value.length.value < 0)
+        return 0;
+
+    context->style->basis.unit = value.length.unit;
+    context->style->basis.value = value.length.value;
+
+    return 1;
+
+}
+
+static void setflex(struct context *context, char *value)
+{
+
+    struct css_style *style = context->style;
+    struct span spans[FONTTOKENS];
+    unsigned int count = countspans(value, spans, FONTTOKENS);
+    unsigned int numbers = 0;
+    unsigned int based = 0;
+    unsigned int i;
+
+    if (count == 1 && matchword(value + spans[0].start, spans[0].length, "none"))
+    {
+
+        style->grow = 0;
+        style->shrink = 0;
+        style->basis.unit = CSS_UNIT_AUTO;
+
+        return;
+
+    }
+
+    if (count == 1 && matchword(value + spans[0].start, spans[0].length, "auto"))
+    {
+
+        style->grow = 100;
+        style->shrink = 100;
+        style->basis.unit = CSS_UNIT_AUTO;
+
+        return;
+
+    }
+
+    if (count == 1 && matchword(value + spans[0].start, spans[0].length, "initial"))
+    {
+
+        style->grow = 0;
+        style->shrink = 100;
+        style->basis.unit = CSS_UNIT_AUTO;
+
+        return;
+
+    }
+
+    style->grow = 100;
+    style->shrink = 100;
+
+    for (i = 0; i < count; i++)
+    {
+
+        char *text = value + spans[i].start;
+        struct number number = parsenumber(text, spans[i].length);
+
+        if (number.length == spans[i].length && number.milli >= 0 && numbers < 2)
+        {
+
+            unsigned int factor = (number.milli > 655000) ? 65500 : number.milli / 10;
+
+            if (numbers++)
+                style->shrink = factor;
+            else
+                style->grow = factor;
+
+        }
+
+        else if (setbasis(context, text, spans[i].length))
+        {
+
+            based = 1;
+
+        }
+
+    }
+
+    /* a lone number means a basis of zero, so the space is shared by grow factors alone */
+    if (!based)
+    {
+
+        style->basis.unit = CSS_UNIT_PX;
+        style->basis.value = 0;
+
+    }
+
+}
+
+static void setflexflow(struct context *context, char *value)
+{
+
+    struct span spans[FONTTOKENS];
+    unsigned int count = countspans(value, spans, FONTTOKENS);
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        char *text = value + spans[i].start;
+        unsigned int length = spans[i].length;
+
+        if (matchword(text, length, "row") || matchword(text, length, "row-reverse"))
+            context->style->column = 0;
+        else if (matchword(text, length, "column") || matchword(text, length, "column-reverse"))
+            context->style->column = 1;
+        else if (matchword(text, length, "nowrap"))
+            context->style->wrap = 0;
+        else if (matchword(text, length, "wrap") || matchword(text, length, "wrap-reverse"))
+            context->style->wrap = 1;
+
+    }
+
+}
+
 static unsigned int parsedisplay(char *text, unsigned int length)
 {
 
@@ -2800,6 +2979,7 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
     case PROP_DISPLAY:
         style->display = from->display;
+        style->flexbox = from->flexbox;
 
         break;
 
@@ -2959,6 +3139,38 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
         break;
 
+    case PROP_JUSTIFYCONTENT:
+        style->justify = from->justify;
+
+        break;
+
+    case PROP_ALIGNITEMS:
+        style->alignitems = from->alignitems;
+
+        break;
+
+    case PROP_ALIGNSELF:
+        style->alignself = from->alignself;
+
+        break;
+
+    case PROP_FLEXGROW:
+    case PROP_FLEXSHRINK:
+    case PROP_FLEXBASIS:
+    case PROP_FLEX:
+        style->grow = from->grow;
+        style->shrink = from->shrink;
+        style->basis = from->basis;
+
+        break;
+
+    case PROP_FLEXWRAP:
+    case PROP_FLEXFLOW:
+        style->wrap = from->wrap;
+        style->column = from->column;
+
+        break;
+
     default:
         for (side = 0; side < CSS_SIDES; side++)
         {
@@ -2999,6 +3211,10 @@ static void initstyle(struct css_style *style)
     style->width.unit = CSS_UNIT_AUTO;
     style->height.unit = CSS_UNIT_AUTO;
     style->maxwidth.unit = CSS_UNIT_NONE;
+    style->basis.unit = CSS_UNIT_AUTO;
+    style->shrink = 100;
+    style->alignitems = CSS_FLEX_STRETCH;
+    style->alignself = CSS_FLEX_AUTO;
 
     for (side = 0; side < CSS_SIDES; side++)
     {
@@ -3046,7 +3262,12 @@ static void apply(struct context *context, unsigned int property, char *value)
         parsed = parsedisplay(value, length);
 
         if (parsed != 0xFF)
+        {
+
             style->display = parsed;
+            style->flexbox = matchword(value, length, "flex") || matchword(value, length, "inline-flex");
+
+        }
 
         break;
 
@@ -3278,6 +3499,72 @@ static void apply(struct context *context, unsigned int property, char *value)
 
     case PROP_FLEXDIRECTION:
         style->column = matchword(value, length, "column") || matchword(value, length, "column-reverse");
+
+        break;
+
+    case PROP_JUSTIFYCONTENT:
+        parsed = parseflexalign(value, length);
+
+        if (parsed != 0xFF && parsed != CSS_FLEX_STRETCH)
+            style->justify = (parsed == CSS_FLEX_AUTO) ? CSS_FLEX_START : parsed;
+
+        break;
+
+    case PROP_ALIGNITEMS:
+        parsed = parseflexalign(value, length);
+
+        if (parsed != 0xFF && parsed != CSS_FLEX_BETWEEN && parsed != CSS_FLEX_AROUND && parsed != CSS_FLEX_EVENLY)
+            style->alignitems = (parsed == CSS_FLEX_AUTO) ? CSS_FLEX_STRETCH : parsed;
+
+        break;
+
+    case PROP_ALIGNSELF:
+        parsed = parseflexalign(value, length);
+
+        if (parsed != 0xFF && parsed != CSS_FLEX_BETWEEN && parsed != CSS_FLEX_AROUND && parsed != CSS_FLEX_EVENLY)
+            style->alignself = parsed;
+
+        break;
+
+    case PROP_FLEXGROW:
+    case PROP_FLEXSHRINK:
+        {
+
+            struct number number = parsenumber(value, length);
+
+            if (number.length == length && number.milli >= 0)
+            {
+
+                unsigned int factor = (number.milli > 655000) ? 65500 : number.milli / 10;
+
+                if (property == PROP_FLEXGROW)
+                    style->grow = factor;
+                else
+                    style->shrink = factor;
+
+            }
+
+        }
+
+        break;
+
+    case PROP_FLEXBASIS:
+        setbasis(context, value, length);
+
+        break;
+
+    case PROP_FLEX:
+        setflex(context, value);
+
+        break;
+
+    case PROP_FLEXWRAP:
+        style->wrap = matchword(value, length, "wrap") || matchword(value, length, "wrap-reverse");
+
+        break;
+
+    case PROP_FLEXFLOW:
+        setflexflow(context, value);
 
         break;
 

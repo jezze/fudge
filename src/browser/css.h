@@ -55,6 +55,14 @@
 #define CSS_SCHEME_LIGHT                1
 #define CSS_SCHEME_DARK                 2
 #define CSS_CURRENTCOLOR                0x00000001
+#define CSS_FLEX_START                  0
+#define CSS_FLEX_END                    1
+#define CSS_FLEX_CENTER                 2
+#define CSS_FLEX_STRETCH                3
+#define CSS_FLEX_BETWEEN                4
+#define CSS_FLEX_AROUND                 5
+#define CSS_FLEX_EVENLY                 6
+#define CSS_FLEX_AUTO                   7
 
 struct css_length
 {
@@ -80,6 +88,11 @@ struct css_style
     unsigned char column;
     unsigned char transform;
     unsigned char columns;
+    unsigned char flexbox;
+    unsigned char wrap;
+    unsigned char justify;
+    unsigned char alignitems;
+    unsigned char alignself;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;
@@ -89,6 +102,8 @@ struct css_style
     unsigned short trackmin;
     unsigned short rowgap;
     unsigned short columngap;
+    unsigned short grow;
+    unsigned short shrink;
     unsigned int color;
     unsigned int fill;
     unsigned int background;
@@ -101,6 +116,7 @@ struct css_style
     struct css_length maxwidth;
     struct css_length minheight;
     struct css_length radius;
+    struct css_length basis;
 
 };
 

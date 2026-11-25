@@ -1,6 +1,7 @@
 #define LAYOUT_FRAGMENTS                16384
 #define LAYOUT_ITEMS                    512
 #define LAYOUT_TEXTSIZE                 0x10000
+#define LAYOUT_FLEXITEMS                4096
 #define LAYOUT_FRAGMENT_TEXT            0
 #define LAYOUT_FRAGMENT_GENERATED       1
 #define LAYOUT_FRAGMENT_MARKER          2
@@ -61,6 +62,22 @@ struct layout_item
 
 };
 
+struct layout_flexitem
+{
+
+    unsigned int node;
+    unsigned int fragmentstart;
+    unsigned int fragmentend;
+    unsigned int automargins;
+    int size;
+    int ml;
+    int mr;
+    int mt;
+    int mb;
+    int height;
+
+};
+
 struct layout
 {
 
@@ -81,6 +98,12 @@ struct layout
     unsigned int markerdepth;
     unsigned int atomicdepth;
     unsigned int measuring;
+    unsigned int forcenode;
+    unsigned int baselinedepth;
+    int baseline;
+    int forcewidth;
+    unsigned int flexcount;
+    struct layout_flexitem flexitems[LAYOUT_FLEXITEMS];
     int extent;
     int height;
     unsigned int full;
