@@ -1,41 +1,16 @@
 #include <fudge.h>
+#include <compression.h>
+#include <image.h>
 #include "html.h"
 #include "css.h"
 #include "svg.h"
 
-#define ONE                             0x10000
-#define TURN                            0x10000
-#define POINTS                          16384
-#define SUBPATHS                        1024
-#define EDGES                           16384
-#define CROSSINGS                       1024
-#define MAXWIDTH                        4096
-#define SAMPLES                         4
 #define DEPTH                           16
-#define CURVESTEPS                      32
-#define ARCSTEPS                        64
-#define ROUNDSTEPS                      16
-#define ATANS                           16
 #define PROPERTIES                      11
 #define STYLES                          8
 #define PAINT_NONE                      0
 #define PAINT_COLOR                     1
 #define PAINT_CURRENT                   2
-#define CAP_BUTT                        0
-#define CAP_ROUND                       1
-#define CAP_SQUARE                      2
-
-struct matrix
-{
-
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int f;
-
-};
 
 struct paint
 {
@@ -48,7 +23,7 @@ struct paint
 struct state
 {
 
-    struct matrix matrix;
+    struct svg_matrix matrix;
     struct paint fill;
     struct paint stroke;
     int strokewidth;
@@ -63,78 +38,11 @@ struct state
 
 };
 
-struct point
-{
-
-    int x;
-    int y;
-
-};
-
-struct subpath
-{
-
-    unsigned int start;
-    unsigned int count;
-    unsigned int closed;
-
-};
-
-struct edge
-{
-
-    int x0;
-    int y0;
-    int y1;
-    int slope;
-    int winding;
-
-};
-
-struct reader
-{
-
-    char *text;
-    unsigned int offset;
-
-};
-
-struct number
-{
-
-    int value;
-    unsigned int valid;
-
-};
-
-struct pen
-{
-
-    int x;
-    int y;
-    int startx;
-    int starty;
-    int controlx;
-    int controly;
-    unsigned int curve;
-    unsigned int needmove;
-
-};
-
 struct render
 {
 
-    struct svg_canvas *canvas;
+    struct svg svg;
     struct html_document *document;
-    struct point points[POINTS];
-    struct subpath subpaths[SUBPATHS];
-    struct edge edges[EDGES];
-    int coverage[MAXWIDTH];
-    int crossings[CROSSINGS];
-    int windings[CROSSINGS];
-    unsigned int pointcount;
-    unsigned int subpathcount;
-    unsigned int edgecount;
     int viewwidth;
     int viewheight;
     char *styles[STYLES];
@@ -143,266 +51,13 @@ struct render
 
 };
 
-static int atans[ATANS] = {8192, 4836, 2555, 1297, 651, 326, 163, 81, 41, 20, 10, 5, 3, 1, 1, 0};
 static char *properties[PROPERTIES] = {"fill", "stroke", "stroke-width", "fill-opacity", "stroke-opacity", "opacity", "fill-rule", "stroke-linecap", "color", "display", "visibility"};
 static struct render raster;
 
-static unsigned int magnitude(int value)
+static struct svg_number number(int value, unsigned int valid)
 {
 
-    return (value < 0) ? (unsigned int)-value : (unsigned int)value;
-
-}
-
-static int mulfix(int a, int b)
-{
-
-    unsigned int ua = magnitude(a);
-    unsigned int ub = magnitude(b);
-    unsigned int result = ((ua >> 16) * (ub >> 16) << 16) + (ua >> 16) * (ub & 0xFFFF) + (ua & 0xFFFF) * (ub >> 16) + ((ua & 0xFFFF) * (ub & 0xFFFF) >> 16);
-
-    return ((a < 0) != (b < 0)) ? -(int)result : (int)result;
-
-}
-
-static int divfix(int a, int b)
-{
-
-    unsigned int ua = magnitude(a);
-    unsigned int ub = magnitude(b);
-    unsigned int quotient;
-    unsigned int remainder;
-    unsigned int i;
-
-    if (!ub)
-        return 0;
-
-    quotient = ua / ub;
-    remainder = ua % ub;
-
-    if (quotient >= 0x8000)
-        return ((a < 0) != (b < 0)) ? -0x7FFFFFFF : 0x7FFFFFFF;
-
-    for (i = 0; i < 16; i++)
-    {
-
-        remainder <<= 1;
-        quotient <<= 1;
-
-        if (remainder >= ub)
-        {
-
-            remainder -= ub;
-            quotient |= 1;
-
-        }
-
-    }
-
-    return ((a < 0) != (b < 0)) ? -(int)quotient : (int)quotient;
-
-}
-
-static unsigned int isqrt(unsigned int value)
-{
-
-    unsigned int root = 0;
-    unsigned int bit = 1 << 30;
-
-    while (bit > value)
-        bit >>= 2;
-
-    while (bit)
-    {
-
-        if (value >= root + bit)
-        {
-
-            value -= root + bit;
-            root = (root >> 1) + bit;
-
-        }
-
-        else
-        {
-
-            root >>= 1;
-
-        }
-
-        bit >>= 2;
-
-    }
-
-    return root;
-
-}
-
-static int sqrtfix(int value)
-{
-
-    if (value <= 0)
-        return 0;
-
-    return (value < 0x8000) ? (int)isqrt((unsigned int)value << 16) : (int)isqrt(value) << 8;
-
-}
-
-static struct point rotation(int angle)
-{
-
-    struct point result;
-    unsigned int quadrant = (angle & (TURN - 1)) >> 14;
-    int z = angle & 0x3FFF;
-    int x = 39797;
-    int y = 0;
-    unsigned int i;
-
-    for (i = 0; i < ATANS; i++)
-    {
-
-        int next;
-
-        if (z >= 0)
-        {
-
-            next = x - (y >> i);
-            y += x >> i;
-            z -= atans[i];
-
-        }
-
-        else
-        {
-
-            next = x + (y >> i);
-            y -= x >> i;
-            z += atans[i];
-
-        }
-
-        x = next;
-
-    }
-
-    result.x = (quadrant == 0) ? x : (quadrant == 1) ? -y : (quadrant == 2) ? -x : y;
-    result.y = (quadrant == 0) ? y : (quadrant == 1) ? x : (quadrant == 2) ? -y : -x;
-
-    return result;
-
-}
-
-static int direction(int x, int y)
-{
-
-    int z = 0;
-    unsigned int i;
-
-    if (!x && !y)
-        return 0;
-
-    while (magnitude(x) > 0x10000000 || magnitude(y) > 0x10000000)
-    {
-
-        x >>= 1;
-        y >>= 1;
-
-    }
-
-    if (x < 0)
-    {
-
-        x = -x;
-        y = -y;
-        z = TURN / 2;
-
-    }
-
-    for (i = 0; i < ATANS; i++)
-    {
-
-        int next;
-
-        if (y > 0)
-        {
-
-            next = x + (y >> i);
-            y -= x >> i;
-            z += atans[i];
-
-        }
-
-        else
-        {
-
-            next = x - (y >> i);
-            y += x >> i;
-            z -= atans[i];
-
-        }
-
-        x = next;
-
-    }
-
-    return z & (TURN - 1);
-
-}
-
-static void setmatrix(struct matrix *matrix, int a, int b, int c, int d, int e, int f)
-{
-
-    matrix->a = a;
-    matrix->b = b;
-    matrix->c = c;
-    matrix->d = d;
-    matrix->e = e;
-    matrix->f = f;
-
-}
-
-static void multiply(struct matrix *matrix, struct matrix *by)
-{
-
-    struct matrix result;
-
-    result.a = mulfix(matrix->a, by->a) + mulfix(matrix->c, by->b);
-    result.b = mulfix(matrix->b, by->a) + mulfix(matrix->d, by->b);
-    result.c = mulfix(matrix->a, by->c) + mulfix(matrix->c, by->d);
-    result.d = mulfix(matrix->b, by->c) + mulfix(matrix->d, by->d);
-    result.e = mulfix(matrix->a, by->e) + mulfix(matrix->c, by->f) + matrix->e;
-    result.f = mulfix(matrix->b, by->e) + mulfix(matrix->d, by->f) + matrix->f;
-
-    buffer_copy(matrix, &result, sizeof (struct matrix));
-
-}
-
-static struct point project(struct matrix *matrix, int x, int y)
-{
-
-    struct point result;
-
-    result.x = (mulfix(matrix->a, x) + mulfix(matrix->c, y) + matrix->e) >> 8;
-    result.y = (mulfix(matrix->b, x) + mulfix(matrix->d, y) + matrix->f) >> 8;
-
-    return result;
-
-}
-
-static void skipseparators(struct reader *reader)
-{
-
-    char c = reader->text[reader->offset];
-
-    while (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ',')
-        c = reader->text[++reader->offset];
-
-}
-
-static struct number number(int value, unsigned int valid)
-{
-
-    struct number result;
+    struct svg_number result;
 
     result.value = value;
     result.valid = valid;
@@ -411,111 +66,21 @@ static struct number number(int value, unsigned int valid)
 
 }
 
-static struct number readnumber(struct reader *reader)
+static struct svg_number readlength(char *text, int base)
 {
 
-    char *text = reader->text;
-    unsigned int offset;
-    unsigned int digits = 0;
-    unsigned int negative = 0;
-    int whole = 0;
-    int fraction = 0;
-    int scale = 1;
-    int exponent = 0;
-    int value;
-
-    skipseparators(reader);
-
-    offset = reader->offset;
-
-    if (text[offset] == '+' || text[offset] == '-')
-        negative = text[offset++] == '-';
-
-    for (; cstring_isdigit(text[offset]); offset++, digits++)
-        whole = (whole < 32767) ? whole * 10 + text[offset] - '0' : 32767;
-
-    if (text[offset] == '.')
-    {
-
-        for (offset++; cstring_isdigit(text[offset]); offset++, digits++)
-        {
-
-            if (scale < 10000)
-            {
-
-                fraction = fraction * 10 + text[offset] - '0';
-                scale *= 10;
-
-            }
-
-        }
-
-    }
-
-    if (!digits)
-        return number(0, 0);
-
-    if ((text[offset] == 'e' || text[offset] == 'E') && (cstring_isdigit(text[offset + 1]) || ((text[offset + 1] == '-' || text[offset + 1] == '+') && cstring_isdigit(text[offset + 2]))))
-    {
-
-        unsigned int below = text[offset + 1] == '-';
-
-        offset += (cstring_isdigit(text[offset + 1])) ? 1 : 2;
-
-        for (; cstring_isdigit(text[offset]); offset++)
-            exponent = (exponent < 100) ? exponent * 10 + text[offset] - '0' : 100;
-
-        exponent = (below) ? -exponent : exponent;
-
-    }
-
-    value = ((whole > 32767) ? 32767 : whole) * ONE + fraction * ONE / scale;
-
-    for (; exponent > 0 && value < 0x7FFFFFFF / 10; exponent--)
-        value *= 10;
-
-    for (; exponent < 0; exponent++)
-        value /= 10;
-
-    reader->offset = offset;
-
-    return number((negative) ? -value : value, 1);
-
-}
-
-static struct number readflag(struct reader *reader)
-{
-
-    char c;
-
-    skipseparators(reader);
-
-    c = reader->text[reader->offset];
-
-    if (c != '0' && c != '1')
-        return number(0, 0);
-
-    reader->offset++;
-
-    return number(c == '1', 1);
-
-}
-
-static struct number readlength(char *text, int base)
-{
-
-    struct reader reader;
-    struct number result;
+    struct svg_reader reader;
+    struct svg_number result;
 
     if (!text)
         return number(0, 0);
 
     reader.text = text;
     reader.offset = 0;
-    result = readnumber(&reader);
+    result = svg_readnumber(&reader);
 
     if (result.valid && text[reader.offset] == '%')
-        result.value = mulfix(base, result.value / 100);
+        result.value = svg_mulfix(base, result.value / 100);
 
     return result;
 
@@ -524,7 +89,7 @@ static struct number readlength(char *text, int base)
 static int getlength(struct render *render, unsigned int node, char *name, int base, int fallback)
 {
 
-    struct number result = readlength(html_getattribute(render->document, node, name), base);
+    struct svg_number result = readlength(html_getattribute(render->document, node, name), base);
 
     return (result.valid) ? result.value : fallback;
 
@@ -698,8 +263,8 @@ static void parsepaint(struct render *render, struct state *state, struct paint 
 static unsigned int readopacity(char *text, unsigned int length)
 {
 
-    struct reader reader;
-    struct number result;
+    struct svg_reader reader;
+    struct svg_number result;
     char buffer[32];
 
     if (length >= 32)
@@ -710,7 +275,7 @@ static unsigned int readopacity(char *text, unsigned int length)
     buffer[length] = '\0';
     reader.text = buffer;
     reader.offset = 0;
-    result = readnumber(&reader);
+    result = svg_readnumber(&reader);
 
     if (!result.valid)
         return 255;
@@ -718,7 +283,7 @@ static unsigned int readopacity(char *text, unsigned int length)
     if (buffer[reader.offset] == '%')
         result.value /= 100;
 
-    return (result.value <= 0) ? 0 : (result.value >= ONE) ? 255 : (unsigned int)(result.value * 255 / ONE);
+    return (result.value <= 0) ? 0 : (result.value >= SVG_ONE) ? 255 : (unsigned int)(result.value * 255 / SVG_ONE);
 
 }
 
@@ -761,8 +326,8 @@ static void apply(struct render *render, struct state *state, char *name, unsign
     {
 
         char buffer[32];
-        struct reader reader;
-        struct number width;
+        struct svg_reader reader;
+        struct svg_number width;
 
         if (length >= 32)
             return;
@@ -772,7 +337,7 @@ static void apply(struct render *render, struct state *state, char *name, unsign
         buffer[length] = '\0';
         reader.text = buffer;
         reader.offset = 0;
-        width = readnumber(&reader);
+        width = svg_readnumber(&reader);
 
         if (width.valid && width.value >= 0)
             state->strokewidth = width.value;
@@ -810,7 +375,7 @@ static void apply(struct render *render, struct state *state, char *name, unsign
     else if (matchvalue(name, namelength, "stroke-linecap"))
     {
 
-        state->cap = (matchvalue(value, length, "round")) ? CAP_ROUND : (matchvalue(value, length, "square")) ? CAP_SQUARE : CAP_BUTT;
+        state->cap = (matchvalue(value, length, "round")) ? SVG_CAP_ROUND : (matchvalue(value, length, "square")) ? SVG_CAP_SQUARE : SVG_CAP_BUTT;
 
     }
 
@@ -976,127 +541,6 @@ static void findstyles(struct render *render, unsigned int root)
 
 }
 
-static void parsetransform(struct matrix *matrix, char *text)
-{
-
-    struct reader reader;
-
-    reader.text = text;
-    reader.offset = 0;
-
-    while (text[reader.offset])
-    {
-
-        unsigned int start;
-        unsigned int length;
-        struct matrix by;
-        int values[6];
-        unsigned int count = 0;
-
-        skipseparators(&reader);
-
-        start = reader.offset;
-
-        while (cstring_isalpha(text[reader.offset]))
-            reader.offset++;
-
-        length = reader.offset - start;
-
-        skipseparators(&reader);
-
-        if (!length || text[reader.offset] != '(')
-            return;
-
-        reader.offset++;
-
-        while (count < 6)
-        {
-
-            struct number value = readnumber(&reader);
-
-            if (!value.valid)
-                break;
-
-            values[count++] = value.value;
-
-        }
-
-        skipseparators(&reader);
-
-        if (text[reader.offset] != ')')
-            return;
-
-        reader.offset++;
-
-        setmatrix(&by, ONE, 0, 0, ONE, 0, 0);
-
-        if (matchvalue(text + start, length, "matrix") && count == 6)
-        {
-
-            setmatrix(&by, values[0], values[1], values[2], values[3], values[4], values[5]);
-
-        }
-
-        else if (matchvalue(text + start, length, "translate") && count)
-        {
-
-            setmatrix(&by, ONE, 0, 0, ONE, values[0], (count > 1) ? values[1] : 0);
-
-        }
-
-        else if (matchvalue(text + start, length, "scale") && count)
-        {
-
-            setmatrix(&by, values[0], 0, 0, (count > 1) ? values[1] : values[0], 0, 0);
-
-        }
-
-        else if (matchvalue(text + start, length, "rotate") && count)
-        {
-
-            struct point unit = rotation(mulfix(values[0], 11930465) >> 16);
-
-            if (count == 3)
-            {
-
-                struct matrix shift;
-
-                setmatrix(&shift, ONE, 0, 0, ONE, values[1], values[2]);
-                multiply(matrix, &shift);
-
-            }
-
-            setmatrix(&by, unit.x, unit.y, -unit.y, unit.x, 0, 0);
-
-            if (count == 3)
-            {
-
-                multiply(matrix, &by);
-                setmatrix(&by, ONE, 0, 0, ONE, -values[1], -values[2]);
-
-            }
-
-        }
-
-        else if ((matchvalue(text + start, length, "skewX") || matchvalue(text + start, length, "skewY")) && count)
-        {
-
-            struct point unit = rotation(mulfix(values[0], 11930465) >> 16);
-            int tangent = divfix(unit.y, unit.x);
-
-            if (text[start + 4] == 'X')
-                by.c = tangent;
-            else
-                by.b = tangent;
-
-        }
-
-        multiply(matrix, &by);
-
-    }
-
-}
-
 static void applyattributes(struct render *render, struct state *state, unsigned int node)
 {
 
@@ -1126,7 +570,7 @@ static void applyattributes(struct render *render, struct state *state, unsigned
     value = html_getattribute(render->document, node, "transform");
 
     if (value)
-        parsetransform(&state->matrix, value);
+        svg_parsetransform(&state->matrix, value);
 
 }
 
@@ -1179,472 +623,6 @@ static unsigned int findstopcolor(struct render *render, unsigned int node, unsi
 
 }
 
-static void addpoint(struct render *render, struct point point)
-{
-
-    struct subpath *subpath;
-
-    if (!render->subpathcount || render->pointcount >= POINTS)
-        return;
-
-    subpath = &render->subpaths[render->subpathcount - 1];
-
-    if (subpath->count && render->points[render->pointcount - 1].x == point.x && render->points[render->pointcount - 1].y == point.y)
-        return;
-
-    render->points[render->pointcount].x = point.x;
-    render->points[render->pointcount].y = point.y;
-    render->pointcount++;
-    subpath->count++;
-
-}
-
-static void moveto(struct render *render, struct state *state, int x, int y)
-{
-
-    struct subpath *subpath;
-
-    if (render->subpathcount && render->subpaths[render->subpathcount - 1].count < 2)
-    {
-
-        render->pointcount -= render->subpaths[render->subpathcount - 1].count;
-        render->subpathcount--;
-
-    }
-
-    if (render->subpathcount >= SUBPATHS)
-        return;
-
-    subpath = &render->subpaths[render->subpathcount++];
-    subpath->start = render->pointcount;
-    subpath->count = 0;
-    subpath->closed = 0;
-
-    addpoint(render, project(&state->matrix, x, y));
-
-}
-
-static void lineto(struct render *render, struct state *state, int x, int y)
-{
-
-    if (!render->subpathcount)
-        moveto(render, state, x, y);
-    else
-        addpoint(render, project(&state->matrix, x, y));
-
-}
-
-static void closepath(struct render *render)
-{
-
-    if (render->subpathcount)
-        render->subpaths[render->subpathcount - 1].closed = 1;
-
-}
-
-static int lerp(int a, int b, int step, int steps)
-{
-
-    return a + (b - a) * step / steps;
-
-}
-
-static void cubic(struct render *render, struct state *state, struct pen *pen, int x1, int y1, int x2, int y2, int x3, int y3)
-{
-
-    struct point p0 = project(&state->matrix, pen->x, pen->y);
-    struct point p1 = project(&state->matrix, x1, y1);
-    struct point p2 = project(&state->matrix, x2, y2);
-    struct point p3 = project(&state->matrix, x3, y3);
-    unsigned int length = (magnitude(p1.x - p0.x) + magnitude(p1.y - p0.y) + magnitude(p2.x - p1.x) + magnitude(p2.y - p1.y) + magnitude(p3.x - p2.x) + magnitude(p3.y - p2.y)) >> 8;
-    int steps = (length / 3 < 2) ? 2 : (length / 3 > CURVESTEPS) ? CURVESTEPS : (int)length / 3;
-    int i;
-
-    for (i = 1; i <= steps; i++)
-    {
-
-        struct point point;
-        int abx = lerp(p0.x, p1.x, i, steps);
-        int aby = lerp(p0.y, p1.y, i, steps);
-        int bcx = lerp(p1.x, p2.x, i, steps);
-        int bcy = lerp(p1.y, p2.y, i, steps);
-        int cdx = lerp(p2.x, p3.x, i, steps);
-        int cdy = lerp(p2.y, p3.y, i, steps);
-        int abcx = lerp(abx, bcx, i, steps);
-        int abcy = lerp(aby, bcy, i, steps);
-        int bcdx = lerp(bcx, cdx, i, steps);
-        int bcdy = lerp(bcy, cdy, i, steps);
-
-        point.x = lerp(abcx, bcdx, i, steps);
-        point.y = lerp(abcy, bcdy, i, steps);
-
-        addpoint(render, point);
-
-    }
-
-    pen->x = x3;
-    pen->y = y3;
-
-}
-
-static void ellipse(struct render *render, struct state *state, int cx, int cy, int rx, int ry, int from, int sweep, int cosine, int sine)
-{
-
-    int steps = (int)(magnitude(sweep) * ARCSTEPS / TURN) + 1;
-    int i;
-
-    for (i = 1; i <= steps; i++)
-    {
-
-        struct point unit = rotation(from + sweep * i / steps);
-        int px = mulfix(rx, unit.x);
-        int py = mulfix(ry, unit.y);
-
-        lineto(render, state, cx + mulfix(cosine, px) - mulfix(sine, py), cy + mulfix(sine, px) + mulfix(cosine, py));
-
-    }
-
-}
-
-static void arc(struct render *render, struct state *state, struct pen *pen, int rx, int ry, int angle, unsigned int large, unsigned int sweep, int x, int y)
-{
-
-    struct point axis = rotation(mulfix(angle, 11930465) >> 16);
-    int dx = (pen->x - x) / 2;
-    int dy = (pen->y - y) / 2;
-    int x1 = mulfix(axis.x, dx) + mulfix(axis.y, dy);
-    int y1 = mulfix(axis.x, dy) - mulfix(axis.y, dx);
-    int ux;
-    int uy;
-    int lambda;
-    int factor;
-    int cx;
-    int cy;
-    int from;
-    int delta;
-
-    rx = (int)magnitude(rx);
-    ry = (int)magnitude(ry);
-
-    if (!rx || !ry || (pen->x == x && pen->y == y))
-    {
-
-        lineto(render, state, x, y);
-
-        pen->x = x;
-        pen->y = y;
-
-        return;
-
-    }
-
-    ux = divfix(x1, rx);
-    uy = divfix(y1, ry);
-    lambda = mulfix(ux, ux) + mulfix(uy, uy);
-
-    if (lambda > ONE)
-    {
-
-        int scale = sqrtfix(lambda);
-
-        rx = mulfix(rx, scale);
-        ry = mulfix(ry, scale);
-        ux = divfix(ux, scale);
-        uy = divfix(uy, scale);
-        lambda = mulfix(ux, ux) + mulfix(uy, uy);
-
-    }
-
-    factor = (lambda > 0 && lambda < ONE) ? sqrtfix(divfix(ONE - lambda, lambda)) : 0;
-
-    if (large == sweep)
-        factor = -factor;
-
-    cx = mulfix(factor, uy);
-    cy = -mulfix(factor, ux);
-    from = direction(ux - cx, uy - cy);
-    delta = (direction(-ux - cx, -uy - cy) - from) & (TURN - 1);
-
-    if (!sweep && delta)
-        delta -= TURN;
-
-    {
-
-        int tx = mulfix(rx, cx);
-        int ty = mulfix(ry, cy);
-        int centerx = mulfix(axis.x, tx) - mulfix(axis.y, ty) + (pen->x + x) / 2;
-        int centery = mulfix(axis.y, tx) + mulfix(axis.x, ty) + (pen->y + y) / 2;
-
-        ellipse(render, state, centerx, centery, rx, ry, from, delta, axis.x, axis.y);
-
-    }
-
-    lineto(render, state, x, y);
-
-    pen->x = x;
-    pen->y = y;
-
-}
-
-static unsigned int readpoints(struct reader *reader, int *values, unsigned int count)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        struct number value = readnumber(reader);
-
-        if (!value.valid)
-            return 0;
-
-        values[i] = value.value;
-
-    }
-
-    return 1;
-
-}
-
-static unsigned int pathcommand(struct render *render, struct state *state, struct reader *reader, struct pen *pen, char command)
-{
-
-    unsigned int relative = command >= 'a';
-    char upper = (relative) ? command - 32 : command;
-    int ox = (relative) ? pen->x : 0;
-    int oy = (relative) ? pen->y : 0;
-    int values[7];
-    unsigned int curve = 0;
-
-    if (upper != 'M' && upper != 'Z' && pen->needmove)
-    {
-
-        moveto(render, state, pen->startx, pen->starty);
-
-        pen->needmove = 0;
-
-    }
-
-    switch (upper)
-    {
-
-    case 'M':
-        if (!readpoints(reader, values, 2))
-            return 0;
-
-        pen->x = pen->startx = values[0] + ox;
-        pen->y = pen->starty = values[1] + oy;
-        pen->needmove = 0;
-
-        moveto(render, state, pen->x, pen->y);
-
-        break;
-
-    case 'L':
-        if (!readpoints(reader, values, 2))
-            return 0;
-
-        pen->x = values[0] + ox;
-        pen->y = values[1] + oy;
-
-        lineto(render, state, pen->x, pen->y);
-
-        break;
-
-    case 'H':
-        if (!readpoints(reader, values, 1))
-            return 0;
-
-        pen->x = values[0] + ox;
-
-        lineto(render, state, pen->x, pen->y);
-
-        break;
-
-    case 'V':
-        if (!readpoints(reader, values, 1))
-            return 0;
-
-        pen->y = values[0] + oy;
-
-        lineto(render, state, pen->x, pen->y);
-
-        break;
-
-    case 'C':
-        if (!readpoints(reader, values, 6))
-            return 0;
-
-        pen->controlx = values[2] + ox;
-        pen->controly = values[3] + oy;
-        curve = 1;
-
-        cubic(render, state, pen, values[0] + ox, values[1] + oy, pen->controlx, pen->controly, values[4] + ox, values[5] + oy);
-
-        break;
-
-    case 'S':
-        if (!readpoints(reader, values, 4))
-            return 0;
-
-        values[4] = (pen->curve == 1) ? 2 * pen->x - pen->controlx : pen->x;
-        values[5] = (pen->curve == 1) ? 2 * pen->y - pen->controly : pen->y;
-        pen->controlx = values[0] + ox;
-        pen->controly = values[1] + oy;
-        curve = 1;
-
-        cubic(render, state, pen, values[4], values[5], pen->controlx, pen->controly, values[2] + ox, values[3] + oy);
-
-        break;
-
-    case 'Q':
-    case 'T':
-        if (upper == 'Q' && !readpoints(reader, values, 4))
-            return 0;
-
-        if (upper == 'T')
-        {
-
-            if (!readpoints(reader, values + 2, 2))
-                return 0;
-
-            values[0] = (pen->curve == 2) ? 2 * pen->x - pen->controlx - ox : pen->x - ox;
-            values[1] = (pen->curve == 2) ? 2 * pen->y - pen->controly - oy : pen->y - oy;
-
-        }
-
-        pen->controlx = values[0] + ox;
-        pen->controly = values[1] + oy;
-        curve = 2;
-
-        cubic(render, state, pen, pen->x + (pen->controlx - pen->x) * 2 / 3, pen->y + (pen->controly - pen->y) * 2 / 3, values[2] + ox + (pen->controlx - values[2] - ox) * 2 / 3, values[3] + oy + (pen->controly - values[3] - oy) * 2 / 3, values[2] + ox, values[3] + oy);
-
-        break;
-
-    case 'A':
-        {
-
-            struct number large;
-            struct number sweep;
-
-            if (!readpoints(reader, values, 3))
-                return 0;
-
-            large = readflag(reader);
-            sweep = readflag(reader);
-
-            if (!large.valid || !sweep.valid || !readpoints(reader, values + 3, 2))
-                return 0;
-
-            arc(render, state, pen, values[0], values[1], values[2], large.value, sweep.value, values[3] + ox, values[4] + oy);
-
-        }
-
-        break;
-
-    case 'Z':
-        closepath(render);
-
-        pen->x = pen->startx;
-        pen->y = pen->starty;
-        pen->needmove = 1;
-
-        break;
-
-    default:
-        return 0;
-
-    }
-
-    pen->curve = curve;
-
-    return 1;
-
-}
-
-static void parsepath(struct render *render, struct state *state, char *text)
-{
-
-    struct reader reader;
-    struct pen pen;
-    char command = 0;
-
-    reader.text = text;
-    reader.offset = 0;
-
-    buffer_clear(&pen, sizeof (struct pen));
-
-    while (1)
-    {
-
-        char c;
-
-        skipseparators(&reader);
-
-        c = text[reader.offset];
-
-        if (!c)
-            break;
-
-        if (cstring_isalpha(c))
-        {
-
-            command = c;
-            reader.offset++;
-
-        }
-
-        else if (!command || command == 'Z' || command == 'z')
-        {
-
-            break;
-
-        }
-
-        if (!pathcommand(render, state, &reader, &pen, command))
-            break;
-
-        if (command == 'M')
-            command = 'L';
-        else if (command == 'm')
-            command = 'l';
-
-    }
-
-}
-
-static void parsepoints(struct render *render, struct state *state, char *text, unsigned int closed)
-{
-
-    struct reader reader;
-    unsigned int first = 1;
-
-    reader.text = text;
-    reader.offset = 0;
-
-    while (1)
-    {
-
-        int values[2];
-
-        if (!readpoints(&reader, values, 2))
-            break;
-
-        if (first)
-            moveto(render, state, values[0], values[1]);
-        else
-            lineto(render, state, values[0], values[1]);
-
-        first = 0;
-
-    }
-
-    if (closed)
-        closepath(render);
-
-}
-
 static void buildshape(struct render *render, struct state *state, unsigned int node)
 {
 
@@ -1657,7 +635,7 @@ static void buildshape(struct render *render, struct state *state, unsigned int 
         char *d = html_getattribute(render->document, node, "d");
 
         if (d)
-            parsepath(render, state, d);
+            svg_parsepath(&render->svg, &state->matrix, d);
 
     }
 
@@ -1679,28 +657,28 @@ static void buildshape(struct render *render, struct state *state, unsigned int 
         rx = (rx > w / 2) ? w / 2 : rx;
         ry = (ry > h / 2) ? h / 2 : ry;
 
-        moveto(render, state, x + rx, y);
-        lineto(render, state, x + w - rx, y);
+        svg_moveto(&render->svg, &state->matrix, x + rx, y);
+        svg_lineto(&render->svg, &state->matrix, x + w - rx, y);
 
         if (rx && ry)
-            ellipse(render, state, x + w - rx, y + ry, rx, ry, TURN * 3 / 4, TURN / 4, ONE, 0);
+            svg_ellipse(&render->svg, &state->matrix, x + w - rx, y + ry, rx, ry, SVG_TURN * 3 / 4, SVG_TURN / 4, SVG_ONE, 0);
 
-        lineto(render, state, x + w, y + h - ry);
-
-        if (rx && ry)
-            ellipse(render, state, x + w - rx, y + h - ry, rx, ry, 0, TURN / 4, ONE, 0);
-
-        lineto(render, state, x + rx, y + h);
+        svg_lineto(&render->svg, &state->matrix, x + w, y + h - ry);
 
         if (rx && ry)
-            ellipse(render, state, x + rx, y + h - ry, rx, ry, TURN / 4, TURN / 4, ONE, 0);
+            svg_ellipse(&render->svg, &state->matrix, x + w - rx, y + h - ry, rx, ry, 0, SVG_TURN / 4, SVG_ONE, 0);
 
-        lineto(render, state, x, y + ry);
+        svg_lineto(&render->svg, &state->matrix, x + rx, y + h);
 
         if (rx && ry)
-            ellipse(render, state, x + rx, y + ry, rx, ry, TURN / 2, TURN / 4, ONE, 0);
+            svg_ellipse(&render->svg, &state->matrix, x + rx, y + h - ry, rx, ry, SVG_TURN / 4, SVG_TURN / 4, SVG_ONE, 0);
 
-        closepath(render);
+        svg_lineto(&render->svg, &state->matrix, x, y + ry);
+
+        if (rx && ry)
+            svg_ellipse(&render->svg, &state->matrix, x + rx, y + ry, rx, ry, SVG_TURN / 2, SVG_TURN / 4, SVG_ONE, 0);
+
+        svg_closepath(&render->svg);
 
     }
 
@@ -1716,17 +694,17 @@ static void buildshape(struct render *render, struct state *state, unsigned int 
         if (rx <= 0 || ry <= 0)
             return;
 
-        moveto(render, state, cx + rx, cy);
-        ellipse(render, state, cx, cy, rx, ry, 0, TURN, ONE, 0);
-        closepath(render);
+        svg_moveto(&render->svg, &state->matrix, cx + rx, cy);
+        svg_ellipse(&render->svg, &state->matrix, cx, cy, rx, ry, 0, SVG_TURN, SVG_ONE, 0);
+        svg_closepath(&render->svg);
 
     }
 
     else if (matchname(render, node, "line"))
     {
 
-        moveto(render, state, getlength(render, node, "x1", width, 0), getlength(render, node, "y1", height, 0));
-        lineto(render, state, getlength(render, node, "x2", width, 0), getlength(render, node, "y2", height, 0));
+        svg_moveto(&render->svg, &state->matrix, getlength(render, node, "x1", width, 0), getlength(render, node, "y1", height, 0));
+        svg_lineto(&render->svg, &state->matrix, getlength(render, node, "x2", width, 0), getlength(render, node, "y2", height, 0));
 
     }
 
@@ -1736,336 +714,7 @@ static void buildshape(struct render *render, struct state *state, unsigned int 
         char *points = html_getattribute(render->document, node, "points");
 
         if (points)
-            parsepoints(render, state, points, matchname(render, node, "polygon"));
-
-    }
-
-}
-
-static void addedge(struct render *render, struct point a, struct point b)
-{
-
-    struct edge *edge;
-
-    if (a.y == b.y || render->edgecount >= EDGES)
-        return;
-
-    edge = &render->edges[render->edgecount++];
-
-    if (a.y < b.y)
-    {
-
-        edge->winding = 1;
-        edge->x0 = a.x;
-        edge->y0 = a.y;
-        edge->y1 = b.y;
-        edge->slope = ((b.x - a.x) << 8) / (b.y - a.y);
-
-    }
-
-    else
-    {
-
-        edge->winding = -1;
-        edge->x0 = b.x;
-        edge->y0 = b.y;
-        edge->y1 = a.y;
-        edge->slope = ((a.x - b.x) << 8) / (a.y - b.y);
-
-    }
-
-}
-
-static void fillsubpaths(struct render *render)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < render->subpathcount; i++)
-    {
-
-        struct subpath *subpath = &render->subpaths[i];
-        unsigned int j;
-
-        if (subpath->count < 2)
-            continue;
-
-        for (j = 0; j < subpath->count; j++)
-            addedge(render, render->points[subpath->start + j], render->points[subpath->start + (j + 1) % subpath->count]);
-
-    }
-
-}
-
-static void addround(struct render *render, struct point center, int radius)
-{
-
-    struct point previous;
-    unsigned int i;
-
-    previous.x = center.x + radius;
-    previous.y = center.y;
-
-    for (i = 1; i <= ROUNDSTEPS; i++)
-    {
-
-        struct point unit = rotation(-(int)(i * TURN / ROUNDSTEPS));
-        struct point next;
-
-        next.x = center.x + mulfix(unit.x, radius);
-        next.y = center.y + mulfix(unit.y, radius);
-
-        addedge(render, previous, next);
-
-        previous.x = next.x;
-        previous.y = next.y;
-
-    }
-
-}
-
-static void addsegment(struct render *render, struct point a, struct point b, int radius, unsigned int startcap, unsigned int endcap)
-{
-
-    int dx = b.x - a.x;
-    int dy = b.y - a.y;
-    unsigned int shift = 0;
-    unsigned int length;
-    struct point corners[4];
-    int nx;
-    int ny;
-    int ux;
-    int uy;
-
-    while ((magnitude(dx) >> shift) > 0x7FFF || (magnitude(dy) >> shift) > 0x7FFF)
-        shift++;
-
-    length = isqrt((unsigned int)((dx >> shift) * (dx >> shift)) + (unsigned int)((dy >> shift) * (dy >> shift)));
-
-    if (!length)
-        return;
-
-    ux = (dx >> shift) * 16384 / (int)length;
-    uy = (dy >> shift) * 16384 / (int)length;
-    nx = -uy * radius >> 14;
-    ny = ux * radius >> 14;
-
-    if (startcap)
-    {
-
-        a.x -= ux * radius >> 14;
-        a.y -= uy * radius >> 14;
-
-    }
-
-    if (endcap)
-    {
-
-        b.x += ux * radius >> 14;
-        b.y += uy * radius >> 14;
-
-    }
-
-    corners[0].x = a.x + nx;
-    corners[0].y = a.y + ny;
-    corners[1].x = b.x + nx;
-    corners[1].y = b.y + ny;
-    corners[2].x = b.x - nx;
-    corners[2].y = b.y - ny;
-    corners[3].x = a.x - nx;
-    corners[3].y = a.y - ny;
-
-    addedge(render, corners[0], corners[1]);
-    addedge(render, corners[1], corners[2]);
-    addedge(render, corners[2], corners[3]);
-    addedge(render, corners[3], corners[0]);
-
-}
-
-static void strokesubpaths(struct render *render, int radius, unsigned int cap)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < render->subpathcount; i++)
-    {
-
-        struct subpath *subpath = &render->subpaths[i];
-        unsigned int segments = (subpath->closed && subpath->count > 2) ? subpath->count : subpath->count - 1;
-        unsigned int j;
-
-        if (subpath->count < 2)
-            continue;
-
-        for (j = 0; j < segments; j++)
-        {
-
-            unsigned int square = cap == CAP_SQUARE && !subpath->closed;
-
-            addsegment(render, render->points[subpath->start + j], render->points[subpath->start + (j + 1) % subpath->count], radius, square && j == 0, square && j + 1 == segments);
-
-        }
-
-        for (j = 0; j < subpath->count; j++)
-        {
-
-            unsigned int end = !subpath->closed && (j == 0 || j + 1 == subpath->count);
-
-            if (!end || cap == CAP_ROUND)
-                addround(render, render->points[subpath->start + j], radius);
-
-        }
-
-    }
-
-}
-
-static unsigned int blend(unsigned int under, unsigned int color, unsigned int alpha)
-{
-
-    unsigned int rest = (under >> 24) * (255 - alpha) / 255;
-    unsigned int total = alpha + rest;
-    unsigned int red;
-    unsigned int green;
-    unsigned int blue;
-
-    if (!total)
-        return 0;
-
-    red = (((color >> 16) & 0xFF) * alpha + ((under >> 16) & 0xFF) * rest) / total;
-    green = (((color >> 8) & 0xFF) * alpha + ((under >> 8) & 0xFF) * rest) / total;
-    blue = ((color & 0xFF) * alpha + (under & 0xFF) * rest) / total;
-
-    return (total << 24) | (red << 16) | (green << 8) | blue;
-
-}
-
-static void cover(struct render *render, int from, int to)
-{
-
-    int limit = (int)render->canvas->width << 8;
-    int first;
-    int last;
-    int i;
-
-    from = (from < 0) ? 0 : from;
-    to = (to > limit) ? limit : to;
-
-    if (from >= to)
-        return;
-
-    first = from >> 8;
-    last = to >> 8;
-
-    if (first == last)
-    {
-
-        render->coverage[first] += (to - from) / SAMPLES;
-
-        return;
-
-    }
-
-    render->coverage[first] += (256 - (from & 0xFF)) / SAMPLES;
-
-    for (i = first + 1; i < last; i++)
-        render->coverage[i] += 256 / SAMPLES;
-
-    if (last < (int)render->canvas->width)
-        render->coverage[last] += (to & 0xFF) / SAMPLES;
-
-}
-
-static void scan(struct render *render, unsigned int color, unsigned int alpha, unsigned int evenodd)
-{
-
-    struct svg_canvas *canvas = render->canvas;
-    int top = 0x7FFFFFFF;
-    int bottom = 0;
-    int y;
-    unsigned int i;
-
-    if (!render->edgecount || !alpha)
-        return;
-
-    for (i = 0; i < render->edgecount; i++)
-    {
-
-        top = (render->edges[i].y0 < top) ? render->edges[i].y0 : top;
-        bottom = (render->edges[i].y1 > bottom) ? render->edges[i].y1 : bottom;
-
-    }
-
-    top = (top < 0) ? 0 : top >> 8;
-    bottom = ((bottom + 255) >> 8 > (int)canvas->height) ? (int)canvas->height : (bottom + 255) >> 8;
-
-    for (y = top; y < bottom; y++)
-    {
-
-        unsigned int *row = canvas->pixels + y * canvas->width;
-        int sample;
-        unsigned int x;
-
-        for (sample = 0; sample < SAMPLES; sample++)
-        {
-
-            int sy = (y << 8) + sample * (256 / SAMPLES) + 128 / SAMPLES;
-            unsigned int count = 0;
-            int winding = 0;
-
-            for (i = 0; i < render->edgecount && count < CROSSINGS; i++)
-            {
-
-                struct edge *edge = &render->edges[i];
-
-                if (edge->y0 <= sy && sy < edge->y1)
-                {
-
-                    int crossing = edge->x0 + ((sy - edge->y0) * edge->slope >> 8);
-                    unsigned int j = count++;
-
-                    while (j && render->crossings[j - 1] > crossing)
-                    {
-
-                        render->crossings[j] = render->crossings[j - 1];
-                        render->windings[j] = render->windings[j - 1];
-                        j--;
-
-                    }
-
-                    render->crossings[j] = crossing;
-                    render->windings[j] = edge->winding;
-
-                }
-
-            }
-
-            for (i = 0; i + 1 < count; i++)
-            {
-
-                winding += render->windings[i];
-
-                if ((evenodd) ? (winding & 1) : winding != 0)
-                    cover(render, render->crossings[i], render->crossings[i + 1]);
-
-            }
-
-        }
-
-        for (x = 0; x < canvas->width; x++)
-        {
-
-            if (render->coverage[x])
-            {
-
-                unsigned int amount = (render->coverage[x] > 256) ? 256 : render->coverage[x];
-
-                row[x] = blend(row[x], color, amount * alpha / 256);
-                render->coverage[x] = 0;
-
-            }
-
-        }
+            svg_parsepoints(&render->svg, &state->matrix, points, matchname(render, node, "polygon"));
 
     }
 
@@ -2089,10 +738,7 @@ static void drawshape(struct render *render, struct state *state)
 
         unsigned int color = resolve(&state->fill, state->color);
 
-        render->edgecount = 0;
-
-        fillsubpaths(render);
-        scan(render, color, (color >> 24) * state->fillopacity / 255 * state->opacity / 255, state->evenodd);
+        svg_fill(&render->svg, color, (color >> 24) * state->fillopacity / 255 * state->opacity / 255, state->evenodd);
 
     }
 
@@ -2100,22 +746,8 @@ static void drawshape(struct render *render, struct state *state)
     {
 
         unsigned int color = resolve(&state->stroke, state->color);
-        int scale = sqrtfix((int)magnitude(mulfix(state->matrix.a, state->matrix.d) - mulfix(state->matrix.b, state->matrix.c)));
-        int radius = mulfix(state->strokewidth, scale) >> 9;
-        unsigned int alpha = (color >> 24) * state->strokeopacity / 255 * state->opacity / 255;
 
-        if (radius < 64)
-        {
-
-            alpha = alpha * (unsigned int)radius / 64;
-            radius = 64;
-
-        }
-
-        render->edgecount = 0;
-
-        strokesubpaths(render, radius, state->cap);
-        scan(render, color, alpha, 0);
+        svg_stroke(&render->svg, &state->matrix, state->strokewidth, state->cap, color, (color >> 24) * state->strokeopacity / 255 * state->opacity / 255);
 
     }
 
@@ -2152,7 +784,7 @@ static void walkuse(struct render *render, unsigned int node, struct state *stat
 
     char *href = html_getattribute(render->document, node, "href");
     unsigned int target;
-    struct matrix shift;
+    struct svg_matrix shift;
 
     if (!href)
         href = html_getattribute(render->document, node, "xlink:href");
@@ -2165,8 +797,8 @@ static void walkuse(struct render *render, unsigned int node, struct state *stat
     if (!target || target == node)
         return;
 
-    setmatrix(&shift, ONE, 0, 0, ONE, getlength(render, node, "x", render->viewwidth, 0), getlength(render, node, "y", render->viewheight, 0));
-    multiply(&state->matrix, &shift);
+    svg_setmatrix(&shift, SVG_ONE, 0, 0, SVG_ONE, getlength(render, node, "x", render->viewwidth, 0), getlength(render, node, "y", render->viewheight, 0));
+    svg_multiply(&state->matrix, &shift);
 
     if (matchname(render, target, "symbol"))
     {
@@ -2205,10 +837,10 @@ static void walk(struct render *render, unsigned int node, struct state *parent,
         if (matchname(render, node, "svg"))
         {
 
-            struct matrix shift;
+            struct svg_matrix shift;
 
-            setmatrix(&shift, ONE, 0, 0, ONE, getlength(render, node, "x", render->viewwidth, 0), getlength(render, node, "y", render->viewheight, 0));
-            multiply(&state.matrix, &shift);
+            svg_setmatrix(&shift, SVG_ONE, 0, 0, SVG_ONE, getlength(render, node, "x", render->viewwidth, 0), getlength(render, node, "y", render->viewheight, 0));
+            svg_multiply(&state.matrix, &shift);
 
         }
 
@@ -2247,8 +879,7 @@ static void walk(struct render *render, unsigned int node, struct state *parent,
     else
     {
 
-        render->pointcount = 0;
-        render->subpathcount = 0;
+        svg_reset(&render->svg);
 
         buildshape(render, &state, node);
         drawshape(render, &state);
@@ -2274,18 +905,18 @@ unsigned int svg_findroot(struct html_document *document)
 
 }
 
-static struct number readsize(char *text, unsigned int fontsize)
+static struct svg_number readsize(char *text, unsigned int fontsize)
 {
 
-    struct reader reader;
-    struct number result;
+    struct svg_reader reader;
+    struct svg_number result;
 
     if (!text)
         return number(0, 0);
 
     reader.text = text;
     reader.offset = 0;
-    result = readnumber(&reader);
+    result = svg_readnumber(&reader);
 
     if (!result.valid || result.value <= 0 || text[reader.offset] == '%')
         return number(0, 0);
@@ -2293,7 +924,7 @@ static struct number readsize(char *text, unsigned int fontsize)
     if (text[reader.offset] == 'e' && text[reader.offset + 1] == 'm')
         result.value *= (int)fontsize;
 
-    return number((result.value + ONE / 2) >> 16, 1);
+    return number((result.value + SVG_ONE / 2) >> 16, 1);
 
 }
 
@@ -2301,8 +932,8 @@ struct svg_size svg_measure(struct html_document *document, unsigned int root, u
 {
 
     struct svg_size size;
-    struct number width = readsize(html_getattribute(document, root, "width"), fontsize);
-    struct number height = readsize(html_getattribute(document, root, "height"), fontsize);
+    struct svg_number width = readsize(html_getattribute(document, root, "width"), fontsize);
+    struct svg_number height = readsize(html_getattribute(document, root, "height"), fontsize);
     char *viewbox = html_getattribute(document, root, "viewbox");
     int ratiowidth = 0;
     int ratioheight = 0;
@@ -2310,13 +941,13 @@ struct svg_size svg_measure(struct html_document *document, unsigned int root, u
     if (viewbox)
     {
 
-        struct reader reader;
+        struct svg_reader reader;
         int values[4];
 
         reader.text = viewbox;
         reader.offset = 0;
 
-        if (readpoints(&reader, values, 4) && values[2] > 0 && values[3] > 0)
+        if (svg_readpoints(&reader, values, 4) && values[2] > 0 && values[3] > 0)
         {
 
             ratiowidth = values[2];
@@ -2361,10 +992,12 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
     int width = (int)canvas->width << 16;
     int height = (int)canvas->height << 16;
 
-    if (!canvas->width || canvas->width > MAXWIDTH || !canvas->height)
+    if (!canvas->width || canvas->width > SVG_WIDTH || !canvas->height)
         return;
 
-    raster.canvas = canvas;
+    raster.svg.pixels = canvas->pixels;
+    raster.svg.width = canvas->width;
+    raster.svg.height = canvas->height;
     raster.document = document;
     raster.viewwidth = width;
     raster.viewheight = height;
@@ -2372,12 +1005,12 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
     findstyles(&raster, root);
 
     buffer_clear(&state, sizeof (struct state));
-    setmatrix(&state.matrix, ONE, 0, 0, ONE, 0, 0);
+    svg_setmatrix(&state.matrix, SVG_ONE, 0, 0, SVG_ONE, 0, 0);
 
     state.fill.kind = PAINT_COLOR;
     state.fill.color = 0xFF000000;
     state.stroke.kind = PAINT_NONE;
-    state.strokewidth = ONE;
+    state.strokewidth = SVG_ONE;
     state.color = color;
     state.fillopacity = 255;
     state.strokeopacity = 255;
@@ -2388,17 +1021,17 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
     if (viewbox)
     {
 
-        struct reader reader;
+        struct svg_reader reader;
         int values[4];
 
         reader.text = viewbox;
         reader.offset = 0;
 
-        if (readpoints(&reader, values, 4) && values[2] > 0 && values[3] > 0)
+        if (svg_readpoints(&reader, values, 4) && values[2] > 0 && values[3] > 0)
         {
 
-            int sx = divfix(width, values[2]);
-            int sy = divfix(height, values[3]);
+            int sx = svg_divfix(width, values[2]);
+            int sy = svg_divfix(height, values[3]);
 
             if (!(aspect && cstring_match(aspect, "none")))
             {
@@ -2411,7 +1044,7 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
 
             }
 
-            setmatrix(&state.matrix, sx, 0, 0, sy, (width - mulfix(values[2], sx)) / 2 - mulfix(values[0], sx), (height - mulfix(values[3], sy)) / 2 - mulfix(values[1], sy));
+            svg_setmatrix(&state.matrix, sx, 0, 0, sy, (width - svg_mulfix(values[2], sx)) / 2 - svg_mulfix(values[0], sx), (height - svg_mulfix(values[3], sy)) / 2 - svg_mulfix(values[1], sy));
 
             raster.viewwidth = values[2];
             raster.viewheight = values[3];

@@ -3324,6 +3324,7 @@ static void initstyle(struct css_style *style)
     style->liststyle = CSS_LIST_DISC;
     style->width.unit = CSS_UNIT_AUTO;
     style->height.unit = CSS_UNIT_AUTO;
+    style->minwidth.unit = CSS_UNIT_AUTO;
     style->maxwidth.unit = CSS_UNIT_NONE;
     style->maxheight.unit = CSS_UNIT_NONE;
     style->basis.unit = CSS_UNIT_AUTO;
@@ -3588,7 +3589,7 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_MINWIDTH:
-        setlength(context, &style->minwidth, value, 1);
+        setlength(context, &style->minwidth, value, 0);
 
         break;
 

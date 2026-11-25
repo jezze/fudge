@@ -8,6 +8,7 @@
 #define TYPE_PCX                        0
 #define TYPE_PNG                        1
 #define TYPE_TOFFEE                     2
+#define TYPE_JPEG                       3
 
 static char source[1024];
 static unsigned int paths;
@@ -17,6 +18,7 @@ static unsigned int width;
 static unsigned int height;
 static unsigned int *pixels;
 static struct png png;
+static struct jpeg jpeg;
 static unsigned char colormap[768];
 static unsigned char rawline[ROWSIZE * 2];
 static unsigned char line[ROWSIZE];
@@ -53,6 +55,44 @@ static unsigned int decodepng(void)
     {
 
         if (!png_readrow(&png, pixels + y * width))
+            return 0;
+
+    }
+
+    return 1;
+
+}
+
+static unsigned int readjpeg(struct jpeg *jpeg, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return fs_read_full(1, filetarget, fileid, buffer, count, offset);
+
+}
+
+static unsigned int openjpeg(void)
+{
+
+    /* a progressive jpeg needs memory for its coefficients that this program does not have */
+    if (!jpeg_open(&jpeg, readjpeg) || jpeg.needed)
+        return 0;
+
+    width = jpeg.width;
+    height = jpeg.height;
+
+    return 1;
+
+}
+
+static unsigned int decodejpeg(void)
+{
+
+    unsigned int y;
+
+    for (y = 0; y < height; y++)
+    {
+
+        if (!jpeg_readrow(&jpeg, pixels + y * width))
             return 0;
 
     }
@@ -263,6 +303,9 @@ static unsigned int gettype(char *path)
     if (length > 4 && cstring_match(path + length - 4, ".tof"))
         return TYPE_TOFFEE;
 
+    if ((length > 4 && cstring_match(path + length - 4, ".jpg")) || (length > 5 && cstring_match(path + length - 5, ".jpeg")))
+        return TYPE_JPEG;
+
     return TYPE_PCX;
 
 }
@@ -278,6 +321,9 @@ static unsigned int open(unsigned int type, struct pcx_header *header)
 
     case TYPE_TOFFEE:
         return opentoffee();
+
+    case TYPE_JPEG:
+        return openjpeg();
 
     }
 
@@ -296,6 +342,9 @@ static unsigned int decode(unsigned int type, struct pcx_header *header)
 
     case TYPE_TOFFEE:
         return decodetoffee();
+
+    case TYPE_JPEG:
+        return decodejpeg();
 
     }
 

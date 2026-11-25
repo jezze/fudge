@@ -2,8 +2,10 @@ L:=\
     $(DIR_LIB)/image/image.a \
 
 O:=\
+    $(DIR_LIB)/image/jpeg.o \
     $(DIR_LIB)/image/pcx.o \
     $(DIR_LIB)/image/png.o \
+    $(DIR_LIB)/image/svg.o \
     $(DIR_LIB)/image/toffee.o \
 
 include $(DIR_MK)/lib.mk

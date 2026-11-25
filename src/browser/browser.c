@@ -50,6 +50,7 @@ struct store
     struct layout layout;
     struct js_engine js;
     struct html_document svgdocument;
+    struct jpeg jpeg;
     char source[SOURCESIZE];
 
 };
@@ -89,6 +90,7 @@ static unsigned int heapbase;
 static unsigned int picturecount;
 static unsigned int heapused;
 static struct png png;
+static struct jpeg *jpeg;
 static unsigned int pngcount;
 static unsigned int pngtarget;
 static unsigned int pngid;
@@ -551,7 +553,7 @@ static struct page loadfile(char *url)
     if (matchsuffix(url, ".html") || matchsuffix(url, ".htm"))
         return page(count, PAGE_HTML);
 
-    if (matchsuffix(url, ".png"))
+    if (matchsuffix(url, ".png") || matchsuffix(url, ".jpg") || matchsuffix(url, ".jpeg"))
         return page(count, PAGE_OTHER);
 
     return page(count, PAGE_TEXT);
@@ -850,7 +852,7 @@ static void removeimage(struct image *image)
 
 }
 
-static unsigned int readpng(struct png *png, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int readpicture(void *buffer, unsigned int count, unsigned int offset)
 {
 
     if (pngid)
@@ -868,23 +870,57 @@ static unsigned int readpng(struct png *png, void *buffer, unsigned int count, u
 
 }
 
+static unsigned int readpng(struct png *png, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return readpicture(buffer, count, offset);
+
+}
+
+static unsigned int readjpeg(struct jpeg *jpeg, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return readpicture(buffer, count, offset);
+
+}
+
+static unsigned int isjpeg(void)
+{
+
+    unsigned char magic[3];
+
+    return readpicture(magic, 3, 0) == 3 && magic[0] == 0xFF && magic[1] == 0xD8 && magic[2] == 0xFF;
+
+}
+
 static unsigned int decodepicture(struct layout_picture *picture)
 {
 
+    unsigned int jpg = isjpeg();
+    unsigned int width;
+    unsigned int height;
     unsigned int size;
+    unsigned int extra;
     unsigned char zero = 0;
     unsigned int *pixels;
     unsigned int y;
 
-    if (!heap.id || !png_open(&png, readpng) || !png.width || !png.height)
+    if (!heap.id || !((jpg) ? jpeg_open(jpeg, readjpeg) : png_open(&png, readpng)))
         return 0;
 
-    size = png.width * png.height * 4;
+    width = (jpg) ? jpeg->width : png.width;
+    height = (jpg) ? jpeg->height : png.height;
 
-    if (png.width > HEAPSIZE / 4 / png.height || heapused + size > HEAPSIZE)
+    if (!width || !height)
         return 0;
 
-    if (fs_write(1, heap.target, heap.id, &zero, 1, heapused + size - 1) != 1)
+    size = width * height * 4;
+    extra = (jpg) ? jpeg->needed : 0;
+
+    if (width > HEAPSIZE / 4 / height || heapused + size > HEAPSIZE || extra > HEAPSIZE - heapused - size)
+        return 0;
+
+    if (fs_write(1, heap.target, heap.id, &zero, 1, heapused + size + extra - 1) != 1)
         return 0;
 
     pixels = fs_mmap(1, heap.target, heap.id, 0);
@@ -892,25 +928,31 @@ static unsigned int decodepicture(struct layout_picture *picture)
     if (!pixels)
         return 0;
 
-    for (y = 0; y < png.height; y++)
+    /* a progressive jpeg keeps its coefficients for a while in the heap after its pixels */
+    if (extra)
+        jpeg_decode(jpeg, (short *)(pixels + (heapused + size) / 4));
+
+    for (y = 0; y < height; y++)
     {
 
-        if (!png_readrow(&png, pixels + heapused / 4 + y * png.width))
+        unsigned int *row = pixels + heapused / 4 + y * width;
+
+        if (!((jpg) ? jpeg_readrow(jpeg, row) : png_readrow(&png, row)))
             break;
 
     }
 
     fs_munmap(1, heap.target, heap.id);
 
-    if (y < png.height)
+    if (y < height)
         return 0;
 
-    picture->width = png.width;
-    picture->height = png.height;
-    picture->ratiowidth = png.width;
-    picture->ratioheight = png.height;
-    picture->columns = png.width;
-    picture->rows = png.height;
+    picture->width = width;
+    picture->height = height;
+    picture->ratiowidth = width;
+    picture->ratioheight = height;
+    picture->columns = width;
+    picture->rows = height;
     picture->offset = heapused;
     heapused += size;
 
@@ -1549,7 +1591,7 @@ static void navigate(char *url, unsigned int push)
     if (loaded.count && loaded.kind == PAGE_OTHER)
     {
 
-        if (loaded.count > 8 && buffer_match(source, "\x89PNG", 4))
+        if (loaded.count > 8 && (buffer_match(source, "\x89PNG", 4) || buffer_match(source, "\xFF\xD8\xFF", 3)))
         {
 
             loaded.count = cstring_write_fmt(source, SOURCESIZE, 0, "<html><body style=\"margin:0\"><img src=\"%s\"></body></html>", current);
@@ -1611,6 +1653,7 @@ static unsigned int mapstore(struct image *image)
     layout = &store->layout;
     js = &store->js;
     svgdocument = &store->svgdocument;
+    jpeg = &store->jpeg;
     source = store->source;
 
     return 1;

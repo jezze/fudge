@@ -2212,35 +2212,113 @@ static void alignflexitem(struct layout *layout, struct layout_flexitem *item, u
 
 }
 
-static void flexsizes(struct layout *layout, unsigned int start, unsigned int end, int free)
+static int minimumsize(struct layout *layout, unsigned int node, int availw)
 {
 
-    unsigned int total = 0;
+    struct css_style *style = getstyle(layout, node);
+    int size;
+
+    /* an item with an automatic minimum does not shrink below its content, unless it clips */
+    if (style->minwidth.unit != CSS_UNIT_AUTO)
+        return resolve(&style->minwidth, availw) + ((style->borderbox) ? 0 : padded(style, availw));
+
+    if (style->overflow)
+        return 0;
+
+    size = measuremin(layout, node);
+
+    if ((style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT) && !isreplaced(layout, node))
+        size = min(size, resolve(&style->width, availw) + ((style->borderbox) ? 0 : padded(style, availw)));
+
+    return size;
+
+}
+
+static void flexsizes(struct layout *layout, unsigned int start, unsigned int end, int free, int availw)
+{
+
     unsigned int i;
-
-    for (i = start; i < end; i++)
-    {
-
-        struct css_style *style = getstyle(layout, layout->flexitems[i].node);
-
-        total += (free > 0) ? style->grow : style->shrink * (unsigned int)layout->flexitems[i].size / 100;
-
-    }
-
-    if (!total)
-        return;
 
     for (i = start; i < end; i++)
     {
 
         struct layout_flexitem *item = &layout->flexitems[i];
         struct css_style *style = getstyle(layout, item->node);
-        unsigned int weight = (free > 0) ? style->grow : style->shrink * (unsigned int)item->size / 100;
-        int share = (int)(weight * 1024 / total);
 
-        item->size = max(item->size + free * share / 1024, 0);
+        /* growing only goes below the content from a basis smaller than it, like flex: 1 */
+        item->frozen = 0;
+        item->minimum = (free < 0 || style->basis.unit == CSS_UNIT_PX || style->basis.unit == CSS_UNIT_PERCENT) ? minimumsize(layout, item->node, availw) : 0;
 
     }
+
+    /* items that would shrink below their minimum are held there and the rest shrink again */
+    while (free)
+    {
+
+        unsigned int total = 0;
+        unsigned int violated = 0;
+        int remaining = free;
+
+        for (i = start; i < end; i++)
+        {
+
+            struct layout_flexitem *item = &layout->flexitems[i];
+            struct css_style *style = getstyle(layout, item->node);
+
+            if (!item->frozen)
+                total += (free > 0) ? style->grow : style->shrink * (unsigned int)item->size / 100;
+
+        }
+
+        if (!total)
+            break;
+
+        for (i = start; i < end; i++)
+        {
+
+            struct layout_flexitem *item = &layout->flexitems[i];
+            struct css_style *style = getstyle(layout, item->node);
+            unsigned int weight = (free > 0) ? style->grow : style->shrink * (unsigned int)item->size / 100;
+
+            if (!item->frozen && item->size + free * (int)(weight * 1024 / total) / 1024 < item->minimum)
+            {
+
+                remaining -= item->minimum - item->size;
+                item->size = item->minimum;
+                item->frozen = 1;
+                violated = 1;
+
+            }
+
+        }
+
+        if (violated)
+        {
+
+            free = remaining;
+
+            continue;
+
+        }
+
+        for (i = start; i < end; i++)
+        {
+
+            struct layout_flexitem *item = &layout->flexitems[i];
+            struct css_style *style = getstyle(layout, item->node);
+            unsigned int weight = (free > 0) ? style->grow : style->shrink * (unsigned int)item->size / 100;
+
+            if (!item->frozen)
+                item->size = item->size + free * (int)(weight * 1024 / total) / 1024;
+
+        }
+
+        break;
+
+    }
+
+    for (i = start; i < end; i++)
+        layout->flexitems[i].size = max(layout->flexitems[i].size, max(layout->flexitems[i].minimum, 0));
 
 }
 
@@ -2319,7 +2397,7 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
         if (!layout->measuring && free)
         {
 
-            flexsizes(layout, start, end, free);
+            flexsizes(layout, start, end, free, availw);
 
             for (used = 0, i = start; i < end; i++)
                 used += layout->flexitems[i].ml + layout->flexitems[i].size + layout->flexitems[i].mr + ((i > start) ? gap : 0);

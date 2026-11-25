@@ -71,7 +71,9 @@ struct layout_flexitem
     unsigned int fragmentstart;
     unsigned int fragmentend;
     unsigned int automargins;
+    unsigned int frozen;
     int size;
+    int minimum;
     int ml;
     int mr;
     int mt;
