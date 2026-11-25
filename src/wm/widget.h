@@ -20,6 +20,7 @@ struct widget_attributes
     unsigned int color;
     unsigned int data;
     unsigned int display;
+    unsigned int extent;
     unsigned int flow;
     unsigned int halign;
     unsigned int height;
@@ -32,6 +33,7 @@ struct widget_attributes
     unsigned int onclick;
     unsigned int onenter;
     unsigned int onresize;
+    unsigned int onscroll;
     unsigned int onselect;
     unsigned int overflow;
     unsigned int padding;
@@ -88,6 +90,7 @@ struct widget
     struct util_region drawn;
     struct util_region drawncursor;
     struct util_position drawnscroll;
+    int reportedscroll;
     int drawnscrollmax;
     struct util_region placement;
     struct util_region cplacement;

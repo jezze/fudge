@@ -536,7 +536,7 @@ static void clipcontent(struct widget *widget)
         {
 
             int left = widget->cplacement.position.x + widget->scroll.x - widget->placement.position.x;
-            int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
+            int top = widget->cplacement.position.y + ((widget->attributes.extent) ? 0 : widget->scroll.y) - widget->placement.position.y;
 
             content = util_region(widget->placement.position.x + left, widget->placement.position.y + top, widget->cplacement.size.w, util_max((int)widget->placement.size.h - top * 2, 0));
 
@@ -609,7 +609,10 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     if (widget_isscrollable(widget))
     {
 
-        widget->cplacement.position.y -= widget->scroll.y;
+        /* with an extent the owner draws the scrolled content itself, so the children stay in view */
+        if (!widget->attributes.extent)
+            widget->cplacement.position.y -= widget->scroll.y;
+
         widget->cplacement.size.h = INFINITY;
 
         if (widget_hasscrollbar(widget))
@@ -656,7 +659,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
         }
 
         widget->followcursor = 0;
-        widget->scrollmax = (widget_isscrollable(widget)) ? util_max(0, (int)info.total.h - (int)view.size.h) : 0;
+        widget->scrollmax = (widget_isscrollable(widget)) ? util_max(0, (int)((widget->attributes.extent) ? widget->attributes.extent : info.total.h) - (int)view.size.h) : 0;
         widget->scroll.x = util_clamp(widget->scroll.x, 0, scrollmaxx);
         widget->scroll.y = util_clamp(widget->scroll.y, 0, widget->scrollmax);
 

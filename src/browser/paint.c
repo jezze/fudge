@@ -35,9 +35,9 @@ static void fill(struct paint_canvas *canvas, int x, int y, int w, int h, unsign
 {
 
     int x0 = (x < 0) ? 0 : x;
-    int y0 = (y < 0) ? 0 : y;
+    int y0 = (y < canvas->top) ? canvas->top : y;
     int x1 = (x + w > (int)canvas->width) ? (int)canvas->width : x + w;
-    int y1 = (y + h > (int)canvas->height) ? (int)canvas->height : y + h;
+    int y1 = (y + h > canvas->top + (int)canvas->height) ? canvas->top + (int)canvas->height : y + h;
     unsigned int alpha = color >> 24;
     int i;
     int j;
@@ -48,7 +48,7 @@ static void fill(struct paint_canvas *canvas, int x, int y, int w, int h, unsign
     for (j = y0; j < y1; j++)
     {
 
-        unsigned int *row = canvas->pixels + j * canvas->width;
+        unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
 
         for (i = x0; i < x1; i++)
             row[i] = (alpha == 0xFF) ? color : blend(row[i], color);
@@ -198,9 +198,9 @@ static void paintgradient(struct paint_canvas *canvas, struct css_gradient *grad
 {
 
     int x0 = (box->x < 0) ? 0 : box->x;
-    int y0 = (box->y < 0) ? 0 : box->y;
+    int y0 = (box->y < canvas->top) ? canvas->top : box->y;
     int x1 = (box->x + box->w > (int)canvas->width) ? (int)canvas->width : box->x + box->w;
-    int y1 = (box->y + box->h > (int)canvas->height) ? (int)canvas->height : box->y + box->h;
+    int y1 = (box->y + box->h > canvas->top + (int)canvas->height) ? canvas->top + (int)canvas->height : box->y + box->h;
     int sinus = sine(gradient->angle);
     int cosinus = sine(gradient->angle + 90);
     int length = (box->w * ((sinus < 0) ? -sinus : sinus) + box->h * ((cosinus < 0) ? -cosinus : cosinus)) / 1000;
@@ -225,7 +225,7 @@ static void paintgradient(struct paint_canvas *canvas, struct css_gradient *grad
     for (j = y0; j < y1; j++)
     {
 
-        unsigned int *row = canvas->pixels + j * canvas->width;
+        unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
         int inset = cornerinset(j - box->y, box->h, radius);
         int start = (box->x + inset > x0) ? box->x + inset : x0;
         int end = (box->x + box->w - inset < x1) ? box->x + box->w - inset : x1;
@@ -366,9 +366,9 @@ static void paintpicture(struct paint_canvas *canvas, struct layout_picture *pic
 
     unsigned int *pixels = canvas->heap + picture->offset / 4;
     int x0 = (x < 0) ? 0 : x;
-    int y0 = (y < 0) ? 0 : y;
+    int y0 = (y < canvas->top) ? canvas->top : y;
     int x1 = (x + w > (int)canvas->width) ? (int)canvas->width : x + w;
-    int y1 = (y + h > (int)canvas->height) ? (int)canvas->height : y + h;
+    int y1 = (y + h > canvas->top + (int)canvas->height) ? canvas->top + (int)canvas->height : y + h;
     int i;
     int j;
 
@@ -378,7 +378,7 @@ static void paintpicture(struct paint_canvas *canvas, struct layout_picture *pic
     for (j = y0; j < y1; j++)
     {
 
-        unsigned int *row = canvas->pixels + j * canvas->width;
+        unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
         unsigned int *source = pixels + (unsigned int)(j - y) * picture->height / (unsigned int)h * picture->width;
 
         for (i = x0; i < x1; i++)
@@ -453,7 +453,7 @@ static void painttext(struct paint_canvas *canvas, struct layout *layout, struct
     unsigned int space = 0;
     unsigned int i = 0;
 
-    if (fragment->y + fragment->h <= 0 || fragment->y >= (int)canvas->height)
+    if (fragment->y + fragment->h <= canvas->top || fragment->y >= canvas->top + (int)canvas->height)
         return;
 
     while (i < fragment->length)
@@ -569,7 +569,7 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
     unsigned int node = document->html;
     unsigned int i;
 
-    fill(canvas, 0, 0, canvas->width, canvas->height, paint_getbackground(layout));
+    fill(canvas, 0, canvas->top, canvas->width, canvas->height, paint_getbackground(layout));
 
     while (node)
     {

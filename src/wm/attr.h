@@ -24,6 +24,9 @@
 #define ATTR_WIDTH                      25
 #define ATTR_ONRESIZE                   27
 #define ATTR_DATA                       28
+#define ATTR_EXTENT                     29
+#define ATTR_ONSCROLL                   30
+#define ATTR_SCROLL                     31
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_DISPLAY_FIXED              2

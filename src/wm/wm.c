@@ -2894,7 +2894,7 @@ static void clickwidget(struct widget *widget)
         {
 
             unsigned int x = util_max(state.mouseposition.x - widget->cplacement.position.x, 0);
-            unsigned int y = util_max(state.mouseposition.y - widget->cplacement.position.y, 0);
+            unsigned int y = util_max(state.mouseposition.y - widget->cplacement.position.y + ((widget->attributes.extent) ? widget->scroll.y : 0), 0);
             char text[64];
 
             cstring_write_fmt(text, 64, 0, "&x=%u&y=%u\\0", &x, &y);
@@ -3012,6 +3012,36 @@ static void damagechanged(void)
             damageregion(&cursor);
 
             copyregion(&widget->drawncursor, &cursor);
+
+        }
+
+    }
+
+}
+
+static void reportscrolls(void)
+{
+
+    struct list_item *current = 0;
+
+    /* like sizes, a thumb drag is reported when it ends */
+    if (state.mousebuttonleft || state.mousebuttonright)
+        return;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->attributes.onscroll && widget->source && widget->scroll.y != widget->reportedscroll)
+        {
+
+            char text[32];
+
+            widget->reportedscroll = widget->scroll.y;
+
+            cstring_write_fmt(text, 32, 0, "&y=%u\\0", &widget->scroll.y);
+            sendevent(widget->source, widget->attributes.onscroll, text);
 
         }
 
@@ -3217,6 +3247,7 @@ static void redraw(unsigned int relayout)
             placeroots();
             bindall(&area);
             reportsizes();
+            reportscrolls();
             damagechanged();
             render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
 

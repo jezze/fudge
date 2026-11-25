@@ -20,7 +20,6 @@
 #define TITLESIZE                       80
 #define ERRORSIZE                       128
 #define REDIRECTS                       5
-#define MAXHEIGHT                       0x4000
 #define MAXBYTES                        0x2000000
 #define PICTURES                        64
 #define HEAPSIZE                        0x1000000
@@ -88,6 +87,7 @@ static unsigned int nextimage;
 static unsigned int wm;
 static unsigned int viewwidth;
 static unsigned int viewheight;
+static unsigned int scrolly;
 static unsigned int scheme = CSS_SCHEME_LIGHT;
 static char *fontpaths[FONT_FACES] = {
     "initrd:data/font/ter-112n.pcf",
@@ -970,7 +970,7 @@ static void loadpictures(void)
 
 }
 
-static void render(void)
+static void paintpage(void)
 {
 
     struct image *image = &images[nextimage];
@@ -979,31 +979,19 @@ static void render(void)
     unsigned int height;
     unsigned char zero = 0;
 
-    if (!wm || !viewwidth || !image->id)
+    if (!wm || !viewwidth || !viewheight || !image->id)
         return;
 
-    css_compute(sheet, document, styles, viewwidth, viewheight, scheme);
-    layout_document(layout, viewwidth);
-
     limit = MAXBYTES / 4 / viewwidth;
-    height = (layout->height > (int)viewheight) ? (unsigned int)layout->height : viewheight;
-    height = (height > limit) ? limit : height;
-    height = (height > MAXHEIGHT) ? MAXHEIGHT : height;
+    height = (viewheight > limit) ? limit : viewheight;
 
-    /* memsrv is shared, so a long page is cut shorter until its image fits */
-    while (fs_write(1, image->target, image->id, &zero, 1, viewwidth * height * 4 - 1) != 1)
-    {
-
-        if (height <= viewheight)
-            return;
-
-        height = (height / 2 > viewheight) ? height / 2 : viewheight;
-
-    }
+    if (fs_write(1, image->target, image->id, &zero, 1, viewwidth * height * 4 - 1) != 1)
+        return;
 
     canvas.pixels = fs_mmap(1, image->target, image->id, 0);
     canvas.width = viewwidth;
     canvas.height = height;
+    canvas.top = scrolly;
     canvas.heap = (heapused) ? fs_mmap(1, heap.target, heap.id, 0) : 0;
 
     if (canvas.pixels)
@@ -1019,6 +1007,27 @@ static void render(void)
     channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= page source \"mem:%s\" width \"%u\" height \"%u\"\n", image->name, &viewwidth, &height);
 
     nextimage = (nextimage + 1) % IMAGES;
+
+}
+
+static void render(void)
+{
+
+    unsigned int extent;
+
+    if (!wm || !viewwidth || !viewheight)
+        return;
+
+    css_compute(sheet, document, styles, viewwidth, viewheight, scheme);
+    layout_document(layout, viewwidth);
+
+    extent = (layout->height > (int)viewheight) ? (unsigned int)layout->height : viewheight;
+
+    if (scrolly > extent - viewheight)
+        scrolly = extent - viewheight;
+
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= frame extent \"%u\"\n", &extent);
+    paintpage();
 
 }
 
@@ -1247,6 +1256,10 @@ static void navigate(char *url, unsigned int push)
     runscripts();
     loadpictures();
     showstate();
+
+    scrolly = 0;
+
+    channel_send_fmt(0, wm, MESSAGE_TYPE_DATA, "= frame scroll \"0\"\n");
     render();
 
 }
@@ -1416,6 +1429,22 @@ static void onwmevent(struct message *message)
                 viewheight = height;
 
                 render();
+
+            }
+
+        }
+
+        else if (kv_match(event, "q=scroll"))
+        {
+
+            unsigned int y = kv_getvalue(event, "y=", 10);
+
+            if (y != scrolly)
+            {
+
+                scrolly = y;
+
+                paintpage();
 
             }
 

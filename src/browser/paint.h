@@ -4,6 +4,7 @@ struct paint_canvas
     unsigned int *pixels;
     unsigned int width;
     unsigned int height;
+    int top;
     unsigned int *heap;
 
 };

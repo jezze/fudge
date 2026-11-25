@@ -8,5 +8,5 @@
 + text id "address" in "addressbox"
 + button in "top" label "Go" onclick "q=go"
 + button id "scheme" in "top" label "Dark" onclick "q=scheme"
-+ box id "frame" in "base" flow "vertical" overflow "scroll" span "1" onresize "q=resize" onclick "q=click"
++ box id "frame" in "base" flow "vertical" overflow "scroll" span "1" onresize "q=resize" onscroll "q=scroll" onclick "q=click"
 + media id "page" in "frame" mimetype "image/raw"

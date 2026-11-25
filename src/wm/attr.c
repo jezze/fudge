@@ -102,6 +102,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     case ATTR_DISPLAY:
         return util_getkey(displays, NUM_DISPLAYS, value);
 
+    case ATTR_EXTENT:
+        return getnum(value, 10);
+
     case ATTR_FLOW:
         return util_getkey(flows, 6, value);
 
@@ -138,6 +141,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     case ATTR_ONRESIZE:
         return getstring(current, value);
 
+    case ATTR_ONSCROLL:
+        return getstring(current, value);
+
     case ATTR_ONSELECT:
         return getstring(current, value);
 
@@ -145,6 +151,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(overflows, 2, value);
 
     case ATTR_PADDING:
+        return getnum(value, 10);
+
+    case ATTR_SCROLL:
         return getnum(value, 10);
 
     case ATTR_SOURCE:

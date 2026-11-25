@@ -34,6 +34,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_EXTENT:
+        widget->attributes.extent = attr_update(ATTR_EXTENT, value, widget->attributes.extent);
+
+        break;
+
     case ATTR_FLOW:
         widget->attributes.flow = attr_update(ATTR_FLOW, value, widget->attributes.flow);
 
@@ -92,6 +97,18 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_ONRESIZE:
         widget->attributes.onresize = attr_update(ATTR_ONRESIZE, value, widget->attributes.onresize);
+
+        break;
+
+    case ATTR_ONSCROLL:
+        widget->attributes.onscroll = attr_update(ATTR_ONSCROLL, value, widget->attributes.onscroll);
+
+        break;
+
+    /* the owner moved its content itself, so the position is not reported back to it */
+    case ATTR_SCROLL:
+        widget->scroll.y = attr_update(ATTR_SCROLL, value, 0);
+        widget->reportedscroll = widget->scroll.y;
 
         break;
 
@@ -156,6 +173,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_COLOR, 0);
     widget_setattribute(widget, ATTR_DATA, 0);
     widget_setattribute(widget, ATTR_DISPLAY, 0);
+    widget_setattribute(widget, ATTR_EXTENT, 0);
     widget_setattribute(widget, ATTR_FLOW, 0);
     widget_setattribute(widget, ATTR_HALIGN, 0);
     widget_setattribute(widget, ATTR_HEIGHT, 0);
@@ -168,6 +186,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_ONCLICK, 0);
     widget_setattribute(widget, ATTR_ONENTER, 0);
     widget_setattribute(widget, ATTR_ONRESIZE, 0);
+    widget_setattribute(widget, ATTR_ONSCROLL, 0);
     widget_setattribute(widget, ATTR_ONSELECT, 0);
     widget_setattribute(widget, ATTR_OVERFLOW, 0);
     widget_setattribute(widget, ATTR_PADDING, 0);
@@ -320,6 +339,7 @@ void widget_copyattributes(struct widget *widget, struct widget *from)
     widget->attributes.checked = from->attributes.checked;
     widget->attributes.color = from->attributes.color;
     widget->attributes.display = from->attributes.display;
+    widget->attributes.extent = from->attributes.extent;
     widget->attributes.flow = from->attributes.flow;
     widget->attributes.halign = from->attributes.halign;
     widget->attributes.height = from->attributes.height;
@@ -340,6 +360,7 @@ void widget_copyattributes(struct widget *widget, struct widget *from)
     copyattribute(widget, ATTR_ONCLICK, from->attributes.onclick);
     copyattribute(widget, ATTR_ONENTER, from->attributes.onenter);
     copyattribute(widget, ATTR_ONRESIZE, from->attributes.onresize);
+    copyattribute(widget, ATTR_ONSCROLL, from->attributes.onscroll);
     copyattribute(widget, ATTR_ONSELECT, from->attributes.onselect);
     copyattribute(widget, ATTR_SOURCE, from->attributes.source);
 
@@ -377,7 +398,7 @@ struct util_region widget_getview(struct widget *widget)
 {
 
     int x = widget->cplacement.position.x + widget->scroll.x;
-    int y = widget->cplacement.position.y + widget->scroll.y;
+    int y = widget->cplacement.position.y + ((widget->attributes.extent) ? 0 : widget->scroll.y);
     int top = y - widget->placement.position.y;
 
     return util_region(x, y, widget->cplacement.size.w, util_max((int)widget->placement.size.h - top * 2, 0));
@@ -410,6 +431,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->color = 0;
     attributes->data = 0;
     attributes->display = ATTR_DISPLAY_BLOCK;
+    attributes->extent = 0;
     attributes->flow = ATTR_FLOW_DEFAULT;
     attributes->halign = ATTR_HALIGN_LEFT;
     attributes->height = 0;
@@ -422,6 +444,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->onclick = 0;
     attributes->onenter = 0;
     attributes->onresize = 0;
+    attributes->onscroll = 0;
     attributes->onselect = 0;
     attributes->overflow = ATTR_OVERFLOW_NONE;
     attributes->padding = 0;
@@ -507,6 +530,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->position = util_position(0, 0);
     widget->size = util_size(0, 0);
     widget->scroll = util_position(0, 0);
+    widget->reportedscroll = 0;
     widget->cursorposition = util_position(0, 0);
     widget->cursorsize = util_size(0, 0);
     widget->placement = util_region(0, 0, 0, 0);

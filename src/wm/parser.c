@@ -23,7 +23,7 @@
 #define NAME_SIZE                       256
 #define TEMPLATE_SIZE                   4096
 #define NUM_WIDGETS                     14
-#define NUM_ATTRIBUTES                  26
+#define NUM_ATTRIBUTES                  29
 
 static struct util_token commands[NUM_COMMANDS] =
 {
@@ -60,6 +60,7 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
     {ATTR_COLOR, "color"},
     {ATTR_DATA, "data"},
     {ATTR_DISPLAY, "display"},
+    {ATTR_EXTENT, "extent"},
     {ATTR_FLOW, "flow"},
     {ATTR_HALIGN, "halign"},
     {ATTR_HEIGHT, "height"},
@@ -72,9 +73,11 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
     {ATTR_ONCLICK, "onclick"},
     {ATTR_ONENTER, "onenter"},
     {ATTR_ONRESIZE, "onresize"},
+    {ATTR_ONSCROLL, "onscroll"},
     {ATTR_ONSELECT, "onselect"},
     {ATTR_OVERFLOW, "overflow"},
     {ATTR_PADDING, "padding"},
+    {ATTR_SCROLL, "scroll"},
     {ATTR_SOURCE, "source"},
     {ATTR_SPACING, "spacing"},
     {ATTR_SPAN, "span"},
