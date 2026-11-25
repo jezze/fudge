@@ -3015,6 +3015,104 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
 }
 
+static int stackkey(struct layout *layout, unsigned int node)
+{
+
+    for (; node; node = getnode(layout, node)->parent)
+    {
+
+        struct css_style *style = getstyle(layout, node);
+
+        if (style->stacked && style->position != CSS_POSITION_STATIC)
+            return style->zindex;
+
+    }
+
+    return 0;
+
+}
+
+static void setlayers(struct layout *layout)
+{
+
+    struct html_document *document = layout->document;
+    unsigned int node = document->html;
+    unsigned int i;
+
+    /* the page itself is the first layer, then every positioned box starts one of its own */
+    buffer_clear(layout->layerroot, sizeof (unsigned short) * document->nodecount);
+
+    layout->layers[0] = 0;
+    layout->layerkeys[0] = 0;
+    layout->layercount = 1;
+
+    while (node)
+    {
+
+        struct html_node *element = getnode(layout, node);
+        struct css_style *style = getstyle(layout, node);
+
+        layout->layerroot[node] = layout->layerroot[element->parent];
+
+        if (element->type == HTML_NODE_ELEMENT && style->position != CSS_POSITION_STATIC && layout->boxes[node].placed && layout->layercount < LAYOUT_LAYERS)
+        {
+
+            int key = stackkey(layout, node);
+            unsigned int j = layout->layercount++;
+
+            /* layers go by z-index and stay in source order otherwise, the page first among those at zero */
+            while (j > 0 && layout->layerkeys[j - 1] > key)
+            {
+
+                layout->layers[j] = layout->layers[j - 1];
+                layout->layerkeys[j] = layout->layerkeys[j - 1];
+                j--;
+
+            }
+
+            layout->layers[j] = node;
+            layout->layerkeys[j] = key;
+            layout->layerroot[node] = node;
+
+        }
+
+        node = html_next(document, node, document->html);
+
+    }
+
+    /* every node gets the place of its layer in the drawing order */
+    buffer_clear(layout->layer, sizeof (unsigned short) * document->nodecount);
+
+    for (i = 0; i < layout->layercount; i++)
+        layout->layer[layout->layers[i]] = i;
+
+    for (node = document->html; node; node = html_next(document, node, document->html))
+    {
+
+        if (layout->layerroot[node] != node)
+            layout->layer[node] = layout->layer[getnode(layout, node)->parent];
+
+    }
+
+    /* the fragments are sorted by layer once, so each layer draws only its own */
+    buffer_clear(layout->layerstart, sizeof (unsigned int) * (LAYOUT_LAYERS + 1));
+
+    for (i = 0; i < layout->fragmentcount; i++)
+        layout->layerstart[layout->layer[layout->fragments[i].node] + 1]++;
+
+    for (i = 0; i < layout->layercount; i++)
+        layout->layerstart[i + 1] += layout->layerstart[i];
+
+    for (i = 0; i < layout->fragmentcount; i++)
+        layout->layerfragments[layout->layerstart[layout->layer[layout->fragments[i].node]]++] = i;
+
+    for (i = layout->layercount; i > 0; i--)
+        layout->layerstart[i] = layout->layerstart[i - 1];
+
+    layout->layerstart[0] = 0;
+
+}
+
 void layout_document(struct layout *layout, unsigned int width, unsigned int height)
 {
 
@@ -3055,6 +3153,8 @@ void layout_document(struct layout *layout, unsigned int width, unsigned int hei
     for (i = 0; i < layout->fragmentcount; i++)
         layout->height = max(layout->height, layout->fragments[i].y + layout->fragments[i].h);
 
+    setlayers(layout);
+
 }
 
 static unsigned int findanchor(struct layout *layout, unsigned int node)
@@ -3074,30 +3174,38 @@ static unsigned int findanchor(struct layout *layout, unsigned int node)
 
 }
 
-unsigned int layout_findnode(struct layout *layout, int x, int y)
+static unsigned int hitfragment(struct layout *layout, unsigned int layer, int x, int y)
+{
+
+    unsigned int i;
+
+    for (i = layout->layerstart[layer]; i < layout->layerstart[layer + 1]; i++)
+    {
+
+        struct layout_fragment *fragment = &layout->fragments[layout->layerfragments[i]];
+        int slop = fragment->h / 4;
+
+        if (x >= fragment->x && x < fragment->x + fragment->w && y >= fragment->y - slop && y < fragment->y + fragment->h + slop)
+            return layout->layerfragments[i] + 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int hitbox(struct layout *layout, unsigned int layer, int x, int y)
 {
 
     unsigned int found = 0;
     unsigned int node;
-    unsigned int i;
-
-    for (i = 0; i < layout->fragmentcount; i++)
-    {
-
-        struct layout_fragment *fragment = &layout->fragments[i];
-        int slop = fragment->h / 4;
-
-        if (x >= fragment->x && x < fragment->x + fragment->w && y >= fragment->y - slop && y < fragment->y + fragment->h + slop)
-            return (fragment->type == LAYOUT_FRAGMENT_TEXT) ? getnode(layout, fragment->node)->parent : fragment->node;
-
-    }
 
     for (node = 1; node < layout->document->nodecount; node++)
     {
 
         struct layout_box *box = &layout->boxes[node];
 
-        if (box->placed && x >= box->x && x < box->x + box->w && y >= box->y && y < box->y + box->h)
+        if (layout->layer[node] == layer && box->placed && x >= box->x && x < box->x + box->w && y >= box->y && y < box->y + box->h)
             found = node;
 
     }
@@ -3106,47 +3214,38 @@ unsigned int layout_findnode(struct layout *layout, int x, int y)
 
 }
 
-unsigned int layout_findlink(struct layout *layout, int x, int y)
+unsigned int layout_findnode(struct layout *layout, int x, int y)
 {
 
-    unsigned int node;
     unsigned int i;
 
-    for (i = 0; i < layout->fragmentcount; i++)
+    /* the layer drawn last is on top, so it is asked first */
+    for (i = layout->layercount; i > 0; i--)
     {
 
-        struct layout_fragment *fragment = &layout->fragments[i];
-        int slop = fragment->h / 4;
+        unsigned int layer = i - 1;
+        unsigned int fragment = hitfragment(layout, layer, x, y);
+        unsigned int box;
 
-        if (x >= fragment->x && x < fragment->x + fragment->w && y >= fragment->y - slop && y < fragment->y + fragment->h + slop)
-        {
+        if (fragment)
+            return (layout->fragments[fragment - 1].type == LAYOUT_FRAGMENT_TEXT) ? getnode(layout, layout->fragments[fragment - 1].node)->parent : layout->fragments[fragment - 1].node;
 
-            unsigned int anchor = findanchor(layout, fragment->node);
+        box = hitbox(layout, layer, x, y);
 
-            if (anchor)
-                return anchor;
-
-        }
-
-    }
-
-    for (node = 1; node < layout->document->nodecount; node++)
-    {
-
-        struct layout_box *box = &layout->boxes[node];
-
-        if (box->placed && x >= box->x && x < box->x + box->w && y >= box->y && y < box->y + box->h)
-        {
-
-            unsigned int anchor = findanchor(layout, node);
-
-            if (anchor)
-                return anchor;
-
-        }
+        if (box)
+            return box;
 
     }
 
     return 0;
+
+}
+
+unsigned int layout_findlink(struct layout *layout, int x, int y)
+{
+
+    unsigned int node = layout_findnode(layout, x, y);
+
+    return (node) ? findanchor(layout, node) : 0;
 
 }

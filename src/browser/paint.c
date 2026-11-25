@@ -705,15 +705,12 @@ unsigned int paint_getbackground(struct layout *layout)
 
 }
 
-void paint_document(struct paint_canvas *canvas, struct layout *layout)
+static void paintboxes(struct paint_canvas *canvas, struct layout *layout, unsigned int layer)
 {
 
     struct html_document *document = layout->document;
-    unsigned int node = document->html;
-    unsigned int i;
-
-    setclip(canvas, layout, 0);
-    fill(canvas, 0, canvas->top, canvas->width, canvas->height, paint_getbackground(layout));
+    unsigned int root = (layout->layers[layer]) ? layout->layers[layer] : document->html;
+    unsigned int node = root;
 
     while (node)
     {
@@ -721,7 +718,7 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
         struct layout_box *box = &layout->boxes[node];
         struct css_style *style = &layout->styles[node];
 
-        if (document->nodes[node].type == HTML_NODE_ELEMENT && box->placed && !style->hidden)
+        if (document->nodes[node].type == HTML_NODE_ELEMENT && layout->layer[node] == layer && box->placed && !style->hidden)
         {
 
             setclip(canvas, layout, node);
@@ -744,23 +741,43 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
 
         }
 
-        node = html_next(document, node, document->html);
+        node = html_next(document, node, root);
 
     }
 
-    for (i = 0; i < layout->fragmentcount; i++)
+}
+
+void paint_document(struct paint_canvas *canvas, struct layout *layout)
+{
+
+    unsigned int i;
+
+    setclip(canvas, layout, 0);
+    fill(canvas, 0, canvas->top, canvas->width, canvas->height, paint_getbackground(layout));
+
+    /* each layer is drawn whole, boxes then inline backgrounds then text, so a box on top covers the text below it */
+    for (i = 0; i < layout->layercount; i++)
     {
 
-        setclip(canvas, layout, layout->fragments[i].node);
-        paintinlines(canvas, layout, i);
+        unsigned int j;
 
-    }
+        paintboxes(canvas, layout, i);
 
-    for (i = 0; i < layout->fragmentcount; i++)
-    {
+        for (j = layout->layerstart[i]; j < layout->layerstart[i + 1]; j++)
+        {
 
-        setclip(canvas, layout, layout->fragments[i].node);
-        paintfragment(canvas, layout, &layout->fragments[i]);
+            setclip(canvas, layout, layout->fragments[layout->layerfragments[j]].node);
+            paintinlines(canvas, layout, layout->layerfragments[j]);
+
+        }
+
+        for (j = layout->layerstart[i]; j < layout->layerstart[i + 1]; j++)
+        {
+
+            setclip(canvas, layout, layout->fragments[layout->layerfragments[j]].node);
+            paintfragment(canvas, layout, &layout->fragments[layout->layerfragments[j]]);
+
+        }
 
     }
 

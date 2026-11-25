@@ -108,6 +108,7 @@ struct css_style
     unsigned char spacing;
     unsigned char collapse;
     unsigned char reverse;
+    unsigned char stacked;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;
@@ -120,6 +121,7 @@ struct css_style
     unsigned short grow;
     unsigned short shrink;
     short order;
+    short zindex;
     unsigned int color;
     unsigned int fill;
     unsigned int background;

@@ -4,6 +4,7 @@
 #define LAYOUT_FLEXITEMS                4096
 #define LAYOUT_FLOATS                   64
 #define LAYOUT_ABSOLUTES                256
+#define LAYOUT_LAYERS                   1024
 #define LAYOUT_FRAGMENT_TEXT            0
 #define LAYOUT_FRAGMENT_GENERATED       1
 #define LAYOUT_FRAGMENT_MARKER          2
@@ -144,6 +145,13 @@ struct layout
     unsigned int floatbase;
     struct layout_absolute absolutes[LAYOUT_ABSOLUTES];
     unsigned int absolutecount;
+    unsigned short layer[HTML_NODES];
+    unsigned short layerroot[HTML_NODES];
+    unsigned short layers[LAYOUT_LAYERS];
+    short layerkeys[LAYOUT_LAYERS];
+    unsigned int layerstart[LAYOUT_LAYERS + 1];
+    unsigned short layerfragments[LAYOUT_FRAGMENTS];
+    unsigned int layercount;
     int extent;
     int height;
     int viewheight;

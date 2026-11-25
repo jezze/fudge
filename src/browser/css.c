@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      88
+#define PROPERTIES                      89
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -69,6 +69,7 @@
 #define PROP_BORDERSPACING              85
 #define PROP_BORDERCOLLAPSE             86
 #define PROP_ORDER                      87
+#define PROP_ZINDEX                     88
 #define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
@@ -257,7 +258,7 @@ static char *properties[PROPERTIES] = {
     "row-gap", "column-gap", "grid-gap", "fill",
     "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow",
     "float", "clear", "overflow", "overflow-x", "overflow-y",
-    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order"
+    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -3248,6 +3249,12 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
         break;
 
+    case PROP_ZINDEX:
+        style->stacked = from->stacked;
+        style->zindex = from->zindex;
+
+        break;
+
     case PROP_JUSTIFYCONTENT:
         style->justify = from->justify;
 
@@ -3699,6 +3706,32 @@ static void apply(struct context *context, unsigned int property, char *value)
 
             if (number.length == length && number.milli >= -32000000 && number.milli <= 32000000)
                 style->order = number.milli / 1000;
+
+        }
+
+        break;
+
+    case PROP_ZINDEX:
+        if (matchword(value, length, "auto"))
+        {
+
+            style->stacked = 0;
+            style->zindex = 0;
+
+        }
+
+        else
+        {
+
+            struct number number = parsenumber(value, length);
+
+            if (number.length == length)
+            {
+
+                style->stacked = 1;
+                style->zindex = (number.milli < -32000000) ? -32000 : (number.milli > 32000000) ? 32000 : number.milli / 1000;
+
+            }
 
         }
 
