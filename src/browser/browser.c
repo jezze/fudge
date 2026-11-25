@@ -1319,7 +1319,7 @@ static void render(void)
         return;
 
     css_compute(sheet, document, styles, viewwidth, viewheight, scheme);
-    layout_document(layout, viewwidth);
+    layout_document(layout, viewwidth, viewheight);
 
     extent = (layout->height > (int)viewheight) ? (unsigned int)layout->height : viewheight;
 

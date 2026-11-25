@@ -144,10 +144,12 @@ struct layout
     unsigned int absolutecount;
     int extent;
     int height;
+    int viewheight;
+    int trailing;
     unsigned int full;
 
 };
 
-void layout_document(struct layout *layout, unsigned int width);
+void layout_document(struct layout *layout, unsigned int width, unsigned int height);
 unsigned int layout_findnode(struct layout *layout, int x, int y);
 unsigned int layout_findlink(struct layout *layout, int x, int y);

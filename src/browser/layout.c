@@ -27,6 +27,7 @@ struct flow
     unsigned int space;
     unsigned int node;
     unsigned int type;
+    unsigned int collapsed;
 
 };
 
@@ -93,6 +94,8 @@ struct label
 
 static int layoutblock(struct layout *layout, unsigned int node, int x, int top, int availw);
 static void layoutnode(struct layout *layout, struct flow *flow, unsigned int node);
+static unsigned int isroot(struct layout *layout, unsigned int node);
+static int leadingmargin(struct layout *layout, unsigned int node, int availw);
 
 static struct css_style *getstyle(struct layout *layout, unsigned int node)
 {
@@ -399,6 +402,8 @@ static int clearance(struct layout *layout, unsigned int clear, int y)
 
 static void startline(struct layout *layout, struct flow *flow)
 {
+
+    flow->collapsed = 0;
 
     if (isempty(layout, flow) && flow->pending)
     {
@@ -837,7 +842,7 @@ static void getlabel(struct layout *layout, unsigned int node, struct label *lab
         if (!text && type && cstring_match(type, "reset"))
             text = "Reset";
 
-        if (!text)
+        if (!text || !text[0])
             text = html_getattribute(document, node, "placeholder");
 
     }
@@ -955,6 +960,13 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
     if (style->height.unit != CSS_UNIT_PX && rows && cstring_match(html_getstring(layout->document, getnode(layout, node)->name), "textarea"))
         height = (metrics.ascent + metrics.descent) * (int)cstring_read_value(rows, cstring_length(rows), 10);
 
+    /* border-box only changes a size the page set, a natural size is always the content */
+    if (style->borderbox && haswidth)
+        width = max(width - bl - br, 0);
+
+    if (style->borderbox && hasheight)
+        height = max(height - bt - bb, 0);
+
     if (picture)
     {
 
@@ -971,14 +983,6 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
             height = (!haswidth && picture->width && picture->height) ? (int)picture->height : (ratiowidth) ? width * ratioheight / ratiowidth : (picture->height) ? (int)picture->height : 150;
 
         label.length = 0;
-
-    }
-
-    if (style->borderbox)
-    {
-
-        width = max(width - bl - br, 0);
-        height = max(height - bt - bb, 0);
 
     }
 
@@ -1004,6 +1008,11 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
     box->x = x + resolve(&style->margin[CSS_LEFT], availw);
     box->y = top;
     box->w = bl + width + br;
+
+    /* a block-level picture centers with auto margins like any block */
+    if (style->display != CSS_DISPLAY_INLINE && style->display != CSS_DISPLAY_INLINEBLOCK && style->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
+        box->x = x + max((style->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO) ? (availw - box->w) / 2 : availw - box->w - resolve(&style->margin[CSS_RIGHT], availw), 0);
+
     box->h = bt + height + bb;
 
     if (label.length && width > 0)
@@ -1040,7 +1049,7 @@ static int placesized(struct layout *layout, unsigned int node, int x, int top, 
     layout->forcenode = node;
     layout->forcewidth = width;
 
-    return (isreplaced(layout, node)) ? layoutreplaced(layout, node, x, top, outer) : layoutblock(layout, node, x, top, outer);
+    return layoutblock(layout, node, x, top, outer);
 
 }
 
@@ -1073,10 +1082,7 @@ static int measure(struct layout *layout, unsigned int node, int availw)
     layout->truncated = 0;
     layout->extent = 0;
 
-    if (isreplaced(layout, node))
-        layoutreplaced(layout, node, 0, 0, availw);
-    else
-        layoutblock(layout, node, 0, 0, availw);
+    layoutblock(layout, node, 0, 0, availw);
 
     needed = layout->extent - ml;
 
@@ -1184,10 +1190,24 @@ static void layoutblockchild(struct layout *layout, struct flow *flow, unsigned 
 
     flushline(layout, flow, 0);
 
-    top = flow->y + collapse(flow->pending, resolve(&style->margin[CSS_TOP], availw));
+    /* the first block's margin has already been joined with the parent's, which moved the parent instead */
+    top = (flow->collapsed) ? flow->y : flow->y + collapse(flow->pending, collapse(resolve(&style->margin[CSS_TOP], availw), leadingmargin(layout, node, availw)));
+    flow->collapsed = 0;
+    layout->trailing = 0;
 
     if (style->clear)
         top = max(top, clearance(layout, style->clear, flow->y));
+
+    /* a box sized to its content is measured first and then placed at that width */
+    if (style->width.unit == CSS_UNIT_FIT && !isreplaced(layout, node))
+    {
+
+        int width = measure(layout, node, availw);
+
+        layout->forcenode = node;
+        layout->forcewidth = width;
+
+    }
 
     /* a box with its own formatting context sits beside floats instead of under them */
     if (style->overflow || style->display == CSS_DISPLAY_TABLE)
@@ -1206,7 +1226,7 @@ static void layoutblockchild(struct layout *layout, struct flow *flow, unsigned 
 
     }
 
-    flow->pending = resolve(&style->margin[CSS_BOTTOM], availw);
+    flow->pending = collapse(layout->trailing, resolve(&style->margin[CSS_BOTTOM], availw));
 
     fitline(layout, flow);
 
@@ -1328,6 +1348,51 @@ static unsigned int isblank(struct layout *layout, unsigned int node)
     }
 
     return 1;
+
+}
+
+static unsigned int isopen(struct layout *layout, unsigned int node, unsigned int side)
+{
+
+    struct css_style *style = getstyle(layout, node);
+
+    return !style->borderwidth[side] && !style->padding[side].value && !isroot(layout, node);
+
+}
+
+static int leadingmargin(struct layout *layout, unsigned int node, int availw)
+{
+
+    unsigned int child;
+
+    if (!isopen(layout, node, CSS_TOP))
+        return 0;
+
+    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    {
+
+        struct html_node *element = getnode(layout, child);
+        struct css_style *style;
+
+        if (element->type == HTML_NODE_TEXT && !isblank(layout, child))
+            return 0;
+
+        if (element->type != HTML_NODE_ELEMENT)
+            continue;
+
+        style = getstyle(layout, child);
+
+        if (!isvisible(style) || style->floating)
+            continue;
+
+        if (style->display == CSS_DISPLAY_INLINE || style->display == CSS_DISPLAY_INLINEBLOCK || style->clear)
+            return 0;
+
+        return collapse(resolve(&style->margin[CSS_TOP], availw), leadingmargin(layout, child, availw));
+
+    }
+
+    return 0;
 
 }
 
@@ -1516,6 +1581,7 @@ static void initflow(struct layout *layout, struct flow *flow, unsigned int node
     flow->pending = 0;
     flow->itemstart = layout->itemcount;
     flow->space = 0;
+    flow->collapsed = 0;
     flow->node = node;
     flow->type = FLOW_NORMAL;
 
@@ -2051,6 +2117,74 @@ static unsigned int isflexitem(struct layout *layout, unsigned int node)
 
 }
 
+static unsigned int isordered(struct layout *layout, unsigned int node)
+{
+
+    unsigned int child;
+
+    if (getstyle(layout, node)->reverse)
+        return 1;
+
+    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    {
+
+        if (isflexitem(layout, child) && getstyle(layout, child)->order)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int follows(struct layout *layout, unsigned int a, unsigned int b, unsigned int reverse)
+{
+
+    int ordera = getstyle(layout, a)->order;
+    int orderb = getstyle(layout, b)->order;
+
+    if (ordera != orderb)
+        return (reverse) ? ordera < orderb : ordera > orderb;
+
+    return (reverse) ? a < b : a > b;
+
+}
+
+static unsigned int nextitem(struct layout *layout, unsigned int node, unsigned int prev, unsigned int ordered)
+{
+
+    unsigned int reverse = getstyle(layout, node)->reverse;
+    unsigned int best = 0;
+    unsigned int child;
+
+    if (!ordered)
+    {
+
+        child = (prev) ? getnode(layout, prev)->next : getnode(layout, node)->first;
+
+        while (child && !isflexitem(layout, child))
+            child = getnode(layout, child)->next;
+
+        return child;
+
+    }
+
+    /* items go by order and then by source, backwards for a reversed direction */
+    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    {
+
+        if (!isflexitem(layout, child) || (prev && !follows(layout, child, prev, reverse)))
+            continue;
+
+        if (!best || follows(layout, best, child, reverse))
+            best = child;
+
+    }
+
+    return best;
+
+}
+
 static int placeflexitem(struct layout *layout, struct layout_flexitem *item, int x, int y)
 {
 
@@ -2116,20 +2250,19 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
     struct css_style *style = getstyle(layout, node);
     int availw = flow->right - flow->left;
     int gap = style->columngap;
+    unsigned int justify = (style->reverse && style->justify == CSS_FLEX_START) ? CSS_FLEX_END : (style->reverse && style->justify == CSS_FLEX_END) ? CSS_FLEX_START : style->justify;
     int fixed = (style->height.unit == CSS_UNIT_PX) ? style->height.value - ((style->borderbox) ? style->borderwidth[CSS_TOP] + style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_TOP], availw) + resolve(&style->padding[CSS_BOTTOM], availw) : 0) : -1;
     unsigned int base = layout->flexcount;
+    unsigned int ordered = isordered(layout, node);
     unsigned int start;
     unsigned int child;
     int y = flow->y;
 
-    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    for (child = nextitem(layout, node, 0, ordered); child; child = nextitem(layout, node, child, ordered))
     {
 
         struct css_style *childstyle;
         struct layout_flexitem *item;
-
-        if (!isflexitem(layout, child))
-            continue;
 
         if (layout->flexcount >= LAYOUT_FLEXITEMS)
         {
@@ -2221,7 +2354,7 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
         if (!layout->measuring && free > 0)
         {
 
-            switch (style->justify)
+            switch (justify)
             {
 
             case CSS_FLEX_END:
@@ -2304,20 +2437,18 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
     int gap = (style->rowgap) ? style->rowgap : style->columngap;
     int fixed = (style->height.unit == CSS_UNIT_PX) ? style->height.value - ((style->borderbox) ? style->borderwidth[CSS_TOP] + style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_TOP], availw) + resolve(&style->padding[CSS_BOTTOM], availw) : 0) : -1;
     unsigned int base = layout->flexcount;
+    unsigned int ordered = isordered(layout, node);
     unsigned int child;
     unsigned int i;
     int y = flow->y;
 
-    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    for (child = nextitem(layout, node, 0, ordered); child; child = nextitem(layout, node, child, ordered))
     {
 
         struct css_style *childstyle;
         struct layout_flexitem *item;
         unsigned int align;
         int outer;
-
-        if (!isflexitem(layout, child))
-            continue;
 
         if (layout->flexcount >= LAYOUT_FLEXITEMS)
         {
@@ -2478,6 +2609,15 @@ static void placeabsolute(struct layout *layout, unsigned int container, struct 
     int y;
     int height;
 
+    /* a fixed box is placed against the first screen, since the page scrolls as one picture */
+    if (style->position == CSS_POSITION_FIXED)
+    {
+
+        cy = 0;
+        ch = layout->viewheight;
+
+    }
+
     if (!haswidth && hasleft && hasright && !isreplaced(layout, absolute->node))
         width = max(cw - left - right - ml - mr, 0);
     else
@@ -2610,7 +2750,11 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     struct columns columns;
     struct flow flow;
     int contentheight;
+    int trailing;
     unsigned int child;
+
+    if (isreplaced(layout, node))
+        return layoutreplaced(layout, node, x, top, availw);
 
     if (style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT)
     {
@@ -2686,6 +2830,8 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
     initflow(layout, &flow, node, box->x + bl + pl, box->x + bl + pl + cw, top + bt + pt);
 
+    flow.collapsed = isopen(layout, node, CSS_TOP);
+
     if (style->display == CSS_DISPLAY_LISTITEM && style->liststyle != CSS_LIST_NONE)
         setmarker(layout, node, flow.left, flow.y);
 
@@ -2749,7 +2895,9 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     if (layout->marker && layout->fragments[layout->marker - 1].node == node)
         placemarker(layout, top + bt + pt + layout->fragments[layout->marker - 1].ascent);
 
-    contentheight = flow.y + max(flow.pending, 0) - (top + bt + pt);
+    /* a last child's bottom margin passes through a parent without border, padding or height */
+    trailing = (isopen(layout, node, CSS_BOTTOM) && style->height.unit != CSS_UNIT_PX && !(style->minheight.unit == CSS_UNIT_PX && style->minheight.value > 0)) ? flow.pending : 0;
+    contentheight = flow.y + max(flow.pending - trailing, 0) - (top + bt + pt);
 
     /* without clearfix pseudo elements every block grows to hold its own floats */
     contentheight = max(contentheight, floatbottom(layout, floatstart, top + bt + pt) - (top + bt + pt));
@@ -2783,11 +2931,13 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     if (!layout->measuring && style->position == CSS_POSITION_RELATIVE)
         shiftrelative(layout, node, fragmentstart, availw);
 
+    layout->trailing = trailing;
+
     return box->h;
 
 }
 
-void layout_document(struct layout *layout, unsigned int width)
+void layout_document(struct layout *layout, unsigned int width, unsigned int height)
 {
 
     struct html_document *document = layout->document;
@@ -2810,6 +2960,7 @@ void layout_document(struct layout *layout, unsigned int width)
     layout->absolutecount = 0;
     layout->extent = 0;
     layout->height = 0;
+    layout->viewheight = height;
     layout->full = 0;
 
     for (node = 0; node < document->nodecount; node++)

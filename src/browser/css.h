@@ -12,6 +12,7 @@
 #define CSS_UNIT_PERCENT                1
 #define CSS_UNIT_AUTO                   2
 #define CSS_UNIT_NONE                   3
+#define CSS_UNIT_FIT                    4
 #define CSS_DISPLAY_INLINE              0
 #define CSS_DISPLAY_BLOCK               1
 #define CSS_DISPLAY_LISTITEM            2
@@ -106,6 +107,7 @@ struct css_style
     unsigned char keyword;
     unsigned char spacing;
     unsigned char collapse;
+    unsigned char reverse;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;
@@ -117,6 +119,7 @@ struct css_style
     unsigned short columngap;
     unsigned short grow;
     unsigned short shrink;
+    short order;
     unsigned int color;
     unsigned int fill;
     unsigned int background;

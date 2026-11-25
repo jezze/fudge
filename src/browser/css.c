@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      87
+#define PROPERTIES                      88
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -68,6 +68,7 @@
 #define PROP_FONTFAMILY                 84
 #define PROP_BORDERSPACING              85
 #define PROP_BORDERCOLLAPSE             86
+#define PROP_ORDER                      87
 #define PROP_CUSTOM                     255
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
@@ -256,7 +257,7 @@ static char *properties[PROPERTIES] = {
     "row-gap", "column-gap", "grid-gap", "fill",
     "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow",
     "float", "clear", "overflow", "overflow-x", "overflow-y",
-    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse"
+    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -1729,6 +1730,9 @@ static struct lengthvalue parselength(struct context *context, char *text, unsig
     if (matchword(text, length, "none"))
         return lengthvalue(0, CSS_UNIT_NONE, 1);
 
+    if (matchword(text, length, "fit-content") || matchword(text, length, "max-content"))
+        return lengthvalue(0, CSS_UNIT_FIT, 1);
+
     if (length > 4 && (buffer_match(text, "calc(", 5) || buffer_match(text, "min(", 4) || buffer_match(text, "max(", 4) || buffer_match(text, "clamp(", 6)))
         return evaluatelength(context, text, length, fontsize);
 
@@ -2345,6 +2349,11 @@ static void setflexflow(struct context *context, char *value)
             context->style->column = 0;
         else if (matchword(text, length, "column") || matchword(text, length, "column-reverse"))
             context->style->column = 1;
+
+        if (matchword(text, length, "row") || matchword(text, length, "column"))
+            context->style->reverse = 0;
+        else if (matchword(text, length, "row-reverse") || matchword(text, length, "column-reverse"))
+            context->style->reverse = 1;
         else if (matchword(text, length, "nowrap"))
             context->style->wrap = 0;
         else if (matchword(text, length, "wrap") || matchword(text, length, "wrap-reverse"))
@@ -3230,6 +3239,12 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
     case PROP_FLEXDIRECTION:
         style->column = from->column;
+        style->reverse = from->reverse;
+
+        break;
+
+    case PROP_ORDER:
+        style->order = from->order;
 
         break;
 
@@ -3262,6 +3277,7 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
     case PROP_FLEXFLOW:
         style->wrap = from->wrap;
         style->column = from->column;
+        style->reverse = from->reverse;
 
         break;
 
@@ -3671,6 +3687,19 @@ static void apply(struct context *context, unsigned int property, char *value)
 
     case PROP_FLEXDIRECTION:
         style->column = matchword(value, length, "column") || matchword(value, length, "column-reverse");
+        style->reverse = matchword(value, length, "row-reverse") || matchword(value, length, "column-reverse");
+
+        break;
+
+    case PROP_ORDER:
+        {
+
+            struct number number = parsenumber(value, length);
+
+            if (number.length == length && number.milli >= -32000000 && number.milli <= 32000000)
+                style->order = number.milli / 1000;
+
+        }
 
         break;
 
