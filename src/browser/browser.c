@@ -990,8 +990,16 @@ static void render(void)
     height = (height > limit) ? limit : height;
     height = (height > MAXHEIGHT) ? MAXHEIGHT : height;
 
-    if (fs_write(1, image->target, image->id, &zero, 1, viewwidth * height * 4 - 1) != 1)
-        return;
+    /* memsrv is shared, so a long page is cut shorter until its image fits */
+    while (fs_write(1, image->target, image->id, &zero, 1, viewwidth * height * 4 - 1) != 1)
+    {
+
+        if (height <= viewheight)
+            return;
+
+        height = (height / 2 > viewheight) ? height / 2 : viewheight;
+
+    }
 
     canvas.pixels = fs_mmap(1, image->target, image->id, 0);
     canvas.width = viewwidth;
