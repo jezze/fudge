@@ -1,10 +1,12 @@
 #include <fudge.h>
 #include "html.h"
 #include "css.h"
+#include <font.h>
 #include "font.h"
 #include "layout.h"
 
 #define COLUMNS                         16
+#define FLEXLINES                       64
 #define MEASUREDEPTH                    8
 #define MEASUREWIDTH                    8192
 #define NONE                            0xFFFFFFFF
@@ -41,6 +43,7 @@ struct metrics
     int descent;
     int space;
     int spacing;
+    unsigned int casing;
 
 };
 
@@ -127,6 +130,24 @@ static int min(int a, int b)
 
 }
 
+static int percentof(int base, int value)
+{
+
+    int magnitude = (value < 0) ? -value : value;
+    int high = base * (magnitude / 100);
+    int low = base * (magnitude % 100);
+    int result;
+
+    /* the value is a thousandth of a percent, split so tall pages do not overflow, and rounded */
+    if (base < 0)
+        return -percentof(-base, value);
+
+    result = (high + (low + 50) / 100 + 500) / 1000;
+
+    return (value < 0) ? -result : result;
+
+}
+
 static int resolve(struct css_length *length, int base)
 {
 
@@ -137,7 +158,7 @@ static int resolve(struct css_length *length, int base)
         return length->value;
 
     case CSS_UNIT_PERCENT:
-        return base * (length->value / 10) / 10000 + length->offset;
+        return percentof(base, length->value) + length->offset;
 
     }
 
@@ -156,17 +177,16 @@ static struct metrics getmetrics(struct layout *layout, struct css_style *style)
 {
 
     struct metrics metrics;
-    struct font_face *face;
     int lineheight;
     int halfleading;
 
-    metrics.choice = font_choose(style->fontsize, style->bold);
-    face = &layout->faces[metrics.choice.face];
-    metrics.glyphheight = face->height * metrics.choice.scale;
-    metrics.glyphascent = face->ascent * metrics.choice.scale;
+    metrics.choice = font_choose(style->fontsize, style->bold, style->monospace);
+    metrics.glyphascent = font_getascent(layout->faces, metrics.choice);
+    metrics.glyphheight = metrics.glyphascent + font_getdescent(layout->faces, metrics.choice);
     metrics.spacing = style->letterspacing;
-    metrics.space = font_getglyph(face, ' ')->width * metrics.choice.scale + metrics.spacing;
-    lineheight = (style->lineheight) ? style->lineheight : max(metrics.glyphheight + 2, style->fontsize * 6 / 5);
+    metrics.casing = (style->transform == CSS_TRANSFORM_UPPERCASE) ? FONT_UPPERCASE : (style->transform == CSS_TRANSFORM_LOWERCASE) ? FONT_LOWERCASE : 0;
+    metrics.space = (font_getglyph(layout->faces, metrics.choice, ' ')->advance + 32) / 64 + metrics.spacing;
+    lineheight = (style->lineheight) ? style->lineheight : font_getlineheight(layout->faces, metrics.choice);
     halfleading = (lineheight - metrics.glyphheight) / 2;
     metrics.ascent = halfleading + metrics.glyphascent;
     metrics.descent = lineheight - metrics.ascent;
@@ -175,14 +195,36 @@ static struct metrics getmetrics(struct layout *layout, struct css_style *style)
 
 }
 
+struct pen
+{
+
+    int x;
+    unsigned int previous;
+
+};
+
+static void advance(struct layout *layout, struct metrics *metrics, struct pen *pen, unsigned int codepoint)
+{
+
+    struct font_glyph *glyph = font_getglyph(layout->faces, metrics->choice, font_setcase(codepoint, metrics->casing));
+
+    /* pairs are kerned within a word only, spaces are measured apart from the words around them */
+    pen->x += glyph->advance + metrics->spacing * 64 + font_getkerning(layout->faces, metrics->choice, pen->previous, glyph->id);
+    pen->previous = (codepoint == ' ') ? 0 : glyph->id;
+
+}
+
 static int measuretext(struct layout *layout, struct metrics *metrics, char *text, unsigned int length, unsigned int collapse)
 {
 
-    struct font_face *face = &layout->faces[metrics->choice.face];
+    struct pen pen;
     unsigned int space = 0;
-    int width = 0;
     unsigned int i = 0;
 
+    pen.x = 0;
+    pen.previous = 0;
+
+    /* the pieces are added in 1/64 pixels and rounded once, as painting does */
     while (i < length)
     {
 
@@ -192,7 +234,7 @@ static int measuretext(struct layout *layout, struct metrics *metrics, char *tex
         {
 
             if (!space)
-                width += metrics->space;
+                advance(layout, metrics, &pen, ' ');
 
             space = 1;
             i++;
@@ -203,20 +245,22 @@ static int measuretext(struct layout *layout, struct metrics *metrics, char *tex
 
         space = 0;
         i += utf8_read(text + i, length - i, &codepoint);
-        width += font_getglyph(face, codepoint)->width * metrics->choice.scale + metrics->spacing;
+        advance(layout, metrics, &pen, codepoint);
 
     }
 
-    return width;
+    return (pen.x + 32) / 64;
 
 }
 
 static unsigned int fitbytes(struct layout *layout, struct metrics *metrics, char *text, unsigned int length, int width)
 {
 
-    struct font_face *face = &layout->faces[metrics->choice.face];
+    struct pen pen;
     unsigned int i = 0;
-    int used = 0;
+
+    pen.x = 0;
+    pen.previous = 0;
 
     while (i < length)
     {
@@ -224,9 +268,9 @@ static unsigned int fitbytes(struct layout *layout, struct metrics *metrics, cha
         unsigned int codepoint;
         unsigned int size = utf8_read(text + i, length - i, &codepoint);
 
-        used += font_getglyph(face, codepoint)->width * metrics->choice.scale + metrics->spacing;
+        advance(layout, metrics, &pen, codepoint);
 
-        if (used > width && i)
+        if ((pen.x + 32) / 64 > width && i)
             break;
 
         i += size;
@@ -261,7 +305,8 @@ static unsigned int addfragment(struct layout *layout, unsigned int node, unsign
     fragment->w = width;
     fragment->h = metrics->glyphheight;
     fragment->face = metrics->choice.face;
-    fragment->scale = metrics->choice.scale;
+    fragment->size = metrics->choice.size;
+    fragment->casing = metrics->casing;
     fragment->ascent = metrics->glyphascent;
     fragment->collapse = 0;
     fragment->depth = layout->atomicdepth;
@@ -982,13 +1027,14 @@ static int replacedwidth(struct layout *layout, unsigned int node, struct metric
     struct html_node *element = getnode(layout, node);
     char *size = html_getattribute(document, node, "size");
     char *type = html_getattribute(document, node, "type");
-    int charwidth = max(metrics->space, 1);
+    int charwidth = max(font_getaveragewidth(layout->faces, metrics->choice), 1);
+    int widest = font_getboxwidth(layout->faces, metrics->choice);
 
     if (element->tag == HTML_TAG_INPUT && type && (cstring_match(type, "checkbox") || cstring_match(type, "radio")))
         return metrics->glyphheight;
 
     if (element->tag == HTML_TAG_INPUT && !(type && (cstring_match(type, "submit") || cstring_match(type, "button") || cstring_match(type, "reset") || cstring_match(type, "image"))))
-        return charwidth * ((size) ? (int)cstring_read_value(size, cstring_length(size), 10) : 20);
+        return charwidth * ((size) ? (int)cstring_read_value(size, cstring_length(size), 10) : 20) + max(widest - charwidth, 0);
 
     if (element->tag == HTML_TAG_SELECT)
         return labelwidth + charwidth * 2;
@@ -1163,12 +1209,11 @@ static int measure(struct layout *layout, unsigned int node, int availw)
 
     needed = layout->extent - ml - resolve(&style->margin[CSS_RIGHT], availw);
 
-    if (style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT || isreplaced(layout, node))
+    /* a percentage of a width still being found is no width, so the content decides the narrowest box */
+    if (style->width.unit == CSS_UNIT_PX || (style->width.unit == CSS_UNIT_PERCENT && !layout->minimum) || isreplaced(layout, node))
         needed = layout->boxes[node].w;
 
-    if (!layout->minimum)
-        needed = min(needed, layout->boxes[node].w);
-
+    /* content that cannot wrap any narrower makes the box wider than the room it was given, as in css */
     needed = max(needed, 0);
 
     /* a width guessed at the depth limit is not kept, so it never stands in for a real one */
@@ -1369,7 +1414,8 @@ static void placefloat(struct layout *layout, struct flow *flow, unsigned int no
 
     }
 
-    layout->extent = max(layout->extent, x + outer);
+    /* a right float pushed past the left edge still needs its whole width when shrinking to fit */
+    layout->extent = max(layout->extent, max(x, band.left) + outer);
 
     fitline(layout, flow);
 
@@ -1973,6 +2019,16 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
 
         cells[count].node = cell;
         cells[count].fragmentstart = layout->fragmentcount;
+
+        /* the columns already settled how wide the cell is, its own width took part in that */
+        if (getstyle(layout, cell)->display == CSS_DISPLAY_CELL)
+        {
+
+            layout->forcenode = cell;
+            layout->forcewidth = width;
+
+        }
+
         cells[count].height = layoutblock(layout, cell, x, box->y + top, width) + cells[count].margins;
         cells[count].natural = layout->natural + cells[count].margins;
         cells[count].fragmentend = layout->fragmentcount;
@@ -2200,6 +2256,8 @@ static int basesize(struct layout *layout, unsigned int node, int availw, unsign
 
     if (usebasis && (style->basis.unit == CSS_UNIT_PX || style->basis.unit == CSS_UNIT_PERCENT))
         size = resolve(&style->basis, availw) + extra;
+    else if (usebasis && style->basis.unit == CSS_UNIT_MINCONTENT)
+        size = measuremin(layout, node);
     else if ((style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT) && !isreplaced(layout, node))
         size = resolve(&style->width, availw) + extra;
     else
@@ -2499,6 +2557,8 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
     int minimum = flexminimum(layout, node, availw);
     unsigned int base = layout->flexcount;
     unsigned int ordered = isordered(layout, node);
+    unsigned int lines[FLEXLINES];
+    unsigned int linecount = 0;
     unsigned int start;
     unsigned int child;
     int y = flow->y;
@@ -2698,10 +2758,45 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
         }
 
         y += cross;
+
+        if (linecount < FLEXLINES)
+            lines[linecount++] = start;
+
         start = end;
 
         if (start < layout->flexcount)
             y += style->rowgap;
+
+    }
+
+    /* lines of a wrapping container with a height share what is left of it, each item aligns in its taller line */
+    if (!layout->measuring && linecount > 1 && fixed > y - flow->y)
+    {
+
+        int extra = (fixed - (y - flow->y)) / (int)linecount;
+        unsigned int line;
+
+        for (line = 0; line < linecount; line++)
+        {
+
+            unsigned int last = (line + 1 < linecount) ? lines[line + 1] : layout->flexcount;
+            unsigned int i;
+
+            for (i = lines[line]; i < last; i++)
+            {
+
+                struct layout_flexitem *item = &layout->flexitems[i];
+
+                if (line)
+                    translate(layout, item->node, item->fragmentstart, item->fragmentend, 0, extra * (int)line, 1);
+
+                alignflexitem(layout, item, getalign(style, getstyle(layout, item->node)), extra, 0);
+
+            }
+
+        }
+
+        y = flow->y + fixed;
 
     }
 

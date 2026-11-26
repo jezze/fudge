@@ -5,6 +5,7 @@
 #include <image.h>
 #include "html.h"
 #include "css.h"
+#include <font.h>
 #include "font.h"
 #include "layout.h"
 #include "paint.h"
@@ -109,15 +110,12 @@ static unsigned int viewwidth;
 static unsigned int viewheight;
 static unsigned int scrolly;
 static unsigned int scheme = CSS_SCHEME_LIGHT;
+static char fontdata[FONT_FACES][FONT_DATA];
 static char *fontpaths[FONT_FACES] = {
-    "initrd:data/font/ter-112n.pcf",
-    "initrd:data/font/ter-114n.pcf",
-    "initrd:data/font/ter-116n.pcf",
-    "initrd:data/font/ter-118n.pcf",
-    "initrd:data/font/ter-112b.pcf",
-    "initrd:data/font/ter-114b.pcf",
-    "initrd:data/font/ter-116b.pcf",
-    "initrd:data/font/ter-118b.pcf"
+    "initrd:data/font/LiberationSans-Regular.ttf",
+    "initrd:data/font/LiberationSans-Bold.ttf",
+    "initrd:data/font/LiberationMono-Regular.ttf",
+    "initrd:data/font/LiberationMono-Bold.ttf"
 };
 static char *home =
     "<html><head><title>Start</title><style>"
@@ -1634,8 +1632,9 @@ static void loadfonts(void)
 
     unsigned int i;
 
+    /* the outlines are read while drawing, so every font keeps its own buffer */
     for (i = 0; i < FONT_FACES; i++)
-        font_load(&faces[i], source, fs_read_path(1, fontpaths[i], source, SOURCESIZE));
+        font_load(&faces[i], fontdata[i], fs_read_path(1, fontpaths[i], fontdata[i], FONT_DATA));
 
 }
 
@@ -1847,3 +1846,4 @@ void init(void)
     channel_bind(MESSAGE_TYPE_WMEVENT, onwmevent);
 
 }
+

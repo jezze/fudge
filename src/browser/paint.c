@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include "html.h"
 #include "css.h"
+#include <font.h>
 #include "font.h"
 #include "layout.h"
 #include "paint.h"
@@ -67,33 +68,123 @@ static void fill(struct paint_canvas *canvas, int x, int y, int w, int h, unsign
 
 static int root(int value);
 
-static int cornerinset(int row, int height, int radius)
+static int max(int a, int b)
+{
+
+    return (a > b) ? a : b;
+
+}
+
+struct corners
+{
+
+    int rx[CSS_CORNERS];
+    int ry[CSS_CORNERS];
+
+};
+
+struct insets
+{
+
+    int left;
+    int right;
+
+};
+
+static int arcinset(int distance, int rx, int ry)
 {
 
     int d;
 
-    if (radius <= 0)
+    if (rx <= 0 || ry <= 0 || distance >= ry || distance < 0)
         return 0;
 
-    if (row >= height - radius)
-        row = height - 1 - row;
+    d = ry * 2 - distance * 2 - 1;
 
-    if (row >= radius || row < 0)
-        return 0;
-
-    d = radius * 2 - row * 2 - 1;
-
-    return radius - root(radius * radius * 4 - d * d) / 2;
+    return rx - rx * root(ry * ry * 4 - d * d) / (ry * 2);
 
 }
 
-static int getradius(struct css_style *style, struct layout_box *box)
+static struct insets rowinsets(struct corners *corners, int row, int height)
 {
 
-    int limit = ((box->w < box->h) ? box->w : box->h) / 2;
-    int radius = (style->radius.unit == CSS_UNIT_PERCENT) ? limit * 2 * (style->radius.value / 10) / 10000 : style->radius.value;
+    struct insets insets;
 
-    return (radius > limit) ? limit : (radius < 0) ? 0 : radius;
+    insets.left = max(arcinset(row, corners->rx[CSS_TOPLEFT], corners->ry[CSS_TOPLEFT]), arcinset(height - 1 - row, corners->rx[CSS_BOTTOMLEFT], corners->ry[CSS_BOTTOMLEFT]));
+    insets.right = max(arcinset(row, corners->rx[CSS_TOPRIGHT], corners->ry[CSS_TOPRIGHT]), arcinset(height - 1 - row, corners->rx[CSS_BOTTOMRIGHT], corners->ry[CSS_BOTTOMRIGHT]));
+
+    return insets;
+
+}
+
+static int fitscale(int scale, int side, int a, int b)
+{
+
+    return (a + b > side && a + b > 0 && side * 1000 / (a + b) < scale) ? side * 1000 / (a + b) : scale;
+
+}
+
+static struct corners getcorners(struct css_style *style, struct layout_box *box)
+{
+
+    struct corners corners;
+    int scale = 1000;
+    unsigned int i;
+
+    /* a percentage is of the width across and of the height down, so half of each makes an ellipse */
+    for (i = 0; i < CSS_CORNERS; i++)
+    {
+
+        struct css_length *length = &style->radius[i];
+
+        corners.rx[i] = (length->unit == CSS_UNIT_PERCENT) ? box->w * (length->value / 10) / 10000 : (length->unit == CSS_UNIT_PX) ? length->value : 0;
+        corners.ry[i] = (length->unit == CSS_UNIT_PERCENT) ? box->h * (length->value / 10) / 10000 : corners.rx[i];
+        corners.rx[i] = max(corners.rx[i], 0);
+        corners.ry[i] = max(corners.ry[i], 0);
+
+    }
+
+    /* corners that would overlap along a side all shrink by the same factor */
+    scale = fitscale(scale, box->w, corners.rx[CSS_TOPLEFT], corners.rx[CSS_TOPRIGHT]);
+    scale = fitscale(scale, box->w, corners.rx[CSS_BOTTOMLEFT], corners.rx[CSS_BOTTOMRIGHT]);
+    scale = fitscale(scale, box->h, corners.ry[CSS_TOPLEFT], corners.ry[CSS_BOTTOMLEFT]);
+    scale = fitscale(scale, box->h, corners.ry[CSS_TOPRIGHT], corners.ry[CSS_BOTTOMRIGHT]);
+
+    for (i = 0; i < CSS_CORNERS; i++)
+    {
+
+        corners.rx[i] = corners.rx[i] * scale / 1000;
+        corners.ry[i] = corners.ry[i] * scale / 1000;
+
+    }
+
+    return corners;
+
+}
+
+static struct corners growcorners(struct corners *corners, int amount)
+{
+
+    struct corners grown;
+    unsigned int i;
+
+    /* a corner with no rounding stays sharp when the box it follows grows or shrinks */
+    for (i = 0; i < CSS_CORNERS; i++)
+    {
+
+        grown.rx[i] = (corners->rx[i]) ? max(corners->rx[i] + amount, 0) : 0;
+        grown.ry[i] = (corners->ry[i]) ? max(corners->ry[i] + amount, 0) : 0;
+
+    }
+
+    return grown;
+
+}
+
+static unsigned int isrounded(struct corners *corners)
+{
+
+    return corners->rx[0] || corners->rx[1] || corners->rx[2] || corners->rx[3];
 
 }
 
@@ -261,7 +352,7 @@ static unsigned int shadeat(struct shade *shade, int i, int j)
 
 }
 
-static void paintgradient(struct paint_canvas *canvas, struct css_gradient *gradient, struct layout_box *box, int radius, unsigned int opacity)
+static void paintgradient(struct paint_canvas *canvas, struct css_gradient *gradient, struct layout_box *box, struct corners *corners, unsigned int opacity)
 {
 
     int x0 = (box->x < canvas->clipleft) ? canvas->clipleft : box->x;
@@ -281,9 +372,9 @@ static void paintgradient(struct paint_canvas *canvas, struct css_gradient *grad
     {
 
         unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
-        int inset = cornerinset(j - box->y, box->h, radius);
-        int start = (box->x + inset > x0) ? box->x + inset : x0;
-        int end = (box->x + box->w - inset < x1) ? box->x + box->w - inset : x1;
+        struct insets insets = rowinsets(corners, j - box->y, box->h);
+        int start = (box->x + insets.left > x0) ? box->x + insets.left : x0;
+        int end = (box->x + box->w - insets.right < x1) ? box->x + box->w - insets.right : x1;
 
         for (i = start; i < end; i++)
         {
@@ -385,7 +476,8 @@ static void paintshadow(struct paint_canvas *canvas, struct layout_box *box, str
 
     unsigned int color = fade(style->shadow, style->opacity);
     int blur = style->shadowblur;
-    int radius = getradius(style, box);
+    struct corners corners = getcorners(style, box);
+    struct corners outer = growcorners(&corners, style->shadowspread);
     int left = box->x + style->shadowx - style->shadowspread;
     int top = box->y + style->shadowy - style->shadowspread;
     int right = box->x + box->w + style->shadowx + style->shadowspread;
@@ -394,7 +486,6 @@ static void paintshadow(struct paint_canvas *canvas, struct layout_box *box, str
     int y0 = (top - blur < canvas->cliptop) ? canvas->cliptop : top - blur;
     int x1 = (right + blur > canvas->clipright) ? canvas->clipright : right + blur;
     int y1 = (bottom + blur > canvas->clipbottom) ? canvas->clipbottom : bottom + blur;
-    int corner = (radius) ? radius + style->shadowspread : 0;
     int i;
     int j;
 
@@ -408,9 +499,9 @@ static void paintshadow(struct paint_canvas *canvas, struct layout_box *box, str
         unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
         int vertical = shadowramp(j - top, blur) * shadowramp(bottom - 1 - j, blur) / 0xFF;
         unsigned int inside = j >= box->y && j < box->y + box->h;
-        int inset = (inside) ? cornerinset(j - box->y, box->h, radius) : 0;
+        struct insets inset = rowinsets(&corners, j - box->y, box->h);
         int edge = (j < top) ? 0 : (j >= bottom) ? bottom - top - 1 : j - top;
-        int round = (corner > 0) ? cornerinset(edge, bottom - top, corner) : 0;
+        struct insets round = rowinsets(&outer, edge, bottom - top);
 
         if (!vertical)
             continue;
@@ -420,10 +511,10 @@ static void paintshadow(struct paint_canvas *canvas, struct layout_box *box, str
 
             unsigned int alpha;
 
-            if (inside && i >= box->x + inset && i < box->x + box->w - inset)
+            if (inside && i >= box->x + inset.left && i < box->x + box->w - inset.right)
                 continue;
 
-            alpha = (color >> 24) * (vertical * shadowramp(i - left - round, blur) / 0xFF * shadowramp(right - round - 1 - i, blur) / 0xFF) / 0xFF;
+            alpha = (color >> 24) * (vertical * shadowramp(i - left - round.left, blur) / 0xFF * shadowramp(right - round.right - 1 - i, blur) / 0xFF) / 0xFF;
 
             if (alpha)
                 row[i] = blend(row[i], (alpha << 24) | (color & 0xFFFFFF));
@@ -437,7 +528,7 @@ static void paintshadow(struct paint_canvas *canvas, struct layout_box *box, str
 static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct layout_box *box, struct css_style *style, unsigned int backdrop)
 {
 
-    int radius = getradius(style, box);
+    struct corners corners = getcorners(style, box);
     int bt = style->borderwidth[CSS_TOP];
     int bb = style->borderwidth[CSS_BOTTOM];
     int bl = style->borderwidth[CSS_LEFT];
@@ -448,13 +539,13 @@ static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct 
     if (style->textclip || !backdrop)
         background = 0;
 
-    if (!radius)
+    if (!isrounded(&corners))
     {
 
         fill(canvas, box->x, box->y, box->w, box->h, fade(background, style->opacity));
 
         if (style->gradient && !style->textclip && backdrop)
-            paintgradient(canvas, &layout->gradients[style->gradient - 1], box, 0, style->opacity);
+            paintgradient(canvas, &layout->gradients[style->gradient - 1], box, &corners, style->opacity);
 
         if (ismitred(style))
         {
@@ -477,42 +568,52 @@ static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct 
     for (j = 0; j < box->h; j++)
     {
 
-        int inset = cornerinset(j, box->h, radius);
+        struct insets insets = rowinsets(&corners, j, box->h);
 
-        fill(canvas, box->x + inset, box->y + j, box->w - inset * 2, 1, fade(background, style->opacity));
+        fill(canvas, box->x + insets.left, box->y + j, box->w - insets.left - insets.right, 1, fade(background, style->opacity));
 
     }
 
     if (style->gradient && !style->textclip && backdrop)
-        paintgradient(canvas, &layout->gradients[style->gradient - 1], box, radius, style->opacity);
+        paintgradient(canvas, &layout->gradients[style->gradient - 1], box, &corners, style->opacity);
 
     if (bt || bb || bl || br)
     {
 
+        struct corners inner;
         int innerheight = box->h - bt - bb;
         int innerwidth = box->w - bl - br;
-        int innerradius = radius - ((bt > bl) ? bt : bl);
+
+        /* an inner corner is its outer one less the border on each side, so unequal borders make it oval */
+        inner.rx[CSS_TOPLEFT] = max(corners.rx[CSS_TOPLEFT] - bl, 0);
+        inner.ry[CSS_TOPLEFT] = max(corners.ry[CSS_TOPLEFT] - bt, 0);
+        inner.rx[CSS_TOPRIGHT] = max(corners.rx[CSS_TOPRIGHT] - br, 0);
+        inner.ry[CSS_TOPRIGHT] = max(corners.ry[CSS_TOPRIGHT] - bt, 0);
+        inner.rx[CSS_BOTTOMRIGHT] = max(corners.rx[CSS_BOTTOMRIGHT] - br, 0);
+        inner.ry[CSS_BOTTOMRIGHT] = max(corners.ry[CSS_BOTTOMRIGHT] - bb, 0);
+        inner.rx[CSS_BOTTOMLEFT] = max(corners.rx[CSS_BOTTOMLEFT] - bl, 0);
+        inner.ry[CSS_BOTTOMLEFT] = max(corners.ry[CSS_BOTTOMLEFT] - bb, 0);
 
         for (j = 0; j < box->h; j++)
         {
 
-            int inset = cornerinset(j, box->h, radius);
+            struct insets outer = rowinsets(&corners, j, box->h);
             int y = box->y + j;
 
             if (j < bt || j >= box->h - bb || innerwidth <= 0)
             {
 
-                fill(canvas, box->x + inset, y, box->w - inset * 2, 1, fade(style->bordercolor[(j < bt) ? CSS_TOP : CSS_BOTTOM], style->opacity));
+                fill(canvas, box->x + outer.left, y, box->w - outer.left - outer.right, 1, fade(style->bordercolor[(j < bt) ? CSS_TOP : CSS_BOTTOM], style->opacity));
 
             }
 
             else
             {
 
-                int innerinset = cornerinset(j - bt, innerheight, innerradius);
+                struct insets insets = rowinsets(&inner, j - bt, innerheight);
 
-                fill(canvas, box->x + inset, y, bl + innerinset - inset, 1, fade(style->bordercolor[CSS_LEFT], style->opacity));
-                fill(canvas, box->x + box->w - br - innerinset, y, br + innerinset - inset, 1, fade(style->bordercolor[CSS_RIGHT], style->opacity));
+                fill(canvas, box->x + outer.left, y, bl + insets.left - outer.left, 1, fade(style->bordercolor[CSS_LEFT], style->opacity));
+                fill(canvas, box->x + box->w - br - insets.right, y, br + insets.right - outer.right, 1, fade(style->bordercolor[CSS_RIGHT], style->opacity));
 
             }
 
@@ -576,75 +677,71 @@ static void paintpicture(struct paint_canvas *canvas, struct layout_picture *pic
 
 }
 
-static int paintglyph(struct paint_canvas *canvas, struct font_face *face, unsigned int codepoint, int x, int y, unsigned int scale, unsigned int color, struct shade *shade)
+static void paintglyph(struct paint_canvas *canvas, struct font_glyph *glyph, int x, int y, unsigned int color, struct shade *shade)
 {
 
-    struct font_glyph *glyph = font_getglyph(face, codepoint);
-    int top = y + (face->height - glyph->height) * scale;
-    unsigned int row;
-    unsigned int column;
+    unsigned char *coverage = font_getcoverage(glyph);
+    int left = x + glyph->left;
+    int top = y + glyph->top;
+    int x0 = (left < canvas->clipleft) ? canvas->clipleft : left;
+    int y0 = (top < canvas->cliptop) ? canvas->cliptop : top;
+    int x1 = (left + (int)glyph->width > canvas->clipright) ? canvas->clipright : left + (int)glyph->width;
+    int y1 = (top + (int)glyph->height > canvas->clipbottom) ? canvas->clipbottom : top + (int)glyph->height;
+    int i;
+    int j;
 
-    if (x + glyph->width * (int)scale <= 0 || x >= (int)canvas->width)
-        return glyph->width * scale;
-
-    for (row = 0; row < glyph->height; row++)
+    for (j = y0; j < y1; j++)
     {
 
-        unsigned char *bits = glyph->rows + row * FONT_ROWBYTES;
+        unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
+        unsigned char *source = coverage + (j - top) * glyph->width - left;
 
-        for (column = 0; column < glyph->width; column++)
+        for (i = x0; i < x1; i++)
         {
 
-            if (bits[column >> 3] & (0x80 >> (column & 7)))
-                fill(canvas, x + column * scale, top + row * scale, scale, scale, (shade) ? shadeat(shade, x + column * scale, top + row * scale) : color);
+            unsigned int ink = (shade) ? shadeat(shade, i, j) : color;
+            unsigned int alpha = (ink >> 24) * source[i] / 255;
+
+            if (alpha)
+                row[i] = blend(row[i], (alpha << 24) | (ink & 0xFFFFFF));
 
         }
 
     }
-
-    return glyph->width * scale;
-
-}
-
-static unsigned int transform(unsigned int codepoint, unsigned int mode)
-{
-
-    unsigned int lower = (codepoint >= 'a' && codepoint <= 'z') || (codepoint >= 0xE0 && codepoint <= 0xFE && codepoint != 0xF7);
-    unsigned int upper = (codepoint >= 'A' && codepoint <= 'Z') || (codepoint >= 0xC0 && codepoint <= 0xDE && codepoint != 0xD7);
-
-    if (mode == CSS_TRANSFORM_UPPERCASE && lower)
-        return codepoint - 32;
-
-    if (mode == CSS_TRANSFORM_LOWERCASE && upper)
-        return codepoint + 32;
-
-    return codepoint;
 
 }
 
 static void painttext(struct paint_canvas *canvas, struct layout *layout, struct layout_fragment *fragment, struct css_style *style, unsigned int color, struct shade *shade)
 {
 
-    struct font_face *face = &layout->faces[fragment->face];
+    struct font_choice choice;
     char *text = (fragment->type == LAYOUT_FRAGMENT_TEXT) ? layout->document->text + fragment->text : layout->text + fragment->text;
-    int x = fragment->x;
+    int baseline = fragment->y + fragment->ascent;
+    int pen = fragment->x * 64;
+    unsigned int previous = 0;
     unsigned int space = 0;
     unsigned int i = 0;
 
     if (fragment->y + fragment->h <= canvas->top || fragment->y >= canvas->top + (int)canvas->height)
         return;
 
+    choice.face = fragment->face;
+    choice.size = fragment->size;
+
+    /* glyphs advance in 1/64 pixels from the left of the piece, the same sums layout measured */
     while (i < fragment->length)
     {
 
         unsigned int codepoint;
+        struct font_glyph *glyph;
 
         if (fragment->collapse && (text[i] == ' ' || text[i] == '\n' || text[i] == '\t' || text[i] == '\r' || text[i] == '\f'))
         {
 
             if (!space)
-                x += paintglyph(canvas, face, ' ', x, fragment->y, fragment->scale, color, shade) + style->letterspacing;
+                pen += font_getglyph(layout->faces, choice, ' ')->advance + style->letterspacing * 64;
 
+            previous = 0;
             space = 1;
             i++;
 
@@ -654,7 +751,13 @@ static void painttext(struct paint_canvas *canvas, struct layout *layout, struct
 
         space = 0;
         i += utf8_read(text + i, fragment->length - i, &codepoint);
-        x += paintglyph(canvas, face, transform(codepoint, style->transform), x, fragment->y, fragment->scale, color, shade) + style->letterspacing;
+        glyph = font_render(layout->faces, choice, font_setcase(codepoint, fragment->casing));
+        pen += font_getkerning(layout->faces, choice, previous, glyph->id);
+
+        paintglyph(canvas, glyph, (pen + 32) / 64, baseline, color, shade);
+
+        pen += glyph->advance + style->letterspacing * 64;
+        previous = (codepoint == ' ') ? 0 : glyph->id;
 
     }
 
@@ -753,6 +856,7 @@ static void paintfragment(struct paint_canvas *canvas, struct layout *layout, st
     unsigned int owner = (fragment->type == LAYOUT_FRAGMENT_TEXT) ? document->nodes[fragment->node].parent : fragment->node;
     struct css_style *style = &layout->styles[owner];
     unsigned int color = fade(style->color, style->opacity);
+    int thickness = (fragment->size + 8) / 16;
     unsigned int clip = owner;
     struct shade shade;
 
@@ -794,10 +898,10 @@ static void paintfragment(struct paint_canvas *canvas, struct layout *layout, st
     painttext(canvas, layout, fragment, style, color, 0);
 
     if (style->decoration & CSS_DECORATION_UNDERLINE)
-        fill(canvas, fragment->x, fragment->y + fragment->ascent + fragment->scale, fragment->w, fragment->scale, color);
+        fill(canvas, fragment->x, fragment->y + fragment->ascent + thickness, fragment->w, thickness, color);
 
     if (style->decoration & CSS_DECORATION_LINETHROUGH)
-        fill(canvas, fragment->x, fragment->y + fragment->h / 2, fragment->w, fragment->scale, color);
+        fill(canvas, fragment->x, fragment->y + fragment->ascent - fragment->size * 3 / 10, fragment->w, thickness, color);
 
 }
 
@@ -985,13 +1089,16 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
 
         struct layout_box *html = &layout->boxes[layout->document->html];
         struct layout_box area;
+        struct corners square;
+
+        buffer_clear(&square, sizeof (struct corners));
 
         area.x = html->x;
         area.y = html->y;
         area.w = html->w;
         area.h = (html->h > layout->viewheight) ? html->h : layout->viewheight;
 
-        paintgradient(canvas, &layout->gradients[layout->styles[node].gradient - 1], &area, 0, layout->styles[node].opacity);
+        paintgradient(canvas, &layout->gradients[layout->styles[node].gradient - 1], &area, &square, layout->styles[node].opacity);
 
     }
 

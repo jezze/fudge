@@ -2,56 +2,21 @@
 #include <font.h>
 #include "font.h"
 
-#define PCF_ENTRIES                     24
-
-static unsigned int sizes[FONT_SIZES] = {12, 14, 16, 18};
+static struct font_glyph entries[FONT_ENTRIES];
+static unsigned char pool[FONT_POOL];
+static unsigned int poolcount;
+static unsigned int entrycount;
+static struct ttf_outline outline;
+static struct ttf_raster raster;
 
 static unsigned int mapcodepoint(unsigned int codepoint)
 {
 
-    if (codepoint < 0x80 || (codepoint >= 0xA0 && codepoint < FONT_GLYPHS))
-        return codepoint;
-
+    /* spaces of other widths are drawn as plain ones, a tab or newline never reaches a glyph */
     switch (codepoint)
     {
 
-    case 0x20AC:
-        return 0x80;
-
-    case 0x2018:
-    case 0x2019:
-    case 0x201A:
-    case 0x2032:
-        return '\'';
-
-    case 0x201C:
-    case 0x201D:
-    case 0x201E:
-    case 0x2033:
-        return '"';
-
-    case 0x2010:
-    case 0x2011:
-    case 0x2012:
-    case 0x2013:
-    case 0x2014:
-    case 0x2015:
-    case 0x2212:
-        return '-';
-
-    case 0x2022:
-    case 0x2026:
-    case 0x22C5:
-        return 0xB7;
-
-    case 0x2039:
-    case 0x2190:
-        return '<';
-
-    case 0x203A:
-    case 0x2192:
-        return '>';
-
+    case 0x00A0:
     case 0x2002:
     case 0x2003:
     case 0x2009:
@@ -61,201 +26,202 @@ static unsigned int mapcodepoint(unsigned int codepoint)
 
     }
 
-    return '?';
+    return codepoint;
 
 }
 
-struct font_glyph *font_getglyph(struct font_face *face, unsigned int codepoint)
+static int scale(struct font_face *face, struct font_choice choice, int units)
 {
 
-    return &face->glyphs[mapcodepoint(codepoint)];
+    int value = units * (int)choice.size;
+    int half = (int)face->ttf.unitsperem / 2;
+
+    return (value >= 0) ? (value + half) / (int)face->ttf.unitsperem : -((-value + half) / (int)face->ttf.unitsperem);
 
 }
 
-struct font_choice font_choose(unsigned int size, unsigned int bold)
+struct font_choice font_choose(unsigned int size, unsigned int bold, unsigned int mono)
 {
 
     struct font_choice choice;
-    unsigned int best = 0xFFFF;
-    unsigned int scale;
-    unsigned int i;
 
-    choice.face = 0;
-    choice.scale = 1;
-
-    for (scale = 1; scale <= FONT_SCALES; scale++)
-    {
-
-        for (i = 0; i < FONT_SIZES; i++)
-        {
-
-            unsigned int height = sizes[i] * scale;
-            unsigned int distance = (height > size) ? height - size : size - height;
-
-            if (distance < best)
-            {
-
-                best = distance;
-                choice.face = i;
-                choice.scale = scale;
-
-            }
-
-        }
-
-    }
-
-    if (bold)
-        choice.face += FONT_SIZES;
+    choice.face = ((mono) ? FONT_MONO : 0) + ((bold) ? FONT_BOLD : 0);
+    choice.size = (size < 1) ? 1 : (size > FONT_LARGEST) ? FONT_LARGEST : size;
 
     return choice;
 
 }
 
-static unsigned int readat(void *out, unsigned int count, char *data, unsigned int size, unsigned int offset)
+int font_getascent(struct font_face *faces, struct font_choice choice)
 {
 
-    if (offset > size || count > size - offset)
+    return scale(&faces[choice.face], choice, faces[choice.face].ttf.ascender);
+
+}
+
+int font_getdescent(struct font_face *faces, struct font_choice choice)
+{
+
+    return scale(&faces[choice.face], choice, -faces[choice.face].ttf.descender);
+
+}
+
+int font_getlineheight(struct font_face *faces, struct font_choice choice)
+{
+
+    return font_getascent(faces, choice) + font_getdescent(faces, choice) + scale(&faces[choice.face], choice, faces[choice.face].ttf.linegap);
+
+}
+
+int font_getaveragewidth(struct font_face *faces, struct font_choice choice)
+{
+
+    return scale(&faces[choice.face], choice, faces[choice.face].ttf.averagewidth);
+
+}
+
+int font_getboxwidth(struct font_face *faces, struct font_choice choice)
+{
+
+    return scale(&faces[choice.face], choice, faces[choice.face].ttf.boxwidth);
+
+}
+
+static void clearcache(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < FONT_ENTRIES; i++)
+        entries[i].key = 0;
+
+    entrycount = 0;
+    poolcount = 0;
+
+}
+
+struct font_glyph *font_getglyph(struct font_face *faces, struct font_choice choice, unsigned int codepoint)
+{
+
+    unsigned int key = ((mapcodepoint(codepoint) & 0x1FFFFF) << 11) | (choice.size << 2) | choice.face;
+    unsigned int index = (key * 2654435761u) % FONT_ENTRIES;
+    struct font_glyph *glyph;
+    struct font_face *face = &faces[choice.face];
+    unsigned int id;
+
+    while (entries[index].key)
     {
 
-        buffer_clear(out, count);
+        if (entries[index].key == key)
+            return &entries[index];
 
+        index = (index + 1) % FONT_ENTRIES;
+
+    }
+
+    /* a full table starts over rather than evicting, the page needs few distinct glyphs */
+    if (entrycount >= FONT_ENTRIES * 3 / 4)
+    {
+
+        clearcache();
+
+        index = (key * 2654435761u) % FONT_ENTRIES;
+
+    }
+
+    id = ttf_findglyph(&face->ttf, mapcodepoint(codepoint));
+    glyph = &entries[index];
+    glyph->key = key;
+    glyph->id = id;
+    glyph->advance = (face->ttf.unitsperem) ? (int)(ttf_getadvance(&face->ttf, id) * choice.size * 64 / face->ttf.unitsperem) : 0;
+    glyph->rendered = 0;
+    glyph->left = 0;
+    glyph->top = 0;
+    glyph->width = 0;
+    glyph->height = 0;
+    entrycount++;
+
+    return glyph;
+
+}
+
+struct font_glyph *font_render(struct font_face *faces, struct font_choice choice, unsigned int codepoint)
+{
+
+    struct font_glyph *glyph = font_getglyph(faces, choice, codepoint);
+    struct font_face *face = &faces[choice.face];
+    struct ttf_box box;
+
+    if (glyph->rendered)
+        return glyph;
+
+    if (poolcount + TTF_SIZE * TTF_SIZE > FONT_POOL)
+    {
+
+        clearcache();
+
+        glyph = font_getglyph(faces, choice, codepoint);
+
+    }
+
+    glyph->rendered = 1;
+    glyph->offset = poolcount;
+
+    if (!ttf_loadoutline(&face->ttf, &outline, glyph->id))
+        return glyph;
+
+    box = ttf_render(&raster, &outline, choice.size, face->ttf.unitsperem, pool + poolcount, FONT_POOL - poolcount);
+    glyph->left = box.left;
+    glyph->top = box.top;
+    glyph->width = box.width;
+    glyph->height = box.height;
+    poolcount += box.width * box.height;
+
+    return glyph;
+
+}
+
+int font_getkerning(struct font_face *faces, struct font_choice choice, unsigned int left, unsigned int right)
+{
+
+    struct font_face *face = &faces[choice.face];
+
+    if (!left || !right)
         return 0;
 
-    }
-
-    buffer_copy(out, data + offset, count);
-
-    return 1;
+    return ttf_getkerning(&face->ttf, left, right) * (int)choice.size * 64 / (int)face->ttf.unitsperem;
 
 }
 
-static void loadglyph(struct font_glyph *glyph, char *data, unsigned int size, unsigned int offset, unsigned int align)
+unsigned char *font_getcoverage(struct font_glyph *glyph)
 {
 
-    unsigned int rowbytes = (glyph->width + 7) / 8;
-    unsigned int i;
-
-    if (rowbytes > FONT_ROWBYTES)
-        rowbytes = FONT_ROWBYTES;
-
-    if (glyph->height > FONT_ROWS)
-        glyph->height = FONT_ROWS;
-
-    for (i = 0; i < glyph->height; i++)
-        readat(glyph->rows + i * FONT_ROWBYTES, rowbytes, data, size, offset + i * align);
+    return pool + glyph->offset;
 
 }
 
-static void loadglyphs(struct font_face *face, char *data, unsigned int size, struct pcf_entry *entries, unsigned int count)
+unsigned int font_setcase(unsigned int codepoint, unsigned int casing)
 {
 
-    struct pcf_entry *bdfentry = pcf_findentry(entries, count, PCF_TYPE_BDFENCODINGS);
-    struct pcf_entry *metricsentry = pcf_findentry(entries, count, PCF_TYPE_METRICS);
-    struct pcf_entry *bitmapentry = pcf_findentry(entries, count, PCF_TYPE_BITMAPS);
-    struct pcf_bdfencoding bdfencoding;
-    unsigned int bitmapalign;
-    unsigned int bitmapcount;
-    unsigned int i;
+    unsigned int lower = (codepoint >= 'a' && codepoint <= 'z') || (codepoint >= 0xE0 && codepoint <= 0xFE && codepoint != 0xF7);
+    unsigned int upper = (codepoint >= 'A' && codepoint <= 'Z') || (codepoint >= 0xC0 && codepoint <= 0xDE && codepoint != 0xD7);
 
-    if (!bdfentry || !metricsentry || !bitmapentry)
-        return;
+    if (casing == FONT_UPPERCASE && lower)
+        return codepoint - 32;
 
-    readat(&bdfencoding, sizeof (struct pcf_bdfencoding), data, size, bdfentry->offset + 4);
-    readat(&bitmapcount, sizeof (unsigned int), data, size, bitmapentry->offset + 4);
+    if (casing == FONT_LOWERCASE && upper)
+        return codepoint + 32;
 
-    bitmapalign = 1 << (bitmapentry->format & PCF_FORMAT_PADMASK);
-    bitmapcount = pcf_convert32(bitmapcount, bitmapentry->format);
-
-    for (i = 0; i < FONT_GLYPHS; i++)
-    {
-
-        struct font_glyph *glyph = &face->glyphs[i];
-        unsigned int ascent;
-        unsigned short index;
-        unsigned int bitmapoffset;
-
-        if (!readat(&index, sizeof (unsigned short), data, size, bdfentry->offset + 4 + sizeof (struct pcf_bdfencoding) + 2 * pcf_getbdfoffset(bdfentry, &bdfencoding, i)))
-            continue;
-
-        index = pcf_convert16(index, bdfentry->format);
-
-        if (index == 0xFFFF)
-            continue;
-
-        if (metricsentry->format & PCF_FORMAT_COMPRESSED)
-        {
-
-            struct pcf_metricsdata_compressed metrics;
-
-            readat(&metrics, sizeof (struct pcf_metricsdata_compressed), data, size, metricsentry->offset + 6 + sizeof (struct pcf_metricsdata_compressed) * index);
-
-            glyph->width = metrics.width - 0x80;
-            ascent = metrics.ascent - 0x80;
-            glyph->height = ascent + (metrics.descent - 0x80);
-
-        }
-
-        else
-        {
-
-            struct pcf_metricsdata metrics;
-
-            readat(&metrics, sizeof (struct pcf_metricsdata), data, size, metricsentry->offset + 8 + sizeof (struct pcf_metricsdata) * index);
-
-            glyph->width = pcf_convert16(metrics.width, metricsentry->format);
-            ascent = pcf_convert16(metrics.ascent, metricsentry->format);
-            glyph->height = ascent + pcf_convert16(metrics.descent, metricsentry->format);
-
-        }
-
-        if (glyph->height > face->height)
-        {
-
-            face->height = glyph->height;
-            face->ascent = ascent;
-
-        }
-
-        readat(&bitmapoffset, sizeof (unsigned int), data, size, bitmapentry->offset + 8 + 4 * index);
-
-        bitmapoffset = pcf_convert32(bitmapoffset, bitmapentry->format);
-
-        loadglyph(glyph, data, size, bitmapentry->offset + 8 + 4 * bitmapcount + 4 * 4 + bitmapoffset, bitmapalign);
-
-    }
+    return codepoint;
 
 }
 
 unsigned int font_load(struct font_face *face, char *data, unsigned int size)
 {
 
-    struct pcf_header header;
-    struct pcf_entry entries[PCF_ENTRIES];
-    unsigned int i;
+    clearcache();
 
-    buffer_clear(face, sizeof (struct font_face));
-    readat(&header, sizeof (struct pcf_header), data, size, 0);
-
-    header.entries = pcf_convert32(header.entries, PCF_FORMAT_DEFAULT);
-
-    if (!buffer_match(header.magic, PCF_MAGIC, 4) || header.entries >= PCF_ENTRIES)
-        return 0;
-
-    readat(entries, sizeof (struct pcf_entry) * header.entries, data, size, sizeof (struct pcf_header));
-
-    for (i = 0; i < header.entries; i++)
-    {
-
-        entries[i].type = pcf_convert32(entries[i].type, PCF_FORMAT_DEFAULT);
-        entries[i].format = pcf_convert32(entries[i].format, PCF_FORMAT_DEFAULT);
-        entries[i].size = pcf_convert32(entries[i].size, PCF_FORMAT_DEFAULT);
-        entries[i].offset = pcf_convert32(entries[i].offset, PCF_FORMAT_DEFAULT);
-
-    }
-
-    loadglyphs(face, data, size, entries, header.entries);
-
-    return face->height != 0;
+    return ttf_init(&face->ttf, data, size);
 
 }
+

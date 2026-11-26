@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      95
+#define PROPERTIES                      99
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -76,6 +76,10 @@
 #define PROP_WEBKITBACKGROUNDCLIP       92
 #define PROP_VERTICALALIGN              93
 #define PROP_LETTERSPACING              94
+#define PROP_TOPLEFTRADIUS              95
+#define PROP_TOPRIGHTRADIUS             96
+#define PROP_BOTTOMRIGHTRADIUS          97
+#define PROP_BOTTOMLEFTRADIUS           98
 #define PROP_CUSTOM                     255
 #define POOL_EXACT                      0
 #define POOL_LOWER                      1
@@ -280,7 +284,7 @@ static char *properties[PROPERTIES] = {
     "row-gap", "column-gap", "grid-gap", "fill",
     "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow",
     "float", "clear", "overflow", "overflow-x", "overflow-y",
-    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip", "vertical-align", "letter-spacing"
+    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip", "vertical-align", "letter-spacing", "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -331,6 +335,7 @@ static char *agent =
     "mark{background-color:yellow}"
     "hr{border:1px inset gray;margin:.5em 0}"
     "fieldset{border:2px groove gray;padding:.35em .75em .625em;margin:0 2px}"
+    "button,input,select,textarea{font-size:13.333px}"
     "button{display:inline-block;padding:1px 6px;border:2px outset #c0c0c0;background-color:#e0e0e0;color:#000}"
     "input,select,textarea{display:inline-block;border:2px inset #c0c0c0;padding:1px 2px;background-color:#fff;color:#000}"
     "img{display:inline-block}"
@@ -2475,10 +2480,20 @@ static unsigned int setbasis(struct context *context, char *text, unsigned int l
 
     struct lengthvalue value;
 
-    if (matchword(text, length, "auto") || matchword(text, length, "content"))
+    if (matchword(text, length, "auto") || matchword(text, length, "content") || matchword(text, length, "max-content") || matchword(text, length, "fit-content"))
     {
 
         context->style->basis.unit = CSS_UNIT_AUTO;
+        context->style->basis.value = 0;
+
+        return 1;
+
+    }
+
+    if (matchword(text, length, "min-content"))
+    {
+
+        context->style->basis.unit = CSS_UNIT_MINCONTENT;
         context->style->basis.value = 0;
 
         return 1;
@@ -3323,7 +3338,18 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
         break;
 
     case PROP_BORDERRADIUS:
-        copylength(&style->radius, &from->radius);
+        copylength(&style->radius[CSS_TOPLEFT], &from->radius[CSS_TOPLEFT]);
+        copylength(&style->radius[CSS_TOPRIGHT], &from->radius[CSS_TOPRIGHT]);
+        copylength(&style->radius[CSS_BOTTOMRIGHT], &from->radius[CSS_BOTTOMRIGHT]);
+        copylength(&style->radius[CSS_BOTTOMLEFT], &from->radius[CSS_BOTTOMLEFT]);
+
+        break;
+
+    case PROP_TOPLEFTRADIUS:
+    case PROP_TOPRIGHTRADIUS:
+    case PROP_BOTTOMRIGHTRADIUS:
+    case PROP_BOTTOMLEFTRADIUS:
+        copylength(&style->radius[property - PROP_TOPLEFTRADIUS], &from->radius[property - PROP_TOPLEFTRADIUS]);
 
         break;
 
@@ -3648,6 +3674,53 @@ static void setopacity(struct context *context, char *value, unsigned int length
 
     if (!milli)
         context->style->hidden = 1;
+
+}
+
+static unsigned int setradius(struct context *context, char *value, unsigned int length, unsigned int corner)
+{
+
+    struct lengthvalue radius = parselength(context, value, length, context->style->fontsize);
+
+    /* an elliptical corner keeps only its horizontal radius */
+    if (!radius.valid || radius.length.unit > CSS_UNIT_PERCENT || radius.length.value < 0)
+        return 0;
+
+    copylength(&context->style->radius[corner], &radius.length);
+
+    return 1;
+
+}
+
+static void setradii(struct context *context, char *value)
+{
+
+    struct span spans[CSS_CORNERS];
+    unsigned int count = countspans(value, spans, CSS_CORNERS);
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (value[spans[i].start] == '/')
+            break;
+
+    }
+
+    count = i;
+
+    if (!count)
+        return;
+
+    /* the values go round from the top left as for sides, missing ones copy the opposite corner */
+    for (i = 0; i < CSS_CORNERS; i++)
+    {
+
+        unsigned int source = (i < count) ? i : (i == CSS_BOTTOMRIGHT) ? CSS_TOPLEFT : (i == CSS_BOTTOMLEFT && count > 1) ? CSS_TOPRIGHT : 0;
+
+        setradius(context, value + spans[source].start, spans[source].length, i);
+
+    }
 
 }
 
@@ -4031,20 +4104,15 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_BORDERRADIUS:
-        {
+        setradii(context, value);
 
-            struct span spans[CSS_SIDES];
-            struct lengthvalue radius;
+        break;
 
-            if (!countspans(value, spans, CSS_SIDES))
-                break;
-
-            radius = parselength(context, value + spans[0].start, spans[0].length, style->fontsize);
-
-            if (radius.valid && radius.length.unit <= CSS_UNIT_PERCENT && radius.length.value >= 0)
-                copylength(&style->radius, &radius.length);
-
-        }
+    case PROP_TOPLEFTRADIUS:
+    case PROP_TOPRIGHTRADIUS:
+    case PROP_BOTTOMRIGHTRADIUS:
+    case PROP_BOTTOMLEFTRADIUS:
+        setradius(context, value, length, property - PROP_TOPLEFTRADIUS);
 
         break;
 

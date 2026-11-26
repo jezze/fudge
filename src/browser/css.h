@@ -13,6 +13,12 @@
 #define CSS_UNIT_AUTO                   2
 #define CSS_UNIT_NONE                   3
 #define CSS_UNIT_FIT                    4
+#define CSS_UNIT_MINCONTENT             5
+#define CSS_CORNERS                     4
+#define CSS_TOPLEFT                     0
+#define CSS_TOPRIGHT                    1
+#define CSS_BOTTOMRIGHT                 2
+#define CSS_BOTTOMLEFT                  3
 #define CSS_DISPLAY_INLINE              0
 #define CSS_DISPLAY_BLOCK               1
 #define CSS_DISPLAY_LISTITEM            2
@@ -151,7 +157,7 @@ struct css_style
     struct css_length maxwidth;
     struct css_length minheight;
     struct css_length maxheight;
-    struct css_length radius;
+    struct css_length radius[CSS_CORNERS];
     struct css_length basis;
     struct css_length inset[CSS_SIDES];
 

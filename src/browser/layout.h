@@ -47,7 +47,8 @@ struct layout_fragment
     unsigned char type;
     unsigned char collapse;
     unsigned char face;
-    unsigned char scale;
+    unsigned char size;
+    unsigned char casing;
     unsigned char ascent;
     unsigned char depth;
 
