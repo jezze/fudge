@@ -21,3 +21,5 @@ L:=\
     $(DIR_LIB)/hash/hash.a \
 
 include $(DIR_MK)/bin.mk
+
+ROOTBIN:=$(ROOTBIN) $(B)

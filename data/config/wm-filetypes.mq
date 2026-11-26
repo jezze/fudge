@@ -18,7 +18,7 @@
     {
       suffix: ".html"
       label: "Browse"
-      command: "browser"
+      command: "root:bin/browser"
     }
     {
       suffix: ".pcx"

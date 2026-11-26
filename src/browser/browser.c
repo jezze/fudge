@@ -112,10 +112,10 @@ static unsigned int viewheight;
 static unsigned int scrolly;
 static unsigned int scheme = CSS_SCHEME_LIGHT;
 static char *fontpaths[FONT_FACES] = {
-    "initrd:data/font/LiberationSans-Regular.ttf",
-    "initrd:data/font/LiberationSans-Bold.ttf",
-    "initrd:data/font/LiberationMono-Regular.ttf",
-    "initrd:data/font/LiberationMono-Bold.ttf"
+    "root:data/ttf/LiberationSans-Regular.ttf",
+    "root:data/ttf/LiberationSans-Bold.ttf",
+    "root:data/ttf/LiberationMono-Regular.ttf",
+    "root:data/ttf/LiberationMono-Bold.ttf"
 };
 static char *home =
     "<html><head><title>Start</title><style>"

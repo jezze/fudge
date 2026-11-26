@@ -49,6 +49,7 @@
 #define FUNCTION_DERIVED                1
 #define FUNCTION_ARROW                  2
 #define FUNCTION_ARGUMENTS              4
+#define FUNCTION_CLASS                  8
 #define LOOP_OF                         1
 #define LOOP_IN                         2
 #define PATTERN_ARRAY                   1
@@ -248,6 +249,10 @@
 #define NATIVE_DISPATCHEVENT            130
 #define NATIVE_COMPUTEDSTYLE            131
 #define NATIVE_PROPERTYVALUE            132
+#define NATIVE_FALSE                    133
+#define NATIVE_GETPROTOTYPE             134
+#define NATIVE_SETPROTOTYPE             135
+#define NATIVE_ISINTEGER                136
 #define NATIVE_FILL                     99
 #define SELECTORSIZE                    128
 #define STYLESIZE                       512
@@ -255,7 +260,6 @@
 #define VOIDS                           13
 #define STRINGMETHODS                   25
 #define ARRAYMETHODS                    25
-#define SORTSIZE                        256
 #define DATEFIELDS                      10
 #define LOCATIONFIELDS                  8
 #define COLLECTIONMETHODS               11
@@ -482,7 +486,8 @@ static unsigned int isspace(char c)
 static unsigned int isnamestart(char c)
 {
 
-    return cstring_isalpha(c) || c == '_' || c == '$' || (unsigned char)c >= 0x80;
+    /* # starts private names, which are kept as ordinary ones */
+    return cstring_isalpha(c) || c == '_' || c == '$' || c == '#' || (unsigned char)c >= 0x80;
 
 }
 
@@ -1597,11 +1602,25 @@ static unsigned int parseclass(struct parser *parser)
         if (!ispunctuator(parser, "("))
         {
 
-            /* fields are skipped: only methods and the constructor are kept */
+            /* a field keeps its initializer as the body of a function called with the new object as this */
+            unsigned int initializer = newnode(parser, NODE_FUNCTION);
+
+            if (!initializer)
+                break;
+
+            js->nodes[initializer].op = 1;
+            js->nodes[member].a = initializer;
+            js->nodes[member].b = 1;
+
             if (accept(parser, "="))
-                parseassignment(parser);
+                js->nodes[initializer].b = parseassignment(parser);
 
             accept(parser, ";");
+
+            last = appendnode(parser, last, member);
+
+            if (!js->nodes[node].b)
+                js->nodes[node].b = last;
 
             continue;
 
@@ -1640,6 +1659,8 @@ static unsigned int parseclass(struct parser *parser)
         js->nodes[node].a = constructor;
 
     }
+
+    js->nodes[js->nodes[node].a].c |= FUNCTION_CLASS;
 
     return node;
 
@@ -2009,9 +2030,10 @@ static unsigned int parsepostfix(struct parser *parser)
     while (!parser->failed)
     {
 
+        unsigned int optional = accept(parser, "?.");
         unsigned int next;
 
-        if (accept(parser, ".") || accept(parser, "?."))
+        if ((optional && parser->token.type == TOKEN_NAME) || accept(parser, "."))
         {
 
             next = newnode(parser, NODE_MEMBER);
@@ -2020,6 +2042,7 @@ static unsigned int parsepostfix(struct parser *parser)
                 break;
 
             js->nodes[next].a = node;
+            js->nodes[next].op = optional;
             js->nodes[next].value = parsename(parser);
             node = next;
 
@@ -2034,6 +2057,7 @@ static unsigned int parsepostfix(struct parser *parser)
                 break;
 
             js->nodes[next].a = node;
+            js->nodes[next].op = optional;
             js->nodes[next].b = parseexpression(parser);
             node = next;
 
@@ -2050,6 +2074,7 @@ static unsigned int parsepostfix(struct parser *parser)
                 break;
 
             js->nodes[next].a = node;
+            js->nodes[next].c = optional;
             js->nodes[next].b = parsearguments(parser);
             node = next;
 
@@ -2057,6 +2082,9 @@ static unsigned int parsepostfix(struct parser *parser)
 
         else
         {
+
+            if (optional)
+                parser->failed = 1;
 
             break;
 
@@ -2399,6 +2427,9 @@ static unsigned int parsevariables(struct parser *parser)
     unsigned int node = newnode(parser, NODE_VAR);
     unsigned int last = 0;
 
+    if (node)
+        parser->js->nodes[node].op = !isword(parser, "var");
+
     nexttoken(parser);
 
     while (node && !parser->failed)
@@ -2478,7 +2509,22 @@ static unsigned int parseblock(struct parser *parser)
     expect(parser, "{");
 
     if (node)
+    {
+
+        unsigned int statement;
+
         parser->js->nodes[node].a = parselist(parser, "}");
+
+        /* a block that declares with let, const or class gets its own scope when it runs */
+        for (statement = parser->js->nodes[node].a; statement; statement = parser->js->nodes[statement].next)
+        {
+
+            if (parser->js->nodes[statement].type == NODE_VAR && parser->js->nodes[statement].op)
+                parser->js->nodes[node].c = 1;
+
+        }
+
+    }
 
     expect(parser, "}");
 
@@ -2522,6 +2568,7 @@ static unsigned int parsestatement(struct parser *parser)
         js->nodes[declarator].a = parseclass(parser);
         js->nodes[declarator].value = js->nodes[js->nodes[declarator].a].value;
         js->nodes[node].a = declarator;
+        js->nodes[node].op = 1;
 
         return node;
 
@@ -4446,6 +4493,24 @@ static void hoist(struct js_engine *js, unsigned int first, unsigned int scope)
 
 }
 
+static struct js_value callwith(struct js_engine *js, struct js_value *function, struct js_value *self)
+{
+
+    struct call call;
+    unsigned int argument;
+
+    copyvalue(&call.function, function);
+    copyvalue(&call.self, self);
+
+    call.count = 0;
+
+    for (argument = 0; argument < ARGUMENTS; argument++)
+        call.arguments[argument] = undefined();
+
+    return callfunction(js, &call);
+
+}
+
 static struct js_value itemat(struct js_engine *js, struct js_value *array, unsigned int index)
 {
 
@@ -6250,6 +6315,21 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
         return value(JS_STRING, internstring(js, ""));
 
+    case NATIVE_FALSE:
+        return value(JS_BOOLEAN, 0);
+
+    case NATIVE_GETPROTOTYPE:
+        return (first->type == JS_OBJECT && js->objects[first->number].kind == KIND_PLAIN && js->objects[first->number].parent) ? value(JS_OBJECT, js->objects[first->number].parent) : value(JS_NULL, 0);
+
+    case NATIVE_SETPROTOTYPE:
+        if (first->type == JS_OBJECT && js->objects[first->number].kind == KIND_PLAIN)
+            js->objects[first->number].parent = (second->type == JS_OBJECT) ? (unsigned int)second->number : 0;
+
+        return call->arguments[0];
+
+    case NATIVE_ISINTEGER:
+        return value(JS_BOOLEAN, first->type == JS_NUMBER);
+
     case NATIVE_SYMBOL:
         /* symbols are strings that no ordinary key is likely to collide with */
         return value(JS_STRING, concat(js, concat(js, internstring(js, "@@symbol("), tostring(js, first)), internstring(js, ")")));
@@ -6685,11 +6765,11 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
     case NATIVE_REVERSE:
         {
 
-            struct js_value items[SORTSIZE];
             unsigned int length = lengthof(js, self);
-            unsigned int j;
+            unsigned int width;
 
-            if (length > SORTSIZE)
+            /* a comparator that sorts again would overwrite the scratch, so that is refused */
+            if (length * 2 > JS_SCRATCH || js->scratchbusy)
             {
 
                 throwerror(js, "Array too long to sort");
@@ -6698,23 +6778,47 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
             }
 
-            for (i = 0; i < length; i++)
-                items[i] = itemat(js, self, (native->data == NATIVE_REVERSE) ? length - 1 - i : i);
+            js->scratchbusy = 1;
 
-            for (i = 1; i < length && native->data == NATIVE_SORT && !js->throwing; i++)
+            for (i = 0; i < length; i++)
+                js->scratch[i] = itemat(js, self, (native->data == NATIVE_REVERSE) ? length - 1 - i : i);
+
+            /* a bottom-up merge sort: stable like the real one, and n log n calls to the comparator */
+            for (width = 1; width < length && native->data == NATIVE_SORT && !js->throwing; width *= 2)
             {
 
-                struct js_value item = items[i];
+                unsigned int start;
 
-                for (j = i; j > 0 && compare(js, first, &items[j - 1], &item) > 0; j--)
-                    items[j] = items[j - 1];
+                for (start = 0; start < length; start += width * 2)
+                {
 
-                items[j] = item;
+                    unsigned int left = start;
+                    unsigned int middle = (start + width < length) ? start + width : length;
+                    unsigned int right = middle;
+                    unsigned int end = (start + width * 2 < length) ? start + width * 2 : length;
+                    unsigned int out = start;
+
+                    while (left < middle || right < end)
+                    {
+
+                        if (right >= end || (left < middle && !js->throwing && compare(js, first, &js->scratch[left], &js->scratch[right]) <= 0))
+                            js->scratch[length + out++] = js->scratch[left++];
+                        else
+                            js->scratch[length + out++] = js->scratch[right++];
+
+                    }
+
+                }
+
+                for (i = 0; i < length; i++)
+                    js->scratch[i] = js->scratch[length + i];
 
             }
 
             for (i = 0; i < length; i++)
-                setitem(js, self, i, &items[i]);
+                setitem(js, self, i, &js->scratch[i]);
+
+            js->scratchbusy = 0;
 
             return call->self;
 
@@ -6814,13 +6918,12 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             unsigned int skip = (native->data == NATIVE_UNSHIFT) ? 0 : 2;
             unsigned int added = (call->count > skip) ? call->count - skip : 0;
             struct js_value result = newarray(js);
-            struct js_value items[SORTSIZE];
             unsigned int count = 0;
 
             if (self->type != JS_OBJECT || js->objects[self->number].kind != KIND_ARRAY)
                 return undefined();
 
-            if (length + added > SORTSIZE)
+            if (length + added > JS_SCRATCH || js->scratchbusy)
             {
 
                 throwerror(js, "Array too long to splice");
@@ -6833,10 +6936,10 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             removed = (removed < 0) ? 0 : (start + removed > (int)length) ? (int)length - start : removed;
 
             for (i = 0; i < (unsigned int)start; i++)
-                items[count++] = itemat(js, self, i);
+                js->scratch[count++] = itemat(js, self, i);
 
             for (i = 0; i < added; i++)
-                items[count++] = call->arguments[skip + i];
+                js->scratch[count++] = call->arguments[skip + i];
 
             for (i = start; i < (unsigned int)(start + removed); i++)
             {
@@ -6848,10 +6951,10 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             }
 
             for (i = start + removed; i < length; i++)
-                items[count++] = itemat(js, self, i);
+                js->scratch[count++] = itemat(js, self, i);
 
             for (i = 0; i < count; i++)
-                setitem(js, self, i, &items[i]);
+                setitem(js, self, i, &js->scratch[i]);
 
             js->objects[self->number].data = count;
 
@@ -7690,6 +7793,25 @@ static struct js_value callfunction(struct js_engine *js, struct call *call)
 
     }
 
+    if (node->c & FUNCTION_CLASS)
+    {
+
+        struct js_value fields = getproperty(js, &call->function, internstring(js, "@@fields"));
+        unsigned int field;
+
+        for (field = 0; field + 1 < lengthof(js, &fields) && !js->throwing; field += 2)
+        {
+
+            struct js_value name = itemat(js, &fields, field);
+            struct js_value initializer = itemat(js, &fields, field + 1);
+            struct js_value initial = callwith(js, &initializer, &call->self);
+
+            setproperty(js, &call->self, name.number, &initial);
+
+        }
+
+    }
+
     if (node->c & FUNCTION_DERIVED)
     {
 
@@ -8095,6 +8217,10 @@ static struct js_value evaluatecall(struct js_engine *js, struct js_node *node, 
         unsigned int name;
 
         call.self = evaluate(js, callee->a, scope);
+
+        if (callee->op && call.self.type <= JS_NULL)
+            return undefined();
+
         name = propertyname(js, node->a, scope);
 
         if (js->throwing)
@@ -8117,6 +8243,9 @@ static struct js_value evaluatecall(struct js_engine *js, struct js_node *node, 
     if (js->throwing)
         return undefined();
 
+    if (node->c && call.function.type <= JS_NULL)
+        return undefined();
+
     collectarguments(js, &call, node->b, scope);
 
     if (js->throwing)
@@ -8133,6 +8262,7 @@ static struct js_value evaluateclass(struct js_engine *js, struct js_node *node,
     struct js_value parentprototype = undefined();
     struct js_value constructor;
     struct js_value prototype;
+    struct js_value fields;
     unsigned int classscope;
     unsigned int member;
 
@@ -8162,8 +8292,11 @@ static struct js_value evaluateclass(struct js_engine *js, struct js_node *node,
     if (js->throwing)
         return undefined();
 
+    fields = newarray(js);
+
     putproperty(js, prototype.number, internstring(js, "constructor"), &constructor);
     putproperty(js, constructor.number, internstring(js, "prototype"), &prototype);
+    putproperty(js, constructor.number, internstring(js, "@@fields"), &fields);
 
     /* statics are inherited by copying them when the class is made */
     if (parent.type == JS_OBJECT)
@@ -8185,6 +8318,32 @@ static struct js_value evaluateclass(struct js_engine *js, struct js_node *node,
     {
 
         struct js_value method = newfunction(js, js->nodes[member].a, classscope);
+
+        if (js->nodes[member].b)
+        {
+
+            struct js_value name = value(JS_STRING, js->nodes[member].value);
+
+            if (js->nodes[member].c)
+            {
+
+                struct js_value initial = callwith(js, &method, &constructor);
+
+                putproperty(js, constructor.number, js->nodes[member].value, &initial);
+
+            }
+
+            else
+            {
+
+                pusharray(js, &fields, &name);
+                pusharray(js, &fields, &method);
+
+            }
+
+            continue;
+
+        }
 
         if (js->nodes[member].op == ACCESSOR_SET)
             continue;
@@ -8321,6 +8480,10 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
     case NODE_MEMBER:
     case NODE_INDEX:
         a = evaluate(js, node->a, scope);
+
+        if (node->op && a.type <= JS_NULL)
+            return undefined();
+
         child = propertyname(js, index, scope);
 
         return (js->throwing) ? undefined() : getproperty(js, &a, child);
@@ -8571,11 +8734,41 @@ static unsigned int loopstep(struct js_engine *js, unsigned int body, unsigned i
 
 }
 
+static unsigned int blockscope(struct js_engine *js, unsigned int scope)
+{
+
+    unsigned int block = newobject(js, KIND_SCOPE, scope, 1);
+
+    if (!block)
+        throwerror(js, "Out of objects");
+
+    return (block) ? block : scope;
+
+}
+
+static unsigned int functionscope(struct js_engine *js, unsigned int scope)
+{
+
+    /* var skips the scopes of blocks and loops */
+    while (js->objects[scope].kind == KIND_SCOPE && js->objects[scope].data == 1 && js->objects[scope].parent)
+        scope = js->objects[scope].parent;
+
+    return scope;
+
+}
+
+static unsigned int islexical(struct js_engine *js, unsigned int node)
+{
+
+    return node && js->nodes[node].type == NODE_VAR && js->nodes[node].op;
+
+}
+
 static void bindloop(struct js_engine *js, struct js_node *node, unsigned int scope, struct js_value *item)
 {
 
     if (js->nodes[node->a].type == NODE_VAR)
-        bindpattern(js, scope, js->nodes[node->a].a, item);
+        bindpattern(js, (js->nodes[node->a].op) ? scope : functionscope(js, scope), js->nodes[node->a].a, item);
     else
         store(js, node->a, scope, item);
 
@@ -8586,6 +8779,7 @@ static void executeforeach(struct js_engine *js, struct js_node *node, unsigned 
 
     struct js_value source = evaluate(js, node->b, scope);
     struct js_value item;
+    unsigned int inner;
     unsigned int i;
 
     if (js->throwing)
@@ -8599,9 +8793,11 @@ static void executeforeach(struct js_engine *js, struct js_node *node, unsigned 
 
             item = value(JS_STRING, addstring(js, getstring(js, source.number) + i, 1));
 
-            bindloop(js, node, scope, &item);
+            inner = (islexical(js, node->a)) ? blockscope(js, scope) : scope;
 
-            if (!loopstep(js, (unsigned int)node->value, scope, completion))
+            bindloop(js, node, inner, &item);
+
+            if (!loopstep(js, (unsigned int)node->value, inner, completion))
                 break;
 
         }
@@ -8624,9 +8820,11 @@ static void executeforeach(struct js_engine *js, struct js_node *node, unsigned 
 
             item = (node->c == LOOP_OF) ? getproperty(js, &source, numberstring(js, i)) : value(JS_STRING, numberstring(js, i));
 
-            bindloop(js, node, scope, &item);
+            inner = (islexical(js, node->a)) ? blockscope(js, scope) : scope;
 
-            if (!loopstep(js, (unsigned int)node->value, scope, completion))
+            bindloop(js, node, inner, &item);
+
+            if (!loopstep(js, (unsigned int)node->value, inner, completion))
                 break;
 
         }
@@ -8661,9 +8859,11 @@ static void executeforeach(struct js_engine *js, struct js_node *node, unsigned 
 
         item = value(JS_STRING, js->properties[property].name);
 
-        bindloop(js, node, scope, &item);
+        inner = (islexical(js, node->a)) ? blockscope(js, scope) : scope;
 
-        if (!loopstep(js, (unsigned int)node->value, scope, completion))
+        bindloop(js, node, inner, &item);
+
+        if (!loopstep(js, (unsigned int)node->value, inner, completion))
             break;
 
     }
@@ -8727,6 +8927,10 @@ static void execute(struct js_engine *js, unsigned int index, unsigned int scope
     if (!index || js->throwing)
         return;
 
+    /* a for loop declaring with let or const keeps its names in a scope of its own */
+    if (node->type == NODE_FOR && islexical(js, node->a))
+        scope = blockscope(js, scope);
+
     switch (node->type)
     {
 
@@ -8741,7 +8945,7 @@ static void execute(struct js_engine *js, unsigned int index, unsigned int scope
 
             result = evaluate(js, js->nodes[child].a, scope);
 
-            bindpattern(js, scope, child, &result);
+            bindpattern(js, (node->op) ? scope : functionscope(js, scope), child, &result);
 
         }
 
@@ -8762,7 +8966,7 @@ static void execute(struct js_engine *js, unsigned int index, unsigned int scope
         break;
 
     case NODE_BLOCK:
-        execlist(js, node->a, scope, completion);
+        execlist(js, node->a, (node->c) ? blockscope(js, scope) : scope, completion);
 
         break;
 
@@ -8951,6 +9155,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     js->changed = 0;
     js->errors = 0;
     js->timercount = 0;
+    js->scratchbusy = 0;
 
     buffer_clear(js->elements, sizeof (unsigned short) * HTML_NODES);
     internstring(js, "");
@@ -9024,6 +9229,18 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "Object", "keys", NATIVE_KEYS);
     addmethod(js, "Object", "values", NATIVE_VALUES);
     addmethod(js, "Object", "entries", NATIVE_ENTRIES);
+    addmethod(js, "Object", "getOwnPropertyNames", NATIVE_KEYS);
+    addmethod(js, "Object", "isFrozen", NATIVE_FALSE);
+    addmethod(js, "Object", "isSealed", NATIVE_FALSE);
+    addmethod(js, "Object", "seal", NATIVE_IDENTITY);
+    addmethod(js, "Object", "preventExtensions", NATIVE_IDENTITY);
+    addmethod(js, "Object", "getPrototypeOf", NATIVE_GETPROTOTYPE);
+    addmethod(js, "Object", "setPrototypeOf", NATIVE_SETPROTOTYPE);
+    addmethod(js, "Number", "parseInt", NATIVE_PARSEINT);
+    addmethod(js, "Number", "parseFloat", NATIVE_PARSEINT);
+    addmethod(js, "Number", "isNaN", NATIVE_ISNAN);
+    addmethod(js, "Number", "isInteger", NATIVE_ISINTEGER);
+    addmethod(js, "Number", "isFinite", NATIVE_ISINTEGER);
     addmethod(js, "Object", "assign", NATIVE_ASSIGN);
     addmethod(js, "Object", "create", NATIVE_CREATE);
     addmethod(js, "Object", "freeze", NATIVE_IDENTITY);

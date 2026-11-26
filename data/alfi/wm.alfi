@@ -32,7 +32,7 @@
 @ apps filemanager run "initrd:bin/wfile" label "File Manager"
 @ apps texteditor run "initrd:bin/wedit" label "Text Editor"
 @ apps imageviewer run "initrd:bin/wimage" label "Image Viewer"
-@ apps browser run "initrd:bin/browser" label "Browser"
+@ apps browser run "root:bin/browser" label "Browser"
 @ apps calculator run "initrd:bin/wcalc" label "Calculator"
 @ games doom run "root:bin/doom" label "Doom"
 @ games pop run "root:bin/pop" label "Prince of Persia"

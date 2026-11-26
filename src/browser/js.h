@@ -1,11 +1,12 @@
 #define JS_NODES                        32768
 #define JS_OBJECTS                      16384
 #define JS_PROPERTIES                   32768
-#define JS_STRINGSIZE                   0x20000
+#define JS_STRINGSIZE                   0x80000
 #define JS_INTERNS                      4096
 #define JS_LISTENERS                    64
 #define JS_NATIVES                      160
 #define JS_TIMERS                       32
+#define JS_SCRATCH                      8192
 #define JS_MEDIA                        HTML_NODES
 #define JS_UNDEFINED                    0
 #define JS_NULL                         1
@@ -76,6 +77,8 @@ struct js_engine
     unsigned short elements[HTML_NODES];
     unsigned int natives[JS_NATIVES];
     unsigned int timers[JS_TIMERS];
+    struct js_value scratch[JS_SCRATCH];
+    unsigned int scratchbusy;
     unsigned int timercount;
     unsigned int nodecount;
     unsigned int objectcount;
