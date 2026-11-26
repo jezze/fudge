@@ -104,7 +104,7 @@
 #define PROP_WORDWRAP                   120
 #define PROP_ASPECTRATIO                121
 #define PROP_TRANSFORM                  122
-#define ALIASES                         28
+#define ALIASES                         30
 #define PROP_CUSTOM                     255
 #define POOL_EXACT                      0
 #define POOL_LOWER                      1
@@ -332,7 +332,8 @@ static char *aliases[ALIASES][2] = {
     {"border-inline-start", "border-left"}, {"border-inline-end", "border-right"}, {"border-block-start", "border-top"}, {"border-block-end", "border-bottom"},
     {"border-inline-start-width", "border-left-width"}, {"border-inline-end-width", "border-right-width"},
     {"border-start-start-radius", "border-top-left-radius"}, {"border-start-end-radius", "border-top-right-radius"}, {"border-end-start-radius", "border-bottom-left-radius"}, {"border-end-end-radius", "border-bottom-right-radius"},
-    {"inline-size", "width"}, {"block-size", "height"}, {"min-inline-size", "min-width"}, {"max-inline-size", "max-width"}, {"min-block-size", "min-height"}, {"max-block-size", "max-height"}
+    {"inline-size", "width"}, {"block-size", "height"}, {"min-inline-size", "min-width"}, {"max-inline-size", "max-width"}, {"min-block-size", "min-height"}, {"max-block-size", "max-height"},
+    {"grid-row-gap", "row-gap"}, {"grid-column-gap", "column-gap"}
 };
 static struct namedcolor colors[COLORS] = {
     {"aliceblue", 0xF0F8FF}, {"antiquewhite", 0xFAEBD7}, {"aqua", 0x00FFFF}, {"aquamarine", 0x7FFFD4}, {"azure", 0xF0FFFF}, {"beige", 0xF5F5DC},
@@ -403,6 +404,7 @@ static char *agent =
     "mark{background-color:yellow}"
     "hr{border:1px inset gray;margin:.5em 0}"
     "fieldset{border:2px groove gray;padding:.35em .75em .625em;margin:0 2px}"
+    "fieldset>legend{width:fit-content;padding:0 2px}"
     "button,input,select,textarea{font-size:13.333px}"
     "button,select,input[type=submit],input[type=button],input[type=reset]{box-sizing:border-box}"
     "button{display:inline-block;padding:1px 6px;border:2px outset #c0c0c0;background-color:#e0e0e0;color:#000}"

@@ -93,6 +93,16 @@ struct band
 
 };
 
+struct area
+{
+
+    int x;
+    int y;
+    int w;
+    int h;
+
+};
+
 struct label
 {
 
@@ -1504,12 +1514,23 @@ static void placefloat(struct layout *layout, struct flow *flow, unsigned int no
     int y;
     struct band band;
     unsigned int tries;
-
-    if (!isempty(layout, flow))
-        flushline(layout, flow, 0);
+    unsigned int sameline;
+    unsigned int side;
+    int extent = layout->extent;
+    int start;
 
     width = measure(layout, node, availw);
     outer = ml + width + mr;
+
+    /* a right float that fits beside the text already on the line stays on it, a left one would have to move that text */
+    sameline = style->floating == CSS_FLOAT_RIGHT && !style->clear && !isempty(layout, flow) && flow->x + outer <= flow->right;
+
+    if (!isempty(layout, flow) && !sameline)
+        flushline(layout, flow, 0);
+
+    /* measuring wants the line's text and floats added up, so a right float starting a line goes first like a left one */
+    side = (layout->measuring && !sameline) ? CSS_FLOAT_LEFT : style->floating;
+
     y = flow->y + max(flow->pending, 0);
 
     if (layout->floatcount > layout->floatbase)
@@ -1528,7 +1549,7 @@ static void placefloat(struct layout *layout, struct flow *flow, unsigned int no
 
     }
 
-    x = (style->floating == CSS_FLOAT_LEFT) ? band.left : band.right - outer;
+    x = (side == CSS_FLOAT_LEFT) ? band.left : band.right - outer;
 
     height = placesized(layout, node, x, y + mt, ml, mr, width);
 
@@ -1541,12 +1562,13 @@ static void placefloat(struct layout *layout, struct flow *flow, unsigned int no
         current->right = x + outer;
         current->top = y;
         current->bottom = y + mt + height + mb;
-        current->side = style->floating;
+        current->side = side;
 
     }
 
-    /* a right float pushed past the left edge still needs its whole width when shrinking to fit */
-    layout->extent = max(layout->extent, max(x, band.left) + outer);
+    /* shrinking to fit, a float needs its width after whatever is left of it, not the edge it was pushed to */
+    start = (sameline && y == flow->y) ? flow->x : band.left;
+    layout->extent = max(extent, start + outer);
 
     fitline(layout, flow);
 
@@ -2677,13 +2699,13 @@ static unsigned int countcolumns(struct css_grid *grid, int width, int gap, unsi
     if (!grid)
         return 1;
 
-    /* repeated tracks fill the row with as many as fit, auto-fit drops the ones left empty */
+    /* repeated tracks fill the row with as many as fit, tracks without size fit without end, auto-fit drops the ones left empty */
     if (grid->repeat)
     {
 
         int size = max(fixedsize(grid->columns[0].minkind, grid->columns[0].minvalue, width), fixedsize(grid->columns[0].maxkind, grid->columns[0].maxvalue, width));
 
-        count = (size + gap > 0) ? (unsigned int)max((width + gap) / (size + gap), 1) : 1;
+        count = (size + gap > 0) ? (unsigned int)max((width + gap) / (size + gap), 1) : GRIDCOLUMNS;
 
         if (grid->repeat == CSS_REPEAT_FIT && items && items < count)
             count = items;
@@ -3729,6 +3751,91 @@ static unsigned int findcontainer(struct layout *layout, unsigned int node)
 
 }
 
+static unsigned int isinside(struct layout *layout, unsigned int node, unsigned int ancestor)
+{
+
+    while (node && node != ancestor)
+        node = getnode(layout, node)->parent;
+
+    return node == ancestor;
+
+}
+
+static unsigned int findinline(struct layout *layout, unsigned int node, unsigned int container)
+{
+
+    for (node = getnode(layout, node)->parent; node && node != container; node = getnode(layout, node)->parent)
+    {
+
+        struct css_style *style = getstyle(layout, node);
+
+        if (style->position != CSS_POSITION_STATIC && style->display == CSS_DISPLAY_INLINE)
+            return node;
+
+    }
+
+    return 0;
+
+}
+
+static struct area getcontaining(struct layout *layout, unsigned int container, unsigned int node)
+{
+
+    struct css_style *style = getstyle(layout, container);
+    struct layout_box *box = &layout->boxes[container];
+    unsigned int owner = findinline(layout, node, container);
+    unsigned int found = 0;
+    struct area area;
+    int right = 0;
+    int bottom = 0;
+    unsigned int i;
+
+    area.x = box->x + style->borderwidth[CSS_LEFT];
+    area.y = box->y + style->borderwidth[CSS_TOP];
+    area.w = box->w - style->borderwidth[CSS_LEFT] - style->borderwidth[CSS_RIGHT];
+    area.h = box->h - style->borderwidth[CSS_TOP] - style->borderwidth[CSS_BOTTOM];
+
+    if (!owner)
+        return area;
+
+    /* a positioned inline has no box of its own, its lines together make the block its absolute children are placed in */
+    for (i = 0; i < layout->fragmentcount; i++)
+    {
+
+        struct layout_fragment *fragment = &layout->fragments[i];
+
+        if (!isinside(layout, fragment->node, owner))
+            continue;
+
+        if (!found || fragment->x < area.x)
+            area.x = fragment->x;
+
+        if (!found || fragment->y < area.y)
+            area.y = fragment->y;
+
+        if (!found || fragment->x + fragment->w > right)
+            right = fragment->x + fragment->w;
+
+        if (!found || fragment->y + fragment->h > bottom)
+            bottom = fragment->y + fragment->h;
+
+        found = 1;
+
+    }
+
+    if (!found)
+        return area;
+
+    style = getstyle(layout, owner);
+    area.x -= resolve(&style->padding[CSS_LEFT], 0);
+    area.y -= resolve(&style->padding[CSS_TOP], 0);
+    area.w = right + resolve(&style->padding[CSS_RIGHT], 0) - area.x;
+    area.h = bottom + resolve(&style->padding[CSS_BOTTOM], 0) - area.y;
+
+    return area;
+
+}
+
 static int staticshift(struct layout *layout, unsigned int node, int top, int outer)
 {
 
@@ -3756,13 +3863,12 @@ static int staticshift(struct layout *layout, unsigned int node, int top, int ou
 static void placeabsolute(struct layout *layout, unsigned int container, struct layout_absolute *absolute)
 {
 
-    struct css_style *outer = getstyle(layout, container);
-    struct layout_box *box = &layout->boxes[container];
+    struct area area = getcontaining(layout, container, absolute->node);
     struct css_style *style = getstyle(layout, absolute->node);
-    int cx = box->x + outer->borderwidth[CSS_LEFT];
-    int cy = box->y + outer->borderwidth[CSS_TOP];
-    int cw = box->w - outer->borderwidth[CSS_LEFT] - outer->borderwidth[CSS_RIGHT];
-    int ch = box->h - outer->borderwidth[CSS_TOP] - outer->borderwidth[CSS_BOTTOM];
+    int cx = area.x;
+    int cy = area.y;
+    int cw = area.w;
+    int ch = area.h;
     unsigned int hasleft = style->inset[CSS_LEFT].unit <= CSS_UNIT_PERCENT;
     unsigned int hasright = style->inset[CSS_RIGHT].unit <= CSS_UNIT_PERCENT;
     unsigned int hastop = style->inset[CSS_TOP].unit <= CSS_UNIT_PERCENT;
