@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      123
+#define PROPERTIES                      133
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -104,6 +104,16 @@
 #define PROP_WORDWRAP                   120
 #define PROP_ASPECTRATIO                121
 #define PROP_TRANSFORM                  122
+#define PROP_JUSTIFYITEMS               123
+#define PROP_JUSTIFYSELF                124
+#define PROP_ALIGNCONTENT               125
+#define PROP_PLACEITEMS                 126
+#define PROP_PLACECONTENT               127
+#define PROP_PLACESELF                  128
+#define PROP_GRIDAUTOFLOW               129
+#define PROP_GRIDAUTOCOLUMNS            130
+#define PROP_GRIDTEMPLATE               131
+#define PROP_TEXTINDENT                 132
 #define ALIASES                         30
 #define PROP_CUSTOM                     255
 #define POOL_EXACT                      0
@@ -153,6 +163,9 @@
 #define COLORS                          148
 #define NOLIMIT                         0x7FFFFFFF
 #define VALUESIZE                       64
+#define TEMPLATESIZE                    512
+#define NESTSIZE                        512
+#define NESTDEPTH                       4
 #define FONTTOKENS                      8
 #define FONTSIZES                       8
 #define NAMESIZE                        64
@@ -218,6 +231,9 @@ struct quantity
     int milli;
     int percent;
     unsigned int length;
+    int low;
+    int high;
+    unsigned int limits;
 
 };
 
@@ -323,7 +339,8 @@ static char *properties[PROPERTIES] = {
     "float", "clear", "overflow", "overflow-x", "overflow-y",
     "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip", "vertical-align", "letter-spacing", "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius",
     "inset", "margin-inline", "margin-block", "padding-inline", "padding-block", "inset-inline", "inset-block", "border-inline", "border-block",
-    "grid-template-rows", "grid-template-areas", "grid-auto-rows", "grid-column", "grid-row", "grid-column-start", "grid-column-end", "grid-row-start", "grid-row-end", "grid-area", "word-break", "overflow-wrap", "word-wrap", "aspect-ratio", "transform"
+    "grid-template-rows", "grid-template-areas", "grid-auto-rows", "grid-column", "grid-row", "grid-column-start", "grid-column-end", "grid-row-start", "grid-row-end", "grid-area", "word-break", "overflow-wrap", "word-wrap", "aspect-ratio", "transform",
+    "justify-items", "justify-self", "align-content", "place-items", "place-content", "place-self", "grid-auto-flow", "grid-auto-columns", "grid-template", "text-indent"
 };
 static char *aliases[ALIASES][2] = {
     {"margin-inline-start", "margin-left"}, {"margin-inline-end", "margin-right"}, {"margin-block-start", "margin-top"}, {"margin-block-end", "margin-bottom"},
@@ -390,6 +407,7 @@ static char *agent =
     "ol ol,ul ol{margin:0}"
     "dd{margin-left:40px}"
     "pre,listing,xmp,plaintext,textarea{white-space:pre}"
+    "iframe{border:2px inset}"
     "pre,code,kbd,samp,tt,listing,xmp,plaintext,textarea{font-family:monospace}"
     "b,strong{font-weight:bold}"
     "i,em,cite,var,dfn,address{font-style:italic}"
@@ -1535,11 +1553,160 @@ static void parseselector(struct css_sheet *sheet, char *text, unsigned int star
 
 }
 
-static void parserule(struct parser *parser, unsigned int start, unsigned int end, unsigned int blockstart, unsigned int blockend)
+static unsigned int nestselector(char *out, char *parent, unsigned int parentend, char *child, unsigned int childstart, unsigned int childend)
+{
+
+    unsigned int length = 0;
+    unsigned int pstart = 0;
+
+    /* every parent selector is combined with every nested one, & stands for the parent and is put in front otherwise */
+    while (pstart < parentend)
+    {
+
+        unsigned int pstop = findstop(parent, pstart, parentend, ",");
+        unsigned int cstart = childstart;
+        unsigned int p0 = skipspace(parent, pstart, pstop);
+        unsigned int p1 = pstop;
+
+        while (p1 > p0 && isspace(parent[p1 - 1]))
+            p1--;
+
+        while (cstart < childend)
+        {
+
+            unsigned int cstop = findstop(child, cstart, childend, ",");
+            unsigned int c0 = skipspace(child, cstart, cstop);
+            unsigned int nested = findstop(child, c0, cstop, "&") < cstop;
+            unsigned int i;
+
+            if (length + (p1 - p0) + (cstop - c0) + 3 >= NESTSIZE)
+                return 0;
+
+            if (length)
+                out[length++] = ',';
+
+            if (!nested)
+            {
+
+                buffer_copy(out + length, parent + p0, p1 - p0);
+
+                length += p1 - p0;
+                out[length++] = ' ';
+
+            }
+
+            for (i = c0; i < cstop; i++)
+            {
+
+                if (child[i] == '&')
+                {
+
+                    if (length + (p1 - p0) + (cstop - i) + 2 >= NESTSIZE)
+                        return 0;
+
+                    buffer_copy(out + length, parent + p0, p1 - p0);
+
+                    length += p1 - p0;
+
+                }
+
+                else
+                {
+
+                    out[length++] = child[i];
+
+                }
+
+            }
+
+            cstart = cstop + 1;
+
+        }
+
+        pstart = pstop + 1;
+
+    }
+
+    return length;
+
+}
+
+static void parsebody(struct parser *parser, char *selector, unsigned int start, unsigned int end, unsigned int blockstart, unsigned int blockend, unsigned int depth);
+static unsigned int evaluatemedia(struct parser *parser, char *text, unsigned int start, unsigned int end);
+
+static void parsenested(struct parser *parser, char *selector, unsigned int start, unsigned int end, unsigned int blockstart, unsigned int blockend, unsigned int depth)
+{
+
+    char *text = parser->text;
+    unsigned int offset = blockstart;
+
+    while (offset < blockend)
+    {
+
+        unsigned int item = skipspace(text, offset, blockend);
+        unsigned int stop = findstop(text, item, blockend, ";{");
+        unsigned int close;
+
+        if (stop >= blockend || text[stop] == ';')
+        {
+
+            offset = stop + 1;
+
+            continue;
+
+        }
+
+        close = findclose(text, stop, blockend);
+        offset = close + 1;
+
+        if (depth >= NESTDEPTH)
+            continue;
+
+        if (text[item] == '@')
+        {
+
+            unsigned int nameend = readident(text, item + 1, stop);
+            unsigned int scheme = parser->scheme;
+            int minwidth = parser->minwidth;
+            int maxwidth = parser->maxwidth;
+
+            /* a nested condition applies its declarations to the selector of the rule it sits in */
+            if (matchword(text + item + 1, nameend - item - 1, "media") && evaluatemedia(parser, text, nameend, stop))
+                parsebody(parser, selector, start, end, stop + 1, close, depth + 1);
+            else if (matchword(text + item + 1, nameend - item - 1, "supports") && !(stop - skipspace(text, nameend, stop) >= 3 && matchword(text + skipspace(text, nameend, stop), 3, "not")))
+                parsebody(parser, selector, start, end, stop + 1, close, depth + 1);
+            else if (matchword(text + item + 1, nameend - item - 1, "layer"))
+                parsebody(parser, selector, start, end, stop + 1, close, depth + 1);
+
+            parser->scheme = scheme;
+            parser->minwidth = minwidth;
+            parser->maxwidth = maxwidth;
+
+        }
+
+        else
+        {
+
+            char combined[NESTSIZE];
+            unsigned int length = nestselector(combined, selector + start, end - start, text, item, stop);
+
+            if (length)
+                parsebody(parser, combined, 0, length, stop + 1, close, depth + 1);
+
+        }
+
+    }
+
+}
+
+static void parsebody(struct parser *parser, char *selector, unsigned int start, unsigned int end, unsigned int blockstart, unsigned int blockend, unsigned int depth)
 {
 
     struct css_sheet *sheet = parser->sheet;
+    char *text = parser->text;
     unsigned int selectors = sheet->selectorcount;
+    unsigned int offset = start;
+    unsigned int nested = 0;
     struct css_rule *rule;
 
     if (sheet->rulecount >= CSS_RULES)
@@ -1551,14 +1718,14 @@ static void parserule(struct parser *parser, unsigned int start, unsigned int en
 
     }
 
-    while (start < end)
+    while (offset < end)
     {
 
-        unsigned int stop = findstop(parser->text, start, end, ",");
+        unsigned int stop = findstop(selector, offset, end, ",");
 
-        parseselector(sheet, parser->text, start, stop, sheet->rulecount);
+        parseselector(sheet, selector, offset, stop, sheet->rulecount);
 
-        start = stop + 1;
+        offset = stop + 1;
 
     }
 
@@ -1572,9 +1739,33 @@ static void parserule(struct parser *parser, unsigned int start, unsigned int en
     rule->minwidth = parser->minwidth;
     rule->maxwidth = parser->maxwidth;
 
-    parsedeclarations(sheet, parser->text, blockstart, blockend);
+    /* declarations belong to this rule, nested rules follow it so they win over it */
+    for (offset = blockstart; offset < blockend;)
+    {
+
+        unsigned int item = skipspace(text, offset, blockend);
+        unsigned int stop = findstop(text, item, blockend, ";{");
+
+        if (stop < blockend && text[stop] == '{')
+        {
+
+            nested = 1;
+            offset = findclose(text, stop, blockend) + 1;
+
+            continue;
+
+        }
+
+        parsedeclaration(sheet, text, item, stop);
+
+        offset = stop + 1;
+
+    }
 
     rule->declarations = sheet->declarationcount - rule->declaration;
+
+    if (nested)
+        parsenested(parser, selector, start, end, blockstart, blockend, depth);
 
 }
 
@@ -1647,6 +1838,9 @@ static struct lengthvalue lengthvalue(int value, unsigned int unit, unsigned int
     result.length.value = value;
     result.length.unit = unit;
     result.length.offset = 0;
+    result.length.low = 0;
+    result.length.high = 0;
+    result.length.limits = 0;
     result.valid = valid;
 
     return result;
@@ -1661,6 +1855,9 @@ static struct quantity quantity(int milli, int percent, unsigned int length)
     result.milli = milli;
     result.percent = percent;
     result.length = length;
+    result.low = 0;
+    result.high = 0;
+    result.limits = 0;
 
     return result;
 
@@ -1711,38 +1908,145 @@ static unsigned int nextis(struct evaluator *evaluator, char c)
 
 static struct quantity evaluatesum(struct evaluator *evaluator);
 
+static int viewportbase(struct context *context, char *unit, unsigned int length)
+{
+
+    int width = context->width;
+    int height = context->height;
+
+    /* the small, large and dynamic viewports are all the same window here */
+    if (length == 3 && (unit[0] == 's' || unit[0] == 'l' || unit[0] == 'd'))
+    {
+
+        unit++;
+        length--;
+
+    }
+
+    if (matchword(unit, length, "vw") || matchword(unit, length, "vi"))
+        return width;
+
+    if (matchword(unit, length, "vh") || matchword(unit, length, "vb"))
+        return height;
+
+    if (matchword(unit, length, "vmin"))
+        return (width < height) ? width : height;
+
+    if (matchword(unit, length, "vmax"))
+        return (width > height) ? width : height;
+
+    return 0;
+
+}
+
 static struct quantity evaluatefunction(struct evaluator *evaluator, unsigned int kind)
 {
 
-    struct quantity result = evaluatesum(evaluator);
-    unsigned int count = 1;
+    struct quantity terms[3];
+    struct quantity result;
+    unsigned int count = 0;
+    unsigned int flexible = 0;
+    unsigned int fixed = 0;
+    int percent = 0;
+    int offset = 0;
+    int bound = 0;
+    unsigned int i;
 
-    while (evaluator->valid && nextis(evaluator, ','))
+    do
     {
 
         struct quantity next = evaluatesum(evaluator);
 
-        if (next.length != result.length || next.percent || result.percent)
+        if (count && next.length != terms[0].length)
             evaluator->valid = 0;
 
-        if (kind == 1 && next.milli < result.milli)
-            result.milli = next.milli;
-        else if (kind == 2 && next.milli > result.milli)
-            result.milli = next.milli;
-        else if (kind == 3 && count == 1)
-            result.milli = (next.milli > result.milli) ? next.milli : result.milli;
-        else if (kind == 3 && count == 2 && next.milli < result.milli)
-            result.milli = next.milli;
+        if (count == 3 || next.limits)
+            evaluator->valid = 0;
+        else
+            terms[count++] = next;
 
-        count++;
+    } while (evaluator->valid && nextis(evaluator, ','));
+
+    if (!nextis(evaluator, ')') || (kind == 3 && count != 3))
+        evaluator->valid = 0;
+
+    if (!evaluator->valid)
+        return quantity(0, 0, 0);
+
+    if (kind == 3)
+    {
+
+        /* only the preferred value may depend on the containing block, the bounds are lengths */
+        if (terms[0].percent || terms[2].percent)
+            evaluator->valid = 0;
+
+        result = terms[1];
+
+        if (!result.percent)
+        {
+
+            if (result.milli > terms[2].milli)
+                result.milli = terms[2].milli;
+
+            if (result.milli < terms[0].milli)
+                result.milli = terms[0].milli;
+
+            return result;
+
+        }
+
+        result.low = terms[0].milli;
+        result.high = terms[2].milli;
+        result.limits = CSS_LIMIT_LOW | CSS_LIMIT_HIGH;
+
+        return result;
 
     }
 
-    if (kind == 3 && count != 3)
-        evaluator->valid = 0;
+    for (i = 0; i < count; i++)
+    {
 
-    if (!nextis(evaluator, ')'))
-        evaluator->valid = 0;
+        if (terms[i].percent)
+        {
+
+            if (flexible++)
+                evaluator->valid = 0;
+
+            percent = terms[i].percent;
+            offset = terms[i].milli;
+
+        }
+
+        else if (!fixed++ || (kind == 1 && terms[i].milli < bound) || (kind == 2 && terms[i].milli > bound))
+        {
+
+            bound = terms[i].milli;
+
+        }
+
+    }
+
+    if (!flexible)
+        return quantity(bound, 0, terms[0].length);
+
+    result = quantity(offset, percent, terms[0].length);
+
+    /* a percentage is only known at layout, so the fixed terms become a bound on it */
+    if (fixed && kind == 1)
+    {
+
+        result.high = bound;
+        result.limits = CSS_LIMIT_HIGH;
+
+    }
+
+    if (fixed && kind == 2)
+    {
+
+        result.low = bound;
+        result.limits = CSS_LIMIT_LOW;
+
+    }
 
     return result;
 
@@ -1842,11 +2146,8 @@ static struct quantity evaluatevalue(struct evaluator *evaluator)
     if (matchword(text, unit, "rem") && evaluator->context)
         return quantity(number.milli * (int)evaluator->context->rootsize, 0, 1);
 
-    if (matchword(text, unit, "vw") && evaluator->context)
-        return quantity(number.milli / 100 * (int)evaluator->context->width, 0, 1);
-
-    if (matchword(text, unit, "vh") && evaluator->context)
-        return quantity(number.milli / 100 * (int)evaluator->context->height, 0, 1);
+    if (evaluator->context && viewportbase(evaluator->context, text, unit))
+        return quantity(number.milli / 100 * viewportbase(evaluator->context, text, unit), 0, 1);
 
     if (matchword(text, unit, "pt"))
         return quantity(number.milli * 4 / 3, 0, 1);
@@ -1876,6 +2177,9 @@ static struct quantity evaluateproduct(struct evaluator *evaluator)
 
             next = evaluatevalue(evaluator);
 
+            if (next.limits || result.limits)
+                evaluator->valid = 0;
+
             if (result.length && next.length)
                 evaluator->valid = 0;
 
@@ -1904,7 +2208,7 @@ static struct quantity evaluateproduct(struct evaluator *evaluator)
 
             next = evaluatevalue(evaluator);
 
-            if (next.length)
+            if (next.length || result.limits)
                 evaluator->valid = 0;
 
             result.percent = divide(result.percent, next.milli);
@@ -1948,6 +2252,9 @@ static struct quantity evaluatesum(struct evaluator *evaluator)
         if (next.length != result.length && (next.milli || next.percent || result.milli || result.percent))
             evaluator->valid = 0;
 
+        if (next.limits || result.limits)
+            evaluator->valid = 0;
+
         result.milli += sign * next.milli;
         result.percent += sign * next.percent;
         result.length = result.length || next.length;
@@ -1985,6 +2292,9 @@ static struct lengthvalue evaluatelength(struct context *context, char *text, un
         struct lengthvalue value = lengthvalue(result.percent, CSS_UNIT_PERCENT, 1);
 
         value.length.offset = roundmilli(result.milli);
+        value.length.low = roundmilli(result.low);
+        value.length.high = roundmilli(result.high);
+        value.length.limits = result.limits;
 
         return value;
 
@@ -2039,11 +2349,8 @@ static struct lengthvalue parselength(struct context *context, char *text, unsig
     if (matchword(unit, unitlength, "pt"))
         return lengthvalue(roundmilli(number.milli * 4 / 3), CSS_UNIT_PX, 1);
 
-    if (matchword(unit, unitlength, "vw"))
-        return lengthvalue(roundmilli(number.milli / 100 * (int)context->width), CSS_UNIT_PX, 1);
-
-    if (matchword(unit, unitlength, "vh"))
-        return lengthvalue(roundmilli(number.milli / 100 * (int)context->height), CSS_UNIT_PX, 1);
+    if (viewportbase(context, unit, unitlength))
+        return lengthvalue(roundmilli(number.milli / 100 * viewportbase(context, unit, unitlength)), CSS_UNIT_PX, 1);
 
     if (matchword(unit, unitlength, "cm"))
         return lengthvalue(roundmilli(number.milli * 38), CSS_UNIT_PX, 1);
@@ -2064,6 +2371,9 @@ static void copylength(struct css_length *to, struct css_length *from)
     to->value = from->value;
     to->unit = from->unit;
     to->offset = from->offset;
+    to->low = from->low;
+    to->high = from->high;
+    to->limits = from->limits;
 
 }
 
@@ -2675,6 +2985,13 @@ static void setfont(struct context *context, char *value)
 
 static unsigned int parseflexalign(char *text, unsigned int length)
 {
+
+    /* overflow guards change nothing while nothing scrolls */
+    if (length > 5 && buffer_match(text, "safe ", 5))
+        return parseflexalign(text + 5, length - 5);
+
+    if (length > 7 && buffer_match(text, "unsafe ", 7))
+        return parseflexalign(text + 7, length - 7);
 
     if (matchword(text, length, "flex-start") || matchword(text, length, "start") || matchword(text, length, "self-start") || matchword(text, length, "left") || matchword(text, length, "baseline") || matchword(text, length, "first baseline") || matchword(text, length, "last baseline"))
         return CSS_FLEX_START;
@@ -3523,6 +3840,15 @@ static struct tracksize parsetracksize(struct context *context, char *text, unsi
     size.value = parsed.length.value;
     size.valid = parsed.valid && parsed.length.unit <= CSS_UNIT_PERCENT;
 
+    /* min(100%, 250px) in a track is the length unless the grid is narrower than it */
+    if (parsed.length.limits)
+    {
+
+        size.kind = CSS_TRACK_PX;
+        size.value = (parsed.length.limits & CSS_LIMIT_HIGH) ? parsed.length.high : parsed.length.low;
+
+    }
+
     return size;
 
 }
@@ -3674,14 +4000,45 @@ static void settracks(struct context *context, char *value, unsigned int columns
 
 }
 
-static void setautorows(struct context *context, char *value)
+static void setautotracks(struct context *context, char *value, unsigned int columns)
 {
 
     struct css_grid *grid = getgrid(context);
     struct span spans[1];
 
-    if (grid && countspans(value, spans, 1))
+    if (!grid || !countspans(value, spans, 1))
+        return;
+
+    if (columns)
+        grid->autocolumn = parsetrack(context, value + spans[0].start, spans[0].length);
+    else
         grid->autorow = parsetrack(context, value + spans[0].start, spans[0].length);
+
+}
+
+static void setautoflow(struct context *context, char *value)
+{
+
+    struct css_grid *grid = getgrid(context);
+    struct span spans[2];
+    unsigned int count = countspans(value, spans, 2);
+    unsigned int i;
+
+    if (!grid)
+        return;
+
+    grid->flow = 0;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (matchword(value + spans[i].start, spans[i].length, "column"))
+            grid->flow |= CSS_GRIDFLOW_COLUMN;
+
+        if (matchword(value + spans[i].start, spans[i].length, "dense"))
+            grid->flow |= CSS_GRIDFLOW_DENSE;
+
+    }
 
 }
 
@@ -3732,6 +4089,133 @@ static void setareas(struct context *context, char *value)
         grid->areacolumns = (column > grid->areacolumns) ? column : grid->areacolumns;
 
     }
+
+}
+
+static void setgridtemplate(struct context *context, char *value)
+{
+
+    char areas[TEMPLATESIZE];
+    char rows[TEMPLATESIZE];
+    unsigned int arealength = 0;
+    unsigned int rowlength = 0;
+    unsigned int depth = 0;
+    unsigned int quoted = 0;
+    unsigned int slash = 0;
+    unsigned int i;
+
+    if (matchword(value, cstring_length(value), "none"))
+    {
+
+        settracks(context, value, 0);
+        settracks(context, value, 1);
+        setareas(context, value);
+
+        return;
+
+    }
+
+    for (i = 0; value[i] && !slash; i++)
+    {
+
+        if (value[i] == '(')
+            depth++;
+        else if (value[i] == ')' && depth)
+            depth--;
+        else if (value[i] == '/' && !depth)
+            slash = i;
+
+        if (value[i] == '"' || value[i] == '\'')
+            quoted = 1;
+
+    }
+
+    if (!slash)
+        return;
+
+    if (!quoted)
+    {
+
+        buffer_copy(rows, value, slash);
+
+        rows[slash] = '\0';
+
+        settracks(context, rows, 0);
+        settracks(context, value + slash + 1, 1);
+
+        return;
+
+    }
+
+    /* area strings each take the row size that follows them, auto when none does */
+    for (i = 0; i < slash && arealength + 8 < TEMPLATESIZE && rowlength + 8 < TEMPLATESIZE;)
+    {
+
+        if (value[i] == '"' || value[i] == '\'')
+        {
+
+            char quote = value[i];
+            unsigned int start = i;
+            unsigned int j;
+
+            for (i++; i < slash && value[i] != quote; i++);
+
+            if (i < slash)
+                i++;
+
+            if (arealength + (i - start) + 2 >= TEMPLATESIZE)
+                break;
+
+            buffer_copy(areas + arealength, value + start, i - start);
+
+            arealength += i - start;
+            areas[arealength++] = ' ';
+
+            for (j = i; j < slash && isspace(value[j]); j++);
+
+            if (j >= slash || value[j] == '"' || value[j] == '\'')
+            {
+
+                buffer_copy(rows + rowlength, "auto ", 5);
+
+                rowlength += 5;
+
+            }
+
+        }
+
+        else if (!isspace(value[i]))
+        {
+
+            unsigned int start = i;
+
+            for (; i < slash && !isspace(value[i]) && value[i] != '"' && value[i] != '\''; i++);
+
+            if (rowlength + (i - start) + 2 >= TEMPLATESIZE)
+                break;
+
+            buffer_copy(rows + rowlength, value + start, i - start);
+
+            rowlength += i - start;
+            rows[rowlength++] = ' ';
+
+        }
+
+        else
+        {
+
+            i++;
+
+        }
+
+    }
+
+    areas[arealength] = '\0';
+    rows[rowlength] = '\0';
+
+    setareas(context, areas);
+    settracks(context, rows, 0);
+    settracks(context, value + slash + 1, 1);
 
 }
 
@@ -4117,6 +4601,11 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
         break;
 
+    case PROP_TEXTINDENT:
+        copylength(&style->indent, &from->indent);
+
+        break;
+
     case PROP_VERTICALALIGN:
         style->valign = from->valign;
         style->valignoffset = from->valignoffset;
@@ -4144,6 +4633,39 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
     case PROP_ALIGNSELF:
         style->alignself = from->alignself;
+
+        break;
+
+    case PROP_JUSTIFYITEMS:
+        style->justifyitems = from->justifyitems;
+
+        break;
+
+    case PROP_JUSTIFYSELF:
+        style->justifyself = from->justifyself;
+
+        break;
+
+    case PROP_ALIGNCONTENT:
+        style->aligncontent = from->aligncontent;
+
+        break;
+
+    case PROP_PLACEITEMS:
+        style->alignitems = from->alignitems;
+        style->justifyitems = from->justifyitems;
+
+        break;
+
+    case PROP_PLACECONTENT:
+        style->aligncontent = from->aligncontent;
+        style->justify = from->justify;
+
+        break;
+
+    case PROP_PLACESELF:
+        style->alignself = from->alignself;
+        style->justifyself = from->justifyself;
 
         break;
 
@@ -4215,6 +4737,9 @@ static void initstyle(struct css_style *style)
     style->shrink = 100;
     style->alignitems = CSS_FLEX_STRETCH;
     style->alignself = CSS_FLEX_AUTO;
+    style->justifyitems = CSS_FLEX_AUTO;
+    style->justifyself = CSS_FLEX_AUTO;
+    style->aligncontent = CSS_FLEX_AUTO;
     style->opacity = 0xFF;
 
     for (side = 0; side < CSS_SIDES; side++)
@@ -4849,7 +5374,22 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_GRIDAUTOROWS:
-        setautorows(context, value);
+        setautotracks(context, value, 0);
+
+        break;
+
+    case PROP_GRIDAUTOCOLUMNS:
+        setautotracks(context, value, 1);
+
+        break;
+
+    case PROP_GRIDAUTOFLOW:
+        setautoflow(context, value);
+
+        break;
+
+    case PROP_GRIDTEMPLATE:
+        setgridtemplate(context, value);
 
         break;
 
@@ -5244,6 +5784,25 @@ static void apply(struct context *context, unsigned int property, char *value)
 
         break;
 
+    case PROP_TEXTINDENT:
+        {
+
+            struct span spans[1];
+            struct lengthvalue indent;
+
+            /* hanging and each-line only change which lines are moved */
+            if (!countspans(value, spans, 1))
+                break;
+
+            indent = parselength(context, value + spans[0].start, spans[0].length, style->fontsize);
+
+            if (indent.valid && indent.length.unit <= CSS_UNIT_PERCENT)
+                copylength(&style->indent, &indent.length);
+
+        }
+
+        break;
+
     case PROP_CONTENT:
         if (context->content)
             setcontent(context, value, length);
@@ -5297,6 +5856,45 @@ static void apply(struct context *context, unsigned int property, char *value)
 
         if (parsed != 0xFF && parsed != CSS_FLEX_BETWEEN && parsed != CSS_FLEX_AROUND && parsed != CSS_FLEX_EVENLY)
             style->alignself = parsed;
+
+        break;
+
+    case PROP_JUSTIFYITEMS:
+        parsed = parseflexalign(value, length);
+
+        if (parsed != 0xFF && parsed != CSS_FLEX_BETWEEN && parsed != CSS_FLEX_AROUND && parsed != CSS_FLEX_EVENLY)
+            style->justifyitems = parsed;
+
+        break;
+
+    case PROP_JUSTIFYSELF:
+        parsed = parseflexalign(value, length);
+
+        if (parsed != 0xFF && parsed != CSS_FLEX_BETWEEN && parsed != CSS_FLEX_AROUND && parsed != CSS_FLEX_EVENLY)
+            style->justifyself = parsed;
+
+        break;
+
+    case PROP_ALIGNCONTENT:
+        parsed = parseflexalign(value, length);
+
+        if (parsed != 0xFF)
+            style->aligncontent = parsed;
+
+        break;
+
+    case PROP_PLACEITEMS:
+        setpair(context, PROP_ALIGNITEMS, PROP_JUSTIFYITEMS, value);
+
+        break;
+
+    case PROP_PLACECONTENT:
+        setpair(context, PROP_ALIGNCONTENT, PROP_JUSTIFYCONTENT, value);
+
+        break;
+
+    case PROP_PLACESELF:
+        setpair(context, PROP_ALIGNSELF, PROP_JUSTIFYSELF, value);
 
         break;
 
@@ -6184,10 +6782,11 @@ static void applyhints(struct context *context, struct html_document *document, 
     if (node == document->body && (value = html_getattribute(document, node, "text")))
         applyhint(context, PROP_COLOR, value, "");
 
-    if (element->tag != HTML_TAG_FONT && !isalttext(document, node) && (value = html_getattribute(document, node, "width")))
+    /* a canvas takes its size from the attributes as its natural size, not as a width and height */
+    if (element->tag != HTML_TAG_FONT && element->tag != HTML_TAG_CANVAS && !isalttext(document, node) && (value = html_getattribute(document, node, "width")))
         applyhint(context, PROP_WIDTH, value, "px");
 
-    if (element->tag != HTML_TAG_FONT && !isalttext(document, node) && (value = html_getattribute(document, node, "height")))
+    if (element->tag != HTML_TAG_FONT && element->tag != HTML_TAG_CANVAS && !isalttext(document, node) && (value = html_getattribute(document, node, "height")))
         applyhint(context, PROP_HEIGHT, value, "px");
 
     if ((value = html_getattribute(document, node, "align")))
@@ -6276,6 +6875,8 @@ static void inherit(struct css_style *style, struct css_style *parent)
     style->opacity = parent->opacity;
     style->letterspacing = parent->letterspacing;
     style->breaking = parent->breaking;
+
+    copylength(&style->indent, &parent->indent);
 
 }
 
@@ -6366,7 +6967,7 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
 static unsigned int hasgenerated(unsigned int tag)
 {
 
-    return tag != HTML_TAG_IMG && tag != HTML_TAG_INPUT && tag != HTML_TAG_SELECT && tag != HTML_TAG_TEXTAREA && tag != HTML_TAG_SVG;
+    return tag != HTML_TAG_IMG && tag != HTML_TAG_INPUT && tag != HTML_TAG_SELECT && tag != HTML_TAG_TEXTAREA && tag != HTML_TAG_SVG && tag != HTML_TAG_CANVAS && tag != HTML_TAG_VIDEO && tag != HTML_TAG_IFRAME;
 
 }
 
@@ -6666,7 +7267,7 @@ static void parseblock(struct parser *parser, unsigned int start, unsigned int e
 
         close = findclose(text, stop, end);
 
-        parserule(parser, offset, stop, stop + 1, close);
+        parsebody(parser, parser->text, offset, stop, stop + 1, close, 0);
 
         parser->offset = close + 1;
 

@@ -93,6 +93,7 @@ struct js_engine
     unsigned int dark;
     unsigned int steps;
     unsigned int depth;
+    unsigned int constructing;
     unsigned int throwing;
     struct js_value thrown;
     unsigned int changed;

@@ -50,6 +50,7 @@
 #define FUNCTION_ARROW                  2
 #define FUNCTION_ARGUMENTS              4
 #define FUNCTION_CLASS                  8
+#define FUNCTION_NEWTARGET              16
 #define LOOP_OF                         1
 #define LOOP_IN                         2
 #define PATTERN_ARRAY                   1
@@ -253,6 +254,7 @@
 #define NATIVE_GETPROTOTYPE             134
 #define NATIVE_SETPROTOTYPE             135
 #define NATIVE_ISINTEGER                136
+#define NATIVE_GETOWNDESCRIPTOR         137
 #define NATIVE_FILL                     99
 #define SELECTORSIZE                    128
 #define STYLESIZE                       512
@@ -303,7 +305,7 @@ struct parser
     unsigned int failed;
     unsigned int more;
     unsigned int noin;
-    unsigned int arguments;
+    unsigned int uses;
 
 };
 
@@ -943,7 +945,7 @@ static unsigned int startsexpression(struct parser *parser)
 
         char *word = getstring(parser->js, token->value);
 
-        return cstring_match(word, "return") || cstring_match(word, "typeof") || cstring_match(word, "case") || cstring_match(word, "in") || cstring_match(word, "of") || cstring_match(word, "throw") || cstring_match(word, "else") || cstring_match(word, "do") || cstring_match(word, "void") || cstring_match(word, "delete") || cstring_match(word, "new");
+        return cstring_match(word, "return") || cstring_match(word, "typeof") || cstring_match(word, "case") || cstring_match(word, "in") || cstring_match(word, "of") || cstring_match(word, "throw") || cstring_match(word, "else") || cstring_match(word, "do") || cstring_match(word, "void") || cstring_match(word, "delete") || cstring_match(word, "new") || cstring_match(word, "await");
 
     }
 
@@ -1279,6 +1281,53 @@ static unsigned int appendnode(struct parser *parser, unsigned int last, unsigne
 
 }
 
+static struct token peektoken(struct parser *parser)
+{
+
+    unsigned int offset = parser->offset;
+    struct token current;
+    struct token next;
+
+    buffer_copy(&current, &parser->token, sizeof (struct token));
+    nexttoken(parser);
+    buffer_copy(&next, &parser->token, sizeof (struct token));
+
+    parser->offset = offset;
+
+    buffer_copy(&parser->token, &current, sizeof (struct token));
+
+    return next;
+
+}
+
+static unsigned int beginsoperand(struct parser *parser, struct token *token)
+{
+
+    char c = parser->source[token->start];
+
+    if (token->type == TOKEN_PUNCTUATOR)
+        return c == '(' || c == '[' || c == '{' || c == '!' || c == '-' || c == '+' || c == '~';
+
+    return token->type != TOKEN_END;
+
+}
+
+static void skipasync(struct parser *parser)
+{
+
+    struct token next;
+
+    if (!isword(parser, "async"))
+        return;
+
+    next = peektoken(parser);
+
+    /* there are no promises, so an async function runs like any other and await just takes the value */
+    if (next.type == TOKEN_NAME || (next.type == TOKEN_PUNCTUATOR && parser->source[next.start] == '('))
+        nexttoken(parser);
+
+}
+
 static unsigned int parsename(struct parser *parser)
 {
 
@@ -1343,10 +1392,10 @@ static unsigned int parseparameters(struct parser *parser)
 static unsigned int parsebody(struct parser *parser, unsigned int node)
 {
 
-    unsigned int outer = parser->arguments;
+    unsigned int outer = parser->uses;
     unsigned int noin = parser->noin;
 
-    parser->arguments = 0;
+    parser->uses = 0;
     parser->noin = 0;
 
     if (node)
@@ -1355,12 +1404,11 @@ static unsigned int parsebody(struct parser *parser, unsigned int node)
         parser->js->nodes[node].a = parseparameters(parser);
         parser->js->nodes[node].b = parseblock(parser);
 
-        if (parser->arguments)
-            parser->js->nodes[node].c |= FUNCTION_ARGUMENTS;
+        parser->js->nodes[node].c |= parser->uses;
 
     }
 
-    parser->arguments = outer;
+    parser->uses = outer;
     parser->noin = noin;
 
     return node;
@@ -1706,6 +1754,8 @@ static unsigned int parseprimary(struct parser *parser)
     if (isword(parser, "class"))
         return parseclass(parser);
 
+    skipasync(parser);
+
     if (isword(parser, "function"))
     {
 
@@ -1745,7 +1795,7 @@ static unsigned int parseprimary(struct parser *parser)
             js->nodes[node].value = name;
 
         if (cstring_match(getstring(js, name), "arguments"))
-            parser->arguments = 1;
+            parser->uses |= FUNCTION_ARGUMENTS;
 
         return node;
 
@@ -1964,15 +2014,35 @@ static unsigned int parsepostfix(struct parser *parser)
 {
 
     struct js_engine *js = parser->js;
+    unsigned int chained = 0;
     unsigned int node;
 
     if (isword(parser, "new"))
     {
 
-        unsigned int construct = newnode(parser, NODE_CALL);
+        unsigned int construct;
 
         nexttoken(parser);
 
+        /* new.target is looked up like a name, each function call declares it */
+        if (accept(parser, "."))
+        {
+
+            node = newnode(parser, NODE_NAME);
+
+            if (node)
+                js->nodes[node].value = internstring(js, "new.target");
+
+            parser->uses |= FUNCTION_NEWTARGET;
+
+            if (parser->token.type != TOKEN_NAME || !cstring_match(getstring(js, parsename(parser)), "target"))
+                parser->failed = 1;
+
+            return node;
+
+        }
+
+        construct = newnode(parser, NODE_CALL);
         node = parseprimary(parser);
 
         while (!parser->failed && (ispunctuator(parser, ".") || ispunctuator(parser, "[")))
@@ -2027,11 +2097,14 @@ static unsigned int parsepostfix(struct parser *parser)
 
     }
 
+    /* once a link is optional the rest of the chain is skipped with it, so every later link carries the flag */
     while (!parser->failed)
     {
 
         unsigned int optional = accept(parser, "?.");
         unsigned int next;
+
+        chained |= optional;
 
         if ((optional && parser->token.type == TOKEN_NAME) || accept(parser, "."))
         {
@@ -2042,7 +2115,7 @@ static unsigned int parsepostfix(struct parser *parser)
                 break;
 
             js->nodes[next].a = node;
-            js->nodes[next].op = optional;
+            js->nodes[next].op = chained;
             js->nodes[next].value = parsename(parser);
             node = next;
 
@@ -2057,7 +2130,7 @@ static unsigned int parsepostfix(struct parser *parser)
                 break;
 
             js->nodes[next].a = node;
-            js->nodes[next].op = optional;
+            js->nodes[next].op = chained;
             js->nodes[next].b = parseexpression(parser);
             node = next;
 
@@ -2074,7 +2147,7 @@ static unsigned int parsepostfix(struct parser *parser)
                 break;
 
             js->nodes[next].a = node;
-            js->nodes[next].c = optional;
+            js->nodes[next].c = chained;
             js->nodes[next].b = parsearguments(parser);
             node = next;
 
@@ -2120,6 +2193,22 @@ static unsigned int parseunary(struct parser *parser)
 
     unsigned int op = 0;
     unsigned int node;
+
+    if (isword(parser, "await"))
+    {
+
+        struct token next = peektoken(parser);
+
+        if (beginsoperand(parser, &next))
+        {
+
+            nexttoken(parser);
+
+            return parseunary(parser);
+
+        }
+
+    }
 
     if (ispunctuator(parser, "!"))
         op = OP_NOT;
@@ -2573,6 +2662,8 @@ static unsigned int parsestatement(struct parser *parser)
         return node;
 
     }
+
+    skipasync(parser);
 
     if (isword(parser, "function"))
     {
@@ -6361,6 +6452,31 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
     case NATIVE_IDENTITY:
         return call->arguments[0];
 
+    case NATIVE_GETOWNDESCRIPTOR:
+        {
+
+            struct js_property *property = (first->type == JS_OBJECT) ? findproperty(js, first->number, internstring(js, getstring(js, tostring(js, second)))) : 0;
+            struct js_value descriptor;
+            struct js_value yes = value(JS_BOOLEAN, 1);
+
+            /* every property here is a plain writable data property */
+            if (!property)
+                return undefined();
+
+            descriptor = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+            if (!descriptor.number)
+                return undefined();
+
+            putproperty(js, descriptor.number, internstring(js, "value"), &property->value);
+            putproperty(js, descriptor.number, internstring(js, "writable"), &yes);
+            putproperty(js, descriptor.number, internstring(js, "enumerable"), &yes);
+            putproperty(js, descriptor.number, internstring(js, "configurable"), &yes);
+
+            return descriptor;
+
+        }
+
     case NATIVE_DEFINEPROPERTY:
         if (first->type == JS_OBJECT && call->arguments[2].type == JS_OBJECT)
         {
@@ -7712,9 +7828,12 @@ static struct js_value callfunction(struct js_engine *js, struct call *call)
     struct js_node *node;
     struct completion completion;
     struct js_value result;
+    struct js_value target = (js->constructing) ? call->function : undefined();
     unsigned int scope;
     unsigned int parameter;
     unsigned int i = 0;
+
+    js->constructing = 0;
 
     if (!isfunction(js, &call->function))
     {
@@ -7777,7 +7896,14 @@ static struct js_value callfunction(struct js_engine *js, struct call *call)
     }
 
     if (!(node->c & FUNCTION_ARROW))
+    {
+
         declare(js, scope, internstring(js, "this"), &call->self);
+
+        if (node->c & FUNCTION_NEWTARGET)
+            declare(js, scope, internstring(js, "new.target"), &target);
+
+    }
 
     if (node->c & FUNCTION_ARGUMENTS)
     {
@@ -8179,6 +8305,7 @@ static struct js_value construct(struct js_engine *js, struct call *call)
 
     }
 
+    js->constructing = 1;
     result = callfunction(js, call);
 
     return (result.type == JS_OBJECT) ? result : call->self;
@@ -9151,6 +9278,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     js->dark = dark;
     js->steps = 0;
     js->depth = 0;
+    js->constructing = 0;
     js->throwing = 0;
     js->changed = 0;
     js->errors = 0;
@@ -9245,6 +9373,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "Object", "create", NATIVE_CREATE);
     addmethod(js, "Object", "freeze", NATIVE_IDENTITY);
     addmethod(js, "Object", "defineProperty", NATIVE_DEFINEPROPERTY);
+    addmethod(js, "Object", "getOwnPropertyDescriptor", NATIVE_GETOWNDESCRIPTOR);
     addmethod(js, "Date", "now", NATIVE_ZERO);
     addmethod(js, "JSON", "stringify", NATIVE_STRINGIFY);
     addmethod(js, "JSON", "parse", NATIVE_PARSE);
@@ -9325,7 +9454,7 @@ void js_run(struct js_engine *js, char *source, unsigned int count)
     parser.token.type = TOKEN_END;
     parser.more = 0;
     parser.noin = 0;
-    parser.arguments = 0;
+    parser.uses = 0;
 
     nexttoken(&parser);
 

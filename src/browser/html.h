@@ -42,6 +42,9 @@
 #define HTML_TAG_SVG                    34
 #define HTML_TAG_BEFORE                 35
 #define HTML_TAG_AFTER                  36
+#define HTML_TAG_CANVAS                 37
+#define HTML_TAG_VIDEO                  38
+#define HTML_TAG_IFRAME                 39
 
 struct html_node
 {

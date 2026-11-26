@@ -2,7 +2,7 @@
 #include "html.h"
 
 #define NAMESIZE                        32
-#define TAGS                            37
+#define TAGS                            40
 #define ENTITIES                        48
 
 struct parser
@@ -34,7 +34,7 @@ struct reference
 
 };
 
-static char *tags[TAGS] = {"", "a", "body", "br", "head", "html", "img", "input", "li", "link", "ol", "p", "pre", "script", "select", "style", "table", "td", "textarea", "th", "title", "tr", "ul", "font", "option", "dt", "dd", "dl", "tbody", "thead", "tfoot", "button", "hr", "caption", "svg", "::before", "::after"};
+static char *tags[TAGS] = {"", "a", "body", "br", "head", "html", "img", "input", "li", "link", "ol", "p", "pre", "script", "select", "style", "table", "td", "textarea", "th", "title", "tr", "ul", "font", "option", "dt", "dd", "dl", "tbody", "thead", "tfoot", "button", "hr", "caption", "svg", "::before", "::after", "canvas", "video", "iframe"};
 static struct entity entities[ENTITIES] = {
     {"amp", 38}, {"lt", 60}, {"gt", 62}, {"quot", 34}, {"apos", 39}, {"nbsp", 160}, {"copy", 169}, {"reg", 174},
     {"trade", 0x2122}, {"mdash", 0x2014}, {"ndash", 0x2013}, {"hellip", 0x2026}, {"laquo", 171}, {"raquo", 187}, {"lsquo", 0x2018}, {"rsquo", 0x2019},

@@ -18,6 +18,8 @@
 #define CSS_REPEAT_NONE                 0
 #define CSS_REPEAT_FILL                 1
 #define CSS_REPEAT_FIT                  2
+#define CSS_GRIDFLOW_COLUMN             1
+#define CSS_GRIDFLOW_DENSE              2
 #define CSS_GRIDROWSTART                0
 #define CSS_GRIDCOLUMNSTART             1
 #define CSS_GRIDROWEND                  2
@@ -32,6 +34,8 @@
 #define CSS_UNIT_NONE                   3
 #define CSS_UNIT_FIT                    4
 #define CSS_UNIT_MINCONTENT             5
+#define CSS_LIMIT_LOW                   1
+#define CSS_LIMIT_HIGH                  2
 #define CSS_CORNERS                     4
 #define CSS_TOPLEFT                     0
 #define CSS_TOPRIGHT                    1
@@ -107,8 +111,11 @@ struct css_length
 {
 
     int value;
-    unsigned short unit;
     short offset;
+    short low;
+    short high;
+    unsigned char unit;
+    unsigned char limits;
 
 };
 
@@ -140,6 +147,9 @@ struct css_style
     unsigned char justify;
     unsigned char alignitems;
     unsigned char alignself;
+    unsigned char justifyitems;
+    unsigned char justifyself;
+    unsigned char aligncontent;
     unsigned char floating;
     unsigned char clear;
     unsigned char overflow;
@@ -192,6 +202,7 @@ struct css_style
     struct css_length radius[CSS_CORNERS];
     struct css_length basis;
     struct css_length inset[CSS_SIDES];
+    struct css_length indent;
 
 };
 
@@ -220,6 +231,8 @@ struct css_grid
     struct css_track columns[CSS_TRACKS];
     struct css_track rows[CSS_TRACKS];
     struct css_track autorow;
+    struct css_track autocolumn;
+    unsigned int flow;
     unsigned int columncount;
     unsigned int rowcount;
     unsigned int repeat;
