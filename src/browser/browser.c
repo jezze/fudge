@@ -52,6 +52,7 @@ struct store
     struct js_engine js;
     struct html_document svgdocument;
     struct jpeg jpeg;
+    struct font_set fonts;
     char source[SOURCESIZE];
 
 };
@@ -80,7 +81,7 @@ static struct css_sheet *sheet;
 static struct css_style *styles;
 static struct layout *layout;
 static struct js_engine *js;
-static struct font_face faces[FONT_FACES];
+static struct font_set *fonts;
 static struct image images[IMAGES];
 static struct image heap;
 static struct image tables;
@@ -110,7 +111,6 @@ static unsigned int viewwidth;
 static unsigned int viewheight;
 static unsigned int scrolly;
 static unsigned int scheme = CSS_SCHEME_LIGHT;
-static char fontdata[FONT_FACES][FONT_DATA];
 static char *fontpaths[FONT_FACES] = {
     "initrd:data/font/LiberationSans-Regular.ttf",
     "initrd:data/font/LiberationSans-Bold.ttf",
@@ -1634,7 +1634,7 @@ static void loadfonts(void)
 
     /* the outlines are read while drawing, so every font keeps its own buffer */
     for (i = 0; i < FONT_FACES; i++)
-        font_load(&faces[i], fontdata[i], fs_read_path(1, fontpaths[i], fontdata[i], FONT_DATA));
+        font_load(fonts, i, fs_read_path(1, fontpaths[i], fonts->faces[i].data, FONT_DATA));
 
 }
 
@@ -1653,6 +1653,7 @@ static unsigned int mapstore(struct image *image)
     js = &store->js;
     svgdocument = &store->svgdocument;
     jpeg = &store->jpeg;
+    fonts = &store->fonts;
     source = store->source;
 
     return 1;
@@ -1678,7 +1679,7 @@ static void onmain(struct message *message)
             layout->document = document;
             layout->styles = styles;
             layout->gradients = sheet->gradients;
-            layout->faces = faces;
+            layout->fonts = fonts;
             layout->pictures = pictures;
 
             loadfonts();

@@ -2,13 +2,6 @@
 #include <font.h>
 #include "font.h"
 
-static struct font_glyph entries[FONT_ENTRIES];
-static unsigned char pool[FONT_POOL];
-static unsigned int poolcount;
-static unsigned int entrycount;
-static struct ttf_outline outline;
-static struct ttf_raster raster;
-
 static unsigned int mapcodepoint(unsigned int codepoint)
 {
 
@@ -52,85 +45,85 @@ struct font_choice font_choose(unsigned int size, unsigned int bold, unsigned in
 
 }
 
-int font_getascent(struct font_face *faces, struct font_choice choice)
+int font_getascent(struct font_set *fonts, struct font_choice choice)
 {
 
-    return scale(&faces[choice.face], choice, faces[choice.face].ttf.ascender);
+    return scale(&fonts->faces[choice.face], choice, fonts->faces[choice.face].ttf.ascender);
 
 }
 
-int font_getdescent(struct font_face *faces, struct font_choice choice)
+int font_getdescent(struct font_set *fonts, struct font_choice choice)
 {
 
-    return scale(&faces[choice.face], choice, -faces[choice.face].ttf.descender);
+    return scale(&fonts->faces[choice.face], choice, -fonts->faces[choice.face].ttf.descender);
 
 }
 
-int font_getlineheight(struct font_face *faces, struct font_choice choice)
+int font_getlineheight(struct font_set *fonts, struct font_choice choice)
 {
 
-    return font_getascent(faces, choice) + font_getdescent(faces, choice) + scale(&faces[choice.face], choice, faces[choice.face].ttf.linegap);
+    return font_getascent(fonts, choice) + font_getdescent(fonts, choice) + scale(&fonts->faces[choice.face], choice, fonts->faces[choice.face].ttf.linegap);
 
 }
 
-int font_getaveragewidth(struct font_face *faces, struct font_choice choice)
+int font_getaveragewidth(struct font_set *fonts, struct font_choice choice)
 {
 
-    return scale(&faces[choice.face], choice, faces[choice.face].ttf.averagewidth);
+    return scale(&fonts->faces[choice.face], choice, fonts->faces[choice.face].ttf.averagewidth);
 
 }
 
-int font_getboxwidth(struct font_face *faces, struct font_choice choice)
+int font_getboxwidth(struct font_set *fonts, struct font_choice choice)
 {
 
-    return scale(&faces[choice.face], choice, faces[choice.face].ttf.boxwidth);
+    return scale(&fonts->faces[choice.face], choice, fonts->faces[choice.face].ttf.boxwidth);
 
 }
 
-static void clearcache(void)
+static void clearcache(struct font_set *fonts)
 {
 
     unsigned int i;
 
     for (i = 0; i < FONT_ENTRIES; i++)
-        entries[i].key = 0;
+        fonts->entries[i].key = 0;
 
-    entrycount = 0;
-    poolcount = 0;
+    fonts->entrycount = 0;
+    fonts->poolcount = 0;
 
 }
 
-struct font_glyph *font_getglyph(struct font_face *faces, struct font_choice choice, unsigned int codepoint)
+struct font_glyph *font_getglyph(struct font_set *fonts, struct font_choice choice, unsigned int codepoint)
 {
 
     unsigned int key = ((mapcodepoint(codepoint) & 0x1FFFFF) << 11) | (choice.size << 2) | choice.face;
     unsigned int index = (key * 2654435761u) % FONT_ENTRIES;
+    struct font_face *face = &fonts->faces[choice.face];
     struct font_glyph *glyph;
-    struct font_face *face = &faces[choice.face];
     unsigned int id;
 
-    while (entries[index].key)
+    while (fonts->entries[index].key)
     {
 
-        if (entries[index].key == key)
-            return &entries[index];
+        if (fonts->entries[index].key == key)
+            return &fonts->entries[index];
 
         index = (index + 1) % FONT_ENTRIES;
 
     }
 
     /* a full table starts over rather than evicting, the page needs few distinct glyphs */
-    if (entrycount >= FONT_ENTRIES * 3 / 4)
+    if (fonts->entrycount >= FONT_ENTRIES * 3 / 4)
     {
 
-        clearcache();
+        clearcache(fonts);
 
         index = (key * 2654435761u) % FONT_ENTRIES;
 
     }
 
     id = ttf_findglyph(&face->ttf, mapcodepoint(codepoint));
-    glyph = &entries[index];
+    glyph = &fonts->entries[index];
     glyph->key = key;
     glyph->id = id;
     glyph->advance = (face->ttf.unitsperem) ? (int)(ttf_getadvance(&face->ttf, id) * choice.size * 64 / face->ttf.unitsperem) : 0;
@@ -139,52 +132,52 @@ struct font_glyph *font_getglyph(struct font_face *faces, struct font_choice cho
     glyph->top = 0;
     glyph->width = 0;
     glyph->height = 0;
-    entrycount++;
+    fonts->entrycount++;
 
     return glyph;
 
 }
 
-struct font_glyph *font_render(struct font_face *faces, struct font_choice choice, unsigned int codepoint)
+struct font_glyph *font_render(struct font_set *fonts, struct font_choice choice, unsigned int codepoint)
 {
 
-    struct font_glyph *glyph = font_getglyph(faces, choice, codepoint);
-    struct font_face *face = &faces[choice.face];
+    struct font_glyph *glyph = font_getglyph(fonts, choice, codepoint);
+    struct font_face *face = &fonts->faces[choice.face];
     struct ttf_box box;
 
     if (glyph->rendered)
         return glyph;
 
-    if (poolcount + TTF_SIZE * TTF_SIZE > FONT_POOL)
+    if (fonts->poolcount + TTF_SIZE * TTF_SIZE > FONT_POOL)
     {
 
-        clearcache();
+        clearcache(fonts);
 
-        glyph = font_getglyph(faces, choice, codepoint);
+        glyph = font_getglyph(fonts, choice, codepoint);
 
     }
 
     glyph->rendered = 1;
-    glyph->offset = poolcount;
+    glyph->offset = fonts->poolcount;
 
-    if (!ttf_loadoutline(&face->ttf, &outline, glyph->id))
+    if (!ttf_loadoutline(&face->ttf, &fonts->outline, glyph->id))
         return glyph;
 
-    box = ttf_render(&raster, &outline, choice.size, face->ttf.unitsperem, pool + poolcount, FONT_POOL - poolcount);
+    box = ttf_render(&fonts->raster, &fonts->outline, choice.size, face->ttf.unitsperem, fonts->pool + fonts->poolcount, FONT_POOL - fonts->poolcount);
     glyph->left = box.left;
     glyph->top = box.top;
     glyph->width = box.width;
     glyph->height = box.height;
-    poolcount += box.width * box.height;
+    fonts->poolcount += box.width * box.height;
 
     return glyph;
 
 }
 
-int font_getkerning(struct font_face *faces, struct font_choice choice, unsigned int left, unsigned int right)
+int font_getkerning(struct font_set *fonts, struct font_choice choice, unsigned int left, unsigned int right)
 {
 
-    struct font_face *face = &faces[choice.face];
+    struct font_face *face = &fonts->faces[choice.face];
 
     if (!left || !right)
         return 0;
@@ -193,10 +186,10 @@ int font_getkerning(struct font_face *faces, struct font_choice choice, unsigned
 
 }
 
-unsigned char *font_getcoverage(struct font_glyph *glyph)
+unsigned char *font_getcoverage(struct font_set *fonts, struct font_glyph *glyph)
 {
 
-    return pool + glyph->offset;
+    return fonts->pool + glyph->offset;
 
 }
 
@@ -216,12 +209,12 @@ unsigned int font_setcase(unsigned int codepoint, unsigned int casing)
 
 }
 
-unsigned int font_load(struct font_face *face, char *data, unsigned int size)
+unsigned int font_load(struct font_set *fonts, unsigned int face, unsigned int size)
 {
 
-    clearcache();
+    clearcache(fonts);
 
-    return ttf_init(&face->ttf, data, size);
+    return ttf_init(&fonts->faces[face].ttf, fonts->faces[face].data, size);
 
 }
 

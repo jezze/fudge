@@ -181,12 +181,12 @@ static struct metrics getmetrics(struct layout *layout, struct css_style *style)
     int halfleading;
 
     metrics.choice = font_choose(style->fontsize, style->bold, style->monospace);
-    metrics.glyphascent = font_getascent(layout->faces, metrics.choice);
-    metrics.glyphheight = metrics.glyphascent + font_getdescent(layout->faces, metrics.choice);
+    metrics.glyphascent = font_getascent(layout->fonts, metrics.choice);
+    metrics.glyphheight = metrics.glyphascent + font_getdescent(layout->fonts, metrics.choice);
     metrics.spacing = style->letterspacing;
     metrics.casing = (style->transform == CSS_TRANSFORM_UPPERCASE) ? FONT_UPPERCASE : (style->transform == CSS_TRANSFORM_LOWERCASE) ? FONT_LOWERCASE : 0;
-    metrics.space = (font_getglyph(layout->faces, metrics.choice, ' ')->advance + 32) / 64 + metrics.spacing;
-    lineheight = (style->lineheight) ? style->lineheight : font_getlineheight(layout->faces, metrics.choice);
+    metrics.space = (font_getglyph(layout->fonts, metrics.choice, ' ')->advance + 32) / 64 + metrics.spacing;
+    lineheight = (style->lineheight) ? style->lineheight : font_getlineheight(layout->fonts, metrics.choice);
     halfleading = (lineheight - metrics.glyphheight) / 2;
     metrics.ascent = halfleading + metrics.glyphascent;
     metrics.descent = lineheight - metrics.ascent;
@@ -206,10 +206,10 @@ struct pen
 static void advance(struct layout *layout, struct metrics *metrics, struct pen *pen, unsigned int codepoint)
 {
 
-    struct font_glyph *glyph = font_getglyph(layout->faces, metrics->choice, font_setcase(codepoint, metrics->casing));
+    struct font_glyph *glyph = font_getglyph(layout->fonts, metrics->choice, font_setcase(codepoint, metrics->casing));
 
     /* pairs are kerned within a word only, spaces are measured apart from the words around them */
-    pen->x += glyph->advance + metrics->spacing * 64 + font_getkerning(layout->faces, metrics->choice, pen->previous, glyph->id);
+    pen->x += glyph->advance + metrics->spacing * 64 + font_getkerning(layout->fonts, metrics->choice, pen->previous, glyph->id);
     pen->previous = (codepoint == ' ') ? 0 : glyph->id;
 
 }
@@ -1027,8 +1027,8 @@ static int replacedwidth(struct layout *layout, unsigned int node, struct metric
     struct html_node *element = getnode(layout, node);
     char *size = html_getattribute(document, node, "size");
     char *type = html_getattribute(document, node, "type");
-    int charwidth = max(font_getaveragewidth(layout->faces, metrics->choice), 1);
-    int widest = font_getboxwidth(layout->faces, metrics->choice);
+    int charwidth = max(font_getaveragewidth(layout->fonts, metrics->choice), 1);
+    int widest = font_getboxwidth(layout->fonts, metrics->choice);
 
     if (element->tag == HTML_TAG_INPUT && type && (cstring_match(type, "checkbox") || cstring_match(type, "radio")))
         return metrics->glyphheight;

@@ -677,10 +677,10 @@ static void paintpicture(struct paint_canvas *canvas, struct layout_picture *pic
 
 }
 
-static void paintglyph(struct paint_canvas *canvas, struct font_glyph *glyph, int x, int y, unsigned int color, struct shade *shade)
+static void paintglyph(struct paint_canvas *canvas, struct font_set *fonts, struct font_glyph *glyph, int x, int y, unsigned int color, struct shade *shade)
 {
 
-    unsigned char *coverage = font_getcoverage(glyph);
+    unsigned char *coverage = font_getcoverage(fonts, glyph);
     int left = x + glyph->left;
     int top = y + glyph->top;
     int x0 = (left < canvas->clipleft) ? canvas->clipleft : left;
@@ -739,7 +739,7 @@ static void painttext(struct paint_canvas *canvas, struct layout *layout, struct
         {
 
             if (!space)
-                pen += font_getglyph(layout->faces, choice, ' ')->advance + style->letterspacing * 64;
+                pen += font_getglyph(layout->fonts, choice, ' ')->advance + style->letterspacing * 64;
 
             previous = 0;
             space = 1;
@@ -751,10 +751,10 @@ static void painttext(struct paint_canvas *canvas, struct layout *layout, struct
 
         space = 0;
         i += utf8_read(text + i, fragment->length - i, &codepoint);
-        glyph = font_render(layout->faces, choice, font_setcase(codepoint, fragment->casing));
-        pen += font_getkerning(layout->faces, choice, previous, glyph->id);
+        glyph = font_render(layout->fonts, choice, font_setcase(codepoint, fragment->casing));
+        pen += font_getkerning(layout->fonts, choice, previous, glyph->id);
 
-        paintglyph(canvas, glyph, (pen + 32) / 64, baseline, color, shade);
+        paintglyph(canvas, layout->fonts, glyph, (pen + 32) / 64, baseline, color, shade);
 
         pen += glyph->advance + style->letterspacing * 64;
         previous = (codepoint == ' ') ? 0 : glyph->id;

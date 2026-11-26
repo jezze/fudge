@@ -119,7 +119,7 @@ struct layout
     struct html_document *document;
     struct css_style *styles;
     struct css_gradient *gradients;
-    struct font_face *faces;
+    struct font_set *fonts;
     struct layout_picture *pictures;
     unsigned short picture[HTML_NODES];
     struct layout_box boxes[HTML_NODES];
