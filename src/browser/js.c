@@ -255,6 +255,7 @@
 #define NATIVE_SETPROTOTYPE             135
 #define NATIVE_ISINTEGER                136
 #define NATIVE_GETOWNDESCRIPTOR         137
+#define NATIVE_NEWURL                   138
 #define NATIVE_FILL                     99
 #define SELECTORSIZE                    128
 #define STYLESIZE                       512
@@ -902,7 +903,7 @@ static unsigned int startsexpression(struct parser *parser)
 
         char *word = getstring(parser->js, token->value);
 
-        return cstring_match(word, "return") || cstring_match(word, "typeof") || cstring_match(word, "case") || cstring_match(word, "in") || cstring_match(word, "of") || cstring_match(word, "throw") || cstring_match(word, "else") || cstring_match(word, "do") || cstring_match(word, "void") || cstring_match(word, "delete") || cstring_match(word, "new") || cstring_match(word, "await");
+        return cstring_match(word, "return") || cstring_match(word, "typeof") || cstring_match(word, "case") || cstring_match(word, "in") || cstring_match(word, "of") || cstring_match(word, "throw") || cstring_match(word, "else") || cstring_match(word, "do") || cstring_match(word, "void") || cstring_match(word, "delete") || cstring_match(word, "new") || cstring_match(word, "await") || cstring_match(word, "yield");
 
     }
 
@@ -1717,6 +1718,7 @@ static unsigned int parseprimary(struct parser *parser)
     {
 
         nexttoken(parser);
+        accept(parser, "*");
 
         return parsefunction(parser);
 
@@ -1786,7 +1788,27 @@ static unsigned int parseprimary(struct parser *parser)
         while (node && !parser->failed && !ispunctuator(parser, "]"))
         {
 
-            last = appendnode(parser, last, parseitem(parser));
+            unsigned int item;
+
+            /* a hole between commas holds undefined */
+            if (ispunctuator(parser, ","))
+            {
+
+                item = newnode(parser, NODE_NAME);
+
+                if (item)
+                    js->nodes[item].value = internstring(js, "undefined");
+
+            }
+
+            else
+            {
+
+                item = parseitem(parser);
+
+            }
+
+            last = appendnode(parser, last, item);
 
             if (!js->nodes[node].a)
                 js->nodes[node].a = last;
@@ -2151,7 +2173,8 @@ static unsigned int parseunary(struct parser *parser)
     unsigned int op = 0;
     unsigned int node;
 
-    if (isword(parser, "await"))
+    /* without promises or generators, await and yield just take the value of their operand */
+    if (isword(parser, "await") || isword(parser, "yield"))
     {
 
         struct token next = peektoken(parser);
@@ -2620,12 +2643,28 @@ static unsigned int parsestatement(struct parser *parser)
 
     }
 
+    if (parser->token.type == TOKEN_NAME && !isword(parser, "default"))
+    {
+
+        struct token next = peektoken(parser);
+
+        if (next.type == TOKEN_PUNCTUATOR && next.length == 1 && parser->source[next.start] == ':')
+        {
+
+            nexttoken(parser);
+            nexttoken(parser);
+
+        }
+
+    }
+
     skipasync(parser);
 
     if (isword(parser, "function"))
     {
 
         nexttoken(parser);
+        accept(parser, "*");
 
         node = newnode(parser, NODE_DECLARATION);
 
@@ -2932,9 +2971,16 @@ static unsigned int parsestatement(struct parser *parser)
     if (isword(parser, "break") || isword(parser, "continue"))
     {
 
+        unsigned int end = parser->token.start + parser->token.length;
+
         node = newnode(parser, (isword(parser, "break")) ? NODE_BREAK : NODE_CONTINUE);
 
         nexttoken(parser);
+
+        /* labels are not kept, so a labelled break or continue acts on the innermost loop */
+        if (parser->token.type == TOKEN_NAME && buffer_findbyte(parser->source + end, parser->token.start - end, '\n') == parser->token.start - end)
+            nexttoken(parser);
+
         endstatement(parser);
 
         return node;
@@ -4123,6 +4169,9 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "removeEventListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_REMOVEEVENTLISTENER));
 
+        if (cstring_match(text, "dispatchEvent"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_DISPATCHEVENT));
+
         break;
 
     case KIND_WINDOW:
@@ -4131,6 +4180,9 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         if (cstring_match(text, "removeEventListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_REMOVEEVENTLISTENER));
+
+        if (cstring_match(text, "dispatchEvent"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_DISPATCHEVENT));
 
         if (cstring_match(text, "setTimeout") || cstring_match(text, "requestAnimationFrame"))
             return value(JS_OBJECT, nativefor(js, NATIVE_SETTIMEOUT));
@@ -6077,6 +6129,118 @@ static struct js_value regexsplit(struct js_engine *js, struct js_value *subject
 
 }
 
+static void urlpart(struct js_engine *js, unsigned int object, char *name, char *text, unsigned int length)
+{
+
+    struct js_value part = value(JS_STRING, addstring(js, text, length));
+
+    putproperty(js, object, internstring(js, name), &part);
+
+}
+
+static struct js_value newurl(struct js_engine *js, struct js_value *address, struct js_value *base)
+{
+
+    char *text = js->text;
+    char *href = getstring(js, tostring(js, address));
+    char *root = (base->type == JS_STRING) ? getstring(js, base->number) : "http://localhost/";
+    unsigned int length = 0;
+    unsigned int scheme;
+    unsigned int host;
+    unsigned int path;
+    unsigned int query;
+    unsigned int fragment;
+    unsigned int object;
+
+    if (!buffer_findbyte(root, cstring_length(root), ':') || buffer_findbyte(root, cstring_length(root), ':') == cstring_length(root))
+        root = "http://localhost/";
+
+    /* an absolute address stands alone, a path replaces the base path, anything else is relative to the base directory */
+    if (buffer_findbyte(href, cstring_length(href), ':') < cstring_length(href) && href[0] != '/' && href[0] != '.')
+    {
+
+        length = cstring_length(href);
+
+        if (length >= JS_TEXTSIZE)
+            length = JS_TEXTSIZE - 1;
+
+        buffer_copy(text, href, length);
+
+    }
+
+    else
+    {
+
+        unsigned int rootlength = cstring_length(root);
+        unsigned int start = buffer_findbyte(root, rootlength, ':') + 3;
+        unsigned int end = start;
+
+        while (end < rootlength && root[end] != '/' && root[end] != '?' && root[end] != '#')
+            end++;
+
+        if (href[0] != '/')
+        {
+
+            unsigned int last = end;
+
+            while (end < rootlength && root[end] != '?' && root[end] != '#')
+            {
+
+                if (root[end] == '/')
+                    last = end + 1;
+
+                end++;
+
+            }
+
+            end = (last > start) ? last : end;
+
+        }
+
+        if (end + cstring_length(href) + 2 >= JS_TEXTSIZE)
+            return undefined();
+
+        buffer_copy(text, root, end);
+
+        length = end;
+
+        if (href[0] != '/' && text[length - 1] != '/')
+            text[length++] = '/';
+
+        if (href[0] == '.' && (href[1] == '\0' || href[1] == '/'))
+            href += (href[1] == '/') ? 2 : 1;
+
+        buffer_copy(text + length, href, cstring_length(href));
+
+        length += cstring_length(href);
+
+    }
+
+    object = newobject(js, KIND_PLAIN, 0, 0);
+
+    if (!object)
+        return undefined();
+
+    scheme = buffer_findbyte(text, length, ':');
+    host = (scheme + 2 < length && text[scheme + 1] == '/' && text[scheme + 2] == '/') ? scheme + 3 : scheme + 1;
+
+    for (path = host; path < length && text[path] != '/' && text[path] != '?' && text[path] != '#'; path++);
+    for (query = path; query < length && text[query] != '?' && text[query] != '#'; query++);
+    for (fragment = query; fragment < length && text[fragment] != '#'; fragment++);
+
+    urlpart(js, object, "href", text, length);
+    urlpart(js, object, "protocol", text, (scheme < length) ? scheme + 1 : 0);
+    urlpart(js, object, "host", text + host, path - host);
+    urlpart(js, object, "hostname", text + host, path - host);
+    urlpart(js, object, "origin", text, path);
+    urlpart(js, object, "pathname", (query > path) ? text + path : "/", (query > path) ? query - path : 1);
+    urlpart(js, object, "search", text + query, fragment - query);
+    urlpart(js, object, "hash", text + fragment, length - fragment);
+
+    return value(JS_OBJECT, object);
+
+}
+
 static struct js_value callnative(struct js_engine *js, struct call *call)
 {
 
@@ -6473,6 +6637,9 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
     case NATIVE_IDENTITY:
         return call->arguments[0];
+
+    case NATIVE_NEWURL:
+        return newurl(js, first, second);
 
     case NATIVE_GETOWNDESCRIPTOR:
         {
@@ -9357,6 +9524,20 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addglobal(js, "RegExp", js->natives[NATIVE_REGEXP]);
     addglobal(js, "DOMParser", js->natives[NATIVE_DOMPARSER]);
     addglobal(js, "Map", js->natives[NATIVE_NEWMAP]);
+    addglobal(js, "URL", js->natives[NATIVE_NEWURL]);
+
+    {
+
+        struct js_value zero = value(JS_NUMBER, 0);
+
+        /* scripts run before anything scrolls */
+        putproperty(js, js->global, internstring(js, "scrollX"), &zero);
+        putproperty(js, js->global, internstring(js, "scrollY"), &zero);
+        putproperty(js, js->global, internstring(js, "pageXOffset"), &zero);
+        putproperty(js, js->global, internstring(js, "pageYOffset"), &zero);
+
+    }
+
     addglobal(js, "Symbol", js->natives[NATIVE_SYMBOL]);
     addglobal(js, "Element", js->natives[NATIVE_ELEMENT]);
     addglobal(js, "Event", js->natives[NATIVE_EVENT]);
