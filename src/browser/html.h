@@ -84,6 +84,7 @@ struct html_document
     unsigned int full;
     unsigned int generated;
     unsigned int generatedtext;
+    unsigned int quirks;
 
 };
 

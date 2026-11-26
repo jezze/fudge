@@ -633,6 +633,10 @@ static int padding(struct css_length *length)
 static void paintplaceholder(struct paint_canvas *canvas, struct layout_box *box)
 {
 
+    /* a spacer image sized to nothing shows nothing, even when it does not load */
+    if (box->w <= 0 || box->h <= 0)
+        return;
+
     fill(canvas, box->x, box->y, box->w, 1, PLACEHOLDER);
     fill(canvas, box->x, box->y + box->h - 1, box->w, 1, PLACEHOLDER);
     fill(canvas, box->x, box->y, 1, box->h, PLACEHOLDER);

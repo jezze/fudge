@@ -103,6 +103,42 @@ static unsigned int matchlower(char *text, unsigned int count, char *name)
 
 }
 
+static unsigned int findlower(char *text, unsigned int count, char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (matchlower(text + i, count - i, name))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int isquirky(char *text, unsigned int count)
+{
+
+    unsigned int offset = 9;
+
+    while (offset < count && isspace(text[offset]))
+        offset++;
+
+    /* only a doctype named html, without one of the old public ids, keeps a page out of quirks mode */
+    if (!matchlower(text + offset, count - offset, "html") || (offset + 4 < count && !isspace(text[offset + 4]) && text[offset + 4] != '>'))
+        return 1;
+
+    if (findlower(text, count, "//w3c//dtd html 3") || findlower(text, count, "//w3c//dtd html 2") || findlower(text, count, "//ietf//"))
+        return 1;
+
+    return (findlower(text, count, "transitional") || findlower(text, count, "frameset")) && !findlower(text, count, "http");
+
+}
+
 static unsigned int addbytes(struct html_document *document, char *text, unsigned int count)
 {
 
@@ -946,6 +982,7 @@ static void reset(struct html_document *document)
     document->full = 0;
     document->generated = 0;
     document->generatedtext = 0;
+    document->quirks = 0;
     document->text[0] = '\0';
 
     newnode(document, HTML_NODE_DOCUMENT);
@@ -1270,6 +1307,7 @@ void html_parse(struct html_document *document, char *source, unsigned int count
 
     reset(document);
 
+    document->quirks = 1;
     parser.document = document;
     parser.source = source;
     parser.count = count;
@@ -1297,7 +1335,12 @@ void html_parse(struct html_document *document, char *source, unsigned int count
         if (remaining > 1 && text[0] == '<' && (text[1] == '!' || text[1] == '?'))
         {
 
+            unsigned int start = parser.offset;
+
             skipto(&parser, ">");
+
+            if (matchlower(text, remaining, "<!doctype"))
+                document->quirks = isquirky(text, parser.offset - start);
 
             continue;
 

@@ -396,7 +396,7 @@ static char *agent =
     "u,ins{text-decoration:underline}"
     "s,strike,del{text-decoration:line-through}"
     "a:link{color:#0000ee;text-decoration:underline}"
-    "center{text-align:center}"
+    "center{text-align:-webkit-center}"
     "small,sub,sup{font-size:smaller}"
     "sub{vertical-align:sub}"
     "sup{vertical-align:super}"
@@ -4970,7 +4970,9 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_TEXTALIGN:
-        if (matchword(value, length, "center") || matchword(value, length, "-webkit-center"))
+        if (matchword(value, length, "-webkit-center"))
+            style->align = CSS_ALIGN_WEBKITCENTER;
+        else if (matchword(value, length, "center"))
             style->align = CSS_ALIGN_CENTER;
         else if (matchword(value, length, "right") || matchword(value, length, "end"))
             style->align = CSS_ALIGN_RIGHT;
@@ -6204,7 +6206,7 @@ static void applyhints(struct context *context, struct html_document *document, 
         else
         {
 
-            applyhint(context, PROP_TEXTALIGN, value, "");
+            applyhint(context, PROP_TEXTALIGN, (cstring_match(value, "center") || cstring_match(value, "middle")) ? "-webkit-center" : value, "");
 
         }
 
@@ -6231,6 +6233,21 @@ static void applyhints(struct context *context, struct html_document *document, 
 
     if (element->tag == HTML_TAG_TABLE && (value = html_getattribute(document, node, "border")) && cstring_read_value(value, cstring_length(value), 10))
         apply(context, PROP_BORDER, "1px outset gray");
+
+}
+
+static void quirktable(struct css_style *style, struct css_style *initial)
+{
+
+    /* in quirks mode a table starts over with fonts, lines and alignment, as the html rendering rules say */
+    style->fontsize = initial->fontsize;
+    style->keyword = initial->keyword;
+    style->lineheight = initial->lineheight;
+    style->lineheightfactor = initial->lineheightfactor;
+    style->bold = initial->bold;
+    style->italic = initial->italic;
+    style->align = initial->align;
+    style->whitespace = initial->whitespace;
 
 }
 
@@ -6752,6 +6769,14 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
         context.parent = (parent) ? &styles[parent] : &root;
 
         inherit(context.style, context.parent);
+
+        if (document->quirks && document->nodes[node].tag == HTML_TAG_TABLE)
+            quirktable(context.style, &root);
+
+        /* the old centering centers a table but not what is in it */
+        if (document->nodes[node].tag == HTML_TAG_TABLE && context.style->align == CSS_ALIGN_WEBKITCENTER)
+            context.style->align = CSS_ALIGN_LEFT;
+
         computeelement(sheet, document, &context, node);
 
         if (node == document->html)

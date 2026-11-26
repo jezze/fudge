@@ -74,6 +74,7 @@ struct columns
     int spacing;
     unsigned int collapse;
     int overlap;
+    int shared;
 
 };
 
@@ -123,6 +124,7 @@ static int leadingmargin(struct layout *layout, unsigned int node, int availw);
 static void translate(struct layout *layout, unsigned int node, unsigned int fragmentstart, unsigned int fragmentend, int dx, int dy, unsigned int self);
 static void placefloat(struct layout *layout, struct flow *flow, unsigned int node);
 static int firstbottom(struct layout *layout, unsigned int node);
+static unsigned int iswebkitcentered(struct layout *layout, unsigned int node);
 
 static struct css_style *getstyle(struct layout *layout, unsigned int node)
 {
@@ -746,7 +748,7 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
 
     }
 
-    else if (style->align == CSS_ALIGN_CENTER)
+    else if (style->align == CSS_ALIGN_CENTER || style->align == CSS_ALIGN_WEBKITCENTER)
     {
 
         dx = max((flow->right - flow->left - used) / 2, 0);
@@ -1640,6 +1642,18 @@ static unsigned int isvisible(struct css_style *style)
 
 }
 
+static unsigned int iswebkitcentered(struct layout *layout, unsigned int node)
+{
+
+    struct css_style *style = getstyle(layout, node);
+    unsigned int parent = getnode(layout, node)->parent;
+    struct css_style *container = (parent) ? getstyle(layout, parent) : 0;
+
+    /* center and align=center put narrower blocks in the middle, with their margins around them */
+    return container && container->align == CSS_ALIGN_WEBKITCENTER && !container->flexbox && container->display != CSS_DISPLAY_GRID && !style->floating && isvisible(style);
+
+}
+
 static int firstbottom(struct layout *layout, unsigned int node)
 {
 
@@ -2017,6 +2031,8 @@ static void measurerow(struct layout *layout, unsigned int row, struct columns *
 {
 
     unsigned int column = 0;
+    unsigned int first = !columns->count;
+    int right = 0;
     unsigned int cell;
 
     for (cell = getnode(layout, row)->first; cell && column < COLUMNS; cell = getnode(layout, cell)->next)
@@ -2030,6 +2046,12 @@ static void measurerow(struct layout *layout, unsigned int row, struct columns *
 
         style = getstyle(layout, cell);
         span = getspan(layout, cell, COLUMNS - column);
+
+        /* the first row tells how much the collapsed borders between columns give back */
+        if (first && columns->collapse && column)
+            columns->shared += min(right, style->borderwidth[CSS_LEFT]);
+
+        right = style->borderwidth[CSS_RIGHT];
 
         if (span == 1)
         {
@@ -2071,6 +2093,7 @@ static int computecolumns(struct layout *layout, unsigned int node, struct colum
     columns->collapse = getstyle(layout, node)->collapse;
     columns->spacing = (columns->collapse) ? 0 : getstyle(layout, node)->spacing;
     columns->overlap = 0;
+    columns->shared = 0;
 
     if (isrow(layout, node))
     {
@@ -2116,7 +2139,7 @@ static int computecolumns(struct layout *layout, unsigned int node, struct colum
     if (!columns->count)
         return 0;
 
-    space = max(availw - columns->spacing * ((int)columns->count + 1), 0);
+    space = max(availw - columns->spacing * ((int)columns->count + 1), 0) + columns->shared;
 
     for (i = 0; i < columns->count; i++)
     {
@@ -2193,7 +2216,7 @@ static int computecolumns(struct layout *layout, unsigned int node, struct colum
 
     }
 
-    total = columns->spacing * ((int)columns->count + 1);
+    total = columns->spacing * ((int)columns->count + 1) - columns->shared;
 
     for (i = 0; i < columns->count; i++)
         total += columns->widths[i];
@@ -4310,6 +4333,8 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
             ml = max(free / 2, 0);
         else if (style->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
             ml = max(free - mr, 0);
+        else if (style->margin[CSS_RIGHT].unit != CSS_UNIT_AUTO && !layout->measuring && iswebkitcentered(layout, node))
+            ml += max((free - ml - mr) / 2, 0);
 
     }
 

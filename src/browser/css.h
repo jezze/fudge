@@ -51,6 +51,7 @@
 #define CSS_ALIGN_LEFT                  0
 #define CSS_ALIGN_CENTER                1
 #define CSS_ALIGN_RIGHT                 2
+#define CSS_ALIGN_WEBKITCENTER          3
 #define CSS_WHITESPACE_NORMAL           0
 #define CSS_WHITESPACE_PRE              1
 #define CSS_WHITESPACE_NOWRAP           2
