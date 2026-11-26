@@ -112,6 +112,11 @@
 #define KIND_BOUND                      14
 #define KIND_REGEX                      15
 #define KIND_DATASET                    16
+#define KIND_MAP                        17
+#define KIND_SET                        18
+#define KIND_GETTER                     19
+#define ACCESSOR_GET                    1
+#define ACCESSOR_SET                    2
 #define NATIVE_NOOP                     0
 #define NATIVE_GETELEMENTBYID           1
 #define NATIVE_ADDEVENTLISTENER         2
@@ -224,6 +229,25 @@
 #define NATIVE_CLICK                    111
 #define NATIVE_FULLYEAR                 112
 #define NATIVE_REMOVEEVENTLISTENER      113
+#define NATIVE_NEWMAP                   114
+#define NATIVE_NEWSET                   115
+#define NATIVE_COLLECTIONSET            116
+#define NATIVE_COLLECTIONGET            117
+#define NATIVE_COLLECTIONHAS            118
+#define NATIVE_COLLECTIONDELETE         119
+#define NATIVE_COLLECTIONCLEAR          120
+#define NATIVE_COLLECTIONFOREACH        121
+#define NATIVE_COLLECTIONKEYS           122
+#define NATIVE_COLLECTIONVALUES         123
+#define NATIVE_COLLECTIONENTRIES        124
+#define NATIVE_ENTRIES                  125
+#define NATIVE_SYMBOL                   126
+#define NATIVE_ELEMENT                  127
+#define NATIVE_OBJECTTOSTRING           128
+#define NATIVE_EVENT                    129
+#define NATIVE_DISPATCHEVENT            130
+#define NATIVE_COMPUTEDSTYLE            131
+#define NATIVE_PROPERTYVALUE            132
 #define NATIVE_FILL                     99
 #define SELECTORSIZE                    128
 #define STYLESIZE                       512
@@ -234,6 +258,8 @@
 #define SORTSIZE                        256
 #define DATEFIELDS                      10
 #define LOCATIONFIELDS                  8
+#define COLLECTIONMETHODS               11
+#define SYMBOLS                         4
 #define REGEXNODES                      128
 #define CAPTURES                        10
 #define REPEATMAX                       0x7FFF
@@ -415,6 +441,12 @@ static struct method arraymethods[ARRAYMETHODS] = {
     {"splice", NATIVE_SPLICE}, {"fill", NATIVE_FILL}, {"toString", NATIVE_TOSTRING}, {"item", NATIVE_ARRAYITEM}, {"keys", NATIVE_KEYS}
 };
 static char *locationfields[LOCATIONFIELDS] = {"href", "hash", "search", "pathname", "host", "hostname", "origin", "protocol"};
+static struct method collectionmethods[COLLECTIONMETHODS] = {
+    {"set", NATIVE_COLLECTIONSET}, {"add", NATIVE_COLLECTIONSET}, {"get", NATIVE_COLLECTIONGET}, {"has", NATIVE_COLLECTIONHAS},
+    {"delete", NATIVE_COLLECTIONDELETE}, {"clear", NATIVE_COLLECTIONCLEAR}, {"forEach", NATIVE_COLLECTIONFOREACH}, {"keys", NATIVE_COLLECTIONKEYS},
+    {"values", NATIVE_COLLECTIONVALUES}, {"entries", NATIVE_COLLECTIONENTRIES}, {"toString", NATIVE_TOSTRING}
+};
+static char *symbols[SYMBOLS] = {"iterator", "toStringTag", "asyncIterator", "hasInstance"};
 static char *datefields[DATEFIELDS] = {"getTime", "getFullYear", "getMonth", "getDate", "getDay", "getHours", "getMinutes", "getSeconds", "getMilliseconds", "getTimezoneOffset"};
 static char *voids[VOIDS] = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"};
 static struct binary binaries[BINARIES] = {
@@ -1474,6 +1506,31 @@ static unsigned int parsetemplate(struct parser *parser)
 
 }
 
+static unsigned int parseaccessor(struct parser *parser)
+{
+
+    unsigned int accessor = (isword(parser, "get")) ? ACCESSOR_GET : (isword(parser, "set")) ? ACCESSOR_SET : 0;
+    unsigned int offset = parser->offset;
+    struct token token;
+
+    if (!accessor)
+        return 0;
+
+    buffer_copy(&token, &parser->token, sizeof (struct token));
+    nexttoken(parser);
+
+    /* get and set are only accessors when a name follows; otherwise they are names themselves */
+    if (parser->token.type == TOKEN_NAME || parser->token.type == TOKEN_STRING)
+        return accessor;
+
+    parser->offset = offset;
+
+    buffer_copy(&parser->token, &token, sizeof (struct token));
+
+    return 0;
+
+}
+
 static unsigned int parseclass(struct parser *parser)
 {
 
@@ -1505,19 +1562,21 @@ static unsigned int parseclass(struct parser *parser)
 
         unsigned int member;
         unsigned int isstatic = 0;
+        unsigned int accessor;
 
         if (accept(parser, ";"))
             continue;
 
-        if (isword(parser, "static") || isword(parser, "async"))
+        while (isword(parser, "static") || isword(parser, "async"))
         {
 
-            isstatic = isword(parser, "static");
+            isstatic = isstatic || isword(parser, "static");
 
             nexttoken(parser);
 
         }
 
+        accessor = parseaccessor(parser);
         member = newnode(parser, NODE_PROPERTY);
 
         if (!member || (parser->token.type != TOKEN_NAME && parser->token.type != TOKEN_STRING))
@@ -1531,6 +1590,7 @@ static unsigned int parseclass(struct parser *parser)
 
         js->nodes[member].value = (parser->token.type == TOKEN_NAME) ? parser->token.value : (int)internstring(js, getstring(js, parser->token.value));
         js->nodes[member].c = isstatic;
+        js->nodes[member].op = accessor;
 
         nexttoken(parser);
 
@@ -1745,6 +1805,29 @@ static unsigned int parseprimary(struct parser *parser)
                 continue;
 
             }
+
+            if (isword(parser, "async"))
+            {
+
+                unsigned int offset = parser->offset;
+                struct token token;
+
+                buffer_copy(&token, &parser->token, sizeof (struct token));
+                nexttoken(parser);
+
+                /* async before a method name is dropped: the method runs like any other */
+                if (parser->token.type != TOKEN_NAME)
+                {
+
+                    parser->offset = offset;
+
+                    buffer_copy(&parser->token, &token, sizeof (struct token));
+
+                }
+
+            }
+
+            js->nodes[property].op = parseaccessor(parser);
 
             if (accept(parser, "["))
             {
@@ -2231,13 +2314,67 @@ static void parsepattern(struct parser *parser, unsigned int declarator)
     while (!parser->failed && !ispunctuator(parser, close))
     {
 
-        unsigned int name = newnode(parser, NODE_NAME);
+        unsigned int rest = accept(parser, "...");
+        unsigned int key = 0;
+        unsigned int name;
+
+        /* in an object pattern the key comes first and may be followed by : and a target */
+        if (pattern == PATTERN_OBJECT && !rest)
+        {
+
+            if (parser->token.type == TOKEN_NAME)
+                key = parser->token.value;
+            else if (parser->token.type == TOKEN_STRING)
+                key = internstring(parser->js, getstring(parser->js, parser->token.value));
+            else
+                parser->failed = 1;
+
+            nexttoken(parser);
+
+            if (!accept(parser, ":"))
+            {
+
+                name = newnode(parser, NODE_NAME);
+
+                if (!name)
+                    break;
+
+                parser->js->nodes[name].value = key;
+                key = 0;
+
+            }
+
+            else
+            {
+
+                name = newnode(parser, (ispunctuator(parser, "[") || ispunctuator(parser, "{")) ? NODE_DECLARATOR : NODE_NAME);
+
+            }
+
+        }
+
+        else
+        {
+
+            name = newnode(parser, (ispunctuator(parser, "[") || ispunctuator(parser, "{")) ? NODE_DECLARATOR : NODE_NAME);
+
+        }
 
         if (!name)
             break;
 
-        if (!(pattern == PATTERN_ARRAY && ispunctuator(parser, ",")))
+        if (parser->js->nodes[name].type == NODE_DECLARATOR)
+            parsepattern(parser, name);
+        else if (!parser->js->nodes[name].value && !(pattern == PATTERN_ARRAY && ispunctuator(parser, ",")))
             parser->js->nodes[name].value = parsename(parser);
+
+        /* a renamed name keeps its key in b; a nested pattern keeps it in value, as b holds its names */
+        if (parser->js->nodes[name].type == NODE_DECLARATOR)
+            parser->js->nodes[name].value = key;
+        else
+            parser->js->nodes[name].b = key;
+
+        parser->js->nodes[name].op = rest;
 
         if (accept(parser, "="))
             parser->js->nodes[name].a = parseassignment(parser);
@@ -3709,6 +3846,9 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "click"))
             return value(JS_OBJECT, nativefor(js, NATIVE_CLICK));
 
+        if (cstring_match(text, "dispatchEvent"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_DISPATCHEVENT));
+
         /* nothing scrolls and there is no focus to move */
         if (cstring_match(text, "focus") || cstring_match(text, "blur") || cstring_match(text, "scrollIntoView"))
             return value(JS_OBJECT, nativefor(js, NATIVE_NOOP));
@@ -3950,6 +4090,9 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         }
 
+        if (cstring_match(text, "getPropertyValue"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_PROPERTYVALUE));
+
         return getstyle(js, object->data, text);
 
     case KIND_STORAGE:
@@ -3984,6 +4127,13 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
     case KIND_CONSOLE:
         return value(JS_OBJECT, nativefor(js, NATIVE_NOOP));
+
+    case KIND_MAP:
+    case KIND_SET:
+        if (cstring_match(text, "size"))
+            return value(JS_NUMBER, js->objects[object->data].data / 2);
+
+        return findmethod(js, collectionmethods, COLLECTIONMETHODS, text);
 
     case KIND_REGEX:
         if (cstring_match(text, "test"))
@@ -4043,8 +4193,30 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         for (index = object->property; index; index = js->properties[index].next)
         {
 
-            if (js->properties[index].name == name)
-                return js->properties[index].value;
+            struct js_value *found = &js->properties[index].value;
+
+            if (js->properties[index].name != name)
+                continue;
+
+            if (found->type == JS_OBJECT && js->objects[found->number].kind == KIND_GETTER)
+            {
+
+                struct call call;
+                unsigned int argument;
+
+                call.function = value(JS_OBJECT, js->objects[found->number].data);
+                call.count = 0;
+
+                copyvalue(&call.self, target);
+
+                for (argument = 0; argument < ARGUMENTS; argument++)
+                    call.arguments[argument] = undefined();
+
+                return callfunction(js, &call);
+
+            }
+
+            return js->properties[index].value;
 
         }
 
@@ -4292,6 +4464,87 @@ static unsigned int lengthof(struct js_engine *js, struct js_value *array)
 {
 
     return (array->type == JS_OBJECT && js->objects[array->number].kind == KIND_ARRAY) ? js->objects[array->number].data : 0;
+
+}
+
+static int findentry(struct js_engine *js, struct js_value *entries, struct js_value *key)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < lengthof(js, entries); i += 2)
+    {
+
+        struct js_value item = itemat(js, entries, i);
+
+        if (strictequal(js, &item, key))
+            return i;
+
+    }
+
+    return -1;
+
+}
+
+static void putentry(struct js_engine *js, struct js_value *entries, struct js_value *key, struct js_value *item)
+{
+
+    int found = findentry(js, entries, key);
+
+    if (found >= 0)
+    {
+
+        setitem(js, entries, found + 1, item);
+
+        return;
+
+    }
+
+    pusharray(js, entries, key);
+    pusharray(js, entries, item);
+
+}
+
+/* a map or set keeps its entries as key, value pairs in one array; a set stores each value twice */
+static struct js_value listof(struct js_engine *js, struct js_value *source)
+{
+
+    struct js_value result;
+    struct js_value entries;
+    unsigned int kind = (source->type == JS_OBJECT) ? js->objects[source->number].kind : 0;
+    unsigned int i;
+
+    copyvalue(&result, source);
+
+    if (kind != KIND_MAP && kind != KIND_SET)
+        return result;
+
+    result = newarray(js);
+    entries = value(JS_OBJECT, js->objects[source->number].data);
+
+    for (i = 0; i < lengthof(js, &entries); i += 2)
+    {
+
+        struct js_value item = itemat(js, &entries, i + 1);
+
+        if (kind == KIND_MAP)
+        {
+
+            struct js_value pair = newarray(js);
+            struct js_value key = itemat(js, &entries, i);
+
+            pusharray(js, &pair, &key);
+            pusharray(js, &pair, &item);
+
+            item = pair;
+
+        }
+
+        pusharray(js, &result, &item);
+
+    }
+
+    return result;
 
 }
 
@@ -5809,6 +6062,8 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             struct js_value result = newarray(js);
             unsigned int length = (first->type == JS_STRING) ? cstring_length(getstring(js, first->number)) : 0;
 
+            call->arguments[0] = listof(js, first);
+
             if (first->type == JS_OBJECT)
             {
 
@@ -5885,6 +6140,119 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         }
 
         return keysof(js, first->number, native->data == NATIVE_VALUES);
+
+    case NATIVE_ENTRIES:
+        {
+
+            struct js_value result = newarray(js);
+            struct js_value keys = (first->type == JS_OBJECT) ? keysof(js, first->number, 0) : newarray(js);
+
+            for (i = 0; i < lengthof(js, &keys); i++)
+            {
+
+                struct js_value pair = newarray(js);
+                struct js_value key = itemat(js, &keys, i);
+                struct js_value item = getproperty(js, first, key.number);
+
+                pusharray(js, &pair, &key);
+                pusharray(js, &pair, &item);
+                pusharray(js, &result, &pair);
+
+            }
+
+            return result;
+
+        }
+
+    case NATIVE_OBJECTTOSTRING:
+        {
+
+            char *name = (self->type == JS_UNDEFINED) ? "Undefined" : (self->type == JS_NULL) ? "Null" : (self->type == JS_STRING) ? "String" : (self->type == JS_NUMBER) ? "Number" : (self->type == JS_BOOLEAN) ? "Boolean" : (kind == KIND_ARRAY) ? "Array" : (isfunction(js, self)) ? "Function" : (kind == KIND_ELEMENT) ? "HTMLElement" : (kind == KIND_REGEX) ? "RegExp" : "Object";
+
+            return value(JS_STRING, concat(js, concat(js, internstring(js, "[object "), internstring(js, name)), internstring(js, "]")));
+
+        }
+
+    case NATIVE_EVENT:
+        {
+
+            struct js_value event = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value type = value(JS_STRING, tostring(js, first));
+
+            if (!event.number)
+                return undefined();
+
+            putproperty(js, event.number, internstring(js, "type"), &type);
+
+            if (second->type == JS_OBJECT)
+            {
+
+                struct js_value detail = getproperty(js, second, internstring(js, "detail"));
+
+                putproperty(js, event.number, internstring(js, "detail"), &detail);
+
+            }
+
+            return event;
+
+        }
+
+    case NATIVE_DISPATCHEVENT:
+        if (element && first->type == JS_OBJECT)
+        {
+
+            struct js_value type = getproperty(js, first, internstring(js, "type"));
+
+            bubble(js, element, internstring(js, getstring(js, tostring(js, &type))));
+
+        }
+
+        return value(JS_BOOLEAN, 1);
+
+    case NATIVE_COMPUTEDSTYLE:
+        /* scripts cannot see the cascade, so the computed style is the inline one */
+        return (nodeof(js, first)) ? getproperty(js, first, internstring(js, "style")) : undefined();
+
+    case NATIVE_PROPERTYVALUE:
+        if (kind == KIND_STYLE)
+        {
+
+            char name[SELECTORSIZE];
+            char *text = getstring(js, tostring(js, first));
+            unsigned int count = 0;
+
+            /* the property comes as css-name and is looked up as cssName */
+            for (i = 0; text[i] && count + 1 < SELECTORSIZE; i++)
+            {
+
+                if (text[i] == '-' && text[i + 1] && count)
+                {
+
+                    i++;
+                    name[count++] = (text[i] >= 'a' && text[i] <= 'z') ? text[i] - 32 : text[i];
+
+                }
+
+                else
+                {
+
+                    name[count++] = text[i];
+
+                }
+
+            }
+
+            name[count] = '\0';
+
+            return getstyle(js, js->objects[self->number].data, name);
+
+        }
+
+        return value(JS_STRING, internstring(js, ""));
+
+    case NATIVE_SYMBOL:
+        /* symbols are strings that no ordinary key is likely to collide with */
+        return value(JS_STRING, concat(js, concat(js, internstring(js, "@@symbol("), tostring(js, first)), internstring(js, ")")));
 
     case NATIVE_ASSIGN:
         for (i = 1; i < call->count && first->type == JS_OBJECT; i++)
@@ -6532,6 +6900,175 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             return value(JS_STRING, joinarray(js, split(js, self, first).number, getstring(js, tostring(js, second))));
 
         return (isregex(js, first)) ? regexreplace(js, self, first, second) : call->self;
+
+    case NATIVE_NEWMAP:
+    case NATIVE_NEWSET:
+        {
+
+            struct js_value collection = value(JS_OBJECT, newobject(js, (native->data == NATIVE_NEWMAP) ? KIND_MAP : KIND_SET, 0, 0));
+            struct js_value entries = newarray(js);
+            struct js_value items = listof(js, first);
+
+            if (!collection.number || entries.type != JS_OBJECT)
+                return undefined();
+
+            js->objects[collection.number].data = entries.number;
+
+            if (first->type == JS_STRING)
+            {
+
+                struct js_value empty = value(JS_STRING, internstring(js, ""));
+
+                items = split(js, first, &empty);
+
+            }
+
+            for (i = 0; i < lengthof(js, &items); i++)
+            {
+
+                struct js_value item = itemat(js, &items, i);
+
+                if (native->data == NATIVE_NEWMAP)
+                {
+
+                    struct js_value key = itemat(js, &item, 0);
+                    struct js_value entry = itemat(js, &item, 1);
+
+                    putentry(js, &entries, &key, &entry);
+
+                }
+
+                else
+                {
+
+                    putentry(js, &entries, &item, &item);
+
+                }
+
+            }
+
+            return collection;
+
+        }
+
+    case NATIVE_COLLECTIONSET:
+    case NATIVE_COLLECTIONGET:
+    case NATIVE_COLLECTIONHAS:
+    case NATIVE_COLLECTIONDELETE:
+    case NATIVE_COLLECTIONCLEAR:
+    case NATIVE_COLLECTIONFOREACH:
+    case NATIVE_COLLECTIONKEYS:
+    case NATIVE_COLLECTIONVALUES:
+    case NATIVE_COLLECTIONENTRIES:
+        {
+
+            struct js_value entries;
+            int found;
+
+            if (kind != KIND_MAP && kind != KIND_SET)
+                return undefined();
+
+            entries = value(JS_OBJECT, js->objects[self->number].data);
+            found = findentry(js, &entries, first);
+
+            switch (native->data)
+            {
+
+            case NATIVE_COLLECTIONSET:
+                putentry(js, &entries, first, (kind == KIND_MAP) ? second : first);
+
+                return call->self;
+
+            case NATIVE_COLLECTIONGET:
+                return (found >= 0) ? itemat(js, &entries, found + 1) : undefined();
+
+            case NATIVE_COLLECTIONHAS:
+                return value(JS_BOOLEAN, found >= 0);
+
+            case NATIVE_COLLECTIONDELETE:
+                if (found < 0)
+                    return value(JS_BOOLEAN, 0);
+
+                for (i = found; i + 2 < lengthof(js, &entries); i++)
+                {
+
+                    struct js_value next = itemat(js, &entries, i + 2);
+
+                    setitem(js, &entries, i, &next);
+
+                }
+
+                js->objects[entries.number].data -= 2;
+
+                return value(JS_BOOLEAN, 1);
+
+            case NATIVE_COLLECTIONCLEAR:
+                js->objects[entries.number].data = 0;
+
+                return undefined();
+
+            case NATIVE_COLLECTIONFOREACH:
+                for (i = 0; i < lengthof(js, &entries) && isfunction(js, first) && !js->throwing; i += 2)
+                {
+
+                    struct call each;
+                    unsigned int argument;
+
+                    copyvalue(&each.function, first);
+
+                    each.self = undefined();
+                    each.count = 3;
+                    each.arguments[0] = itemat(js, &entries, i + 1);
+                    each.arguments[1] = itemat(js, &entries, i);
+                    each.arguments[2] = call->self;
+
+                    for (argument = 3; argument < ARGUMENTS; argument++)
+                        each.arguments[argument] = undefined();
+
+                    callfunction(js, &each);
+
+                }
+
+                return undefined();
+
+            case NATIVE_COLLECTIONENTRIES:
+                if (kind == KIND_MAP)
+                    return listof(js, self);
+
+            /* fall through */
+            default:
+                {
+
+                    struct js_value result = newarray(js);
+
+                    for (i = (native->data == NATIVE_COLLECTIONKEYS) ? 0 : 1; i < lengthof(js, &entries); i += 2)
+                    {
+
+                        struct js_value item = itemat(js, &entries, i);
+
+                        if (native->data == NATIVE_COLLECTIONENTRIES)
+                        {
+
+                            struct js_value pair = newarray(js);
+
+                            pusharray(js, &pair, &item);
+                            pusharray(js, &pair, &item);
+
+                            item = pair;
+
+                        }
+
+                        pusharray(js, &result, &item);
+
+                    }
+
+                    return result;
+
+                }
+
+            }
+
+        }
 
     case NATIVE_CALL:
     case NATIVE_APPLY:
@@ -7248,6 +7785,8 @@ static void collectarguments(struct js_engine *js, struct call *call, unsigned i
 
         }
 
+        evaluated = listof(js, &evaluated);
+
         for (i = 0; i < lengthof(js, &evaluated) && call->count < ARGUMENTS; i++)
             call->arguments[call->count++] = itemat(js, &evaluated, i);
 
@@ -7323,6 +7862,9 @@ static unsigned int instanceof(struct js_engine *js, struct js_value *object, st
 
     if (constructor->number == (int)nativefor(js, NATIVE_ARRAY))
         return js->objects[object->number].kind == KIND_ARRAY;
+
+    if (constructor->number == (int)nativefor(js, NATIVE_ELEMENT))
+        return js->objects[object->number].kind == KIND_ELEMENT;
 
     prototype = getproperty(js, constructor, internstring(js, "prototype"));
 
@@ -7478,6 +8020,17 @@ static struct js_value typeofvalue(struct js_engine *js, struct js_value *operan
 
 }
 
+static struct js_value accessorvalue(struct js_engine *js, unsigned int accessor, struct js_value *function)
+{
+
+    /* setters are not kept, so assigning makes an own property that hides the getter */
+    if (accessor != ACCESSOR_GET || function->type != JS_OBJECT)
+        return undefined();
+
+    return value(JS_OBJECT, newobject(js, KIND_GETTER, 0, function->number));
+
+}
+
 static struct js_value construct(struct js_engine *js, struct call *call)
 {
 
@@ -7612,10 +8165,32 @@ static struct js_value evaluateclass(struct js_engine *js, struct js_node *node,
     putproperty(js, prototype.number, internstring(js, "constructor"), &constructor);
     putproperty(js, constructor.number, internstring(js, "prototype"), &prototype);
 
+    /* statics are inherited by copying them when the class is made */
+    if (parent.type == JS_OBJECT)
+    {
+
+        unsigned int property;
+
+        for (property = js->objects[parent.number].property; property; property = js->properties[property].next)
+        {
+
+            if (!findproperty(js, constructor.number, js->properties[property].name))
+                putproperty(js, constructor.number, js->properties[property].name, &js->properties[property].value);
+
+        }
+
+    }
+
     for (member = node->b; member && !js->throwing; member = js->nodes[member].next)
     {
 
         struct js_value method = newfunction(js, js->nodes[member].a, classscope);
+
+        if (js->nodes[member].op == ACCESSOR_SET)
+            continue;
+
+        if (js->nodes[member].op)
+            method = accessorvalue(js, js->nodes[member].op, &method);
 
         putproperty(js, (js->nodes[member].c) ? (unsigned int)constructor.number : (unsigned int)prototype.number, js->nodes[member].value, &method);
 
@@ -7683,6 +8258,8 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
 
             }
 
+            a = listof(js, &a);
+
             for (i = 0; i < lengthof(js, &a); i++)
             {
 
@@ -7731,7 +8308,11 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
 
             }
 
-            putproperty(js, object, name, &a);
+            if (js->nodes[child].op)
+                a = accessorvalue(js, js->nodes[child].op, &a);
+
+            if (js->nodes[child].op != ACCESSOR_SET)
+                putproperty(js, object, name, &a);
 
         }
 
@@ -7854,6 +8435,66 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
 
 }
 
+static struct js_value restof(struct js_engine *js, struct js_node *pattern, struct js_value *source, unsigned int index)
+{
+
+    struct js_value result;
+    struct js_value keys;
+    unsigned int i;
+
+    if (pattern->c == PATTERN_ARRAY)
+    {
+
+        result = newarray(js);
+
+        for (; index < lengthof(js, source); index++)
+        {
+
+            struct js_value item = itemat(js, source, index);
+
+            pusharray(js, &result, &item);
+
+        }
+
+        return result;
+
+    }
+
+    result = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+    if (!result.number || source->type != JS_OBJECT)
+        return result;
+
+    keys = keysof(js, source->number, 0);
+
+    for (i = 0; i < lengthof(js, &keys); i++)
+    {
+
+        struct js_value key = itemat(js, &keys, i);
+        struct js_property *property = findproperty(js, source->number, key.number);
+        unsigned int name;
+        unsigned int listed = 0;
+
+        for (name = pattern->b; name; name = js->nodes[name].next)
+        {
+
+            struct js_node *element = &js->nodes[name];
+            unsigned int key = (element->type == NODE_DECLARATOR) ? (unsigned int)element->value : (element->b) ? element->b : (unsigned int)element->value;
+
+            if (!element->op && key == property->name)
+                listed = 1;
+
+        }
+
+        if (!listed)
+            putproperty(js, result.number, property->name, &property->value);
+
+    }
+
+    return result;
+
+}
+
 static void bindpattern(struct js_engine *js, unsigned int scope, unsigned int declarator, struct js_value *source)
 {
 
@@ -7870,20 +8511,38 @@ static void bindpattern(struct js_engine *js, unsigned int scope, unsigned int d
 
     }
 
+    if (source->type <= JS_NULL)
+    {
+
+        throwerror(js, "Cannot destructure undefined or null");
+
+        return;
+
+    }
+
     for (name = node->b; name && !js->throwing; name = js->nodes[name].next, index++)
     {
 
+        struct js_node *element = &js->nodes[name];
+        unsigned int nested = element->type == NODE_DECLARATOR;
+        unsigned int key = (nested) ? (unsigned int)element->value : (element->b) ? element->b : (unsigned int)element->value;
         struct js_value item;
 
-        if (!js->nodes[name].value)
+        if (!nested && !element->value)
             continue;
 
-        item = getproperty(js, source, (node->c == PATTERN_ARRAY) ? numberstring(js, index) : (unsigned int)js->nodes[name].value);
+        if (element->op)
+            item = restof(js, node, source, index);
+        else
+            item = getproperty(js, source, (node->c == PATTERN_ARRAY) ? numberstring(js, index) : key);
 
-        if (item.type == JS_UNDEFINED && js->nodes[name].a)
-            item = evaluate(js, js->nodes[name].a, scope);
+        if (item.type == JS_UNDEFINED && element->a)
+            item = evaluate(js, element->a, scope);
 
-        declare(js, scope, js->nodes[name].value, &item);
+        if (nested)
+            bindpattern(js, scope, name, &item);
+        else
+            declare(js, scope, element->value, &item);
 
     }
 
@@ -7953,6 +8612,9 @@ static void executeforeach(struct js_engine *js, struct js_node *node, unsigned 
 
     if (source.type != JS_OBJECT)
         return;
+
+    if (node->c == LOOP_OF)
+        source = listof(js, &source);
 
     if (node->c == LOOP_OF || js->objects[source.number].kind == KIND_ARRAY)
     {
@@ -8339,6 +9001,17 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addglobal(js, "Date", js->natives[NATIVE_DATE]);
     addglobal(js, "RegExp", js->natives[NATIVE_REGEXP]);
     addglobal(js, "DOMParser", js->natives[NATIVE_DOMPARSER]);
+    addglobal(js, "Map", js->natives[NATIVE_NEWMAP]);
+    addglobal(js, "Symbol", js->natives[NATIVE_SYMBOL]);
+    addglobal(js, "Element", js->natives[NATIVE_ELEMENT]);
+    addglobal(js, "Event", js->natives[NATIVE_EVENT]);
+    addglobal(js, "CustomEvent", js->natives[NATIVE_EVENT]);
+    addglobal(js, "getComputedStyle", js->natives[NATIVE_COMPUTEDSTYLE]);
+    addglobal(js, "HTMLElement", js->natives[NATIVE_ELEMENT]);
+    addglobal(js, "Node", js->natives[NATIVE_ELEMENT]);
+    addglobal(js, "Set", js->natives[NATIVE_NEWSET]);
+    addglobal(js, "WeakMap", js->natives[NATIVE_NEWMAP]);
+    addglobal(js, "WeakSet", js->natives[NATIVE_NEWSET]);
     addglobal(js, "navigator", newobject(js, KIND_PLAIN, 0, 0));
     addglobal(js, "location", newobject(js, KIND_PLAIN, 0, 0));
     addglobal(js, "Function", js->natives[NATIVE_FUNCTION]);
@@ -8350,6 +9023,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "Array", "from", NATIVE_ARRAYFROM);
     addmethod(js, "Object", "keys", NATIVE_KEYS);
     addmethod(js, "Object", "values", NATIVE_VALUES);
+    addmethod(js, "Object", "entries", NATIVE_ENTRIES);
     addmethod(js, "Object", "assign", NATIVE_ASSIGN);
     addmethod(js, "Object", "create", NATIVE_CREATE);
     addmethod(js, "Object", "freeze", NATIVE_IDENTITY);
@@ -8370,9 +9044,19 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
         prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
 
         putproperty(js, js->natives[NATIVE_FUNCTION], internstring(js, "prototype"), &prototype);
+        addnative(js, prototype.number, "toString", NATIVE_OBJECTTOSTRING);
         addnative(js, prototype.number, "call", NATIVE_CALL);
         addnative(js, prototype.number, "apply", NATIVE_APPLY);
         addnative(js, prototype.number, "bind", NATIVE_BIND);
+
+        for (i = 0; i < SYMBOLS; i++)
+        {
+
+            struct js_value symbol = value(JS_STRING, concat(js, internstring(js, "@@"), internstring(js, symbols[i])));
+
+            putproperty(js, js->natives[NATIVE_SYMBOL], internstring(js, symbols[i]), &symbol);
+
+        }
 
         for (i = 0; i < LOCATIONFIELDS; i++)
         {
@@ -8383,6 +9067,20 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
             putproperty(js, location->value.number, internstring(js, locationfields[i]), &empty);
 
         }
+
+        prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+        putproperty(js, js->natives[NATIVE_ELEMENT], internstring(js, "prototype"), &prototype);
+        addnative(js, prototype.number, "querySelector", NATIVE_QUERYSELECTOR);
+        addnative(js, prototype.number, "querySelectorAll", NATIVE_QUERYSELECTORALL);
+        addnative(js, prototype.number, "matches", NATIVE_MATCHES);
+        addnative(js, prototype.number, "closest", NATIVE_CLOSEST);
+
+        prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+        putproperty(js, js->natives[NATIVE_OBJECT], internstring(js, "prototype"), &prototype);
+        addnative(js, prototype.number, "toString", NATIVE_OBJECTTOSTRING);
+        addnative(js, prototype.number, "hasOwnProperty", NATIVE_HASOWNPROPERTY);
 
         js->date = newobject(js, KIND_PLAIN, 0, 0);
 
