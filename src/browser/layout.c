@@ -2614,6 +2614,16 @@ static unsigned int haspercentchild(struct layout *layout, unsigned int node)
 
 }
 
+static unsigned int usesheight(struct layout *layout, unsigned int node)
+{
+
+    struct css_style *style = getstyle(layout, node);
+
+    /* a column flexbox shares out the height it is given, so it has to know it */
+    return haspercentchild(layout, node) || (style->flexbox && style->column);
+
+}
+
 static unsigned int needsrestretch(struct layout *layout, struct css_style *container, unsigned int start, unsigned int end, int cross)
 {
 
@@ -2624,7 +2634,7 @@ static unsigned int needsrestretch(struct layout *layout, struct css_style *cont
 
         struct layout_flexitem *item = &layout->flexitems[i];
 
-        if (isstretched(layout, container, item) && item->mt + item->height + item->mb < cross && haspercentchild(layout, item->node))
+        if (isstretched(layout, container, item) && item->mt + item->height + item->mb < cross && usesheight(layout, item->node))
             return 1;
 
     }
@@ -3375,7 +3385,7 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
         if (start == base && end == layout->flexcount)
             cross = max((fixed >= 0) ? fixed : cross, minimum);
 
-        /* a stretched item has a definite height, so the line is placed again for children sized by percent */
+        /* a stretched item has a definite height, so the line is placed again for what depends on it */
         if (!layout->measuring && needsrestretch(layout, style, start, end, cross))
         {
 

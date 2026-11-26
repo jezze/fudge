@@ -793,13 +793,13 @@ static void readstarttag(struct parser *parser)
 
     readname(parser, name);
 
+    /* a late html or body tag still gives its attributes, as long as the element has none yet */
     if (cstring_match(name, "html"))
     {
 
-        if (!document->html)
-            node = ensurehtml(parser);
+        node = (document->html) ? document->html : ensurehtml(parser);
 
-        readattributes(parser, node);
+        readattributes(parser, (document->nodes[node].attributes) ? 0 : node);
 
         return;
 
@@ -820,16 +820,15 @@ static void readstarttag(struct parser *parser)
     if (cstring_match(name, "body"))
     {
 
-        if (!document->body)
-            node = ensurebody(parser);
+        node = (document->body) ? document->body : ensurebody(parser);
 
-        readattributes(parser, node);
+        readattributes(parser, (document->nodes[node].attributes) ? 0 : node);
 
         return;
 
     }
 
-    if (inlist("|title|style|script|meta|link|base|", name) && !document->body)
+    if (inlist("|title|style|script|meta|link|base|noscript|", name) && !document->body)
     {
 
         ensurehead(parser);
@@ -860,7 +859,8 @@ static void readstarttag(struct parser *parser)
 
     selfclosing = readattributes(parser, node);
 
-    if (inlist("|script|style|", name))
+    /* scripts always run, so what noscript holds is only text, as in a browser with scripting on */
+    if (inlist("|script|style|noscript|", name))
         readraw(parser, node, name, 0);
     else if (inlist("|title|textarea|", name))
         readraw(parser, node, name, 1);

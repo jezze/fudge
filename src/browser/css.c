@@ -1362,6 +1362,28 @@ static unsigned int ispseudoelement(char *text, unsigned int offset, unsigned in
 
 }
 
+static unsigned int isnever(struct css_sheet *sheet, unsigned int start, unsigned int end)
+{
+
+    unsigned int i = start;
+
+    /* only a part of the selector itself rules it out, inside :not or :is it may be the part that matches */
+    while (i < end)
+    {
+
+        struct css_part *part = &sheet->parts[i];
+
+        if (part->type == PART_NEVER)
+            return 1;
+
+        i += (part->type == PART_IS || part->type == PART_HAS) ? part->name + 1 : 1;
+
+    }
+
+    return 0;
+
+}
+
 static void parseselector(struct css_sheet *sheet, char *text, unsigned int start, unsigned int end, unsigned int rule)
 {
 
@@ -1442,7 +1464,8 @@ static void parseselector(struct css_sheet *sheet, char *text, unsigned int star
     if (sheet->selectorcount >= CSS_SELECTORS)
         sheet->full = 1;
 
-    if (!offset || offset < end || combinator != COMBINATOR_NONE || sheet->selectorcount >= CSS_SELECTORS)
+    /* a selector that can never match is not kept, so a sheet full of hover and focus rules still fits */
+    if (!offset || offset < end || combinator != COMBINATOR_NONE || sheet->selectorcount >= CSS_SELECTORS || isnever(sheet, partstart, sheet->partcount))
     {
 
         sheet->partcount = partstart;
@@ -5889,6 +5912,23 @@ static char *findcustom(struct context *context, char *name, unsigned int length
 
 }
 
+static unsigned int isjoining(char c)
+{
+
+    return isidentchar(c) || c == '.' || c == '%' || c == '#';
+
+}
+
+static void addspace(struct expansion *expansion)
+{
+
+    if (expansion->length + 1 >= EXPANDSIZE)
+        expansion->valid = 0;
+    else
+        expansion->text[expansion->length++] = ' ';
+
+}
+
 static void expand(struct context *context, struct expansion *expansion, char *text, unsigned int length, unsigned int depth)
 {
 
@@ -5909,6 +5949,10 @@ static void expand(struct context *context, struct expansion *expansion, char *t
             while (end > start && isspace(text[end - 1]))
                 end--;
 
+            /* what var() gives stays its own tokens, so minified text next to it is kept apart */
+            if (expansion->length && isjoining(expansion->text[expansion->length - 1]))
+                addspace(expansion);
+
             value = findcustom(context, text + start, end - start);
 
             if (value && value[0] && depth < EXPANDDEPTH)
@@ -5919,6 +5963,9 @@ static void expand(struct context *context, struct expansion *expansion, char *t
                 expansion->valid = 0;
 
             i = close + 1;
+
+            if (i < length && isjoining(text[i]))
+                addspace(expansion);
 
             continue;
 
