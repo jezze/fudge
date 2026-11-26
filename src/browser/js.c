@@ -2,12 +2,12 @@
 #include "html.h"
 #include "js.h"
 
-#define ARGUMENTS                       8
+#define ARGUMENTS                       16
 #define STEPLIMIT                       2000000
 #define DEPTHLIMIT                      24
 #define NUMBERSIZE                      16
 #define PUNCTUATORS                     46
-#define BINARIES                        21
+#define BINARIES                        23
 #define NODE_NUMBER                     1
 #define NODE_STRING                     2
 #define NODE_NAME                       3
@@ -43,6 +43,12 @@
 #define NODE_SWITCH                     36
 #define NODE_CASE                       37
 #define NODE_SEQUENCE                   38
+#define NODE_CLASS                      39
+#define NODE_SPREAD                     40
+#define NODE_REGEX                      41
+#define FUNCTION_DERIVED                1
+#define FUNCTION_ARROW                  2
+#define FUNCTION_ARGUMENTS              4
 #define LOOP_OF                         1
 #define LOOP_IN                         2
 #define PATTERN_ARRAY                   1
@@ -77,11 +83,15 @@
 #define OP_INCREMENT                    28
 #define OP_DECREMENT                    29
 #define OP_ASSIGN                       30
+#define OP_INSTANCEOF                   31
+#define OP_IN                           32
 #define TOKEN_END                       0
 #define TOKEN_NUMBER                    1
 #define TOKEN_STRING                    2
 #define TOKEN_NAME                      3
 #define TOKEN_PUNCTUATOR                4
+#define TOKEN_TEMPLATE                  5
+#define TOKEN_REGEX                     6
 #define COMPLETION_NORMAL               0
 #define COMPLETION_RETURN               1
 #define COMPLETION_BREAK                2
@@ -99,6 +109,9 @@
 #define KIND_CONSOLE                    11
 #define KIND_CLASSLIST                  12
 #define KIND_STYLE                      13
+#define KIND_BOUND                      14
+#define KIND_REGEX                      15
+#define KIND_DATASET                    16
 #define NATIVE_NOOP                     0
 #define NATIVE_GETELEMENTBYID           1
 #define NATIVE_ADDEVENTLISTENER         2
@@ -139,9 +152,105 @@
 #define NATIVE_ABS                      37
 #define NATIVE_SETTIMEOUT               38
 #define NATIVE_CHARAT                   39
+#define NATIVE_CREATEELEMENT            40
+#define NATIVE_CREATETEXTNODE           41
+#define NATIVE_APPEND                   42
+#define NATIVE_PREPEND                  43
+#define NATIVE_INSERTBEFORE             44
+#define NATIVE_REMOVECHILD              45
+#define NATIVE_REMOVE                   46
+#define NATIVE_INSERTADJACENTHTML       47
+#define NATIVE_CALL                     48
+#define NATIVE_APPLY                    49
+#define NATIVE_BIND                     50
+#define NATIVE_HASOWNPROPERTY           51
+#define NATIVE_ARRAY                    52
+#define NATIVE_ISARRAY                  53
+#define NATIVE_ARRAYFROM                54
+#define NATIVE_OBJECT                   55
+#define NATIVE_KEYS                     56
+#define NATIVE_VALUES                   57
+#define NATIVE_ASSIGN                   58
+#define NATIVE_CREATE                   59
+#define NATIVE_IDENTITY                 60
+#define NATIVE_DEFINEPROPERTY           61
+#define NATIVE_STRINGIFY                62
+#define NATIVE_PARSE                    63
+#define NATIVE_SQRT                     65
+#define NATIVE_POW                      66
+#define NATIVE_CLEARTIMER               67
+#define NATIVE_PARSEINT                 68
+#define NATIVE_NUMBER                   69
+#define NATIVE_STRING                   70
+#define NATIVE_BOOLEAN                  71
+#define NATIVE_ERROR                    72
+#define NATIVE_DATE                     73
+#define NATIVE_ZERO                     74
+#define NATIVE_TOFIXED                  75
+#define NATIVE_TOSTRING                 76
+#define NATIVE_REPEAT                   77
+#define NATIVE_PADSTART                 78
+#define NATIVE_PADEND                   79
+#define NATIVE_CHARCODEAT               80
+#define NATIVE_FROMCHARCODE             81
+#define NATIVE_LASTINDEXOF              82
+#define NATIVE_MAP                      83
+#define NATIVE_FILTER                   84
+#define NATIVE_FIND                     85
+#define NATIVE_FINDINDEX                86
+#define NATIVE_SOME                     87
+#define NATIVE_EVERY                    88
+#define NATIVE_REDUCE                   89
+#define NATIVE_SORT                     90
+#define NATIVE_REVERSE                  91
+#define NATIVE_CONCAT                   92
+#define NATIVE_POP                      93
+#define NATIVE_SHIFT                    94
+#define NATIVE_UNSHIFT                  95
+#define NATIVE_SPLICE                   96
+#define NATIVE_ISNAN                    97
+#define NATIVE_SUBSTR                   98
+#define NATIVE_ARRAYITEM                100
+#define NATIVE_TEST                     101
+#define NATIVE_EXEC                     102
+#define NATIVE_MATCH                    103
+#define NATIVE_SEARCH                   104
+#define NATIVE_REPLACEALL               105
+#define NATIVE_REGEXP                   106
+#define NATIVE_FUNCTION                 107
+#define NATIVE_DOMPARSER                108
+#define NATIVE_PARSEFROMSTRING          109
+#define NATIVE_REPLACECHILDREN          110
+#define NATIVE_CLICK                    111
+#define NATIVE_FULLYEAR                 112
+#define NATIVE_REMOVEEVENTLISTENER      113
+#define NATIVE_FILL                     99
 #define SELECTORSIZE                    128
 #define STYLESIZE                       512
 #define TEXTSIZE                        1024
+#define VOIDS                           13
+#define STRINGMETHODS                   25
+#define ARRAYMETHODS                    25
+#define SORTSIZE                        256
+#define DATEFIELDS                      10
+#define LOCATIONFIELDS                  8
+#define REGEXNODES                      128
+#define CAPTURES                        10
+#define REPEATMAX                       0x7FFF
+#define REGEXDEPTH                      2048
+#define RE_CHAR                         1
+#define RE_ANY                          2
+#define RE_CLASS                        3
+#define RE_START                        4
+#define RE_END                          5
+#define RE_BOUNDARY                     6
+#define RE_NOTBOUNDARY                  7
+#define RE_GROUP                        8
+#define RE_ALTERNATIVE                  9
+#define RE_DIGIT                        10
+#define RE_WORD                         11
+#define RE_SPACE                        12
+#define JSONDEPTH                       16
 
 struct token
 {
@@ -162,6 +271,9 @@ struct parser
     unsigned int offset;
     struct token token;
     unsigned int failed;
+    unsigned int more;
+    unsigned int noin;
+    unsigned int arguments;
 
 };
 
@@ -191,6 +303,85 @@ struct declaration
 
 };
 
+struct method
+{
+
+    char *name;
+    unsigned int native;
+
+};
+
+struct renode
+{
+
+    unsigned int type;
+    unsigned int value;
+    unsigned int negated;
+    unsigned int min;
+    unsigned int max;
+    unsigned int lazy;
+    unsigned int child;
+    unsigned int alternative;
+    unsigned int next;
+
+};
+
+struct capture
+{
+
+    int start;
+    int end;
+
+};
+
+struct regex
+{
+
+    char *pattern;
+    char *text;
+    int length;
+    unsigned int offset;
+    unsigned int ignorecase;
+    unsigned int failed;
+    unsigned int groups;
+    unsigned int steps;
+    unsigned int depth;
+    struct renode nodes[REGEXNODES];
+    unsigned int nodecount;
+    struct capture captures[CAPTURES];
+
+};
+
+struct frame
+{
+
+    unsigned int node;
+    unsigned int count;
+    int start;
+    struct frame *parent;
+
+};
+
+struct output
+{
+
+    struct js_engine *js;
+    char *data;
+    unsigned int count;
+    unsigned int size;
+    unsigned int full;
+
+};
+
+struct reader
+{
+
+    char *text;
+    unsigned int offset;
+    unsigned int failed;
+
+};
+
 struct call
 {
 
@@ -207,12 +398,31 @@ static char *punctuators[PUNCTUATORS] = {
     "(", ")", "[", "]", ";", ",", "<", ">", "+", "-", "*", "/", "%", "&"
 };
 static char *singles = "|^!~?:=.";
+static struct method stringmethods[STRINGMETHODS] = {
+    {"indexOf", NATIVE_INDEXOF}, {"lastIndexOf", NATIVE_LASTINDEXOF}, {"toUpperCase", NATIVE_TOUPPERCASE}, {"toLowerCase", NATIVE_TOLOWERCASE},
+    {"startsWith", NATIVE_STARTSWITH}, {"endsWith", NATIVE_ENDSWITH}, {"includes", NATIVE_INCLUDES}, {"trim", NATIVE_TRIM},
+    {"split", NATIVE_SPLIT}, {"slice", NATIVE_SLICE}, {"substring", NATIVE_SLICE}, {"substr", NATIVE_SUBSTR},
+    {"replace", NATIVE_REPLACE}, {"charAt", NATIVE_CHARAT}, {"charCodeAt", NATIVE_CHARCODEAT}, {"repeat", NATIVE_REPEAT},
+    {"padStart", NATIVE_PADSTART}, {"padEnd", NATIVE_PADEND}, {"concat", NATIVE_CONCAT}, {"toString", NATIVE_TOSTRING},
+    {"match", NATIVE_MATCH}, {"search", NATIVE_SEARCH}, {"replaceAll", NATIVE_REPLACEALL}, {"trimStart", NATIVE_TRIM}, {"trimEnd", NATIVE_TRIM}
+};
+static struct method arraymethods[ARRAYMETHODS] = {
+    {"indexOf", NATIVE_INDEXOF}, {"lastIndexOf", NATIVE_LASTINDEXOF}, {"push", NATIVE_PUSH}, {"join", NATIVE_JOIN},
+    {"forEach", NATIVE_FOREACH}, {"includes", NATIVE_INCLUDES}, {"slice", NATIVE_SLICE}, {"map", NATIVE_MAP},
+    {"filter", NATIVE_FILTER}, {"find", NATIVE_FIND}, {"findIndex", NATIVE_FINDINDEX}, {"some", NATIVE_SOME},
+    {"every", NATIVE_EVERY}, {"reduce", NATIVE_REDUCE}, {"sort", NATIVE_SORT}, {"reverse", NATIVE_REVERSE},
+    {"concat", NATIVE_CONCAT}, {"pop", NATIVE_POP}, {"shift", NATIVE_SHIFT}, {"unshift", NATIVE_UNSHIFT},
+    {"splice", NATIVE_SPLICE}, {"fill", NATIVE_FILL}, {"toString", NATIVE_TOSTRING}, {"item", NATIVE_ARRAYITEM}, {"keys", NATIVE_KEYS}
+};
+static char *locationfields[LOCATIONFIELDS] = {"href", "hash", "search", "pathname", "host", "hostname", "origin", "protocol"};
+static char *datefields[DATEFIELDS] = {"getTime", "getFullYear", "getMonth", "getDate", "getDay", "getHours", "getMinutes", "getSeconds", "getMilliseconds", "getTimezoneOffset"};
+static char *voids[VOIDS] = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"};
 static struct binary binaries[BINARIES] = {
     {"??", OP_NULLISH, 1, 1}, {"||", OP_OR, 2, 1}, {"&&", OP_AND, 3, 1}, {"|", OP_BITOR, 4, 0}, {"^", OP_BITXOR, 5, 0}, {"&", OP_BITAND, 6, 0},
     {"===", OP_STRICTEQUAL, 7, 0}, {"!==", OP_STRICTNOTEQUAL, 7, 0}, {"==", OP_EQUAL, 7, 0}, {"!=", OP_NOTEQUAL, 7, 0},
     {"<=", OP_LESSEQUAL, 8, 0}, {">=", OP_GREATEREQUAL, 8, 0}, {"<", OP_LESS, 8, 0}, {">", OP_GREATER, 8, 0},
     {"<<", OP_SHIFTLEFT, 9, 0}, {">>", OP_SHIFTRIGHT, 9, 0}, {"+", OP_ADD, 10, 0}, {"-", OP_SUBTRACT, 10, 0},
-    {"*", OP_MULTIPLY, 11, 0}, {"/", OP_DIVIDE, 11, 0}, {"%", OP_MODULO, 11, 0}
+    {"*", OP_MULTIPLY, 11, 0}, {"/", OP_DIVIDE, 11, 0}, {"%", OP_MODULO, 11, 0}, {"instanceof", OP_INSTANCEOF, 8, 0}, {"in", OP_IN, 8, 0}
 };
 
 static struct js_value execlist(struct js_engine *js, unsigned int first, unsigned int scope, struct completion *completion);
@@ -222,6 +432,13 @@ static unsigned int parseexpression(struct parser *parser);
 static unsigned int parseassignment(struct parser *parser);
 static unsigned int parsestatement(struct parser *parser);
 static unsigned int parseblock(struct parser *parser);
+static struct js_value callfunction(struct js_engine *js, struct call *call);
+static void bindpattern(struct js_engine *js, unsigned int scope, unsigned int declarator, struct js_value *source);
+static unsigned int bubble(struct js_engine *js, unsigned int target, unsigned int name);
+static unsigned int parsepostfix(struct parser *parser);
+static void parsepattern(struct parser *parser, unsigned int declarator);
+static unsigned int parseitem(struct parser *parser);
+static unsigned int parseclass(struct parser *parser);
 
 static unsigned int isspace(char c)
 {
@@ -406,7 +623,7 @@ static void throwerror(struct js_engine *js, char *message)
 static unsigned int isfunction(struct js_engine *js, struct js_value *value)
 {
 
-    return value->type == JS_OBJECT && (js->objects[value->number].kind == KIND_FUNCTION || js->objects[value->number].kind == KIND_NATIVE);
+    return value->type == JS_OBJECT && (js->objects[value->number].kind == KIND_FUNCTION || js->objects[value->number].kind == KIND_NATIVE || js->objects[value->number].kind == KIND_BOUND);
 
 }
 
@@ -602,11 +819,165 @@ static unsigned int looseequal(struct js_engine *js, struct js_value *a, struct 
 
 }
 
+static char readescaped(struct parser *parser)
+{
+
+    char c = parser->source[parser->offset++];
+
+    if (c != '\\' || parser->offset >= parser->count)
+        return c;
+
+    c = parser->source[parser->offset++];
+
+    if (c == 'n')
+        return '\n';
+
+    if (c == 't')
+        return '\t';
+
+    if (c == 'r')
+        return '\r';
+
+    return c;
+
+}
+
+static void scantemplate(struct parser *parser)
+{
+
+    struct js_engine *js = parser->js;
+    char *source = parser->source;
+    unsigned int start = js->stringcount;
+
+    parser->more = 0;
+
+    while (parser->offset < parser->count && source[parser->offset] != '`')
+    {
+
+        char c;
+
+        if (source[parser->offset] == '$' && parser->offset + 1 < parser->count && source[parser->offset + 1] == '{')
+        {
+
+            parser->more = 1;
+            parser->offset++;
+
+            break;
+
+        }
+
+        c = readescaped(parser);
+
+        if (js->stringcount + 2 >= JS_STRINGSIZE)
+        {
+
+            parser->failed = 1;
+
+            return;
+
+        }
+
+        js->strings[js->stringcount++] = c;
+
+    }
+
+    parser->offset++;
+    js->strings[js->stringcount++] = '\0';
+    parser->token.type = TOKEN_TEMPLATE;
+    parser->token.value = start;
+    parser->token.length = parser->offset - parser->token.start;
+
+}
+
+static unsigned int startsexpression(struct parser *parser)
+{
+
+    struct token *token = &parser->token;
+    char *text = parser->source + token->start;
+
+    if (token->type == TOKEN_END)
+        return 1;
+
+    if (token->type == TOKEN_PUNCTUATOR)
+        return !(token->length == 1 && (text[0] == ')' || text[0] == ']' || text[0] == '}'));
+
+    if (token->type == TOKEN_NAME)
+    {
+
+        char *word = getstring(parser->js, token->value);
+
+        return cstring_match(word, "return") || cstring_match(word, "typeof") || cstring_match(word, "case") || cstring_match(word, "in") || cstring_match(word, "of") || cstring_match(word, "throw") || cstring_match(word, "else") || cstring_match(word, "do") || cstring_match(word, "void") || cstring_match(word, "delete") || cstring_match(word, "new");
+
+    }
+
+    return 0;
+
+}
+
+static void scanregex(struct parser *parser)
+{
+
+    struct js_engine *js = parser->js;
+    char *source = parser->source;
+    unsigned int start = js->stringcount;
+    unsigned int inclass = 0;
+
+    parser->offset++;
+
+    while (parser->offset < parser->count && source[parser->offset] != '\n' && (inclass || source[parser->offset] != '/'))
+    {
+
+        char c = source[parser->offset++];
+
+        if (js->stringcount + 3 >= JS_STRINGSIZE)
+        {
+
+            parser->failed = 1;
+
+            return;
+
+        }
+
+        js->strings[js->stringcount++] = c;
+
+        if (c == '\\' && parser->offset < parser->count)
+            js->strings[js->stringcount++] = source[parser->offset++];
+        else if (c == '[')
+            inclass = 1;
+        else if (c == ']')
+            inclass = 0;
+
+    }
+
+    if (parser->offset >= parser->count || source[parser->offset] != '/')
+    {
+
+        parser->failed = 1;
+
+        return;
+
+    }
+
+    parser->offset++;
+    js->strings[js->stringcount++] = '\0';
+
+    /* the flags follow the pattern as a second string */
+    while (parser->offset < parser->count && cstring_isalpha(source[parser->offset]) && js->stringcount + 2 < JS_STRINGSIZE)
+        js->strings[js->stringcount++] = source[parser->offset++];
+
+    js->strings[js->stringcount++] = '\0';
+    parser->token.type = TOKEN_REGEX;
+    parser->token.value = start;
+    parser->token.length = parser->offset - parser->token.start;
+
+}
+
 static void nexttoken(struct parser *parser)
 {
 
     char *source = parser->source;
     struct token *token = &parser->token;
+    unsigned int regexallowed = startsexpression(parser);
     unsigned int i;
 
     while (parser->offset < parser->count)
@@ -698,7 +1069,27 @@ static void nexttoken(struct parser *parser)
 
     }
 
-    if (source[parser->offset] == '"' || source[parser->offset] == '\'' || source[parser->offset] == '`')
+    if (source[parser->offset] == '`')
+    {
+
+        parser->offset++;
+
+        scantemplate(parser);
+
+        return;
+
+    }
+
+    if (source[parser->offset] == '/' && regexallowed)
+    {
+
+        scanregex(parser);
+
+        return;
+
+    }
+
+    if (source[parser->offset] == '"' || source[parser->offset] == '\'')
     {
 
         char quote = source[parser->offset++];
@@ -707,21 +1098,7 @@ static void nexttoken(struct parser *parser)
         while (parser->offset < parser->count && source[parser->offset] != quote)
         {
 
-            char c = source[parser->offset++];
-
-            if (c == '\\' && parser->offset < parser->count)
-            {
-
-                c = source[parser->offset++];
-
-                if (c == 'n')
-                    c = '\n';
-                else if (c == 't')
-                    c = '\t';
-                else if (c == 'r')
-                    c = '\r';
-
-            }
+            char c = readescaped(parser);
 
             if (parser->js->stringcount + 2 >= JS_STRINGSIZE)
             {
@@ -896,12 +1273,18 @@ static unsigned int parseparameters(struct parser *parser)
     while (!parser->failed && !ispunctuator(parser, ")"))
     {
 
-        unsigned int node = newnode(parser, NODE_NAME);
+        unsigned int node = newnode(parser, (ispunctuator(parser, "[") || ispunctuator(parser, "{")) ? NODE_DECLARATOR : NODE_NAME);
 
         if (!node)
             break;
 
-        parser->js->nodes[node].value = parsename(parser);
+        if (accept(parser, "..."))
+            parser->js->nodes[node].op = 1;
+
+        if (parser->js->nodes[node].type == NODE_DECLARATOR)
+            parsepattern(parser, node);
+        else
+            parser->js->nodes[node].value = parsename(parser);
 
         if (accept(parser, "="))
             parser->js->nodes[node].a = parseassignment(parser);
@@ -920,6 +1303,33 @@ static unsigned int parseparameters(struct parser *parser)
 
 }
 
+static unsigned int parsebody(struct parser *parser, unsigned int node)
+{
+
+    unsigned int outer = parser->arguments;
+    unsigned int noin = parser->noin;
+
+    parser->arguments = 0;
+    parser->noin = 0;
+
+    if (node)
+    {
+
+        parser->js->nodes[node].a = parseparameters(parser);
+        parser->js->nodes[node].b = parseblock(parser);
+
+        if (parser->arguments)
+            parser->js->nodes[node].c |= FUNCTION_ARGUMENTS;
+
+    }
+
+    parser->arguments = outer;
+    parser->noin = noin;
+
+    return node;
+
+}
+
 static unsigned int parsefunction(struct parser *parser)
 {
 
@@ -931,15 +1341,14 @@ static unsigned int parsefunction(struct parser *parser)
     if (parser->token.type == TOKEN_NAME)
         parser->js->nodes[node].value = parsename(parser);
 
-    parser->js->nodes[node].a = parseparameters(parser);
-    parser->js->nodes[node].b = parseblock(parser);
-
-    return node;
+    return parsebody(parser, node);
 
 }
 
 static unsigned int parsearrowbody(struct parser *parser, unsigned int node)
 {
+
+    parser->js->nodes[node].c |= FUNCTION_ARROW;
 
     if (ispunctuator(parser, "{"))
     {
@@ -998,6 +1407,184 @@ static unsigned int tryarrow(struct parser *parser)
 
 }
 
+static unsigned int joinnodes(struct parser *parser, unsigned int left, unsigned int right)
+{
+
+    unsigned int node = newnode(parser, NODE_BINARY);
+
+    if (node)
+    {
+
+        parser->js->nodes[node].op = OP_ADD;
+        parser->js->nodes[node].a = left;
+        parser->js->nodes[node].b = right;
+
+    }
+
+    return node;
+
+}
+
+static unsigned int parsetemplate(struct parser *parser)
+{
+
+    unsigned int node = newnode(parser, NODE_STRING);
+
+    if (!node)
+        return 0;
+
+    parser->js->nodes[node].value = parser->token.value;
+
+    while (parser->more && !parser->failed)
+    {
+
+        unsigned int part;
+
+        nexttoken(parser);
+
+        node = joinnodes(parser, node, parseexpression(parser));
+
+        if (!ispunctuator(parser, "}"))
+        {
+
+            parser->failed = 1;
+
+            return 0;
+
+        }
+
+        parser->offset = parser->token.start + 1;
+        parser->token.start = parser->offset;
+
+        scantemplate(parser);
+
+        part = newnode(parser, NODE_STRING);
+
+        if (!part)
+            return 0;
+
+        parser->js->nodes[part].value = parser->token.value;
+        node = joinnodes(parser, node, part);
+
+    }
+
+    nexttoken(parser);
+
+    return node;
+
+}
+
+static unsigned int parseclass(struct parser *parser)
+{
+
+    struct js_engine *js = parser->js;
+    unsigned int node = newnode(parser, NODE_CLASS);
+    unsigned int last = 0;
+
+    nexttoken(parser);
+
+    if (!node)
+        return 0;
+
+    if (parser->token.type == TOKEN_NAME && !isword(parser, "extends"))
+        js->nodes[node].value = parsename(parser);
+
+    if (isword(parser, "extends"))
+    {
+
+        nexttoken(parser);
+
+        js->nodes[node].c = parsepostfix(parser);
+
+    }
+
+    expect(parser, "{");
+
+    while (!parser->failed && !ispunctuator(parser, "}") && parser->token.type != TOKEN_END)
+    {
+
+        unsigned int member;
+        unsigned int isstatic = 0;
+
+        if (accept(parser, ";"))
+            continue;
+
+        if (isword(parser, "static") || isword(parser, "async"))
+        {
+
+            isstatic = isword(parser, "static");
+
+            nexttoken(parser);
+
+        }
+
+        member = newnode(parser, NODE_PROPERTY);
+
+        if (!member || (parser->token.type != TOKEN_NAME && parser->token.type != TOKEN_STRING))
+        {
+
+            parser->failed = 1;
+
+            break;
+
+        }
+
+        js->nodes[member].value = (parser->token.type == TOKEN_NAME) ? parser->token.value : (int)internstring(js, getstring(js, parser->token.value));
+        js->nodes[member].c = isstatic;
+
+        nexttoken(parser);
+
+        if (!ispunctuator(parser, "("))
+        {
+
+            /* fields are skipped: only methods and the constructor are kept */
+            if (accept(parser, "="))
+                parseassignment(parser);
+
+            accept(parser, ";");
+
+            continue;
+
+        }
+
+        js->nodes[member].a = parsebody(parser, newnode(parser, NODE_FUNCTION));
+
+        if (!isstatic && cstring_match(getstring(js, js->nodes[member].value), "constructor"))
+        {
+
+            js->nodes[node].a = js->nodes[member].a;
+
+            continue;
+
+        }
+
+        last = appendnode(parser, last, member);
+
+        if (!js->nodes[node].b)
+            js->nodes[node].b = last;
+
+    }
+
+    expect(parser, "}");
+
+    if (!js->nodes[node].a)
+    {
+
+        unsigned int constructor = newnode(parser, NODE_FUNCTION);
+
+        if (!constructor)
+            return 0;
+
+        js->nodes[constructor].b = newnode(parser, NODE_BLOCK);
+        js->nodes[constructor].c = (js->nodes[node].c) ? FUNCTION_DERIVED : 0;
+        js->nodes[node].a = constructor;
+
+    }
+
+    return node;
+
+}
+
 static unsigned int parseprimary(struct parser *parser)
 {
 
@@ -1017,6 +1604,26 @@ static unsigned int parseprimary(struct parser *parser)
         return node;
 
     }
+
+    if (parser->token.type == TOKEN_TEMPLATE)
+        return parsetemplate(parser);
+
+    if (parser->token.type == TOKEN_REGEX)
+    {
+
+        node = newnode(parser, NODE_REGEX);
+
+        if (node)
+            js->nodes[node].value = parser->token.value;
+
+        nexttoken(parser);
+
+        return node;
+
+    }
+
+    if (isword(parser, "class"))
+        return parseclass(parser);
 
     if (isword(parser, "function"))
     {
@@ -1056,6 +1663,9 @@ static unsigned int parseprimary(struct parser *parser)
         if (node)
             js->nodes[node].value = name;
 
+        if (cstring_match(getstring(js, name), "arguments"))
+            parser->arguments = 1;
+
         return node;
 
     }
@@ -1088,7 +1698,7 @@ static unsigned int parseprimary(struct parser *parser)
         while (node && !parser->failed && !ispunctuator(parser, "]"))
         {
 
-            last = appendnode(parser, last, parseassignment(parser));
+            last = appendnode(parser, last, parseitem(parser));
 
             if (!js->nodes[node].a)
                 js->nodes[node].a = last;
@@ -1119,7 +1729,35 @@ static unsigned int parseprimary(struct parser *parser)
             if (!property)
                 break;
 
-            if (parser->token.type == TOKEN_STRING)
+            if (accept(parser, "..."))
+            {
+
+                js->nodes[property].c = 1;
+                js->nodes[property].a = parseassignment(parser);
+                last = appendnode(parser, last, property);
+
+                if (!js->nodes[node].a)
+                    js->nodes[node].a = last;
+
+                if (!accept(parser, ","))
+                    break;
+
+                continue;
+
+            }
+
+            if (accept(parser, "["))
+            {
+
+                js->nodes[property].c = 2;
+                js->nodes[property].b = parseassignment(parser);
+
+                if (!ispunctuator(parser, "]"))
+                    parser->failed = 1;
+
+            }
+
+            else if (parser->token.type == TOKEN_STRING)
                 js->nodes[property].value = intern(js, getstring(js, parser->token.value), cstring_length(getstring(js, parser->token.value)));
             else if (parser->token.type == TOKEN_NUMBER)
                 js->nodes[property].value = numberstring(js, parser->token.value);
@@ -1140,16 +1778,7 @@ static unsigned int parseprimary(struct parser *parser)
             else if (ispunctuator(parser, "("))
             {
 
-                unsigned int function = newnode(parser, NODE_FUNCTION);
-
-                if (function)
-                {
-
-                    js->nodes[function].a = parseparameters(parser);
-                    js->nodes[function].b = parseblock(parser);
-                    js->nodes[property].a = function;
-
-                }
+                js->nodes[property].a = parsebody(parser, newnode(parser, NODE_FUNCTION));
 
             }
 
@@ -1187,6 +1816,23 @@ static unsigned int parseprimary(struct parser *parser)
 
 }
 
+static unsigned int parseitem(struct parser *parser)
+{
+
+    unsigned int node;
+
+    if (!accept(parser, "..."))
+        return parseassignment(parser);
+
+    node = newnode(parser, NODE_SPREAD);
+
+    if (node)
+        parser->js->nodes[node].a = parseassignment(parser);
+
+    return node;
+
+}
+
 static unsigned int parsearguments(struct parser *parser)
 {
 
@@ -1196,7 +1842,7 @@ static unsigned int parsearguments(struct parser *parser)
     while (!parser->failed && !ispunctuator(parser, ")"))
     {
 
-        last = appendnode(parser, last, parseassignment(parser));
+        last = appendnode(parser, last, parseitem(parser));
         first = (first) ? first : last;
 
         if (!accept(parser, ","))
@@ -1217,9 +1863,65 @@ static unsigned int parsepostfix(struct parser *parser)
     unsigned int node;
 
     if (isword(parser, "new"))
+    {
+
+        unsigned int construct = newnode(parser, NODE_CALL);
+
         nexttoken(parser);
 
-    node = parseprimary(parser);
+        node = parseprimary(parser);
+
+        while (!parser->failed && (ispunctuator(parser, ".") || ispunctuator(parser, "[")))
+        {
+
+            unsigned int next = newnode(parser, (ispunctuator(parser, ".")) ? NODE_MEMBER : NODE_INDEX);
+
+            if (!next)
+                return 0;
+
+            js->nodes[next].a = node;
+
+            if (accept(parser, "."))
+            {
+
+                js->nodes[next].value = parsename(parser);
+
+            }
+
+            else
+            {
+
+                nexttoken(parser);
+
+                js->nodes[next].b = parseexpression(parser);
+
+                expect(parser, "]");
+
+            }
+
+            node = next;
+
+        }
+
+        if (!construct)
+            return 0;
+
+        js->nodes[construct].op = 1;
+        js->nodes[construct].a = node;
+
+        if (accept(parser, "("))
+            js->nodes[construct].b = parsearguments(parser);
+
+        node = construct;
+
+    }
+
+    else
+    {
+
+        node = parseprimary(parser);
+
+    }
 
     while (!parser->failed)
     {
@@ -1371,13 +2073,13 @@ static struct binary *findbinary(struct parser *parser)
 
     unsigned int i;
 
-    if (parser->token.type != TOKEN_PUNCTUATOR)
+    if (parser->token.type != TOKEN_PUNCTUATOR && parser->token.type != TOKEN_NAME)
         return 0;
 
     for (i = 0; i < BINARIES; i++)
     {
 
-        if (ispunctuator(parser, binaries[i].text))
+        if ((parser->token.type == TOKEN_NAME) ? isword(parser, binaries[i].text) && !(parser->noin && binaries[i].op == OP_IN) : ispunctuator(parser, binaries[i].text))
             return &binaries[i];
 
     }
@@ -1515,6 +2217,45 @@ static void endstatement(struct parser *parser)
 
 }
 
+static void parsepattern(struct parser *parser, unsigned int declarator)
+{
+
+    unsigned int pattern = (ispunctuator(parser, "[")) ? PATTERN_ARRAY : PATTERN_OBJECT;
+    char *close = (pattern == PATTERN_ARRAY) ? "]" : "}";
+    unsigned int lastname = 0;
+
+    nexttoken(parser);
+
+    parser->js->nodes[declarator].c = pattern;
+
+    while (!parser->failed && !ispunctuator(parser, close))
+    {
+
+        unsigned int name = newnode(parser, NODE_NAME);
+
+        if (!name)
+            break;
+
+        if (!(pattern == PATTERN_ARRAY && ispunctuator(parser, ",")))
+            parser->js->nodes[name].value = parsename(parser);
+
+        if (accept(parser, "="))
+            parser->js->nodes[name].a = parseassignment(parser);
+
+        lastname = appendnode(parser, lastname, name);
+
+        if (!parser->js->nodes[declarator].b)
+            parser->js->nodes[declarator].b = lastname;
+
+        if (!accept(parser, ","))
+            break;
+
+    }
+
+    expect(parser, close);
+
+}
+
 static unsigned int parsevariables(struct parser *parser)
 {
 
@@ -1532,41 +2273,7 @@ static unsigned int parsevariables(struct parser *parser)
             break;
 
         if (ispunctuator(parser, "[") || ispunctuator(parser, "{"))
-        {
-
-            unsigned int pattern = (ispunctuator(parser, "[")) ? PATTERN_ARRAY : PATTERN_OBJECT;
-            char *close = (pattern == PATTERN_ARRAY) ? "]" : "}";
-            unsigned int lastname = 0;
-
-            nexttoken(parser);
-
-            parser->js->nodes[declarator].c = pattern;
-
-            while (!parser->failed && !ispunctuator(parser, close))
-            {
-
-                unsigned int name = newnode(parser, NODE_NAME);
-
-                if (!name)
-                    break;
-
-                if (!(pattern == PATTERN_ARRAY && ispunctuator(parser, ",")))
-                    parser->js->nodes[name].value = parsename(parser);
-
-                lastname = appendnode(parser, lastname, name);
-
-                if (!parser->js->nodes[declarator].b)
-                    parser->js->nodes[declarator].b = lastname;
-
-                if (!accept(parser, ","))
-                    break;
-
-            }
-
-            expect(parser, close);
-
-        }
-
+            parsepattern(parser, declarator);
         else
         {
 
@@ -1660,6 +2367,24 @@ static unsigned int parsestatement(struct parser *parser)
         node = parsevariables(parser);
 
         endstatement(parser);
+
+        return node;
+
+    }
+
+    if (isword(parser, "class"))
+    {
+
+        unsigned int declarator = newnode(parser, NODE_DECLARATOR);
+
+        node = newnode(parser, NODE_VAR);
+
+        if (!node || !declarator)
+            return 0;
+
+        js->nodes[declarator].a = parseclass(parser);
+        js->nodes[declarator].value = js->nodes[js->nodes[declarator].a].value;
+        js->nodes[node].a = declarator;
 
         return node;
 
@@ -1784,10 +2509,14 @@ static unsigned int parsestatement(struct parser *parser)
         if (!node)
             return 0;
 
+        parser->noin = 1;
+
         if (isword(parser, "var") || isword(parser, "let") || isword(parser, "const"))
             js->nodes[node].a = parsevariables(parser);
         else if (!ispunctuator(parser, ";"))
             js->nodes[node].a = parseexpression(parser);
+
+        parser->noin = 0;
 
         if (isword(parser, "of") || isword(parser, "in"))
         {
@@ -1994,7 +2723,7 @@ static unsigned int parsestatement(struct parser *parser)
 static unsigned int getelement(struct js_engine *js, unsigned int node)
 {
 
-    if (!node || node >= HTML_NODES || js->document->nodes[node].type != HTML_NODE_ELEMENT || html_isgenerated(js->document, node))
+    if (!node || node >= HTML_NODES || js->document->nodes[node].type == HTML_NODE_DOCUMENT || html_isgenerated(js->document, node))
         return 0;
 
     if (!js->elements[node])
@@ -2004,12 +2733,214 @@ static unsigned int getelement(struct js_engine *js, unsigned int node)
 
 }
 
-static struct js_value elementvalue(struct js_engine *js, unsigned int node)
+static struct js_value nodevalue(struct js_engine *js, unsigned int node)
 {
 
     unsigned int object = getelement(js, node);
 
     return (object) ? value(JS_OBJECT, object) : value(JS_NULL, 0);
+
+}
+
+static struct js_value elementvalue(struct js_engine *js, unsigned int node)
+{
+
+    if (node && js->document->nodes[node].type != HTML_NODE_ELEMENT)
+        return value(JS_NULL, 0);
+
+    return nodevalue(js, node);
+
+}
+
+static unsigned int nodeof(struct js_engine *js, struct js_value *target)
+{
+
+    if (target->type != JS_OBJECT || js->objects[target->number].kind != KIND_ELEMENT)
+        return 0;
+
+    return js->objects[target->number].data;
+
+}
+
+static unsigned int argumentnode(struct js_engine *js, struct js_value *argument)
+{
+
+    if (argument->type == JS_OBJECT)
+        return nodeof(js, argument);
+
+    if (argument->type == JS_UNDEFINED || argument->type == JS_NULL)
+        return 0;
+
+    return html_createtext(js->document, getstring(js, tostring(js, argument)));
+
+}
+
+static void moveall(struct js_engine *js, unsigned int from, unsigned int parent, unsigned int before)
+{
+
+    while (js->document->nodes[from].first)
+    {
+
+        if (!html_insert(js->document, parent, js->document->nodes[from].first, before))
+            break;
+
+    }
+
+}
+
+static void put(struct output *output, char *text, unsigned int length)
+{
+
+    if (output->full || output->count + length >= output->size)
+    {
+
+        output->full = 1;
+
+        return;
+
+    }
+
+    buffer_copy(output->data + output->count, text, length);
+
+    output->count += length;
+
+}
+
+static void putescaped(struct output *output, char *text, unsigned int length, unsigned int attribute)
+{
+
+    unsigned int start = 0;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        char *entity = (text[i] == '&') ? "&amp;" : (text[i] == '<' && !attribute) ? "&lt;" : (text[i] == '>' && !attribute) ? "&gt;" : (text[i] == '"' && attribute) ? "&quot;" : 0;
+
+        if (!entity)
+            continue;
+
+        put(output, text + start, i - start);
+        put(output, entity, cstring_length(entity));
+
+        start = i + 1;
+
+    }
+
+    put(output, text + start, length - start);
+
+}
+
+static unsigned int isvoid(char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < VOIDS; i++)
+    {
+
+        if (cstring_match(voids[i], name))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static void serialize(struct output *output, unsigned int root, unsigned int depth)
+{
+
+    struct html_document *document = output->js->document;
+    unsigned int raw = document->nodes[root].tag == HTML_TAG_SCRIPT || document->nodes[root].tag == HTML_TAG_STYLE;
+    unsigned int node;
+
+    if (depth > HTML_DEPTH)
+        return;
+
+    for (node = document->nodes[root].first; node; node = document->nodes[node].next)
+    {
+
+        struct html_node *child = &document->nodes[node];
+        char *name;
+        unsigned int i;
+
+        if (html_isgenerated(document, node))
+            continue;
+
+        if (child->type == HTML_NODE_TEXT)
+        {
+
+            if (raw)
+                put(output, html_getstring(document, child->text), child->length);
+            else
+                putescaped(output, html_getstring(document, child->text), child->length, 0);
+
+            continue;
+
+        }
+
+        name = html_getstring(document, child->name);
+
+        put(output, "<", 1);
+        put(output, name, cstring_length(name));
+
+        for (i = 0; i < child->attributes; i++)
+        {
+
+            struct html_attribute *attribute = &document->attributes[child->attribute + i];
+            char *text = html_getstring(document, attribute->value);
+
+            put(output, " ", 1);
+            put(output, html_getstring(document, attribute->name), cstring_length(html_getstring(document, attribute->name)));
+            put(output, "=\"", 2);
+            putescaped(output, text, cstring_length(text), 1);
+            put(output, "\"", 1);
+
+        }
+
+        put(output, ">", 1);
+
+        if (isvoid(name))
+            continue;
+
+        serialize(output, node, depth + 1);
+        put(output, "</", 2);
+        put(output, name, cstring_length(name));
+        put(output, ">", 1);
+
+    }
+
+}
+
+static struct js_value innerhtml(struct js_engine *js, unsigned int node)
+{
+
+    struct output output;
+    unsigned int start = js->stringcount;
+
+    /* nothing else adds strings while the markup is written, so it goes straight after the last one */
+    output.js = js;
+    output.data = js->strings + start;
+    output.count = 0;
+    output.size = JS_STRINGSIZE - start;
+    output.full = 0;
+
+    serialize(&output, node, 0);
+
+    if (output.full)
+    {
+
+        throwerror(js, "Out of string memory");
+
+        return value(JS_STRING, internstring(js, ""));
+
+    }
+
+    js->strings[start + output.count] = '\0';
+    js->stringcount += output.count + 1;
+
+    return value(JS_STRING, start);
 
 }
 
@@ -2544,6 +3475,90 @@ static void setclass(struct js_engine *js, unsigned int node, char *word, unsign
 
 }
 
+static char *regexflags(struct js_engine *js, struct js_value *regex)
+{
+
+    char *pattern = getstring(js, js->objects[regex->number].data);
+
+    return pattern + cstring_length(pattern) + 1;
+
+}
+
+static unsigned int isregex(struct js_engine *js, struct js_value *candidate)
+{
+
+    return candidate->type == JS_OBJECT && js->objects[candidate->number].kind == KIND_REGEX;
+
+}
+
+static unsigned int isglobal(struct js_engine *js, struct js_value *regex)
+{
+
+    char *flags = regexflags(js, regex);
+
+    return buffer_findbyte(flags, cstring_length(flags), 'g') < cstring_length(flags);
+
+}
+
+static void addnative(struct js_engine *js, unsigned int object, char *name, unsigned int native)
+{
+
+    struct js_value method = value(JS_OBJECT, js->natives[native]);
+
+    putproperty(js, object, internstring(js, name), &method);
+
+}
+
+static struct js_value selectvalue(struct js_engine *js, unsigned int node)
+{
+
+    struct html_document *document = js->document;
+    unsigned int option = 0;
+    unsigned int current;
+    char content[TEXTSIZE];
+
+    /* a select gives the value of its selected option, or of the first one; an option without a value gives its text */
+    for (current = (document->nodes[node].tag == HTML_TAG_OPTION) ? node : html_next(document, node, node); current; current = html_next(document, current, node))
+    {
+
+        if (document->nodes[current].tag != HTML_TAG_OPTION)
+            continue;
+
+        if (!option || html_getattribute(document, current, "selected"))
+            option = current;
+
+        if (current == node)
+            break;
+
+    }
+
+    if (!option)
+        return value(JS_STRING, internstring(js, ""));
+
+    if (html_getattribute(document, option, "value"))
+        return stringvalue(js, html_getattribute(document, option, "value"));
+
+    return value(JS_STRING, addstring(js, content, collecttext(js, option, content, TEXTSIZE)));
+
+}
+
+static struct js_value findmethod(struct js_engine *js, struct method *methods, unsigned int count, char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (cstring_match(methods[i].name, name))
+            return value(JS_OBJECT, nativefor(js, methods[i].native));
+
+    }
+
+    return undefined();
+
+}
+
 static struct js_value cachedobject(struct js_engine *js, struct js_value *target, unsigned int name, unsigned int kind, unsigned int data)
 {
 
@@ -2569,7 +3584,6 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
     char *text = getstring(js, name);
     struct js_object *object;
-    struct js_property *property;
 
     if (target->type == JS_STRING)
     {
@@ -2577,38 +3591,27 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "length"))
             return value(JS_NUMBER, cstring_length(getstring(js, target->number)));
 
-        if (cstring_match(text, "indexOf"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_INDEXOF));
+        if (cstring_isdigit(text[0]))
+        {
 
-        if (cstring_match(text, "toUpperCase"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_TOUPPERCASE));
+            unsigned int index = parseinteger(text);
 
-        if (cstring_match(text, "toLowerCase"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_TOLOWERCASE));
+            return (index < cstring_length(getstring(js, target->number))) ? value(JS_STRING, addstring(js, getstring(js, target->number) + index, 1)) : undefined();
 
-        if (cstring_match(text, "startsWith"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_STARTSWITH));
+        }
 
-        if (cstring_match(text, "endsWith"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_ENDSWITH));
+        return findmethod(js, stringmethods, STRINGMETHODS, text);
 
-        if (cstring_match(text, "includes"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_INCLUDES));
+    }
 
-        if (cstring_match(text, "trim"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_TRIM));
+    if (target->type == JS_NUMBER || target->type == JS_BOOLEAN)
+    {
 
-        if (cstring_match(text, "split"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_SPLIT));
+        if (cstring_match(text, "toFixed"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_TOFIXED));
 
-        if (cstring_match(text, "slice") || cstring_match(text, "substring"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_SLICE));
-
-        if (cstring_match(text, "replace"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_REPLACE));
-
-        if (cstring_match(text, "charAt"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_CHARAT));
+        if (cstring_match(text, "toString"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_TOSTRING));
 
         return undefined();
 
@@ -2632,27 +3635,36 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "length"))
             return value(JS_NUMBER, object->data);
 
-        if (cstring_match(text, "indexOf"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_INDEXOF));
-
-        if (cstring_match(text, "push"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_PUSH));
-
-        if (cstring_match(text, "join"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_JOIN));
-
-        if (cstring_match(text, "forEach"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_FOREACH));
-
-        if (cstring_match(text, "includes"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_INCLUDES));
-
-        if (cstring_match(text, "slice"))
-            return value(JS_OBJECT, nativefor(js, NATIVE_SLICE));
+        if (!cstring_isdigit(text[0]) && findmethod(js, arraymethods, ARRAYMETHODS, text).type == JS_OBJECT)
+            return findmethod(js, arraymethods, ARRAYMETHODS, text);
 
         break;
 
     case KIND_ELEMENT:
+        if (cstring_match(text, "nodeType"))
+            return value(JS_NUMBER, (js->document->nodes[object->data].type == HTML_NODE_TEXT) ? 3 : 1);
+
+        if (cstring_match(text, "parentNode") || cstring_match(text, "parentElement"))
+            return elementvalue(js, js->document->nodes[object->data].parent);
+
+        if (cstring_match(text, "nextSibling") || cstring_match(text, "previousSibling"))
+            return nodevalue(js, (text[0] == 'n') ? js->document->nodes[object->data].next : js->document->nodes[object->data].prev);
+
+        if (cstring_match(text, "remove"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REMOVE));
+
+        if (js->document->nodes[object->data].type == HTML_NODE_TEXT)
+        {
+
+            struct html_node *node = &js->document->nodes[object->data];
+
+            if (cstring_match(text, "textContent") || cstring_match(text, "nodeValue") || cstring_match(text, "data"))
+                return value(JS_STRING, addstring(js, html_getstring(js->document, node->text), node->length));
+
+            break;
+
+        }
+
         if (cstring_match(text, "setAttribute"))
             return value(JS_OBJECT, nativefor(js, NATIVE_SETATTRIBUTE));
 
@@ -2668,14 +3680,82 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "addEventListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_ADDEVENTLISTENER));
 
-        if (cstring_match(text, "tagName"))
-            return value(JS_STRING, internstring(js, html_getstring(js->document, js->document->nodes[object->data].name)));
+        if (cstring_match(text, "removeEventListener"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REMOVEEVENTLISTENER));
+
+        if (cstring_match(text, "tagName") || cstring_match(text, "nodeName"))
+        {
+
+            struct js_value name = stringvalue(js, html_getstring(js->document, js->document->nodes[object->data].name));
+            char *upper = getstring(js, name.number);
+            unsigned int i;
+
+            for (i = 0; upper[i]; i++)
+                upper[i] = (upper[i] >= 'a' && upper[i] <= 'z') ? upper[i] - 32 : upper[i];
+
+            return value(JS_STRING, internstring(js, upper));
+
+        }
+
+        if (cstring_match(text, "appendChild") || cstring_match(text, "append"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_APPEND));
+
+        if (cstring_match(text, "prepend"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_PREPEND));
+
+        if (cstring_match(text, "replaceChildren"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REPLACECHILDREN));
+
+        if (cstring_match(text, "click"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CLICK));
+
+        /* nothing scrolls and there is no focus to move */
+        if (cstring_match(text, "focus") || cstring_match(text, "blur") || cstring_match(text, "scrollIntoView"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_NOOP));
+
+        if (cstring_match(text, "insertBefore"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_INSERTBEFORE));
+
+        if (cstring_match(text, "removeChild"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REMOVECHILD));
+
+        if (cstring_match(text, "insertAdjacentHTML"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_INSERTADJACENTHTML));
+
+        if (cstring_match(text, "innerHTML"))
+            return innerhtml(js, object->data);
+
+        if (cstring_match(text, "firstChild") || cstring_match(text, "lastChild"))
+            return nodevalue(js, (text[0] == 'f') ? js->document->nodes[object->data].first : js->document->nodes[object->data].last);
+
+        if (cstring_match(text, "childNodes"))
+        {
+
+            struct js_value children = newarray(js);
+            unsigned int node;
+
+            for (node = js->document->nodes[object->data].first; node; node = js->document->nodes[node].next)
+            {
+
+                struct js_value child = nodevalue(js, node);
+
+                if (child.type == JS_OBJECT)
+                    pusharray(js, &children, &child);
+
+            }
+
+            return children;
+
+        }
 
         if (cstring_match(text, "classList"))
             return cachedobject(js, target, name, KIND_CLASSLIST, object->data);
 
         if (cstring_match(text, "style"))
             return cachedobject(js, target, name, KIND_STYLE, object->data);
+
+        if (cstring_match(text, "dataset"))
+            return cachedobject(js, target, name, KIND_DATASET, object->data);
 
         if (cstring_match(text, "querySelector"))
             return value(JS_OBJECT, nativefor(js, NATIVE_QUERYSELECTOR));
@@ -2694,9 +3774,6 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         if (cstring_match(text, "matches"))
             return value(JS_OBJECT, nativefor(js, NATIVE_MATCHES));
-
-        if (cstring_match(text, "parentNode") || cstring_match(text, "parentElement"))
-            return elementvalue(js, js->document->nodes[object->data].parent);
 
         if (cstring_match(text, "firstElementChild") || cstring_match(text, "nextElementSibling") || cstring_match(text, "previousElementSibling"))
         {
@@ -2740,6 +3817,9 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         }
 
+        if (cstring_match(text, "value") && (js->document->nodes[object->data].tag == HTML_TAG_SELECT || (js->document->nodes[object->data].tag == HTML_TAG_OPTION && !html_getattribute(js->document, object->data, "value"))))
+            return selectvalue(js, object->data);
+
         if (attributename(text))
         {
 
@@ -2764,6 +3844,33 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "getElementById"))
             return value(JS_OBJECT, nativefor(js, NATIVE_GETELEMENTBYID));
 
+        if (cstring_match(text, "createElement"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CREATEELEMENT));
+
+        if (cstring_match(text, "location"))
+            return findproperty(js, js->global, name)->value;
+
+        if (!findproperty(js, target->number, name))
+        {
+
+            unsigned int node;
+
+            /* forms and images are reachable by name, as in document.myform */
+            for (node = 1; node < js->document->nodecount; node++)
+            {
+
+                char *named = (js->document->nodes[node].type == HTML_NODE_ELEMENT && !html_isgenerated(js->document, node)) ? html_getattribute(js->document, node, "name") : 0;
+
+                if (named && cstring_match(named, text) && (cstring_match(html_getstring(js->document, js->document->nodes[node].name), "form") || js->document->nodes[node].tag == HTML_TAG_IMG))
+                    return elementvalue(js, node);
+
+            }
+
+        }
+
+        if (cstring_match(text, "createTextNode"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CREATETEXTNODE));
+
         if (cstring_match(text, "querySelector"))
             return value(JS_OBJECT, nativefor(js, NATIVE_QUERYSELECTOR));
 
@@ -2779,14 +3886,23 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "addEventListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_ADDEVENTLISTENER));
 
+        if (cstring_match(text, "removeEventListener"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REMOVEEVENTLISTENER));
+
         break;
 
     case KIND_WINDOW:
         if (cstring_match(text, "addEventListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_ADDEVENTLISTENER));
 
+        if (cstring_match(text, "removeEventListener"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REMOVEEVENTLISTENER));
+
         if (cstring_match(text, "setTimeout") || cstring_match(text, "requestAnimationFrame"))
             return value(JS_OBJECT, nativefor(js, NATIVE_SETTIMEOUT));
+
+        if (cstring_match(text, "scrollTo") || cstring_match(text, "scroll"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_NOOP));
 
         /* the page is laid out as one picture that is never scrolled */
         if (cstring_match(text, "scrollY") || cstring_match(text, "scrollX") || cstring_match(text, "pageYOffset") || cstring_match(text, "pageXOffset"))
@@ -2808,6 +3924,21 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
             return value(JS_OBJECT, nativefor(js, NATIVE_CLASSCONTAINS));
 
         break;
+
+    case KIND_DATASET:
+        {
+
+            char attribute[SELECTORSIZE + 5];
+            char *found;
+
+            buffer_copy(attribute, "data-", 5);
+            stylename(text, attribute + 5);
+
+            found = html_getattribute(js->document, object->data, attribute);
+
+            return (found) ? stringvalue(js, found) : undefined();
+
+        }
 
     case KIND_STYLE:
         if (cstring_match(text, "cssText"))
@@ -2843,7 +3974,10 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "addEventListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_ADDEVENTLISTENER));
 
-        if (cstring_match(text, "addListener") || cstring_match(text, "removeEventListener"))
+        if (cstring_match(text, "removeEventListener"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REMOVEEVENTLISTENER));
+
+        if (cstring_match(text, "addListener"))
             return value(JS_OBJECT, nativefor(js, NATIVE_NOOP));
 
         break;
@@ -2851,11 +3985,75 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
     case KIND_CONSOLE:
         return value(JS_OBJECT, nativefor(js, NATIVE_NOOP));
 
+    case KIND_REGEX:
+        if (cstring_match(text, "test"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_TEST));
+
+        if (cstring_match(text, "exec"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_EXEC));
+
+        if (cstring_match(text, "source"))
+            return value(JS_STRING, object->data);
+
+        if (cstring_match(text, "flags"))
+            return stringvalue(js, regexflags(js, target));
+
+        if (cstring_match(text, "global"))
+            return value(JS_BOOLEAN, isglobal(js, target));
+
+        break;
+
+    case KIND_FUNCTION:
+        if (cstring_match(text, "prototype") && !findproperty(js, target->number, name))
+        {
+
+            struct js_value prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+            if (!prototype.number)
+                return undefined();
+
+            putproperty(js, prototype.number, internstring(js, "constructor"), target);
+            putproperty(js, target->number, name, &prototype);
+
+            return prototype;
+
+        }
+
+    /* fall through */
+    case KIND_NATIVE:
+    case KIND_BOUND:
+        if (cstring_match(text, "call"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CALL));
+
+        if (cstring_match(text, "apply"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_APPLY));
+
+        if (cstring_match(text, "bind"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_BIND));
+
+        break;
+
     }
 
-    property = findproperty(js, target->number, name);
+    for (object = &js->objects[target->number]; object; object = (object->kind == KIND_PLAIN && object->parent) ? &js->objects[object->parent] : 0)
+    {
 
-    return (property) ? property->value : undefined();
+        unsigned int index;
+
+        for (index = object->property; index; index = js->properties[index].next)
+        {
+
+            if (js->properties[index].name == name)
+                return js->properties[index].value;
+
+        }
+
+    }
+
+    if (cstring_match(text, "hasOwnProperty"))
+        return value(JS_OBJECT, nativefor(js, NATIVE_HASOWNPROPERTY));
+
+    return undefined();
 
 }
 
@@ -2875,6 +4073,21 @@ static void setproperty(struct js_engine *js, struct js_value *target, unsigned 
     }
 
     object = &js->objects[target->number];
+
+    if (object->kind == KIND_DATASET)
+    {
+
+        char attribute[SELECTORSIZE + 5];
+
+        buffer_copy(attribute, "data-", 5);
+        stylename(getstring(js, name), attribute + 5);
+        html_setattribute(js->document, object->data, attribute, getstring(js, tostring(js, newvalue)));
+
+        js->changed = 1;
+
+        return;
+
+    }
 
     if (object->kind == KIND_STYLE)
     {
@@ -2899,7 +4112,20 @@ static void setproperty(struct js_engine *js, struct js_value *target, unsigned 
 
     }
 
-    if (object->kind == KIND_ELEMENT && (cstring_match(getstring(js, name), "textContent") || cstring_match(getstring(js, name), "innerText")))
+    if (object->kind == KIND_ELEMENT && cstring_match(getstring(js, name), "innerHTML"))
+    {
+
+        char *source = getstring(js, tostring(js, newvalue));
+
+        html_parsefragment(js->document, object->data, source, cstring_length(source));
+
+        js->changed = 1;
+
+        return;
+
+    }
+
+    if (object->kind == KIND_ELEMENT && (cstring_match(getstring(js, name), "textContent") || cstring_match(getstring(js, name), "innerText") || (js->document->nodes[object->data].type == HTML_NODE_TEXT && (cstring_match(getstring(js, name), "nodeValue") || cstring_match(getstring(js, name), "data")))))
     {
 
         html_settext(js->document, object->data, getstring(js, tostring(js, newvalue)));
@@ -2916,6 +4142,18 @@ static void setproperty(struct js_engine *js, struct js_value *target, unsigned 
         html_setattribute(js->document, object->data, attributename(getstring(js, name)), getstring(js, tostring(js, newvalue)));
 
         js->changed = 1;
+
+        return;
+
+    }
+
+    if (object->kind == KIND_ARRAY && cstring_match(getstring(js, name), "length"))
+    {
+
+        unsigned int length = tonumber(js, newvalue);
+
+        if (length < object->data)
+            object->data = length;
 
         return;
 
@@ -3036,7 +4274,1377 @@ static void hoist(struct js_engine *js, unsigned int first, unsigned int scope)
 
 }
 
-static struct js_value callfunction(struct js_engine *js, struct call *call);
+static struct js_value itemat(struct js_engine *js, struct js_value *array, unsigned int index)
+{
+
+    return getproperty(js, array, numberstring(js, index));
+
+}
+
+static void setitem(struct js_engine *js, struct js_value *array, unsigned int index, struct js_value *item)
+{
+
+    setproperty(js, array, numberstring(js, index), item);
+
+}
+
+static unsigned int lengthof(struct js_engine *js, struct js_value *array)
+{
+
+    return (array->type == JS_OBJECT && js->objects[array->number].kind == KIND_ARRAY) ? js->objects[array->number].data : 0;
+
+}
+
+static struct js_value callback(struct js_engine *js, struct js_value *function, struct js_value *array, unsigned int index, struct js_value *extra)
+{
+
+    struct call each;
+    unsigned int argument;
+
+    copyvalue(&each.function, function);
+
+    each.self = undefined();
+    each.count = 0;
+
+    if (extra)
+        copyvalue(&each.arguments[each.count++], extra);
+
+    each.arguments[each.count++] = itemat(js, array, index);
+    each.arguments[each.count++] = value(JS_NUMBER, index);
+    copyvalue(&each.arguments[each.count++], array);
+
+    for (argument = each.count; argument < ARGUMENTS; argument++)
+        each.arguments[argument] = undefined();
+
+    return callfunction(js, &each);
+
+}
+
+static struct js_value keysof(struct js_engine *js, unsigned int object, unsigned int values)
+{
+
+    struct js_value result = newarray(js);
+    unsigned int count = 0;
+    unsigned int property;
+    unsigned int i;
+
+    for (property = js->objects[object].property; property; property = js->properties[property].next)
+        count++;
+
+    /* properties are kept newest first, so they are walked from the end to keep their order */
+    for (i = count; i > 0; i--)
+    {
+
+        unsigned int position;
+        struct js_value item;
+
+        property = js->objects[object].property;
+
+        for (position = 1; position < i; position++)
+            property = js->properties[property].next;
+
+        item = (values) ? js->properties[property].value : value(JS_STRING, js->properties[property].name);
+
+        pusharray(js, &result, &item);
+
+    }
+
+    return result;
+
+}
+
+static int compare(struct js_engine *js, struct js_value *function, struct js_value *a, struct js_value *b)
+{
+
+    if (isfunction(js, function))
+    {
+
+        struct call order;
+        struct js_value result;
+        unsigned int argument;
+
+        copyvalue(&order.function, function);
+
+        order.self = undefined();
+        order.count = 2;
+        copyvalue(&order.arguments[0], a);
+        copyvalue(&order.arguments[1], b);
+
+        for (argument = 2; argument < ARGUMENTS; argument++)
+            order.arguments[argument] = undefined();
+
+        result = callfunction(js, &order);
+
+        return tonumber(js, &result);
+
+    }
+
+    {
+
+        char *x = getstring(js, tostring(js, a));
+        char *y = getstring(js, tostring(js, b));
+
+        while (x[0] && x[0] == y[0])
+        {
+
+            x++;
+            y++;
+
+        }
+
+        return (unsigned char)x[0] - (unsigned char)y[0];
+
+    }
+
+}
+
+static void stringify(struct output *output, struct js_value *item, unsigned int depth)
+{
+
+    struct js_engine *js = output->js;
+
+    if (depth > JSONDEPTH || isfunction(js, item) || item->type == JS_UNDEFINED)
+    {
+
+        put(output, "null", 4);
+
+        return;
+
+    }
+
+    if (item->type == JS_STRING)
+    {
+
+        char *text = getstring(js, item->number);
+        unsigned int i;
+
+        put(output, "\"", 1);
+
+        for (i = 0; text[i]; i++)
+        {
+
+            if (text[i] == '"' || text[i] == '\\')
+                put(output, "\\", 1);
+
+            if (text[i] == '\n')
+                put(output, "\\n", 2);
+            else
+                put(output, text + i, 1);
+
+        }
+
+        put(output, "\"", 1);
+
+        return;
+
+    }
+
+    if (item->type != JS_OBJECT)
+    {
+
+        char *text = getstring(js, tostring(js, item));
+
+        put(output, text, cstring_length(text));
+
+        return;
+
+    }
+
+    if (js->objects[item->number].kind == KIND_ARRAY)
+    {
+
+        unsigned int i;
+
+        put(output, "[", 1);
+
+        for (i = 0; i < js->objects[item->number].data; i++)
+        {
+
+            struct js_value element = itemat(js, item, i);
+
+            if (i)
+                put(output, ",", 1);
+
+            stringify(output, &element, depth + 1);
+
+        }
+
+        put(output, "]", 1);
+
+        return;
+
+    }
+
+    {
+
+        unsigned int property = js->objects[item->number].property;
+        unsigned int count = 0;
+        unsigned int written = 0;
+        unsigned int i;
+
+        while (property)
+        {
+
+            count++;
+            property = js->properties[property].next;
+
+        }
+
+        put(output, "{", 1);
+
+        for (i = count; i > 0; i--)
+        {
+
+            unsigned int position;
+            struct js_value name;
+
+            property = js->objects[item->number].property;
+
+            for (position = 1; position < i; position++)
+                property = js->properties[property].next;
+
+            if (isfunction(js, &js->properties[property].value) || js->properties[property].value.type == JS_UNDEFINED)
+                continue;
+
+            if (written++)
+                put(output, ",", 1);
+
+            name = value(JS_STRING, js->properties[property].name);
+
+            stringify(output, &name, depth + 1);
+            put(output, ":", 1);
+            stringify(output, &js->properties[property].value, depth + 1);
+
+        }
+
+        put(output, "}", 1);
+
+    }
+
+}
+
+static void skipjsonspace(struct reader *reader)
+{
+
+    while (isspace(reader->text[reader->offset]))
+        reader->offset++;
+
+}
+
+static struct js_value readjson(struct js_engine *js, struct reader *reader, unsigned int depth)
+{
+
+    char *text = reader->text;
+    char c;
+
+    skipjsonspace(reader);
+
+    c = text[reader->offset];
+
+    if (depth > JSONDEPTH || reader->failed)
+    {
+
+        reader->failed = 1;
+
+        return undefined();
+
+    }
+
+    if (c == '"')
+    {
+
+        unsigned int start = js->stringcount;
+
+        reader->offset++;
+
+        while (text[reader->offset] && text[reader->offset] != '"')
+        {
+
+            char next = text[reader->offset++];
+
+            if (next == '\\' && text[reader->offset])
+            {
+
+                next = text[reader->offset++];
+                next = (next == 'n') ? '\n' : (next == 't') ? '\t' : (next == 'r') ? '\r' : next;
+
+            }
+
+            if (js->stringcount + 2 >= JS_STRINGSIZE)
+            {
+
+                reader->failed = 1;
+
+                return undefined();
+
+            }
+
+            js->strings[js->stringcount++] = next;
+
+        }
+
+        if (text[reader->offset] == '"')
+            reader->offset++;
+        else
+            reader->failed = 1;
+
+        js->strings[js->stringcount++] = '\0';
+
+        return value(JS_STRING, start);
+
+    }
+
+    if (c == '[' || c == '{')
+    {
+
+        struct js_value result = (c == '[') ? newarray(js) : value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+        char close = (c == '[') ? ']' : '}';
+
+        reader->offset++;
+
+        skipjsonspace(reader);
+
+        if (text[reader->offset] == close)
+        {
+
+            reader->offset++;
+
+            return result;
+
+        }
+
+        while (!reader->failed && result.type == JS_OBJECT && result.number)
+        {
+
+            struct js_value item;
+
+            if (c == '{')
+            {
+
+                struct js_value key = readjson(js, reader, depth + 1);
+
+                skipjsonspace(reader);
+
+                if (key.type != JS_STRING || text[reader->offset] != ':')
+                {
+
+                    reader->failed = 1;
+
+                    break;
+
+                }
+
+                reader->offset++;
+                item = readjson(js, reader, depth + 1);
+
+                putproperty(js, result.number, internstring(js, getstring(js, key.number)), &item);
+
+            }
+
+            else
+            {
+
+                item = readjson(js, reader, depth + 1);
+
+                pusharray(js, &result, &item);
+
+            }
+
+            skipjsonspace(reader);
+
+            if (text[reader->offset] == ',')
+            {
+
+                reader->offset++;
+
+                continue;
+
+            }
+
+            if (text[reader->offset] == close)
+                reader->offset++;
+            else
+                reader->failed = 1;
+
+            break;
+
+        }
+
+        return result;
+
+    }
+
+    if (buffer_match(text + reader->offset, "true", 4) || buffer_match(text + reader->offset, "null", 4))
+    {
+
+        reader->offset += 4;
+
+        return (c == 't') ? value(JS_BOOLEAN, 1) : value(JS_NULL, 0);
+
+    }
+
+    if (buffer_match(text + reader->offset, "false", 5))
+    {
+
+        reader->offset += 5;
+
+        return value(JS_BOOLEAN, 0);
+
+    }
+
+    if (c == '-' || cstring_isdigit(c))
+    {
+
+        int number = parseinteger(text + reader->offset);
+
+        reader->offset++;
+
+        while (cstring_isdigit(text[reader->offset]) || text[reader->offset] == '.' || text[reader->offset] == 'e' || text[reader->offset] == 'E' || text[reader->offset] == '+' || text[reader->offset] == '-')
+            reader->offset++;
+
+        return value(JS_NUMBER, number);
+
+    }
+
+    reader->failed = 1;
+
+    return undefined();
+
+}
+
+static unsigned int renew(struct regex *re, unsigned int type)
+{
+
+    struct renode *node;
+
+    if (re->nodecount >= REGEXNODES)
+    {
+
+        re->failed = 1;
+
+        return 0;
+
+    }
+
+    node = &re->nodes[re->nodecount];
+
+    buffer_clear(node, sizeof (struct renode));
+
+    node->type = type;
+    node->min = 1;
+    node->max = 1;
+
+    return re->nodecount++;
+
+}
+
+static unsigned int recompilegroup(struct regex *re, unsigned int capture);
+
+static void requantifier(struct regex *re, unsigned int index)
+{
+
+    struct renode *node = &re->nodes[index];
+    char c = re->pattern[re->offset];
+
+    if (c == '*' || c == '+' || c == '?')
+    {
+
+        node->min = (c == '+') ? 1 : 0;
+        node->max = (c == '?') ? 1 : REPEATMAX;
+        re->offset++;
+
+    }
+
+    else if (c == '{' && cstring_isdigit(re->pattern[re->offset + 1]))
+    {
+
+        re->offset++;
+        node->min = parseinteger(re->pattern + re->offset);
+        node->max = node->min;
+
+        while (cstring_isdigit(re->pattern[re->offset]))
+            re->offset++;
+
+        if (re->pattern[re->offset] == ',')
+        {
+
+            re->offset++;
+            node->max = (cstring_isdigit(re->pattern[re->offset])) ? (unsigned int)parseinteger(re->pattern + re->offset) : REPEATMAX;
+
+            while (cstring_isdigit(re->pattern[re->offset]))
+                re->offset++;
+
+        }
+
+        if (re->pattern[re->offset] == '}')
+            re->offset++;
+        else
+            re->failed = 1;
+
+    }
+
+    else
+    {
+
+        return;
+
+    }
+
+    if (re->pattern[re->offset] == '?')
+    {
+
+        node->lazy = 1;
+        re->offset++;
+
+    }
+
+}
+
+static unsigned int reescape(struct regex *re, unsigned int index, char c)
+{
+
+    struct renode *node = &re->nodes[index];
+
+    switch (c)
+    {
+
+    case 'd':
+    case 'D':
+        node->type = RE_DIGIT;
+
+        break;
+
+    case 'w':
+    case 'W':
+        node->type = RE_WORD;
+
+        break;
+
+    case 's':
+    case 'S':
+        node->type = RE_SPACE;
+
+        break;
+
+    case 'b':
+        node->type = RE_BOUNDARY;
+
+        break;
+
+    case 'B':
+        node->type = RE_NOTBOUNDARY;
+
+        break;
+
+    default:
+        node->type = RE_CHAR;
+        node->value = (c == 'n') ? '\n' : (c == 't') ? '\t' : (c == 'r') ? '\r' : (unsigned char)c;
+
+        return index;
+
+    }
+
+    node->negated = (c >= 'A' && c <= 'Z');
+
+    return index;
+
+}
+
+static unsigned int recompilesequence(struct regex *re)
+{
+
+    unsigned int first = 0;
+    unsigned int last = 0;
+
+    while (!re->failed && re->pattern[re->offset] && re->pattern[re->offset] != '|' && re->pattern[re->offset] != ')')
+    {
+
+        char c = re->pattern[re->offset++];
+        unsigned int index;
+
+        if (c == '(')
+        {
+
+            unsigned int capture = 0;
+
+            if (re->pattern[re->offset] == '?')
+            {
+
+                /* only non-capturing groups; lookarounds are not supported */
+                if (re->pattern[re->offset + 1] != ':')
+                {
+
+                    re->failed = 1;
+
+                    break;
+
+                }
+
+                re->offset += 2;
+
+            }
+
+            else if (re->groups < CAPTURES)
+            {
+
+                capture = re->groups++;
+
+            }
+
+            index = recompilegroup(re, capture);
+
+            if (re->pattern[re->offset] == ')')
+                re->offset++;
+            else
+                re->failed = 1;
+
+        }
+
+        else
+        {
+
+            index = renew(re, RE_CHAR);
+
+            if (!index)
+                break;
+
+            if (c == '.')
+            {
+
+                re->nodes[index].type = RE_ANY;
+
+            }
+
+            else if (c == '^' || c == '$')
+            {
+
+                re->nodes[index].type = (c == '^') ? RE_START : RE_END;
+
+            }
+
+            else if (c == '\\' && re->pattern[re->offset])
+            {
+
+                reescape(re, index, re->pattern[re->offset++]);
+
+            }
+
+            else if (c == '[')
+            {
+
+                re->nodes[index].type = RE_CLASS;
+                re->nodes[index].value = re->offset;
+
+                if (re->pattern[re->offset] == '^')
+                {
+
+                    re->nodes[index].negated = 1;
+                    re->offset++;
+
+                }
+
+                re->nodes[index].child = re->offset;
+
+                if (re->pattern[re->offset] == ']')
+                    re->offset++;
+
+                while (re->pattern[re->offset] && re->pattern[re->offset] != ']')
+                    re->offset += (re->pattern[re->offset] == '\\' && re->pattern[re->offset + 1]) ? 2 : 1;
+
+                if (re->pattern[re->offset] == ']')
+                    re->offset++;
+                else
+                    re->failed = 1;
+
+            }
+
+            else
+            {
+
+                re->nodes[index].value = (unsigned char)c;
+
+            }
+
+        }
+
+        if (!index)
+            break;
+
+        requantifier(re, index);
+
+        if (last)
+            re->nodes[last].next = index;
+        else
+            first = index;
+
+        last = index;
+
+    }
+
+    return first;
+
+}
+
+static unsigned int recompilegroup(struct regex *re, unsigned int capture)
+{
+
+    unsigned int group = renew(re, RE_GROUP);
+    unsigned int last = 0;
+
+    if (!group)
+        return 0;
+
+    re->nodes[group].value = capture;
+
+    while (!re->failed)
+    {
+
+        unsigned int alternative = renew(re, RE_ALTERNATIVE);
+
+        if (!alternative)
+            return 0;
+
+        re->nodes[alternative].child = recompilesequence(re);
+
+        if (last)
+            re->nodes[last].alternative = alternative;
+        else
+            re->nodes[group].child = alternative;
+
+        last = alternative;
+
+        if (re->pattern[re->offset] != '|')
+            break;
+
+        re->offset++;
+
+    }
+
+    return group;
+
+}
+
+static char relower(char c)
+{
+
+    return (c >= 'A' && c <= 'Z') ? c + 32 : c;
+
+}
+
+static unsigned int iswordchar(char c)
+{
+
+    return cstring_isalpha(c) || cstring_isdigit(c) || c == '_';
+
+}
+
+static unsigned int reclass(struct regex *re, struct renode *node, char c)
+{
+
+    char *pattern = re->pattern;
+    unsigned int i = node->child;
+    unsigned int first = 1;
+
+    while (pattern[i] && (pattern[i] != ']' || first))
+    {
+
+        char low = pattern[i];
+        char high;
+
+        first = 0;
+
+        if (low == '\\' && pattern[i + 1])
+        {
+
+            char e = pattern[i + 1];
+
+            i += 2;
+
+            if ((e == 'd' && cstring_isdigit(c)) || (e == 'w' && iswordchar(c)) || (e == 's' && isspace(c)) || (e == 'D' && !cstring_isdigit(c)) || (e == 'W' && !iswordchar(c)) || (e == 'S' && !isspace(c)))
+                return 1;
+
+            low = (e == 'n') ? '\n' : (e == 't') ? '\t' : (e == 'd' || e == 'w' || e == 's' || e == 'D' || e == 'W' || e == 'S') ? 0 : e;
+
+            if (low && relower(low) == c)
+                return 1;
+
+            continue;
+
+        }
+
+        i++;
+        high = low;
+
+        if (pattern[i] == '-' && pattern[i + 1] && pattern[i + 1] != ']')
+        {
+
+            high = pattern[i + 1];
+            i += 2;
+
+        }
+
+        if (c >= low && c <= high)
+            return 1;
+
+        if (re->ignorecase && relower(c) >= relower(low) && relower(c) <= relower(high))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int rechar(struct regex *re, struct renode *node, char c)
+{
+
+    switch (node->type)
+    {
+
+    case RE_CHAR:
+        return (re->ignorecase) ? relower(c) == relower((char)node->value) : c == (char)node->value;
+
+    case RE_ANY:
+        return c != '\n';
+
+    case RE_CLASS:
+        return reclass(re, node, (re->ignorecase) ? relower(c) : c) != node->negated;
+
+    case RE_DIGIT:
+        return cstring_isdigit(c) != node->negated;
+
+    case RE_WORD:
+        return iswordchar(c) != node->negated;
+
+    case RE_SPACE:
+        return isspace(c) != node->negated;
+
+    }
+
+    return 0;
+
+}
+
+static int rematch(struct regex *re, unsigned int index, int position, struct frame *frame);
+
+static int rerepeat(struct regex *re, unsigned int index, int position, unsigned int count, struct frame *frame);
+
+static int reone(struct regex *re, unsigned int index, int position, unsigned int count, struct frame *frame)
+{
+
+    struct renode *node = &re->nodes[index];
+    unsigned int alternative;
+
+    for (alternative = node->child; alternative; alternative = re->nodes[alternative].alternative)
+    {
+
+        struct capture saved[CAPTURES];
+        struct frame inner;
+        int result;
+
+        buffer_copy(saved, re->captures, sizeof (struct capture) * CAPTURES);
+
+        inner.node = index;
+        inner.count = count;
+        inner.start = position;
+        inner.parent = frame;
+        result = rematch(re, re->nodes[alternative].child, position, &inner);
+
+        if (result >= 0)
+            return result;
+
+        buffer_copy(re->captures, saved, sizeof (struct capture) * CAPTURES);
+
+    }
+
+    return -1;
+
+}
+
+static int rerepeat(struct regex *re, unsigned int index, int position, unsigned int count, struct frame *frame)
+{
+
+    struct renode *node = &re->nodes[index];
+    int result = -1;
+
+    /* every character matched is a level of recursion, so long subjects give up instead of overflowing the stack */
+    if (++re->steps > STEPLIMIT || re->depth >= REGEXDEPTH)
+        return -1;
+
+    re->depth++;
+
+    /* a single character repeats in a loop, so only groups recurse per repetition */
+    if (node->type != RE_GROUP)
+    {
+
+        unsigned int most = count;
+
+        while (most < node->max && position + (int)(most - count) < re->length && rechar(re, node, re->text[position + most - count]))
+            most++;
+
+        if (node->lazy)
+        {
+
+            for (; count <= most && result < 0; count++)
+            {
+
+                if (count >= node->min)
+                    result = rematch(re, node->next, position, frame);
+
+                position++;
+
+            }
+
+        }
+
+        else
+        {
+
+            for (; most + 1 > count && result < 0; most--)
+            {
+
+                if (most >= node->min)
+                    result = rematch(re, node->next, position + (int)(most - count), frame);
+
+            }
+
+        }
+
+        re->depth--;
+
+        return result;
+
+    }
+
+    if (!node->lazy && count < node->max)
+        result = reone(re, index, position, count, frame);
+
+    if (result < 0 && count >= node->min)
+        result = rematch(re, node->next, position, frame);
+
+    if (result < 0 && node->lazy && count < node->max)
+        result = reone(re, index, position, count, frame);
+
+    re->depth--;
+
+    return result;
+
+}
+
+static int rematch(struct regex *re, unsigned int index, int position, struct frame *frame)
+{
+
+    struct renode *node;
+
+    if (!index)
+    {
+
+        struct renode *group;
+
+        if (!frame)
+            return position;
+
+        group = &re->nodes[frame->node];
+
+        if (group->value || frame->node == 1)
+        {
+
+            re->captures[group->value].start = frame->start;
+            re->captures[group->value].end = position;
+
+        }
+
+        /* a repeated group that matched nothing stops repeating */
+        if (position == frame->start)
+            return (frame->count + 1 >= group->min) ? rematch(re, group->next, position, frame->parent) : -1;
+
+        return rerepeat(re, frame->node, position, frame->count + 1, frame->parent);
+
+    }
+
+    node = &re->nodes[index];
+
+    switch (node->type)
+    {
+
+    case RE_START:
+        return (position == 0 || re->text[position - 1] == '\n') ? rematch(re, node->next, position, frame) : -1;
+
+    case RE_END:
+        return (position == re->length || re->text[position] == '\n') ? rematch(re, node->next, position, frame) : -1;
+
+    case RE_BOUNDARY:
+    case RE_NOTBOUNDARY:
+        {
+
+            unsigned int before = position > 0 && iswordchar(re->text[position - 1]);
+            unsigned int after = position < re->length && iswordchar(re->text[position]);
+
+            return ((before != after) == (node->type == RE_BOUNDARY)) ? rematch(re, node->next, position, frame) : -1;
+
+        }
+
+    }
+
+    return rerepeat(re, index, position, 0, frame);
+
+}
+
+static unsigned int recompile(struct regex *re, char *pattern, char *flags)
+{
+
+    unsigned int i;
+
+    re->pattern = pattern;
+    re->offset = 0;
+    re->failed = 0;
+    re->groups = 1;
+    re->nodecount = 1;
+    re->ignorecase = 0;
+
+    for (i = 0; flags[i]; i++)
+    {
+
+        if (flags[i] == 'i')
+            re->ignorecase = 1;
+
+    }
+
+    recompilegroup(re, 0);
+
+    if (re->pattern[re->offset])
+        re->failed = 1;
+
+    return !re->failed;
+
+}
+
+static int researchfrom(struct regex *re, char *text, int start)
+{
+
+    int position;
+
+    re->text = text;
+    re->length = cstring_length(text);
+    re->steps = 0;
+    re->depth = 0;
+
+    for (position = start; position <= re->length; position++)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < CAPTURES; i++)
+        {
+
+            re->captures[i].start = -1;
+            re->captures[i].end = -1;
+
+        }
+
+        if (rematch(re, 1, position, 0) >= 0)
+            return position;
+
+        if (re->steps > STEPLIMIT)
+            break;
+
+    }
+
+    return -1;
+
+}
+
+static struct js_value matchresult(struct js_engine *js, struct regex *re)
+{
+
+    struct js_value result = newarray(js);
+    struct js_value index = value(JS_NUMBER, re->captures[0].start);
+    unsigned int i;
+
+    for (i = 0; i < re->groups; i++)
+    {
+
+        struct js_value item = (re->captures[i].start >= 0) ? value(JS_STRING, addstring(js, re->text + re->captures[i].start, re->captures[i].end - re->captures[i].start)) : undefined();
+
+        pusharray(js, &result, &item);
+
+    }
+
+    if (result.type == JS_OBJECT)
+        putproperty(js, result.number, internstring(js, "index"), &index);
+
+    return result;
+
+}
+
+static unsigned int expandreplacement(struct js_engine *js, struct regex *re, struct js_value *replacement, unsigned int result)
+{
+
+    char *text;
+    unsigned int i;
+    unsigned int start = 0;
+
+    if (isfunction(js, replacement))
+    {
+
+        struct call call;
+        struct js_value returned;
+
+        copyvalue(&call.function, replacement);
+        call.self = undefined();
+        call.count = 0;
+
+        for (i = 0; i < re->groups && call.count < ARGUMENTS - 1; i++)
+            call.arguments[call.count++] = (re->captures[i].start >= 0) ? value(JS_STRING, addstring(js, re->text + re->captures[i].start, re->captures[i].end - re->captures[i].start)) : undefined();
+
+        call.arguments[call.count++] = value(JS_NUMBER, re->captures[0].start);
+
+        for (i = call.count; i < ARGUMENTS; i++)
+            call.arguments[i] = undefined();
+
+        returned = callfunction(js, &call);
+
+        return concat(js, result, tostring(js, &returned));
+
+    }
+
+    text = getstring(js, tostring(js, replacement));
+
+    for (i = 0; text[i]; i++)
+    {
+
+        unsigned int group;
+
+        if (text[i] != '$' || !(cstring_isdigit(text[i + 1]) || text[i + 1] == '&'))
+            continue;
+
+        group = (text[i + 1] == '&') ? 0 : (unsigned int)(text[i + 1] - '0');
+        result = concat(js, result, addstring(js, getstring(js, tostring(js, replacement)) + start, i - start));
+
+        if (group < re->groups && re->captures[group].start >= 0)
+            result = concat(js, result, addstring(js, re->text + re->captures[group].start, re->captures[group].end - re->captures[group].start));
+
+        text = getstring(js, tostring(js, replacement));
+        start = i + 2;
+        i++;
+
+    }
+
+    return concat(js, result, addstring(js, text + start, cstring_length(text + start)));
+
+}
+
+static struct js_value regexreplace(struct js_engine *js, struct js_value *subject, struct js_value *regex, struct js_value *replacement)
+{
+
+    struct regex re;
+    unsigned int global = isglobal(js, regex);
+    unsigned int result = internstring(js, "");
+    unsigned int source = tostring(js, subject);
+    int position = 0;
+
+    if (!recompile(&re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
+        return value(JS_STRING, source);
+
+    while (position <= (int)cstring_length(getstring(js, source)) && !js->throwing)
+    {
+
+        int found = researchfrom(&re, getstring(js, source), position);
+        int end;
+
+        if (found < 0)
+            break;
+
+        end = re.captures[0].end;
+        result = concat(js, result, addstring(js, getstring(js, source) + position, found - position));
+        re.text = getstring(js, source);
+        result = expandreplacement(js, &re, replacement, result);
+        re.text = getstring(js, source);
+
+        if (end == found)
+        {
+
+            if (found < (int)cstring_length(getstring(js, source)))
+                result = concat(js, result, addstring(js, getstring(js, source) + found, 1));
+
+            end = found + 1;
+
+        }
+
+        position = end;
+
+        if (!global)
+            break;
+
+    }
+
+    if (position < (int)cstring_length(getstring(js, source)))
+        result = concat(js, result, addstring(js, getstring(js, source) + position, cstring_length(getstring(js, source) + position)));
+
+    return value(JS_STRING, result);
+
+}
+
+static struct js_value regexmatch(struct js_engine *js, struct js_value *subject, struct js_value *regex, unsigned int native)
+{
+
+    struct regex re;
+    unsigned int source = tostring(js, subject);
+    struct js_value lastindex = getproperty(js, regex, internstring(js, "lastIndex"));
+    unsigned int global = isglobal(js, regex);
+    int position = (global && native == NATIVE_EXEC) ? tonumber(js, &lastindex) : 0;
+    struct js_value all = (global && native == NATIVE_MATCH) ? newarray(js) : value(JS_NULL, 0);
+    int found;
+
+    if (!recompile(&re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
+    {
+
+        throwerror(js, "Unsupported regular expression");
+
+        return undefined();
+
+    }
+
+    while (position <= (int)cstring_length(getstring(js, source)) && (found = researchfrom(&re, getstring(js, source), position)) >= 0)
+    {
+
+        struct js_value item;
+
+        if (native == NATIVE_TEST)
+            return value(JS_BOOLEAN, 1);
+
+        if (native == NATIVE_SEARCH)
+            return value(JS_NUMBER, found);
+
+        if (!(global && native == NATIVE_MATCH))
+        {
+
+            if (global)
+            {
+
+                struct js_value next = value(JS_NUMBER, re.captures[0].end + (re.captures[0].end == found));
+
+                setproperty(js, regex, internstring(js, "lastIndex"), &next);
+
+            }
+
+            return matchresult(js, &re);
+
+        }
+
+        item = value(JS_STRING, addstring(js, getstring(js, source) + found, re.captures[0].end - found));
+
+        pusharray(js, &all, &item);
+
+        position = (re.captures[0].end > found) ? re.captures[0].end : found + 1;
+
+    }
+
+    if (native == NATIVE_EXEC && global)
+    {
+
+        struct js_value zero = value(JS_NUMBER, 0);
+
+        setproperty(js, regex, internstring(js, "lastIndex"), &zero);
+
+    }
+
+    if (native == NATIVE_TEST)
+        return value(JS_BOOLEAN, 0);
+
+    if (native == NATIVE_SEARCH)
+        return value(JS_NUMBER, -1);
+
+    return (lengthof(js, &all)) ? all : value(JS_NULL, 0);
+
+}
+
+static struct js_value split(struct js_engine *js, struct js_value *self, struct js_value *first)
+{
+
+    struct js_value result = newarray(js);
+    char *separator = getstring(js, tostring(js, first));
+    unsigned int size = cstring_length(separator);
+    unsigned int start = 0;
+    unsigned int i;
+
+    for (i = 0; getstring(js, self->number)[i]; i++)
+    {
+
+        struct js_value piece;
+
+        if (size && !buffer_match(getstring(js, self->number) + i, separator, size))
+            continue;
+
+        piece = value(JS_STRING, addstring(js, getstring(js, self->number) + start, (size) ? i - start : 1));
+
+        pusharray(js, &result, &piece);
+
+        start = (size) ? i + size : i + 1;
+        i = (size) ? i + size - 1 : i;
+
+    }
+
+    if (size)
+    {
+
+        struct js_value piece = value(JS_STRING, addstring(js, getstring(js, self->number) + start, cstring_length(getstring(js, self->number) + start)));
+
+        pusharray(js, &result, &piece);
+
+    }
+
+    return result;
+
+}
+
+static struct js_value regexsplit(struct js_engine *js, struct js_value *subject, struct js_value *regex)
+{
+
+    struct regex re;
+    struct js_value result = newarray(js);
+    unsigned int source = tostring(js, subject);
+    int position = 0;
+    int from = 0;
+    struct js_value piece;
+
+    if (!recompile(&re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
+        return result;
+
+    while (position < (int)cstring_length(getstring(js, source)))
+    {
+
+        int found = researchfrom(&re, getstring(js, source), position);
+
+        if (found < 0)
+            break;
+
+        if (re.captures[0].end == found)
+        {
+
+            position = found + 1;
+
+            if (found == from)
+                continue;
+
+        }
+
+        piece = value(JS_STRING, addstring(js, getstring(js, source) + from, found - from));
+
+        pusharray(js, &result, &piece);
+
+        from = re.captures[0].end;
+        position = (re.captures[0].end > found) ? re.captures[0].end : found + 1;
+
+    }
+
+    piece = value(JS_STRING, addstring(js, getstring(js, source) + from, cstring_length(getstring(js, source) + from)));
+
+    pusharray(js, &result, &piece);
+
+    return result;
+
+}
 
 static struct js_value callnative(struct js_engine *js, struct call *call)
 {
@@ -3170,9 +5778,913 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
         return undefined();
 
+    case NATIVE_ARRAY:
+        {
+
+            struct js_value result = newarray(js);
+
+            if (call->count == 1 && first->type == JS_NUMBER)
+            {
+
+                if (result.type == JS_OBJECT && first->number > 0)
+                    js->objects[result.number].data = first->number;
+
+                return result;
+
+            }
+
+            for (i = 0; i < call->count; i++)
+                pusharray(js, &result, &call->arguments[i]);
+
+            return result;
+
+        }
+
+    case NATIVE_ISARRAY:
+        return value(JS_BOOLEAN, first->type == JS_OBJECT && js->objects[first->number].kind == KIND_ARRAY);
+
+    case NATIVE_ARRAYFROM:
+        {
+
+            struct js_value result = newarray(js);
+            unsigned int length = (first->type == JS_STRING) ? cstring_length(getstring(js, first->number)) : 0;
+
+            if (first->type == JS_OBJECT)
+            {
+
+                struct js_value count = getproperty(js, first, internstring(js, "length"));
+
+                length = tonumber(js, &count);
+
+            }
+
+            for (i = 0; i < length && !js->throwing; i++)
+            {
+
+                struct js_value item = (first->type == JS_STRING) ? value(JS_STRING, addstring(js, getstring(js, first->number) + i, 1)) : itemat(js, first, i);
+
+                pusharray(js, &result, &item);
+
+            }
+
+            for (i = 0; i < length && isfunction(js, second) && !js->throwing; i++)
+            {
+
+                struct js_value item = callback(js, second, &result, i, 0);
+
+                setitem(js, &result, i, &item);
+
+            }
+
+            return result;
+
+        }
+
+    case NATIVE_OBJECT:
+        return (first->type == JS_OBJECT) ? call->arguments[0] : value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+    case NATIVE_KEYS:
+    case NATIVE_VALUES:
+        if (self->type == JS_OBJECT && js->objects[self->number].kind == KIND_ARRAY)
+        {
+
+            struct js_value result = newarray(js);
+
+            for (i = 0; i < js->objects[self->number].data; i++)
+            {
+
+                struct js_value index = value(JS_NUMBER, i);
+
+                pusharray(js, &result, &index);
+
+            }
+
+            return result;
+
+        }
+
+        if (first->type != JS_OBJECT)
+            return newarray(js);
+
+        if (js->objects[first->number].kind == KIND_ARRAY)
+        {
+
+            struct js_value result = newarray(js);
+
+            for (i = 0; i < js->objects[first->number].data; i++)
+            {
+
+                struct js_value item = (native->data == NATIVE_VALUES) ? itemat(js, first, i) : value(JS_STRING, numberstring(js, i));
+
+                pusharray(js, &result, &item);
+
+            }
+
+            return result;
+
+        }
+
+        return keysof(js, first->number, native->data == NATIVE_VALUES);
+
+    case NATIVE_ASSIGN:
+        for (i = 1; i < call->count && first->type == JS_OBJECT; i++)
+        {
+
+            unsigned int property;
+
+            if (call->arguments[i].type != JS_OBJECT)
+                continue;
+
+            for (property = js->objects[call->arguments[i].number].property; property; property = js->properties[property].next)
+            {
+
+                if (!findproperty(js, first->number, js->properties[property].name))
+                    putproperty(js, first->number, js->properties[property].name, &js->properties[property].value);
+
+            }
+
+        }
+
+        return call->arguments[0];
+
+    case NATIVE_CREATE:
+        return value(JS_OBJECT, newobject(js, KIND_PLAIN, (first->type == JS_OBJECT) ? (unsigned int)first->number : 0, 0));
+
+    case NATIVE_IDENTITY:
+        return call->arguments[0];
+
+    case NATIVE_DEFINEPROPERTY:
+        if (first->type == JS_OBJECT && call->arguments[2].type == JS_OBJECT)
+        {
+
+            struct js_value item = getproperty(js, &call->arguments[2], internstring(js, "value"));
+
+            setproperty(js, first, internstring(js, getstring(js, tostring(js, second))), &item);
+
+        }
+
+        return call->arguments[0];
+
+    case NATIVE_STRINGIFY:
+        {
+
+            char buffer[TEXTSIZE * 4];
+            struct output output;
+
+            output.js = js;
+            output.data = buffer;
+            output.count = 0;
+            output.size = TEXTSIZE * 4;
+            output.full = 0;
+
+            if (first->type == JS_UNDEFINED)
+                return undefined();
+
+            stringify(&output, first, 0);
+
+            if (output.full)
+            {
+
+                throwerror(js, "Value too large to stringify");
+
+                return undefined();
+
+            }
+
+            return value(JS_STRING, addstring(js, buffer, output.count));
+
+        }
+
+    case NATIVE_PARSE:
+        {
+
+            struct reader reader;
+            struct js_value result;
+
+            reader.text = getstring(js, tostring(js, first));
+            reader.offset = 0;
+            reader.failed = 0;
+            result = readjson(js, &reader, 0);
+
+            if (reader.failed)
+                throwerror(js, "Invalid JSON");
+
+            return result;
+
+        }
+
+    case NATIVE_SQRT:
+        {
+
+            int number = tonumber(js, first);
+            int root = 0;
+
+            while ((root + 1) * (root + 1) <= number)
+                root++;
+
+            return value(JS_NUMBER, root);
+
+        }
+
+    case NATIVE_POW:
+        {
+
+            int base = tonumber(js, first);
+            int exponent = tonumber(js, second);
+            int result = 1;
+
+            while (exponent-- > 0)
+                result *= base;
+
+            return value(JS_NUMBER, (tonumber(js, second) < 0) ? 0 : result);
+
+        }
+
+    case NATIVE_CLEARTIMER:
+        if (first->type == JS_NUMBER && first->number > 0 && (unsigned int)first->number <= js->timercount)
+            js->timers[first->number - 1] = 0;
+
+        return undefined();
+
+    case NATIVE_PARSEINT:
+    case NATIVE_NUMBER:
+        return value(JS_NUMBER, tonumber(js, first));
+
+    case NATIVE_ISNAN:
+        return value(JS_BOOLEAN, first->type == JS_UNDEFINED || (first->type == JS_STRING && !cstring_isdigit(getstring(js, first->number)[0]) && getstring(js, first->number)[0] != '-'));
+
+    case NATIVE_STRING:
+        return value(JS_STRING, (call->count) ? tostring(js, first) : internstring(js, ""));
+
+    case NATIVE_BOOLEAN:
+        return value(JS_BOOLEAN, truthy(js, first));
+
+    case NATIVE_ERROR:
+        {
+
+            struct js_value error = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value message = value(JS_STRING, tostring(js, first));
+
+            if (error.number)
+                putproperty(js, error.number, internstring(js, "message"), &message);
+
+            return error;
+
+        }
+
+    case NATIVE_DOMPARSER:
+        {
+
+            struct js_value parser = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+            if (parser.number)
+                addnative(js, parser.number, "parseFromString", NATIVE_PARSEFROMSTRING);
+
+            return parser;
+
+        }
+
+    case NATIVE_PARSEFROMSTRING:
+        {
+
+            struct js_value parsed = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value body = elementvalue(js, html_createelement(js->document, "body"));
+            char *source = getstring(js, tostring(js, first));
+
+            if (!parsed.number || body.type != JS_OBJECT)
+                return undefined();
+
+            html_parsefragment(js->document, nodeof(js, &body), source, cstring_length(source));
+            putproperty(js, parsed.number, internstring(js, "body"), &body);
+
+            return parsed;
+
+        }
+
+    case NATIVE_REPLACECHILDREN:
+        if (element)
+        {
+
+            while (js->document->nodes[element].first)
+                html_remove(js->document, js->document->nodes[element].first);
+
+            for (i = 0; i < call->count; i++)
+                html_insert(js->document, element, argumentnode(js, &call->arguments[i]), 0);
+
+            js->changed = 1;
+
+        }
+
+        return undefined();
+
+    case NATIVE_CLICK:
+        if (element)
+            bubble(js, element, internstring(js, "click"));
+
+        return undefined();
+
+    case NATIVE_FULLYEAR:
+        return value(JS_NUMBER, 1970);
+
+    case NATIVE_DATE:
+        /* there is no clock: every date is the epoch */
+        return value(JS_OBJECT, js->date);
+
+    case NATIVE_ZERO:
+        return value(JS_NUMBER, 0);
+
+    case NATIVE_TOFIXED:
+        {
+
+            struct js_value text = value(JS_STRING, tostring(js, self));
+            int digits = tonumber(js, first);
+
+            if (digits > 0)
+                text.number = concat(js, concat(js, text.number, internstring(js, ".")), addstring(js, "0000000000", (digits > 10) ? 10 : digits));
+
+            return text;
+
+        }
+
+    case NATIVE_TOSTRING:
+        return value(JS_STRING, tostring(js, self));
+
+    case NATIVE_REPEAT:
+        {
+
+            unsigned int text = tostring(js, self);
+            unsigned int length = cstring_length(getstring(js, text));
+            unsigned int start = js->stringcount;
+            int count = tonumber(js, first);
+
+            if (count < 0 || start + length * count + 1 > JS_STRINGSIZE)
+            {
+
+                throwerror(js, "Out of string memory");
+
+                return undefined();
+
+            }
+
+            for (i = 0; i < (unsigned int)count; i++)
+                buffer_copy(js->strings + start + i * length, getstring(js, text), length);
+
+            js->strings[start + length * count] = '\0';
+            js->stringcount += length * count + 1;
+
+            return value(JS_STRING, start);
+
+        }
+
+    case NATIVE_PADSTART:
+    case NATIVE_PADEND:
+        {
+
+            unsigned int result = tostring(js, self);
+            unsigned int pad = (call->count >= 2) ? tostring(js, second) : internstring(js, " ");
+            unsigned int size = cstring_length(getstring(js, pad));
+            unsigned int length = tonumber(js, first);
+            unsigned int filler = internstring(js, "");
+
+            if (!size)
+                return value(JS_STRING, result);
+
+            for (i = cstring_length(getstring(js, result)); i < length && !js->throwing; i++)
+                filler = concat(js, filler, addstring(js, getstring(js, pad) + (cstring_length(getstring(js, filler)) % size), 1));
+
+            return value(JS_STRING, (native->data == NATIVE_PADSTART) ? concat(js, filler, result) : concat(js, result, filler));
+
+        }
+
+    case NATIVE_CHARCODEAT:
+        if (self->type == JS_STRING)
+        {
+
+            unsigned int index = tonumber(js, first);
+
+            return (index < cstring_length(getstring(js, self->number))) ? value(JS_NUMBER, (unsigned char)getstring(js, self->number)[index]) : value(JS_NUMBER, 0);
+
+        }
+
+        return undefined();
+
+    case NATIVE_FROMCHARCODE:
+        {
+
+            unsigned int result = internstring(js, "");
+
+            for (i = 0; i < call->count; i++)
+            {
+
+                char text[4];
+                unsigned int length = utf8_write(text, 4, tonumber(js, &call->arguments[i]));
+
+                result = concat(js, result, addstring(js, text, length));
+
+            }
+
+            return value(JS_STRING, result);
+
+        }
+
+    case NATIVE_SUBSTR:
+        if (self->type == JS_STRING)
+        {
+
+            int length = cstring_length(getstring(js, self->number));
+            int start = tonumber(js, first);
+            int count = (call->count >= 2) ? tonumber(js, second) : length;
+
+            start = (start < 0) ? ((start + length < 0) ? 0 : start + length) : ((start > length) ? length : start);
+            count = (count < 0) ? 0 : (start + count > length) ? length - start : count;
+
+            return value(JS_STRING, addstring(js, getstring(js, self->number) + start, count));
+
+        }
+
+        return undefined();
+
+    case NATIVE_LASTINDEXOF:
+        if (self->type == JS_STRING)
+        {
+
+            char *haystack = getstring(js, self->number);
+            char *needle = getstring(js, tostring(js, first));
+            int length = cstring_length(needle);
+            int position;
+
+            for (position = (int)cstring_length(haystack) - length; position >= 0; position--)
+            {
+
+                if (buffer_match(haystack + position, needle, length))
+                    return value(JS_NUMBER, position);
+
+            }
+
+            return value(JS_NUMBER, -1);
+
+        }
+
+        for (i = lengthof(js, self); i > 0; i--)
+        {
+
+            struct js_value item = itemat(js, self, i - 1);
+
+            if (strictequal(js, &item, first))
+                return value(JS_NUMBER, i - 1);
+
+        }
+
+        return value(JS_NUMBER, -1);
+
+    case NATIVE_ARRAYITEM:
+        return itemat(js, self, tonumber(js, first));
+
+    case NATIVE_MAP:
+    case NATIVE_FILTER:
+    case NATIVE_FIND:
+    case NATIVE_FINDINDEX:
+    case NATIVE_SOME:
+    case NATIVE_EVERY:
+        {
+
+            struct js_value result = (native->data == NATIVE_MAP || native->data == NATIVE_FILTER) ? newarray(js) : undefined();
+            unsigned int length = lengthof(js, self);
+
+            if (!isfunction(js, first))
+            {
+
+                throwerror(js, "Value is not a function");
+
+                return undefined();
+
+            }
+
+            for (i = 0; i < length && !js->throwing; i++)
+            {
+
+                struct js_value item = itemat(js, self, i);
+                struct js_value answer = callback(js, first, self, i, 0);
+
+                if (native->data == NATIVE_MAP)
+                    pusharray(js, &result, &answer);
+                else if (native->data == NATIVE_FILTER && truthy(js, &answer))
+                    pusharray(js, &result, &item);
+                else if (native->data == NATIVE_FIND && truthy(js, &answer))
+                    return item;
+                else if (native->data == NATIVE_FINDINDEX && truthy(js, &answer))
+                    return value(JS_NUMBER, i);
+                else if (native->data == NATIVE_SOME && truthy(js, &answer))
+                    return value(JS_BOOLEAN, 1);
+                else if (native->data == NATIVE_EVERY && !truthy(js, &answer))
+                    return value(JS_BOOLEAN, 0);
+
+            }
+
+            if (native->data == NATIVE_FINDINDEX)
+                return value(JS_NUMBER, -1);
+
+            if (native->data == NATIVE_SOME || native->data == NATIVE_EVERY)
+                return value(JS_BOOLEAN, native->data == NATIVE_EVERY);
+
+            return result;
+
+        }
+
+    case NATIVE_REDUCE:
+        {
+
+            unsigned int length = lengthof(js, self);
+            struct js_value total = (call->count >= 2) ? call->arguments[1] : itemat(js, self, 0);
+
+            if (!isfunction(js, first))
+            {
+
+                throwerror(js, "Value is not a function");
+
+                return undefined();
+
+            }
+
+            for (i = (call->count >= 2) ? 0 : 1; i < length && !js->throwing; i++)
+                total = callback(js, first, self, i, &total);
+
+            return total;
+
+        }
+
+    case NATIVE_SORT:
+    case NATIVE_REVERSE:
+        {
+
+            struct js_value items[SORTSIZE];
+            unsigned int length = lengthof(js, self);
+            unsigned int j;
+
+            if (length > SORTSIZE)
+            {
+
+                throwerror(js, "Array too long to sort");
+
+                return call->self;
+
+            }
+
+            for (i = 0; i < length; i++)
+                items[i] = itemat(js, self, (native->data == NATIVE_REVERSE) ? length - 1 - i : i);
+
+            for (i = 1; i < length && native->data == NATIVE_SORT && !js->throwing; i++)
+            {
+
+                struct js_value item = items[i];
+
+                for (j = i; j > 0 && compare(js, first, &items[j - 1], &item) > 0; j--)
+                    items[j] = items[j - 1];
+
+                items[j] = item;
+
+            }
+
+            for (i = 0; i < length; i++)
+                setitem(js, self, i, &items[i]);
+
+            return call->self;
+
+        }
+
+    case NATIVE_CONCAT:
+        if (self->type == JS_STRING)
+        {
+
+            unsigned int result = self->number;
+
+            for (i = 0; i < call->count; i++)
+                result = concat(js, result, tostring(js, &call->arguments[i]));
+
+            return value(JS_STRING, result);
+
+        }
+
+        {
+
+            struct js_value result = newarray(js);
+            unsigned int argument;
+
+            for (i = 0; i < lengthof(js, self); i++)
+            {
+
+                struct js_value item = itemat(js, self, i);
+
+                pusharray(js, &result, &item);
+
+            }
+
+            for (argument = 0; argument < call->count; argument++)
+            {
+
+                if (lengthof(js, &call->arguments[argument]) || (call->arguments[argument].type == JS_OBJECT && js->objects[call->arguments[argument].number].kind == KIND_ARRAY))
+                {
+
+                    for (i = 0; i < lengthof(js, &call->arguments[argument]); i++)
+                    {
+
+                        struct js_value item = itemat(js, &call->arguments[argument], i);
+
+                        pusharray(js, &result, &item);
+
+                    }
+
+                }
+
+                else
+                {
+
+                    pusharray(js, &result, &call->arguments[argument]);
+
+                }
+
+            }
+
+            return result;
+
+        }
+
+    case NATIVE_POP:
+    case NATIVE_SHIFT:
+        {
+
+            unsigned int length = lengthof(js, self);
+            struct js_value item;
+
+            if (!length)
+                return undefined();
+
+            item = itemat(js, self, (native->data == NATIVE_POP) ? length - 1 : 0);
+
+            for (i = 1; i < length && native->data == NATIVE_SHIFT; i++)
+            {
+
+                struct js_value next = itemat(js, self, i);
+
+                setitem(js, self, i - 1, &next);
+
+            }
+
+            js->objects[self->number].data--;
+
+            return item;
+
+        }
+
+    case NATIVE_UNSHIFT:
+    case NATIVE_SPLICE:
+        {
+
+            unsigned int length = lengthof(js, self);
+            int start = (native->data == NATIVE_UNSHIFT) ? 0 : tonumber(js, first);
+            int removed = (native->data == NATIVE_UNSHIFT) ? 0 : (call->count >= 2) ? tonumber(js, second) : (int)length;
+            unsigned int skip = (native->data == NATIVE_UNSHIFT) ? 0 : 2;
+            unsigned int added = (call->count > skip) ? call->count - skip : 0;
+            struct js_value result = newarray(js);
+            struct js_value items[SORTSIZE];
+            unsigned int count = 0;
+
+            if (self->type != JS_OBJECT || js->objects[self->number].kind != KIND_ARRAY)
+                return undefined();
+
+            if (length + added > SORTSIZE)
+            {
+
+                throwerror(js, "Array too long to splice");
+
+                return result;
+
+            }
+
+            start = (start < 0) ? ((start + (int)length < 0) ? 0 : start + (int)length) : ((start > (int)length) ? (int)length : start);
+            removed = (removed < 0) ? 0 : (start + removed > (int)length) ? (int)length - start : removed;
+
+            for (i = 0; i < (unsigned int)start; i++)
+                items[count++] = itemat(js, self, i);
+
+            for (i = 0; i < added; i++)
+                items[count++] = call->arguments[skip + i];
+
+            for (i = start; i < (unsigned int)(start + removed); i++)
+            {
+
+                struct js_value item = itemat(js, self, i);
+
+                pusharray(js, &result, &item);
+
+            }
+
+            for (i = start + removed; i < length; i++)
+                items[count++] = itemat(js, self, i);
+
+            for (i = 0; i < count; i++)
+                setitem(js, self, i, &items[i]);
+
+            js->objects[self->number].data = count;
+
+            return (native->data == NATIVE_UNSHIFT) ? value(JS_NUMBER, count) : result;
+
+        }
+
+    case NATIVE_FILL:
+        for (i = 0; i < lengthof(js, self); i++)
+            setitem(js, self, i, first);
+
+        return call->self;
+
+    case NATIVE_TEST:
+    case NATIVE_EXEC:
+        if (isregex(js, self))
+            return regexmatch(js, first, self, native->data);
+
+        return undefined();
+
+    case NATIVE_MATCH:
+    case NATIVE_SEARCH:
+        if (isregex(js, first))
+            return regexmatch(js, self, first, native->data);
+
+        return value(JS_NULL, 0);
+
+    case NATIVE_REGEXP:
+        {
+
+            unsigned int pattern = (isregex(js, first)) ? js->objects[first->number].data : addstring(js, getstring(js, tostring(js, first)), cstring_length(getstring(js, tostring(js, first))));
+            char *flags = (call->count >= 2) ? getstring(js, tostring(js, second)) : "";
+
+            /* the flags must follow the pattern directly */
+            if (isregex(js, first) || js->stringcount != pattern + cstring_length(getstring(js, pattern)) + 1)
+                pattern = addstring(js, getstring(js, pattern), cstring_length(getstring(js, pattern)));
+
+            addstring(js, flags, cstring_length(flags));
+
+            return value(JS_OBJECT, newobject(js, KIND_REGEX, 0, pattern));
+
+        }
+
+    case NATIVE_REPLACEALL:
+        if (self->type == JS_STRING && first->type == JS_STRING)
+            return value(JS_STRING, joinarray(js, split(js, self, first).number, getstring(js, tostring(js, second))));
+
+        return (isregex(js, first)) ? regexreplace(js, self, first, second) : call->self;
+
+    case NATIVE_CALL:
+    case NATIVE_APPLY:
+        {
+
+            struct call inner;
+
+            inner.function = call->self;
+            inner.self = call->arguments[0];
+            inner.count = 0;
+
+            if (native->data == NATIVE_CALL)
+            {
+
+                for (i = 1; i < call->count; i++)
+                    inner.arguments[inner.count++] = call->arguments[i];
+
+            }
+
+            else if (second->type == JS_OBJECT)
+            {
+
+                unsigned int count = (js->objects[second->number].kind == KIND_ARRAY) ? js->objects[second->number].data : 0;
+
+                for (i = 0; i < count && inner.count < ARGUMENTS; i++)
+                    inner.arguments[inner.count++] = getproperty(js, second, numberstring(js, i));
+
+            }
+
+            for (i = inner.count; i < ARGUMENTS; i++)
+                inner.arguments[i] = undefined();
+
+            return callfunction(js, &inner);
+
+        }
+
+    case NATIVE_BIND:
+        if (isfunction(js, self))
+        {
+
+            struct js_value bound = value(JS_OBJECT, newobject(js, KIND_BOUND, 0, self->number));
+            struct js_value arguments = newarray(js);
+
+            if (!bound.number)
+                return undefined();
+
+            for (i = 1; i < call->count; i++)
+                pusharray(js, &arguments, &call->arguments[i]);
+
+            putproperty(js, bound.number, internstring(js, "this"), first);
+            putproperty(js, bound.number, internstring(js, "arguments"), &arguments);
+
+            return bound;
+
+        }
+
+        return undefined();
+
+    case NATIVE_HASOWNPROPERTY:
+        return value(JS_BOOLEAN, self->type == JS_OBJECT && findproperty(js, self->number, internstring(js, getstring(js, tostring(js, first)))) != 0);
+
+    case NATIVE_CREATEELEMENT:
+        return elementvalue(js, html_createelement(js->document, getstring(js, tostring(js, first))));
+
+    case NATIVE_CREATETEXTNODE:
+        return nodevalue(js, html_createtext(js->document, getstring(js, tostring(js, first))));
+
+    case NATIVE_APPEND:
+    case NATIVE_PREPEND:
+        if (element)
+        {
+
+            unsigned int before = (native->data == NATIVE_PREPEND) ? js->document->nodes[element].first : 0;
+
+            for (i = 0; i < call->count; i++)
+                html_insert(js->document, element, argumentnode(js, &call->arguments[i]), before);
+
+            js->changed = 1;
+
+        }
+
+        return (call->count) ? call->arguments[0] : undefined();
+
+    case NATIVE_INSERTBEFORE:
+        if (element)
+        {
+
+            html_insert(js->document, element, argumentnode(js, first), nodeof(js, second));
+
+            js->changed = 1;
+
+        }
+
+        return call->arguments[0];
+
+    case NATIVE_REMOVECHILD:
+        if (element && nodeof(js, first) && js->document->nodes[nodeof(js, first)].parent == element)
+        {
+
+            html_remove(js->document, nodeof(js, first));
+
+            js->changed = 1;
+
+        }
+
+        return call->arguments[0];
+
+    case NATIVE_REMOVE:
+        if (element)
+        {
+
+            html_remove(js->document, element);
+
+            js->changed = 1;
+
+        }
+
+        return undefined();
+
+    case NATIVE_INSERTADJACENTHTML:
+        if (element)
+        {
+
+            char *where = getstring(js, tostring(js, first));
+            char *source = getstring(js, tostring(js, second));
+            unsigned int parent = js->document->nodes[element].parent;
+            unsigned int holder = html_createelement(js->document, "div");
+
+            if (!holder)
+                return undefined();
+
+            html_parsefragment(js->document, holder, source, cstring_length(source));
+
+            if (cstring_match(where, "beforebegin"))
+                moveall(js, holder, parent, element);
+            else if (cstring_match(where, "afterbegin"))
+                moveall(js, holder, element, js->document->nodes[element].first);
+            else if (cstring_match(where, "afterend"))
+                moveall(js, holder, parent, js->document->nodes[element].next);
+            else
+                moveall(js, holder, element, 0);
+
+            js->changed = 1;
+
+        }
+
+        return undefined();
+
     case NATIVE_SETTIMEOUT:
-        if (isfunction(js, first) && js->timercount < JS_TIMERS)
-            js->timers[js->timercount++] = first->number;
+        if (!isfunction(js, first) || js->timercount >= JS_TIMERS)
+            return value(JS_NUMBER, 0);
+
+        js->timers[js->timercount++] = first->number;
 
         return value(JS_NUMBER, js->timercount);
 
@@ -3318,47 +6830,15 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         }
 
     case NATIVE_SPLIT:
-        if (self->type == JS_STRING)
-        {
+        if (self->type == JS_STRING && isregex(js, first))
+            return regexsplit(js, self, first);
 
-            struct js_value result = newarray(js);
-            char *separator = getstring(js, tostring(js, first));
-            unsigned int size = cstring_length(separator);
-            unsigned int start = 0;
-
-            for (i = 0; getstring(js, self->number)[i]; i++)
-            {
-
-                struct js_value piece;
-
-                if (size && !buffer_match(getstring(js, self->number) + i, separator, size))
-                    continue;
-
-                piece = value(JS_STRING, addstring(js, getstring(js, self->number) + start, (size) ? i - start : 1));
-
-                pusharray(js, &result, &piece);
-
-                start = (size) ? i + size : i + 1;
-                i = (size) ? i + size - 1 : i;
-
-            }
-
-            if (size)
-            {
-
-                struct js_value piece = value(JS_STRING, addstring(js, getstring(js, self->number) + start, cstring_length(getstring(js, self->number) + start)));
-
-                pusharray(js, &result, &piece);
-
-            }
-
-            return result;
-
-        }
-
-        return undefined();
+        return (self->type == JS_STRING) ? split(js, self, first) : undefined();
 
     case NATIVE_REPLACE:
+        if (self->type == JS_STRING && isregex(js, first))
+            return regexreplace(js, self, first, second);
+
         if (self->type == JS_STRING && first->type == JS_STRING)
         {
 
@@ -3394,6 +6874,34 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             listener->node = (kind == KIND_MEDIA) ? JS_MEDIA : element;
             listener->type = internstring(js, getstring(js, tostring(js, first)));
             listener->function = second->number;
+
+        }
+
+        return undefined();
+
+    case NATIVE_REMOVEEVENTLISTENER:
+        {
+
+            unsigned int node = (kind == KIND_MEDIA) ? JS_MEDIA : element;
+            unsigned int type = internstring(js, getstring(js, tostring(js, first)));
+
+            for (i = 0; i < js->listenercount; i++)
+            {
+
+                struct js_listener *listener = &js->listeners[i];
+
+                if (listener->node == node && listener->type == type && second->type == JS_OBJECT && listener->function == (unsigned int)second->number)
+                {
+
+                    buffer_copy(listener, &js->listeners[js->listenercount - 1], sizeof (struct js_listener));
+
+                    js->listenercount--;
+
+                    break;
+
+                }
+
+            }
 
         }
 
@@ -3582,6 +7090,31 @@ static struct js_value callfunction(struct js_engine *js, struct call *call)
     if (function->kind == KIND_NATIVE)
         return callnative(js, call);
 
+    if (function->kind == KIND_BOUND)
+    {
+
+        struct call bound;
+        struct js_value boundthis = getproperty(js, &call->function, internstring(js, "this"));
+        struct js_value boundarguments = getproperty(js, &call->function, internstring(js, "arguments"));
+        unsigned int count = (boundarguments.type == JS_OBJECT) ? js->objects[boundarguments.number].data : 0;
+
+        bound.function = value(JS_OBJECT, function->data);
+        bound.self = boundthis;
+        bound.count = 0;
+
+        for (i = 0; i < count && bound.count < ARGUMENTS; i++)
+            bound.arguments[bound.count++] = getproperty(js, &boundarguments, numberstring(js, i));
+
+        for (i = 0; i < call->count && bound.count < ARGUMENTS; i++)
+            bound.arguments[bound.count++] = call->arguments[i];
+
+        for (i = bound.count; i < ARGUMENTS; i++)
+            bound.arguments[i] = undefined();
+
+        return callfunction(js, &bound);
+
+    }
+
     if (js->depth >= DEPTHLIMIT)
     {
 
@@ -3603,7 +7136,36 @@ static struct js_value callfunction(struct js_engine *js, struct call *call)
 
     }
 
-    declare(js, scope, internstring(js, "this"), &call->self);
+    if (!(node->c & FUNCTION_ARROW))
+        declare(js, scope, internstring(js, "this"), &call->self);
+
+    if (node->c & FUNCTION_ARGUMENTS)
+    {
+
+        struct js_value arguments = newarray(js);
+
+        for (i = 0; i < call->count; i++)
+            pusharray(js, &arguments, &call->arguments[i]);
+
+        declare(js, scope, internstring(js, "arguments"), &arguments);
+
+        i = 0;
+
+    }
+
+    if (node->c & FUNCTION_DERIVED)
+    {
+
+        struct call parent;
+
+        buffer_copy(&parent, call, sizeof (struct call));
+
+        parent.function = lookup(js, function->parent, internstring(js, "super"));
+
+        if (!js->throwing)
+            callfunction(js, &parent);
+
+    }
 
     for (parameter = node->a; parameter; parameter = js->nodes[parameter].next)
     {
@@ -3613,10 +7175,25 @@ static struct js_value callfunction(struct js_engine *js, struct call *call)
         if (i < call->count)
             copyvalue(&argument, &call->arguments[i]);
 
+        if (js->nodes[parameter].op)
+        {
+
+            unsigned int rest;
+
+            argument = newarray(js);
+
+            for (rest = i; rest < call->count; rest++)
+                pusharray(js, &argument, &call->arguments[rest]);
+
+        }
+
         if (argument.type == JS_UNDEFINED && js->nodes[parameter].a)
             argument = evaluate(js, js->nodes[parameter].a, scope);
 
-        declare(js, scope, js->nodes[parameter].value, &argument);
+        if (js->nodes[parameter].type == NODE_DECLARATOR)
+            bindpattern(js, scope, parameter, &argument);
+        else
+            declare(js, scope, js->nodes[parameter].value, &argument);
 
         i++;
 
@@ -3658,10 +7235,21 @@ static void collectarguments(struct js_engine *js, struct call *call, unsigned i
     for (argument = first; argument && !js->throwing; argument = js->nodes[argument].next)
     {
 
-        struct js_value evaluated = evaluate(js, argument, scope);
+        struct js_value evaluated = evaluate(js, (js->nodes[argument].type == NODE_SPREAD) ? js->nodes[argument].a : argument, scope);
+        unsigned int i;
 
-        if (call->count < ARGUMENTS)
-            copyvalue(&call->arguments[call->count++], &evaluated);
+        if (js->nodes[argument].type != NODE_SPREAD)
+        {
+
+            if (call->count < ARGUMENTS)
+                copyvalue(&call->arguments[call->count++], &evaluated);
+
+            continue;
+
+        }
+
+        for (i = 0; i < lengthof(js, &evaluated) && call->count < ARGUMENTS; i++)
+            call->arguments[call->count++] = itemat(js, &evaluated, i);
 
     }
 
@@ -3724,6 +7312,38 @@ static int arithmetic(unsigned int op, int a, int b)
 
 }
 
+static unsigned int instanceof(struct js_engine *js, struct js_value *object, struct js_value *constructor)
+{
+
+    struct js_value prototype;
+    unsigned int current;
+
+    if (object->type != JS_OBJECT || !isfunction(js, constructor))
+        return 0;
+
+    if (constructor->number == (int)nativefor(js, NATIVE_ARRAY))
+        return js->objects[object->number].kind == KIND_ARRAY;
+
+    prototype = getproperty(js, constructor, internstring(js, "prototype"));
+
+    if (prototype.type != JS_OBJECT)
+        return 0;
+
+    for (current = js->objects[object->number].parent; current && js->objects[object->number].kind == KIND_PLAIN; current = js->objects[current].parent)
+    {
+
+        if (current == (unsigned int)prototype.number)
+            return 1;
+
+        if (js->objects[current].kind != KIND_PLAIN)
+            break;
+
+    }
+
+    return 0;
+
+}
+
 static struct js_value combine(struct js_engine *js, unsigned int op, struct js_value *a, struct js_value *b)
 {
 
@@ -3735,6 +7355,21 @@ static struct js_value combine(struct js_engine *js, unsigned int op, struct js_
             return value(JS_STRING, concat(js, tostring(js, a), tostring(js, b)));
 
         return value(JS_NUMBER, tonumber(js, a) + tonumber(js, b));
+
+    case OP_INSTANCEOF:
+        return value(JS_BOOLEAN, instanceof(js, a, b));
+
+    case OP_IN:
+        if (b->type != JS_OBJECT)
+        {
+
+            throwerror(js, "Cannot use in on a non-object");
+
+            return undefined();
+
+        }
+
+        return value(JS_BOOLEAN, getproperty(js, b, internstring(js, getstring(js, tostring(js, a)))).type != JS_UNDEFINED);
 
     case OP_EQUAL:
         return value(JS_BOOLEAN, looseequal(js, a, b));
@@ -3843,6 +7478,38 @@ static struct js_value typeofvalue(struct js_engine *js, struct js_value *operan
 
 }
 
+static struct js_value construct(struct js_engine *js, struct call *call)
+{
+
+    struct js_value prototype = getproperty(js, &call->function, internstring(js, "prototype"));
+    struct js_value result;
+
+    if (!isfunction(js, &call->function))
+    {
+
+        throwerror(js, "Value is not a constructor");
+
+        return undefined();
+
+    }
+
+    call->self = value(JS_OBJECT, newobject(js, KIND_PLAIN, (prototype.type == JS_OBJECT) ? (unsigned int)prototype.number : 0, 0));
+
+    if (!call->self.number)
+    {
+
+        throwerror(js, "Out of objects");
+
+        return undefined();
+
+    }
+
+    result = callfunction(js, call);
+
+    return (result.type == JS_OBJECT) ? result : call->self;
+
+}
+
 static struct js_value evaluatecall(struct js_engine *js, struct js_node *node, unsigned int scope)
 {
 
@@ -3851,7 +7518,25 @@ static struct js_value evaluatecall(struct js_engine *js, struct js_node *node, 
 
     call.self = value(JS_OBJECT, js->global);
 
-    if (callee->type == NODE_MEMBER || callee->type == NODE_INDEX)
+    if (node->op)
+    {
+
+        call.function = evaluate(js, node->a, scope);
+
+    }
+
+    else if (callee->type == NODE_MEMBER && js->nodes[callee->a].type == NODE_NAME && cstring_match(getstring(js, js->nodes[callee->a].value), "super"))
+    {
+
+        struct js_value parent = lookup(js, scope, js->nodes[callee->a].value);
+        struct js_value prototype = getproperty(js, &parent, internstring(js, "prototype"));
+
+        call.self = lookup(js, scope, internstring(js, "this"));
+        call.function = getproperty(js, &prototype, callee->value);
+
+    }
+
+    else if (callee->type == NODE_MEMBER || callee->type == NODE_INDEX)
     {
 
         unsigned int name;
@@ -3871,6 +7556,9 @@ static struct js_value evaluatecall(struct js_engine *js, struct js_node *node, 
 
         call.function = evaluate(js, node->a, scope);
 
+        if (callee->type == NODE_NAME && cstring_match(getstring(js, callee->value), "super"))
+            call.self = lookup(js, scope, internstring(js, "this"));
+
     }
 
     if (js->throwing)
@@ -3881,7 +7569,59 @@ static struct js_value evaluatecall(struct js_engine *js, struct js_node *node, 
     if (js->throwing)
         return undefined();
 
-    return callfunction(js, &call);
+    return (node->op) ? construct(js, &call) : callfunction(js, &call);
+
+}
+
+static struct js_value evaluateclass(struct js_engine *js, struct js_node *node, unsigned int scope)
+{
+
+    struct js_value parent = (node->c) ? evaluate(js, node->c, scope) : undefined();
+    struct js_value parentprototype = undefined();
+    struct js_value constructor;
+    struct js_value prototype;
+    unsigned int classscope;
+    unsigned int member;
+
+    if (js->throwing)
+        return undefined();
+
+    if (parent.type == JS_OBJECT)
+        parentprototype = getproperty(js, &parent, internstring(js, "prototype"));
+
+    classscope = newobject(js, KIND_SCOPE, scope, 0);
+    prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, (parentprototype.type == JS_OBJECT) ? (unsigned int)parentprototype.number : 0, 0));
+
+    if (!classscope || !prototype.number)
+    {
+
+        throwerror(js, "Out of objects");
+
+        return undefined();
+
+    }
+
+    if (node->c)
+        declare(js, classscope, internstring(js, "super"), &parent);
+
+    constructor = newfunction(js, node->a, classscope);
+
+    if (js->throwing)
+        return undefined();
+
+    putproperty(js, prototype.number, internstring(js, "constructor"), &constructor);
+    putproperty(js, constructor.number, internstring(js, "prototype"), &prototype);
+
+    for (member = node->b; member && !js->throwing; member = js->nodes[member].next)
+    {
+
+        struct js_value method = newfunction(js, js->nodes[member].a, classscope);
+
+        putproperty(js, (js->nodes[member].c) ? (unsigned int)constructor.number : (unsigned int)prototype.number, js->nodes[member].value, &method);
+
+    }
+
+    return constructor;
 
 }
 
@@ -3929,10 +7669,28 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
         for (child = node->a; child && object; child = js->nodes[child].next)
         {
 
-            a = evaluate(js, child, scope);
+            unsigned int i;
+
+            a = evaluate(js, (js->nodes[child].type == NODE_SPREAD) ? js->nodes[child].a : child, scope);
             b = value(JS_OBJECT, object);
 
-            setproperty(js, &b, numberstring(js, count++), &a);
+            if (js->nodes[child].type != NODE_SPREAD)
+            {
+
+                setproperty(js, &b, numberstring(js, count++), &a);
+
+                continue;
+
+            }
+
+            for (i = 0; i < lengthof(js, &a); i++)
+            {
+
+                struct js_value item = itemat(js, &a, i);
+
+                setproperty(js, &b, numberstring(js, count++), &item);
+
+            }
 
         }
 
@@ -3941,12 +7699,39 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
     case NODE_OBJECT:
         object = newobject(js, KIND_PLAIN, 0, 0);
 
-        for (child = node->a; child && object; child = js->nodes[child].next)
+        for (child = node->a; child && object && !js->throwing; child = js->nodes[child].next)
         {
+
+            unsigned int name = js->nodes[child].value;
 
             a = evaluate(js, js->nodes[child].a, scope);
 
-            putproperty(js, object, js->nodes[child].value, &a);
+            if (js->nodes[child].c == 1)
+            {
+
+                unsigned int property;
+
+                for (property = (a.type == JS_OBJECT) ? js->objects[a.number].property : 0; property; property = js->properties[property].next)
+                {
+
+                    if (!findproperty(js, object, js->properties[property].name))
+                        putproperty(js, object, js->properties[property].name, &js->properties[property].value);
+
+                }
+
+                continue;
+
+            }
+
+            if (js->nodes[child].c == 2)
+            {
+
+                b = evaluate(js, js->nodes[child].b, scope);
+                name = internstring(js, getstring(js, tostring(js, &b)));
+
+            }
+
+            putproperty(js, object, name, &a);
 
         }
 
@@ -3961,6 +7746,14 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
 
     case NODE_CALL:
         return evaluatecall(js, node, scope);
+
+    case NODE_CLASS:
+        return evaluateclass(js, node, scope);
+
+    case NODE_REGEX:
+        object = newobject(js, KIND_REGEX, 0, node->value);
+
+        return (object) ? value(JS_OBJECT, object) : undefined();
 
     case NODE_ASSIGN:
         if (node->op == OP_ASSIGN)
@@ -4086,6 +7879,9 @@ static void bindpattern(struct js_engine *js, unsigned int scope, unsigned int d
             continue;
 
         item = getproperty(js, source, (node->c == PATTERN_ARRAY) ? numberstring(js, index) : (unsigned int)js->nodes[name].value);
+
+        if (item.type == JS_UNDEFINED && js->nodes[name].a)
+            item = evaluate(js, js->nodes[name].a, scope);
 
         declare(js, scope, js->nodes[name].value, &item);
 
@@ -4522,6 +8318,80 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "Math", "ceil", NATIVE_ROUND);
     addmethod(js, "Math", "trunc", NATIVE_ROUND);
     addmethod(js, "Math", "abs", NATIVE_ABS);
+    /* numbers are integers, so random is always 0: Math.floor(Math.random() * n) stays a valid index */
+    addmethod(js, "Math", "random", NATIVE_ZERO);
+    addmethod(js, "Math", "sqrt", NATIVE_SQRT);
+    addmethod(js, "Math", "pow", NATIVE_POW);
+    addglobal(js, "setInterval", js->natives[NATIVE_SETTIMEOUT]);
+    addglobal(js, "clearTimeout", js->natives[NATIVE_CLEARTIMER]);
+    addglobal(js, "clearInterval", js->natives[NATIVE_CLEARTIMER]);
+    addglobal(js, "cancelAnimationFrame", js->natives[NATIVE_CLEARTIMER]);
+    addglobal(js, "parseInt", js->natives[NATIVE_PARSEINT]);
+    addglobal(js, "parseFloat", js->natives[NATIVE_PARSEINT]);
+    addglobal(js, "isNaN", js->natives[NATIVE_ISNAN]);
+    addglobal(js, "Number", js->natives[NATIVE_NUMBER]);
+    addglobal(js, "String", js->natives[NATIVE_STRING]);
+    addglobal(js, "Boolean", js->natives[NATIVE_BOOLEAN]);
+    addglobal(js, "Error", js->natives[NATIVE_ERROR]);
+    addglobal(js, "TypeError", js->natives[NATIVE_ERROR]);
+    addglobal(js, "Array", js->natives[NATIVE_ARRAY]);
+    addglobal(js, "Object", js->natives[NATIVE_OBJECT]);
+    addglobal(js, "Date", js->natives[NATIVE_DATE]);
+    addglobal(js, "RegExp", js->natives[NATIVE_REGEXP]);
+    addglobal(js, "DOMParser", js->natives[NATIVE_DOMPARSER]);
+    addglobal(js, "navigator", newobject(js, KIND_PLAIN, 0, 0));
+    addglobal(js, "location", newobject(js, KIND_PLAIN, 0, 0));
+    addglobal(js, "Function", js->natives[NATIVE_FUNCTION]);
+    addglobal(js, "NodeList", js->natives[NATIVE_ARRAY]);
+    addglobal(js, "HTMLCollection", js->natives[NATIVE_ARRAY]);
+    addglobal(js, "JSON", newobject(js, KIND_PLAIN, 0, 0));
+    addmethod(js, "String", "fromCharCode", NATIVE_FROMCHARCODE);
+    addmethod(js, "Array", "isArray", NATIVE_ISARRAY);
+    addmethod(js, "Array", "from", NATIVE_ARRAYFROM);
+    addmethod(js, "Object", "keys", NATIVE_KEYS);
+    addmethod(js, "Object", "values", NATIVE_VALUES);
+    addmethod(js, "Object", "assign", NATIVE_ASSIGN);
+    addmethod(js, "Object", "create", NATIVE_CREATE);
+    addmethod(js, "Object", "freeze", NATIVE_IDENTITY);
+    addmethod(js, "Object", "defineProperty", NATIVE_DEFINEPROPERTY);
+    addmethod(js, "Date", "now", NATIVE_ZERO);
+    addmethod(js, "JSON", "stringify", NATIVE_STRINGIFY);
+    addmethod(js, "JSON", "parse", NATIVE_PARSE);
+
+    {
+
+        struct js_value prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+        putproperty(js, js->natives[NATIVE_ARRAY], internstring(js, "prototype"), &prototype);
+
+        for (i = 0; i < ARRAYMETHODS; i++)
+            addnative(js, prototype.number, arraymethods[i].name, arraymethods[i].native);
+
+        prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+        putproperty(js, js->natives[NATIVE_FUNCTION], internstring(js, "prototype"), &prototype);
+        addnative(js, prototype.number, "call", NATIVE_CALL);
+        addnative(js, prototype.number, "apply", NATIVE_APPLY);
+        addnative(js, prototype.number, "bind", NATIVE_BIND);
+
+        for (i = 0; i < LOCATIONFIELDS; i++)
+        {
+
+            struct js_value empty = value(JS_STRING, internstring(js, ""));
+            struct js_property *location = findproperty(js, js->global, internstring(js, "location"));
+
+            putproperty(js, location->value.number, internstring(js, locationfields[i]), &empty);
+
+        }
+
+        js->date = newobject(js, KIND_PLAIN, 0, 0);
+
+        for (i = 0; i < DATEFIELDS; i++)
+            addnative(js, js->date, datefields[i], NATIVE_ZERO);
+
+        addnative(js, js->date, "getFullYear", NATIVE_FULLYEAR);
+
+    }
 
 }
 
@@ -4537,6 +8407,10 @@ void js_run(struct js_engine *js, char *source, unsigned int count)
     parser.count = count;
     parser.offset = 0;
     parser.failed = 0;
+    parser.token.type = TOKEN_END;
+    parser.more = 0;
+    parser.noin = 0;
+    parser.arguments = 0;
 
     nexttoken(&parser);
 
@@ -4564,81 +8438,111 @@ void js_run(struct js_engine *js, char *source, unsigned int count)
 
 }
 
-unsigned int js_haslistener(struct js_engine *js, unsigned int node, char *type)
+static unsigned int dispatch(struct js_engine *js, unsigned int node, unsigned int target, unsigned int name)
 {
 
-    unsigned int name = internstring(js, type);
-    unsigned int i;
-
-    for (i = 0; i < js->listenercount; i++)
-    {
-
-        if (js->listeners[i].node == node && js->listeners[i].type == name)
-            return 1;
-
-    }
-
-    return 0;
-
-}
-
-void js_dispatch(struct js_engine *js, unsigned int node, char *type)
-{
-
-    unsigned int name = internstring(js, type);
     unsigned int count = js->listenercount;
+    unsigned int handled = 0;
     unsigned int i;
 
     for (i = 0; i < count; i++)
     {
 
         struct js_listener *listener = &js->listeners[i];
+        struct call call;
+        struct js_value eventtype = value(JS_STRING, name);
+        struct js_value eventtarget = (target && target != JS_MEDIA) ? nodevalue(js, target) : value(JS_OBJECT, js->documentobject);
+        unsigned int event;
+        unsigned int argument;
 
-        if (listener->node == node && listener->type == name)
+        if (listener->node != node || listener->type != name)
+            continue;
+
+        event = newobject(js, KIND_PLAIN, 0, 0);
+        call.function = value(JS_OBJECT, listener->function);
+        call.self = (node && node != JS_MEDIA) ? nodevalue(js, node) : value(JS_OBJECT, js->documentobject);
+
+        if (event)
         {
 
-            struct call call;
-            unsigned int event = newobject(js, KIND_PLAIN, 0, 0);
-            struct js_value eventtype = value(JS_STRING, name);
-            unsigned int argument;
-
-            if (event)
-                putproperty(js, event, internstring(js, "type"), &eventtype);
-
-            call.function = value(JS_OBJECT, listener->function);
-            call.self = (node && node != JS_MEDIA) ? elementvalue(js, node) : value(JS_OBJECT, js->documentobject);
-            call.count = 1;
-            call.arguments[0] = (event) ? value(JS_OBJECT, event) : undefined();
-
-            for (argument = 1; argument < ARGUMENTS; argument++)
-                call.arguments[argument] = undefined();
-
-            js->steps = 0;
-            js->throwing = 0;
-
-            callfunction(js, &call);
-
-            if (js->throwing)
-                js->errors++;
-
-            js->throwing = 0;
+            putproperty(js, event, internstring(js, "type"), &eventtype);
+            putproperty(js, event, internstring(js, "target"), &eventtarget);
+            putproperty(js, event, internstring(js, "currentTarget"), &call.self);
+            addnative(js, event, "preventDefault", NATIVE_NOOP);
+            addnative(js, event, "stopPropagation", NATIVE_NOOP);
+            addnative(js, event, "stopImmediatePropagation", NATIVE_NOOP);
 
         }
 
+        call.count = 1;
+        call.arguments[0] = (event) ? value(JS_OBJECT, event) : undefined();
+
+        for (argument = 1; argument < ARGUMENTS; argument++)
+            call.arguments[argument] = undefined();
+
+        js->throwing = 0;
+
+        callfunction(js, &call);
+
+        /* a listener that throws is counted, as a browser would report it, and the rest still run */
+        if (js->throwing)
+            js->errors++;
+
+        js->throwing = 0;
+        handled++;
+
     }
 
+    return handled;
+
 }
+
+static unsigned int bubble(struct js_engine *js, unsigned int target, unsigned int name)
+{
+
+    unsigned int handled = 0;
+    unsigned int node;
+
+    for (node = target; node; node = js->document->nodes[node].parent)
+        handled += dispatch(js, node, target, name);
+
+    /* the document listens last */
+    return handled + dispatch(js, 0, target, name);
+
+}
+
+void js_dispatch(struct js_engine *js, unsigned int node, char *type)
+{
+
+    js->steps = 0;
+
+    dispatch(js, node, node, internstring(js, type));
+
+}
+
+unsigned int js_click(struct js_engine *js, unsigned int node)
+{
+
+    js->steps = 0;
+
+    return bubble(js, node, internstring(js, "click"));
+
+}
+
 void js_runtimers(struct js_engine *js)
 {
 
-    unsigned int count = js->timercount;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    /* timers set by timers run too; the table never shrinks here, so this ends */
+    for (i = 0; i < js->timercount; i++)
     {
 
         struct call call;
         unsigned int argument;
+
+        if (!js->timers[i])
+            continue;
 
         call.function = value(JS_OBJECT, js->timers[i]);
         call.self = undefined();

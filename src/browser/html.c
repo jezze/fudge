@@ -14,6 +14,7 @@ struct parser
     unsigned int offset;
     unsigned int stack[HTML_DEPTH];
     unsigned int depth;
+    unsigned int base;
 
 };
 
@@ -390,7 +391,7 @@ static unsigned int newelement(struct html_document *document, char *name)
     {
 
         document->nodes[node].name = addname(document, name, cstring_length(name));
-        document->nodes[node].tag = findtag(name);
+        document->nodes[node].tag = findtag(html_getstring(document, document->nodes[node].name));
 
     }
 
@@ -425,7 +426,7 @@ static unsigned int findopen(struct parser *parser, char *names, char *stops)
 
     unsigned int i;
 
-    for (i = parser->depth; i > 0; i--)
+    for (i = parser->depth; i > parser->base; i--)
     {
 
         char *name = stackname(parser, i - 1);
@@ -1133,6 +1134,24 @@ void html_removeattribute(struct html_document *document, unsigned int node, cha
 
 }
 
+static void detach(struct html_document *document, unsigned int node)
+{
+
+    if (document->nodes[node].parent || document->nodes[0].first == node)
+        removechild(document, node);
+
+    document->nodes[node].parent = 0;
+
+}
+
+static void clearchildren(struct html_document *document, unsigned int node)
+{
+
+    while (document->nodes[node].first)
+        detach(document, document->nodes[node].first);
+
+}
+
 unsigned int html_settext(struct html_document *document, unsigned int node, char *text)
 {
 
@@ -1147,13 +1166,22 @@ unsigned int html_settext(struct html_document *document, unsigned int node, cha
     if (!addbytes(document, text, length))
         return 0;
 
+    if (document->nodes[node].type == HTML_NODE_TEXT)
+    {
+
+        document->nodes[node].text = offset;
+        document->nodes[node].length = length;
+
+        return 1;
+
+    }
+
     child = (length) ? newnode(document, HTML_NODE_TEXT) : 0;
 
     if (length && !child)
         return 0;
 
-    document->nodes[node].first = 0;
-    document->nodes[node].last = 0;
+    clearchildren(document, node);
 
     if (child)
     {
@@ -1300,6 +1328,69 @@ void html_dropgenerated(struct html_document *document)
 
 }
 
+static void parseloop(struct parser *parser)
+{
+
+    while (parser->offset < parser->count)
+    {
+
+        char *text = parser->source + parser->offset;
+        unsigned int remaining = parser->count - parser->offset;
+        unsigned int length;
+
+        if (remaining > 3 && buffer_match(text, "<!--", 4))
+        {
+
+            parser->offset += 4;
+
+            skipto(parser, "-->");
+
+            continue;
+
+        }
+
+        if (remaining > 1 && text[0] == '<' && (text[1] == '!' || text[1] == '?'))
+        {
+
+            unsigned int start = parser->offset;
+
+            skipto(parser, ">");
+
+            if (matchlower(text, remaining, "<!doctype"))
+                parser->document->quirks = isquirky(text, parser->offset - start);
+
+            continue;
+
+        }
+
+        if (remaining > 1 && text[0] == '<' && cstring_isalpha(text[1]))
+        {
+
+            readstarttag(parser);
+
+            continue;
+
+        }
+
+        if (remaining > 2 && text[0] == '<' && text[1] == '/' && cstring_isalpha(text[2]))
+        {
+
+            readendtag(parser);
+
+            continue;
+
+        }
+
+        for (length = 1; length < remaining && text[length] != '<'; length++);
+
+        inserttext(parser, text, length);
+
+        parser->offset += length;
+
+    }
+
+}
+
 void html_parse(struct html_document *document, char *source, unsigned int count)
 {
 
@@ -1313,65 +1404,9 @@ void html_parse(struct html_document *document, char *source, unsigned int count
     parser.count = count;
     parser.offset = 0;
     parser.depth = 0;
+    parser.base = 0;
 
-    while (parser.offset < count)
-    {
-
-        char *text = source + parser.offset;
-        unsigned int remaining = count - parser.offset;
-        unsigned int length;
-
-        if (remaining > 3 && buffer_match(text, "<!--", 4))
-        {
-
-            parser.offset += 4;
-
-            skipto(&parser, "-->");
-
-            continue;
-
-        }
-
-        if (remaining > 1 && text[0] == '<' && (text[1] == '!' || text[1] == '?'))
-        {
-
-            unsigned int start = parser.offset;
-
-            skipto(&parser, ">");
-
-            if (matchlower(text, remaining, "<!doctype"))
-                document->quirks = isquirky(text, parser.offset - start);
-
-            continue;
-
-        }
-
-        if (remaining > 1 && text[0] == '<' && cstring_isalpha(text[1]))
-        {
-
-            readstarttag(&parser);
-
-            continue;
-
-        }
-
-        if (remaining > 2 && text[0] == '<' && text[1] == '/' && cstring_isalpha(text[2]))
-        {
-
-            readendtag(&parser);
-
-            continue;
-
-        }
-
-        for (length = 1; length < remaining && text[length] != '<'; length++);
-
-        inserttext(&parser, text, length);
-
-        parser.offset += length;
-
-    }
-
+    parseloop(&parser);
     ensurebody(&parser);
 
 }
@@ -1386,6 +1421,7 @@ void html_parsetext(struct html_document *document, char *source, unsigned int c
 
     parser.document = document;
     parser.depth = 0;
+    parser.base = 0;
 
     ensurebody(&parser);
 
@@ -1398,6 +1434,117 @@ void html_parsetext(struct html_document *document, char *source, unsigned int c
         addtext(&parser, pre, source, count, 0);
 
     }
+
+}
+
+unsigned int html_createelement(struct html_document *document, char *name)
+{
+
+    html_dropgenerated(document);
+
+    return newelement(document, name);
+
+}
+
+unsigned int html_createtext(struct html_document *document, char *text)
+{
+
+    unsigned int length = cstring_length(text);
+    unsigned int offset;
+    unsigned int node;
+
+    html_dropgenerated(document);
+
+    offset = document->textcount;
+
+    if (!addbytes(document, text, length))
+        return 0;
+
+    node = newnode(document, HTML_NODE_TEXT);
+
+    if (node)
+    {
+
+        document->nodes[node].text = offset;
+        document->nodes[node].length = length;
+
+    }
+
+    return node;
+
+}
+
+unsigned int html_insert(struct html_document *document, unsigned int parent, unsigned int child, unsigned int before)
+{
+
+    unsigned int node;
+
+    if (!parent || !child || child == document->html || (before && document->nodes[before].parent != parent))
+        return 0;
+
+    for (node = parent; node; node = document->nodes[node].parent)
+    {
+
+        if (node == child)
+            return 0;
+
+    }
+
+    html_dropgenerated(document);
+    detach(document, child);
+
+    if (!before)
+    {
+
+        appendchild(document, parent, child);
+
+        return 1;
+
+    }
+
+    document->nodes[child].parent = parent;
+    document->nodes[child].prev = document->nodes[before].prev;
+    document->nodes[child].next = before;
+
+    if (document->nodes[before].prev)
+        document->nodes[document->nodes[before].prev].next = child;
+    else
+        document->nodes[parent].first = child;
+
+    document->nodes[before].prev = child;
+
+    return 1;
+
+}
+
+void html_remove(struct html_document *document, unsigned int node)
+{
+
+    if (!node || node == document->html || node == document->body || node == document->head)
+        return;
+
+    html_dropgenerated(document);
+    detach(document, node);
+
+}
+
+void html_parsefragment(struct html_document *document, unsigned int parent, char *source, unsigned int count)
+{
+
+    struct parser parser;
+
+    html_dropgenerated(document);
+    clearchildren(document, parent);
+
+    parser.document = document;
+    parser.source = source;
+    parser.count = count;
+    parser.offset = 0;
+    parser.stack[0] = parent;
+    parser.depth = 1;
+    parser.base = 1;
+
+    parseloop(&parser);
 
 }
 

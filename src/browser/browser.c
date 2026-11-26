@@ -1498,21 +1498,16 @@ static unsigned int istag(unsigned int node, char *name)
 static unsigned int clicknode(unsigned int node)
 {
 
-    unsigned int handled = 0;
+    unsigned int handled = js_click(js, node);
+
+    /* timers set by the listeners run now, as they do after the scripts on load */
+    if (handled)
+        js_runtimers(js);
 
     while (node)
     {
 
         unsigned int parent = document->nodes[node].parent;
-
-        if (js_haslistener(js, node, "click"))
-        {
-
-            js_dispatch(js, node, "click");
-
-            handled = 1;
-
-        }
 
         if (istag(node, "summary") && istag(parent, "details"))
         {

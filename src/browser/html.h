@@ -99,5 +99,10 @@ unsigned int html_isgenerated(struct html_document *document, unsigned int node)
 unsigned int html_addgenerated(struct html_document *document, unsigned int parent, unsigned int tag, char *text, unsigned int length);
 void html_linkgenerated(struct html_document *document);
 void html_dropgenerated(struct html_document *document);
+unsigned int html_createelement(struct html_document *document, char *name);
+unsigned int html_createtext(struct html_document *document, char *text);
+unsigned int html_insert(struct html_document *document, unsigned int parent, unsigned int child, unsigned int before);
+void html_remove(struct html_document *document, unsigned int node);
+void html_parsefragment(struct html_document *document, unsigned int parent, char *source, unsigned int count);
 void html_parse(struct html_document *document, char *source, unsigned int count);
 void html_parsetext(struct html_document *document, char *source, unsigned int count);

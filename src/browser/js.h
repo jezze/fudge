@@ -4,7 +4,7 @@
 #define JS_STRINGSIZE                   0x20000
 #define JS_INTERNS                      4096
 #define JS_LISTENERS                    64
-#define JS_NATIVES                      40
+#define JS_NATIVES                      128
 #define JS_TIMERS                       32
 #define JS_MEDIA                        HTML_NODES
 #define JS_UNDEFINED                    0
@@ -86,6 +86,7 @@ struct js_engine
     unsigned int global;
     unsigned int documentobject;
     unsigned int storage;
+    unsigned int date;
     unsigned int dark;
     unsigned int steps;
     unsigned int depth;
@@ -98,6 +99,6 @@ struct js_engine
 
 void js_reset(struct js_engine *js, struct html_document *document, unsigned int dark);
 void js_run(struct js_engine *js, char *source, unsigned int count);
-unsigned int js_haslistener(struct js_engine *js, unsigned int node, char *type);
 void js_dispatch(struct js_engine *js, unsigned int node, char *type);
+unsigned int js_click(struct js_engine *js, unsigned int node);
 void js_runtimers(struct js_engine *js);

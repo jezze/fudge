@@ -6738,7 +6738,6 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
     struct context context;
     unsigned int full = sheet->full;
     unsigned int poolmark = sheet->poolcount;
-    unsigned int count;
     unsigned int node;
 
     html_dropgenerated(document);
@@ -6754,9 +6753,9 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
     context.height = height;
     context.scheme = scheme;
     context.content = 0;
-    count = document->nodecount;
 
-    for (node = 1; node < count; node++)
+    /* tree order, as scripts can move a node under one created after it */
+    for (node = html_next(document, 0, 0); node; node = html_next(document, node, 0))
     {
 
         unsigned int parent = parentelement(document, node);
