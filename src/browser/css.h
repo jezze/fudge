@@ -13,6 +13,8 @@
 #define CSS_TRACK_FR                    3
 #define CSS_TRACK_MINCONTENT            4
 #define CSS_TRACK_MAXCONTENT            5
+#define CSS_MONOSPACE_FACE              1
+#define CSS_MONOSPACE_GENERIC           2
 #define CSS_REPEAT_NONE                 0
 #define CSS_REPEAT_FILL                 1
 #define CSS_REPEAT_FIT                  2

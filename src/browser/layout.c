@@ -1265,13 +1265,21 @@ static unsigned int isreplaced(struct layout *layout, unsigned int node)
 
 }
 
-static int placesized(struct layout *layout, unsigned int node, int x, int top, int outer, int width)
+static int placesized(struct layout *layout, unsigned int node, int x, int top, int ml, int mr, int width)
 {
 
+    int height;
+
+    /* the margins were resolved against the containing block, the outer width would give percentages the wrong base */
     layout->forcenode = node;
     layout->forcewidth = width;
+    layout->marginnode = node;
+    layout->forceleft = ml;
+    layout->forceright = mr;
+    height = layoutblock(layout, node, x, top, ml + width + mr);
+    layout->marginnode = 0;
 
-    return layoutblock(layout, node, x, top, outer);
+    return height;
 
 }
 
@@ -1399,7 +1407,7 @@ static void placeatomic(struct layout *layout, struct flow *flow, unsigned int n
     layout->atomicdepth++;
     layout->baselinedepth = NONE;
 
-    height = placesized(layout, node, flow->x, flow->y + mt, ml + width + mr, width);
+    height = placesized(layout, node, flow->x, flow->y + mt, ml, mr, width);
 
     layout->atomicdepth--;
 
@@ -1522,7 +1530,7 @@ static void placefloat(struct layout *layout, struct flow *flow, unsigned int no
 
     x = (style->floating == CSS_FLOAT_LEFT) ? band.left : band.right - outer;
 
-    height = placesized(layout, node, x, y + mt, outer, width);
+    height = placesized(layout, node, x, y + mt, ml, mr, width);
 
     if (layout->floatcount < LAYOUT_FLOATS)
     {
@@ -2400,7 +2408,7 @@ static int placeflexitem(struct layout *layout, struct layout_flexitem *item, in
 {
 
     item->fragmentstart = layout->fragmentcount;
-    item->height = placesized(layout, item->node, x, y + item->mt, item->ml + item->size + item->mr, item->size);
+    item->height = placesized(layout, item->node, x, y + item->mt, item->ml, item->mr, item->size);
     item->fragmentend = layout->fragmentcount;
 
     return item->ml + layout->boxes[item->node].w + item->mr;
@@ -3812,7 +3820,7 @@ static void placeabsolute(struct layout *layout, unsigned int container, struct 
 
     }
 
-    height = placesized(layout, absolute->node, x, y, ml + width + mr, width);
+    height = placesized(layout, absolute->node, x, y, ml, mr, width);
     layout->heightnode = heightnode;
     layout->forceheight = forceheight;
 
@@ -4005,6 +4013,14 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
         constrained = 1;
         sized = 1;
         layout->forcenode = 0;
+
+    }
+
+    if (layout->marginnode == node)
+    {
+
+        ml = layout->forceleft;
+        mr = layout->forceright;
 
     }
 

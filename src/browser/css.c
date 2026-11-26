@@ -438,6 +438,29 @@ static unsigned int matchword(char *text, unsigned int length, char *word)
 
 }
 
+static unsigned int getmonospace(char *value, unsigned int length)
+{
+
+    unsigned int start = length;
+    unsigned int end = length;
+
+    while (start && value[start - 1] != ',')
+        start--;
+
+    while (start < end && isspace(value[start]))
+        start++;
+
+    while (end > start && isspace(value[end - 1]))
+        end--;
+
+    if (!matchword(value + start, end - start, "monospace"))
+        return 0;
+
+    /* fonts are never downloaded, so a list falling back to monospace gets the mono face but only monospace alone gets its smaller size */
+    return (start) ? CSS_MONOSPACE_FACE : CSS_MONOSPACE_GENERIC;
+
+}
+
 static unsigned int skipcomment(char *text, unsigned int offset, unsigned int end)
 {
 
@@ -2544,8 +2567,6 @@ static void setfont(struct context *context, char *value)
         if (!setfontsize(context, text, slash))
             return;
 
-        context->style->monospace = matchword(value + spans[count - 1].start, spans[count - 1].length, "monospace") && buffer_findbyte(value, cstring_length(value), ',') == cstring_length(value);
-
         if (slash == length && next < count && value[spans[next].start] == '/')
         {
 
@@ -2557,9 +2578,22 @@ static void setfont(struct context *context, char *value)
         }
 
         if (slash + 1 < length)
+        {
+
             setlineheight(context, text + slash + 1, length - slash - 1);
+
+        }
+
         else if (slash < length && next < count)
+        {
+
             setlineheight(context, value + spans[next].start, spans[next].length);
+
+            next++;
+
+        }
+
+        context->style->monospace = (next < count) ? getmonospace(value + spans[next].start, spans[count - 1].start + spans[count - 1].length - spans[next].start) : 0;
 
     }
 
@@ -5035,7 +5069,7 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_FONTFAMILY:
-        style->monospace = matchword(value, length, "monospace");
+        style->monospace = getmonospace(value, length);
 
         break;
 
@@ -6201,8 +6235,8 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
         applyrules(context, sheet, matches, count, CSS_ORIGIN_AUTHOR, 1, phase);
         applydeclarations(context, sheet, declarationmark, sheet->declarationcount - declarationmark, 1, phase);
 
-        if (phase == PHASE_FONT && context->style->keyword && context->style->monospace != context->parent->monospace)
-            context->style->fontsize = (context->style->monospace) ? context->style->fontsize * 13 / 16 : context->style->fontsize * 16 / 13;
+        if (phase == PHASE_FONT && context->style->keyword && (context->style->monospace == CSS_MONOSPACE_GENERIC) != (context->parent->monospace == CSS_MONOSPACE_GENERIC))
+            context->style->fontsize = (context->style->monospace == CSS_MONOSPACE_GENERIC) ? context->style->fontsize * 13 / 16 : context->style->fontsize * 16 / 13;
 
     }
 

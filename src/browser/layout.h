@@ -144,6 +144,7 @@ struct layout
     unsigned int minimum;
     unsigned int forcenode;
     unsigned int heightnode;
+    unsigned int marginnode;
     unsigned int wrapped;
     unsigned int measured;
     int wrapedge;
@@ -153,6 +154,8 @@ struct layout
     unsigned int baselinedepth;
     int baseline;
     int forcewidth;
+    int forceleft;
+    int forceright;
     unsigned int flexcount;
     struct layout_flexitem flexitems[LAYOUT_FLEXITEMS];
     struct layout_float floats[LAYOUT_FLOATS];
