@@ -5,6 +5,9 @@
 #define LAYOUT_FLOATS                   64
 #define LAYOUT_ABSOLUTES                256
 #define LAYOUT_LAYERS                   1024
+#define LAYOUT_GRIDCOLUMNS              32
+#define LAYOUT_GRIDROWS                 128
+#define LAYOUT_GRIDDEPTH                16
 #define LAYOUT_FRAGMENT_TEXT            0
 #define LAYOUT_FRAGMENT_GENERATED       1
 #define LAYOUT_FRAGMENT_MARKER          2
@@ -118,6 +121,19 @@ struct layout_float
 
 };
 
+struct layout_grid
+{
+
+    int sizes[LAYOUT_GRIDCOLUMNS];
+    int offsets[LAYOUT_GRIDCOLUMNS + 1];
+    int base[LAYOUT_GRIDCOLUMNS];
+    int limit[LAYOUT_GRIDCOLUMNS];
+    int fraction[LAYOUT_GRIDCOLUMNS];
+    int heights[LAYOUT_GRIDROWS];
+    int tops[LAYOUT_GRIDROWS + 1];
+
+};
+
 struct layout
 {
 
@@ -162,6 +178,8 @@ struct layout
     unsigned int floatcount;
     unsigned int floatbase;
     struct layout_absolute absolutes[LAYOUT_ABSOLUTES];
+    struct layout_grid gridstates[LAYOUT_GRIDDEPTH];
+    unsigned int griddepth;
     unsigned int absolutecount;
     unsigned short layer[HTML_NODES];
     unsigned short layerroot[HTML_NODES];

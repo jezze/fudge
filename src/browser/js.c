@@ -266,8 +266,6 @@
 #define LOCATIONFIELDS                  8
 #define COLLECTIONMETHODS               11
 #define SYMBOLS                         4
-#define REGEXNODES                      128
-#define CAPTURES                        10
 #define REPEATMAX                       0x7FFF
 #define REGEXDEPTH                      2048
 #define RE_CHAR                         1
@@ -340,47 +338,6 @@ struct method
 
     char *name;
     unsigned int native;
-
-};
-
-struct renode
-{
-
-    unsigned int type;
-    unsigned int value;
-    unsigned int negated;
-    unsigned int min;
-    unsigned int max;
-    unsigned int lazy;
-    unsigned int child;
-    unsigned int alternative;
-    unsigned int next;
-
-};
-
-struct capture
-{
-
-    int start;
-    int end;
-
-};
-
-struct regex
-{
-
-    char *pattern;
-    char *text;
-    int length;
-    unsigned int offset;
-    unsigned int ignorecase;
-    unsigned int failed;
-    unsigned int groups;
-    unsigned int steps;
-    unsigned int depth;
-    struct renode nodes[REGEXNODES];
-    unsigned int nodecount;
-    struct capture captures[CAPTURES];
 
 };
 
@@ -4088,10 +4045,9 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "textContent") || cstring_match(text, "innerText"))
         {
 
-            char content[TEXTSIZE];
-            unsigned int length = collecttext(js, object->data, content, TEXTSIZE);
+            unsigned int length = collecttext(js, object->data, js->text, TEXTSIZE);
 
-            return value(JS_STRING, addstring(js, content, length));
+            return value(JS_STRING, addstring(js, js->text, length));
 
         }
 
@@ -5121,12 +5077,12 @@ static struct js_value readjson(struct js_engine *js, struct reader *reader, uns
 
 }
 
-static unsigned int renew(struct regex *re, unsigned int type)
+static unsigned int renew(struct js_regex *re, unsigned int type)
 {
 
-    struct renode *node;
+    struct js_renode *node;
 
-    if (re->nodecount >= REGEXNODES)
+    if (re->nodecount >= JS_REGEXNODES)
     {
 
         re->failed = 1;
@@ -5137,7 +5093,7 @@ static unsigned int renew(struct regex *re, unsigned int type)
 
     node = &re->nodes[re->nodecount];
 
-    buffer_clear(node, sizeof (struct renode));
+    buffer_clear(node, sizeof (struct js_renode));
 
     node->type = type;
     node->min = 1;
@@ -5147,12 +5103,12 @@ static unsigned int renew(struct regex *re, unsigned int type)
 
 }
 
-static unsigned int recompilegroup(struct regex *re, unsigned int capture);
+static unsigned int recompilegroup(struct js_regex *re, unsigned int capture);
 
-static void requantifier(struct regex *re, unsigned int index)
+static void requantifier(struct js_regex *re, unsigned int index)
 {
 
-    struct renode *node = &re->nodes[index];
+    struct js_renode *node = &re->nodes[index];
     char c = re->pattern[re->offset];
 
     if (c == '*' || c == '+' || c == '?')
@@ -5209,10 +5165,10 @@ static void requantifier(struct regex *re, unsigned int index)
 
 }
 
-static unsigned int reescape(struct regex *re, unsigned int index, char c)
+static unsigned int reescape(struct js_regex *re, unsigned int index, char c)
 {
 
-    struct renode *node = &re->nodes[index];
+    struct js_renode *node = &re->nodes[index];
 
     switch (c)
     {
@@ -5259,7 +5215,7 @@ static unsigned int reescape(struct regex *re, unsigned int index, char c)
 
 }
 
-static unsigned int recompilesequence(struct regex *re)
+static unsigned int recompilesequence(struct js_regex *re)
 {
 
     unsigned int first = 0;
@@ -5293,7 +5249,7 @@ static unsigned int recompilesequence(struct regex *re)
 
             }
 
-            else if (re->groups < CAPTURES)
+            else if (re->groups < JS_CAPTURES)
             {
 
                 capture = re->groups++;
@@ -5394,7 +5350,7 @@ static unsigned int recompilesequence(struct regex *re)
 
 }
 
-static unsigned int recompilegroup(struct regex *re, unsigned int capture)
+static unsigned int recompilegroup(struct js_regex *re, unsigned int capture)
 {
 
     unsigned int group = renew(re, RE_GROUP);
@@ -5447,7 +5403,7 @@ static unsigned int iswordchar(char c)
 
 }
 
-static unsigned int reclass(struct regex *re, struct renode *node, char c)
+static unsigned int reclass(struct js_regex *re, struct js_renode *node, char c)
 {
 
     char *pattern = re->pattern;
@@ -5504,7 +5460,7 @@ static unsigned int reclass(struct regex *re, struct renode *node, char c)
 
 }
 
-static unsigned int rechar(struct regex *re, struct renode *node, char c)
+static unsigned int rechar(struct js_regex *re, struct js_renode *node, char c)
 {
 
     switch (node->type)
@@ -5534,24 +5490,24 @@ static unsigned int rechar(struct regex *re, struct renode *node, char c)
 
 }
 
-static int rematch(struct regex *re, unsigned int index, int position, struct frame *frame);
+static int rematch(struct js_regex *re, unsigned int index, int position, struct frame *frame);
 
-static int rerepeat(struct regex *re, unsigned int index, int position, unsigned int count, struct frame *frame);
+static int rerepeat(struct js_regex *re, unsigned int index, int position, unsigned int count, struct frame *frame);
 
-static int reone(struct regex *re, unsigned int index, int position, unsigned int count, struct frame *frame)
+static int reone(struct js_regex *re, unsigned int index, int position, unsigned int count, struct frame *frame)
 {
 
-    struct renode *node = &re->nodes[index];
+    struct js_renode *node = &re->nodes[index];
     unsigned int alternative;
 
     for (alternative = node->child; alternative; alternative = re->nodes[alternative].alternative)
     {
 
-        struct capture saved[CAPTURES];
+        struct js_capture saved[JS_CAPTURES];
         struct frame inner;
         int result;
 
-        buffer_copy(saved, re->captures, sizeof (struct capture) * CAPTURES);
+        buffer_copy(saved, re->captures, sizeof (struct js_capture) * JS_CAPTURES);
 
         inner.node = index;
         inner.count = count;
@@ -5562,7 +5518,7 @@ static int reone(struct regex *re, unsigned int index, int position, unsigned in
         if (result >= 0)
             return result;
 
-        buffer_copy(re->captures, saved, sizeof (struct capture) * CAPTURES);
+        buffer_copy(re->captures, saved, sizeof (struct js_capture) * JS_CAPTURES);
 
     }
 
@@ -5570,10 +5526,10 @@ static int reone(struct regex *re, unsigned int index, int position, unsigned in
 
 }
 
-static int rerepeat(struct regex *re, unsigned int index, int position, unsigned int count, struct frame *frame)
+static int rerepeat(struct js_regex *re, unsigned int index, int position, unsigned int count, struct frame *frame)
 {
 
-    struct renode *node = &re->nodes[index];
+    struct js_renode *node = &re->nodes[index];
     int result = -1;
 
     /* every character matched is a level of recursion, so long subjects give up instead of overflowing the stack */
@@ -5640,15 +5596,15 @@ static int rerepeat(struct regex *re, unsigned int index, int position, unsigned
 
 }
 
-static int rematch(struct regex *re, unsigned int index, int position, struct frame *frame)
+static int rematch(struct js_regex *re, unsigned int index, int position, struct frame *frame)
 {
 
-    struct renode *node;
+    struct js_renode *node;
 
     if (!index)
     {
 
-        struct renode *group;
+        struct js_renode *group;
 
         if (!frame)
             return position;
@@ -5699,7 +5655,7 @@ static int rematch(struct regex *re, unsigned int index, int position, struct fr
 
 }
 
-static unsigned int recompile(struct regex *re, char *pattern, char *flags)
+static unsigned int recompile(struct js_regex *re, char *pattern, char *flags)
 {
 
     unsigned int i;
@@ -5728,7 +5684,7 @@ static unsigned int recompile(struct regex *re, char *pattern, char *flags)
 
 }
 
-static int researchfrom(struct regex *re, char *text, int start)
+static int researchfrom(struct js_regex *re, char *text, int start)
 {
 
     int position;
@@ -5743,7 +5699,7 @@ static int researchfrom(struct regex *re, char *text, int start)
 
         unsigned int i;
 
-        for (i = 0; i < CAPTURES; i++)
+        for (i = 0; i < JS_CAPTURES; i++)
         {
 
             re->captures[i].start = -1;
@@ -5763,7 +5719,7 @@ static int researchfrom(struct regex *re, char *text, int start)
 
 }
 
-static struct js_value matchresult(struct js_engine *js, struct regex *re)
+static struct js_value matchresult(struct js_engine *js, struct js_regex *re)
 {
 
     struct js_value result = newarray(js);
@@ -5786,7 +5742,7 @@ static struct js_value matchresult(struct js_engine *js, struct regex *re)
 
 }
 
-static unsigned int expandreplacement(struct js_engine *js, struct regex *re, struct js_value *replacement, unsigned int result)
+static unsigned int expandreplacement(struct js_engine *js, struct js_regex *re, struct js_value *replacement, unsigned int result)
 {
 
     char *text;
@@ -5843,32 +5799,31 @@ static unsigned int expandreplacement(struct js_engine *js, struct regex *re, st
 
 }
 
-static struct js_value regexreplace(struct js_engine *js, struct js_value *subject, struct js_value *regex, struct js_value *replacement)
+static struct js_value regexreplacein(struct js_engine *js, struct js_regex *re, struct js_value *subject, struct js_value *regex, struct js_value *replacement)
 {
 
-    struct regex re;
     unsigned int global = isglobal(js, regex);
     unsigned int result = internstring(js, "");
     unsigned int source = tostring(js, subject);
     int position = 0;
 
-    if (!recompile(&re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
+    if (!recompile(re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
         return value(JS_STRING, source);
 
     while (position <= (int)cstring_length(getstring(js, source)) && !js->throwing)
     {
 
-        int found = researchfrom(&re, getstring(js, source), position);
+        int found = researchfrom(re, getstring(js, source), position);
         int end;
 
         if (found < 0)
             break;
 
-        end = re.captures[0].end;
+        end = re->captures[0].end;
         result = concat(js, result, addstring(js, getstring(js, source) + position, found - position));
-        re.text = getstring(js, source);
-        result = expandreplacement(js, &re, replacement, result);
-        re.text = getstring(js, source);
+        re->text = getstring(js, source);
+        result = expandreplacement(js, re, replacement, result);
+        re->text = getstring(js, source);
 
         if (end == found)
         {
@@ -5894,10 +5849,32 @@ static struct js_value regexreplace(struct js_engine *js, struct js_value *subje
 
 }
 
-static struct js_value regexmatch(struct js_engine *js, struct js_value *subject, struct js_value *regex, unsigned int native)
+static struct js_value regexreplace(struct js_engine *js, struct js_value *subject, struct js_value *regex, struct js_value *replacement)
 {
 
-    struct regex re;
+    struct js_value result;
+
+    /* a replacement callback can run another expression, each running one keeps its compiled form here */
+    if (js->regexcount >= JS_REGEXNEST)
+    {
+
+        throwerror(js, "Regular expressions nested too deep");
+
+        return undefined();
+
+    }
+
+    js->regexcount++;
+    result = regexreplacein(js, &js->regexes[js->regexcount - 1], subject, regex, replacement);
+    js->regexcount--;
+
+    return result;
+
+}
+
+static struct js_value regexmatchin(struct js_engine *js, struct js_regex *re, struct js_value *subject, struct js_value *regex, unsigned int native)
+{
+
     unsigned int source = tostring(js, subject);
     struct js_value lastindex = getproperty(js, regex, internstring(js, "lastIndex"));
     unsigned int global = isglobal(js, regex);
@@ -5905,7 +5882,7 @@ static struct js_value regexmatch(struct js_engine *js, struct js_value *subject
     struct js_value all = (global && native == NATIVE_MATCH) ? newarray(js) : value(JS_NULL, 0);
     int found;
 
-    if (!recompile(&re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
+    if (!recompile(re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
     {
 
         throwerror(js, "Unsupported regular expression");
@@ -5914,7 +5891,7 @@ static struct js_value regexmatch(struct js_engine *js, struct js_value *subject
 
     }
 
-    while (position <= (int)cstring_length(getstring(js, source)) && (found = researchfrom(&re, getstring(js, source), position)) >= 0)
+    while (position <= (int)cstring_length(getstring(js, source)) && (found = researchfrom(re, getstring(js, source), position)) >= 0)
     {
 
         struct js_value item;
@@ -5931,21 +5908,21 @@ static struct js_value regexmatch(struct js_engine *js, struct js_value *subject
             if (global)
             {
 
-                struct js_value next = value(JS_NUMBER, re.captures[0].end + (re.captures[0].end == found));
+                struct js_value next = value(JS_NUMBER, re->captures[0].end + (re->captures[0].end == found));
 
                 setproperty(js, regex, internstring(js, "lastIndex"), &next);
 
             }
 
-            return matchresult(js, &re);
+            return matchresult(js, re);
 
         }
 
-        item = value(JS_STRING, addstring(js, getstring(js, source) + found, re.captures[0].end - found));
+        item = value(JS_STRING, addstring(js, getstring(js, source) + found, re->captures[0].end - found));
 
         pusharray(js, &all, &item);
 
-        position = (re.captures[0].end > found) ? re.captures[0].end : found + 1;
+        position = (re->captures[0].end > found) ? re->captures[0].end : found + 1;
 
     }
 
@@ -5965,6 +5942,29 @@ static struct js_value regexmatch(struct js_engine *js, struct js_value *subject
         return value(JS_NUMBER, -1);
 
     return (lengthof(js, &all)) ? all : value(JS_NULL, 0);
+
+}
+
+static struct js_value regexmatch(struct js_engine *js, struct js_value *subject, struct js_value *regex, unsigned int native)
+{
+
+    struct js_value result;
+
+    /* a replacement callback can run another expression, each running one keeps its compiled form here */
+    if (js->regexcount >= JS_REGEXNEST)
+    {
+
+        throwerror(js, "Regular expressions nested too deep");
+
+        return undefined();
+
+    }
+
+    js->regexcount++;
+    result = regexmatchin(js, &js->regexes[js->regexcount - 1], subject, regex, native);
+    js->regexcount--;
+
+    return result;
 
 }
 
@@ -6007,28 +6007,27 @@ static struct js_value split(struct js_engine *js, struct js_value *self, struct
 
 }
 
-static struct js_value regexsplit(struct js_engine *js, struct js_value *subject, struct js_value *regex)
+static struct js_value regexsplitin(struct js_engine *js, struct js_regex *re, struct js_value *subject, struct js_value *regex)
 {
 
-    struct regex re;
     struct js_value result = newarray(js);
     unsigned int source = tostring(js, subject);
     int position = 0;
     int from = 0;
     struct js_value piece;
 
-    if (!recompile(&re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
+    if (!recompile(re, getstring(js, js->objects[regex->number].data), regexflags(js, regex)))
         return result;
 
     while (position < (int)cstring_length(getstring(js, source)))
     {
 
-        int found = researchfrom(&re, getstring(js, source), position);
+        int found = researchfrom(re, getstring(js, source), position);
 
         if (found < 0)
             break;
 
-        if (re.captures[0].end == found)
+        if (re->captures[0].end == found)
         {
 
             position = found + 1;
@@ -6042,14 +6041,37 @@ static struct js_value regexsplit(struct js_engine *js, struct js_value *subject
 
         pusharray(js, &result, &piece);
 
-        from = re.captures[0].end;
-        position = (re.captures[0].end > found) ? re.captures[0].end : found + 1;
+        from = re->captures[0].end;
+        position = (re->captures[0].end > found) ? re->captures[0].end : found + 1;
 
     }
 
     piece = value(JS_STRING, addstring(js, getstring(js, source) + from, cstring_length(getstring(js, source) + from)));
 
     pusharray(js, &result, &piece);
+
+    return result;
+
+}
+
+static struct js_value regexsplit(struct js_engine *js, struct js_value *subject, struct js_value *regex)
+{
+
+    struct js_value result;
+
+    /* a replacement callback can run another expression, each running one keeps its compiled form here */
+    if (js->regexcount >= JS_REGEXNEST)
+    {
+
+        throwerror(js, "Regular expressions nested too deep");
+
+        return undefined();
+
+    }
+
+    js->regexcount++;
+    result = regexsplitin(js, &js->regexes[js->regexcount - 1], subject, regex);
+    js->regexcount--;
 
     return result;
 
@@ -6492,13 +6514,12 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
     case NATIVE_STRINGIFY:
         {
 
-            char buffer[TEXTSIZE * 4];
             struct output output;
 
             output.js = js;
-            output.data = buffer;
+            output.data = js->text;
             output.count = 0;
-            output.size = TEXTSIZE * 4;
+            output.size = JS_TEXTSIZE;
             output.full = 0;
 
             if (first->type == JS_UNDEFINED)
@@ -6515,7 +6536,7 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
             }
 
-            return value(JS_STRING, addstring(js, buffer, output.count));
+            return value(JS_STRING, addstring(js, js->text, output.count));
 
         }
 
@@ -9279,6 +9300,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     js->steps = 0;
     js->depth = 0;
     js->constructing = 0;
+    js->regexcount = 0;
     js->throwing = 0;
     js->changed = 0;
     js->errors = 0;

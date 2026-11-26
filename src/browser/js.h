@@ -7,6 +7,10 @@
 #define JS_NATIVES                      160
 #define JS_TIMERS                       32
 #define JS_SCRATCH                      8192
+#define JS_TEXTSIZE                     4096
+#define JS_REGEXNODES                   128
+#define JS_CAPTURES                     10
+#define JS_REGEXNEST                    4
 #define JS_MEDIA                        HTML_NODES
 #define JS_UNDEFINED                    0
 #define JS_NULL                         1
@@ -64,6 +68,47 @@ struct js_listener
 
 };
 
+struct js_renode
+{
+
+    unsigned int type;
+    unsigned int value;
+    unsigned int negated;
+    unsigned int min;
+    unsigned int max;
+    unsigned int lazy;
+    unsigned int child;
+    unsigned int alternative;
+    unsigned int next;
+
+};
+
+struct js_capture
+{
+
+    int start;
+    int end;
+
+};
+
+struct js_regex
+{
+
+    char *pattern;
+    char *text;
+    int length;
+    unsigned int offset;
+    unsigned int ignorecase;
+    unsigned int failed;
+    unsigned int groups;
+    unsigned int steps;
+    unsigned int depth;
+    struct js_renode nodes[JS_REGEXNODES];
+    unsigned int nodecount;
+    struct js_capture captures[JS_CAPTURES];
+
+};
+
 struct js_engine
 {
 
@@ -79,6 +124,9 @@ struct js_engine
     unsigned int timers[JS_TIMERS];
     struct js_value scratch[JS_SCRATCH];
     unsigned int scratchbusy;
+    struct js_regex regexes[JS_REGEXNEST];
+    unsigned int regexcount;
+    char text[JS_TEXTSIZE];
     unsigned int timercount;
     unsigned int nodecount;
     unsigned int objectcount;
