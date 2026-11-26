@@ -2,9 +2,25 @@
 #define CSS_SELECTORS                   16384
 #define CSS_DECLARATIONS                32768
 #define CSS_RULES                       16384
-#define CSS_POOLSIZE                    0x80000
+#define CSS_POOLSIZE                    0x200000
 #define CSS_CUSTOMS                     16384
 #define CSS_GRADIENTS                   64
+#define CSS_GRIDS                       128
+#define CSS_TRACKS                      12
+#define CSS_TRACK_AUTO                  0
+#define CSS_TRACK_PX                    1
+#define CSS_TRACK_PERCENT               2
+#define CSS_TRACK_FR                    3
+#define CSS_TRACK_MINCONTENT            4
+#define CSS_TRACK_MAXCONTENT            5
+#define CSS_REPEAT_NONE                 0
+#define CSS_REPEAT_FILL                 1
+#define CSS_REPEAT_FIT                  2
+#define CSS_GRIDROWSTART                0
+#define CSS_GRIDCOLUMNSTART             1
+#define CSS_GRIDROWEND                  2
+#define CSS_GRIDCOLUMNEND               3
+#define CSS_GRIDLINES                   4
 #define CSS_STOPS                       6
 #define CSS_ORIGIN_AGENT                0
 #define CSS_ORIGIN_AUTHOR               1
@@ -30,7 +46,6 @@
 #define CSS_DISPLAY_CELL                8
 #define CSS_DISPLAY_FLEX                9
 #define CSS_DISPLAY_GRID                10
-#define CSS_COLUMNS_AUTOFILL            0xFF
 #define CSS_ALIGN_LEFT                  0
 #define CSS_ALIGN_CENTER                1
 #define CSS_ALIGN_RIGHT                 2
@@ -75,6 +90,8 @@
 #define CSS_FLOAT_RIGHT                 2
 #define CSS_CLEAR_LEFT                  1
 #define CSS_CLEAR_RIGHT                 2
+#define CSS_BREAK_WORDBREAK             1
+#define CSS_BREAK_OVERFLOWWRAP          2
 #define CSS_VALIGN_BASELINE             0
 #define CSS_VALIGN_TOP                  1
 #define CSS_VALIGN_MIDDLE               2
@@ -89,6 +106,14 @@ struct css_length
     int value;
     unsigned short unit;
     short offset;
+
+};
+
+struct css_gridline
+{
+
+    short value;
+    unsigned short span;
 
 };
 
@@ -107,7 +132,6 @@ struct css_style
     unsigned char position;
     unsigned char column;
     unsigned char transform;
-    unsigned char columns;
     unsigned char flexbox;
     unsigned char wrap;
     unsigned char justify;
@@ -125,13 +149,16 @@ struct css_style
     unsigned char opacity;
     unsigned char textclip;
     unsigned char valign;
+    unsigned char breaking;
     unsigned char borderstyle[CSS_SIDES];
     unsigned char borderwidth[CSS_SIDES];
     unsigned short fontsize;
     unsigned short lineheight;
     unsigned short lineheightfactor;
     unsigned short gradient;
-    unsigned short trackmin;
+    unsigned short grid;
+    struct css_gridline gridlines[CSS_GRIDLINES];
+    unsigned int gridarea;
     unsigned short rowgap;
     unsigned short columngap;
     unsigned short grow;
@@ -168,6 +195,32 @@ struct css_stop
 
     unsigned int color;
     int position;
+
+};
+
+struct css_track
+{
+
+    unsigned int minkind;
+    unsigned int maxkind;
+    int minvalue;
+    int maxvalue;
+
+};
+
+/* the tracks and areas of one grid container, the style points here so it stays small */
+struct css_grid
+{
+
+    struct css_track columns[CSS_TRACKS];
+    struct css_track rows[CSS_TRACKS];
+    struct css_track autorow;
+    unsigned int columncount;
+    unsigned int rowcount;
+    unsigned int repeat;
+    unsigned int areas[CSS_TRACKS][CSS_TRACKS];
+    unsigned int areacolumns;
+    unsigned int arearows;
 
 };
 
@@ -250,6 +303,8 @@ struct css_sheet
     struct css_custom customs[CSS_CUSTOMS];
     struct css_gradient gradients[CSS_GRADIENTS];
     unsigned int gradientcount;
+    struct css_grid grids[CSS_GRIDS];
+    unsigned int gridcount;
     unsigned short customstart[HTML_NODES];
     unsigned short customcount[HTML_NODES];
     char pool[CSS_POOLSIZE];

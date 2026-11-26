@@ -1679,6 +1679,7 @@ static void onmain(struct message *message)
             layout->document = document;
             layout->styles = styles;
             layout->gradients = sheet->gradients;
+            layout->grids = sheet->grids;
             layout->fonts = fonts;
             layout->pictures = pictures;
 

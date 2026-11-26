@@ -23,6 +23,13 @@ static unsigned int mapcodepoint(unsigned int codepoint)
 
 }
 
+static unsigned int isicon(unsigned int codepoint)
+{
+
+    return (codepoint >= 0xE000 && codepoint <= 0xF8FF) || codepoint >= 0xF0000;
+
+}
+
 static int scale(struct font_face *face, struct font_choice choice, int units)
 {
 
@@ -122,11 +129,15 @@ struct font_glyph *font_getglyph(struct font_set *fonts, struct font_choice choi
 
     }
 
-    id = ttf_findglyph(&face->ttf, mapcodepoint(codepoint));
+    id = (isicon(codepoint)) ? 0 : ttf_findglyph(&face->ttf, mapcodepoint(codepoint));
     glyph = &fonts->entries[index];
     glyph->key = key;
     glyph->id = id;
     glyph->advance = (face->ttf.unitsperem) ? (int)(ttf_getadvance(&face->ttf, id) * choice.size * 64 / face->ttf.unitsperem) : 0;
+
+    /* icon fonts are not loaded, their glyphs keep the square they would take up and draw nothing */
+    if (isicon(codepoint))
+        glyph->advance = choice.size * 64;
     glyph->rendered = 0;
     glyph->left = 0;
     glyph->top = 0;
@@ -160,7 +171,7 @@ struct font_glyph *font_render(struct font_set *fonts, struct font_choice choice
     glyph->rendered = 1;
     glyph->offset = fonts->poolcount;
 
-    if (!ttf_loadoutline(&face->ttf, &fonts->outline, glyph->id))
+    if (isicon(codepoint) || !ttf_loadoutline(&face->ttf, &fonts->outline, glyph->id))
         return glyph;
 
     box = ttf_render(&fonts->raster, &fonts->outline, choice.size, face->ttf.unitsperem, fonts->pool + fonts->poolcount, FONT_POOL - fonts->poolcount);

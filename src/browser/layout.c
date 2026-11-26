@@ -7,6 +7,8 @@
 
 #define COLUMNS                         16
 #define FLEXLINES                       64
+#define GRIDCOLUMNS                     32
+#define GRIDROWS                        128
 #define MEASUREDEPTH                    8
 #define MEASUREWIDTH                    8192
 #define NONE                            0xFFFFFFFF
@@ -55,6 +57,7 @@ struct text
     char *data;
     unsigned int open;
     unsigned int wrap;
+    unsigned int breaking;
     unsigned int collapse;
 
 };
@@ -778,7 +781,8 @@ static void placeword(struct layout *layout, struct flow *flow, struct text *tex
 
     while (text->wrap && width > flow->right - flow->left && dropline(layout, flow));
 
-    while (text->wrap && !layout->minimum && isempty(layout, flow) && width > flow->right - flow->left && end - start > 1)
+    /* long words break to fit anyway, but only text allowed to break anywhere makes the narrowest box narrower */
+    while (text->wrap && (!layout->minimum || text->breaking) && isempty(layout, flow) && width > flow->right - flow->left && end - start > 1)
     {
 
         unsigned int split = fitbytes(layout, &text->metrics, data + start, end - start, flow->right - flow->left);
@@ -818,6 +822,7 @@ static void addtext(struct layout *layout, struct flow *flow, unsigned int node)
     text.open = NONE;
     text.collapse = whitespace != CSS_WHITESPACE_PRE && whitespace != CSS_WHITESPACE_PREWRAP;
     text.wrap = whitespace == CSS_WHITESPACE_NORMAL || whitespace == CSS_WHITESPACE_PRELINE;
+    text.breaking = style->breaking;
 
     while (i < end)
     {
@@ -1188,6 +1193,7 @@ static int measure(struct layout *layout, unsigned int node, int availw)
     int extent = layout->extent;
     int ml = resolve(&style->margin[CSS_LEFT], availw);
     int needed;
+    int extra;
 
     if (cached->availw == availw && !layout->minimum)
         return cached->width;
@@ -1215,6 +1221,14 @@ static int measure(struct layout *layout, unsigned int node, int availw)
 
     /* content that cannot wrap any narrower makes the box wider than the room it was given, as in css */
     needed = max(needed, 0);
+    extra = style->borderwidth[CSS_LEFT] + style->borderwidth[CSS_RIGHT] + resolve(&style->padding[CSS_LEFT], availw) + resolve(&style->padding[CSS_RIGHT], availw);
+
+    /* but never past a max-width or short of a min-width, whatever the content wants */
+    if (style->maxwidth.unit == CSS_UNIT_PX)
+        needed = min(needed, style->maxwidth.value + ((style->borderbox) ? 0 : extra));
+
+    if (style->minwidth.unit == CSS_UNIT_PX)
+        needed = max(needed, style->minwidth.value + ((style->borderbox) ? 0 : extra));
 
     /* a width guessed at the depth limit is not kept, so it never stands in for a real one */
     if (!layout->truncated && !layout->minimum)
@@ -2139,83 +2153,6 @@ static void layouttable(struct layout *layout, struct flow *flow, unsigned int t
 
 }
 
-static void layoutgrid(struct layout *layout, struct flow *flow, unsigned int node)
-{
-
-    struct css_style *style = getstyle(layout, node);
-    int width = flow->right - flow->left;
-    int gap = style->columngap;
-    unsigned int columns = style->columns;
-    unsigned int column = 0;
-    unsigned int rowstart = 0;
-    int rowheight = 0;
-    int y = flow->y;
-    int columnwidth;
-    unsigned int child;
-
-    if (columns == CSS_COLUMNS_AUTOFILL)
-        columns = (style->trackmin + gap > 0) ? (unsigned int)((width + gap) / (style->trackmin + gap)) : 1;
-
-    if (columns < 1)
-        columns = 1;
-
-    columnwidth = max((width - gap * ((int)columns - 1)) / (int)columns, 0);
-
-    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
-    {
-
-        struct css_style *childstyle;
-        int mt;
-        int mb;
-        int height;
-
-        if (getnode(layout, child)->type != HTML_NODE_ELEMENT || !isvisible(getstyle(layout, child)))
-            continue;
-
-        childstyle = getstyle(layout, child);
-        mt = resolve(&childstyle->margin[CSS_TOP], columnwidth);
-        mb = resolve(&childstyle->margin[CSS_BOTTOM], columnwidth);
-
-        if (!column)
-            rowstart = child;
-
-        height = layoutblock(layout, child, flow->left + (int)column * (columnwidth + gap), y + mt, columnwidth);
-        rowheight = max(rowheight, mt + height + mb);
-        column++;
-
-        if (column == columns || !getnode(layout, child)->next)
-        {
-
-            unsigned int item;
-
-            for (item = rowstart; item; item = getnode(layout, item)->next)
-            {
-
-                struct css_style *itemstyle = getstyle(layout, item);
-
-                if (getnode(layout, item)->type == HTML_NODE_ELEMENT && layout->boxes[item].placed && itemstyle->height.unit == CSS_UNIT_AUTO)
-                    layout->boxes[item].h = rowheight - resolve(&itemstyle->margin[CSS_TOP], columnwidth) - resolve(&itemstyle->margin[CSS_BOTTOM], columnwidth);
-
-                if (item == child)
-                    break;
-
-            }
-
-            y += rowheight + style->rowgap;
-            rowheight = 0;
-            column = 0;
-
-        }
-
-    }
-
-    if (column)
-        y += rowheight + style->rowgap;
-
-    flow->y = (y > flow->y) ? y - style->rowgap : y;
-
-}
-
 static unsigned int hastext(struct layout *layout, unsigned int node)
 {
 
@@ -2546,6 +2483,575 @@ static unsigned int needsrestretch(struct layout *layout, struct css_style *cont
 
 }
 
+struct gridplace
+{
+
+    int from;
+    unsigned int span;
+
+};
+
+struct gridtrack
+{
+
+    int base;
+    int limit;
+    int fraction;
+
+};
+
+static struct css_track autotrack(void)
+{
+
+    struct css_track track;
+
+    track.minkind = CSS_TRACK_AUTO;
+    track.maxkind = CSS_TRACK_AUTO;
+    track.minvalue = 0;
+    track.maxvalue = 0;
+
+    return track;
+
+}
+
+static struct css_track columntrack(struct css_grid *grid, unsigned int index)
+{
+
+    if (grid && grid->repeat)
+        return grid->columns[0];
+
+    return (grid && index < grid->columncount) ? grid->columns[index] : autotrack();
+
+}
+
+static struct css_track rowtrack(struct css_grid *grid, unsigned int index)
+{
+
+    if (!grid)
+        return autotrack();
+
+    return (index < grid->rowcount) ? grid->rows[index] : grid->autorow;
+
+}
+
+static int fixedsize(unsigned int kind, int value, int base)
+{
+
+    return (kind == CSS_TRACK_PX) ? value : (kind == CSS_TRACK_PERCENT) ? percentof(base, value) : 0;
+
+}
+
+static unsigned int countcolumns(struct css_grid *grid, int width, int gap, unsigned int items)
+{
+
+    unsigned int count;
+
+    if (!grid)
+        return 1;
+
+    /* repeated tracks fill the row with as many as fit, auto-fit drops the ones left empty */
+    if (grid->repeat)
+    {
+
+        int size = max(fixedsize(grid->columns[0].minkind, grid->columns[0].minvalue, width), fixedsize(grid->columns[0].maxkind, grid->columns[0].maxvalue, width));
+
+        count = (size + gap > 0) ? (unsigned int)max((width + gap) / (size + gap), 1) : 1;
+
+        if (grid->repeat == CSS_REPEAT_FIT && items && items < count)
+            count = items;
+
+    }
+
+    else
+    {
+
+        count = (grid->columncount > grid->areacolumns) ? grid->columncount : grid->areacolumns;
+
+    }
+
+    return (count < 1) ? 1 : (count > GRIDCOLUMNS) ? GRIDCOLUMNS : count;
+
+}
+
+static int lineindex(struct css_gridline *line, unsigned int count)
+{
+
+    if (line->span || !line->value)
+        return -1;
+
+    return (line->value > 0) ? line->value - 1 : (int)count + 1 + line->value;
+
+}
+
+static struct gridplace placeaxis(struct css_gridline *start, struct css_gridline *end, unsigned int count)
+{
+
+    struct gridplace place;
+    int from = lineindex(start, count);
+    int to = lineindex(end, count);
+
+    place.from = -1;
+    place.span = 1;
+
+    if (from >= 0 && to >= 0)
+    {
+
+        place.from = min(from, to);
+        place.span = (from == to) ? 1 : (unsigned int)((from > to) ? from - to : to - from);
+
+    }
+
+    else if (from >= 0)
+    {
+
+        place.from = from;
+        place.span = (end->span) ? end->span : 1;
+
+    }
+
+    else if (to >= 0)
+    {
+
+        place.span = (start->span) ? start->span : 1;
+        place.from = max(to - (int)place.span, 0);
+
+    }
+
+    else
+    {
+
+        place.span = max(max(start->span, end->span), 1);
+
+    }
+
+    return place;
+
+}
+
+static unsigned int findarea(struct css_grid *grid, struct layout_flexitem *item, unsigned int name)
+{
+
+    unsigned int top = GRIDROWS;
+    unsigned int left = GRIDCOLUMNS;
+    unsigned int bottom = 0;
+    unsigned int right = 0;
+    unsigned int r;
+    unsigned int c;
+
+    for (r = 0; grid && r < grid->arearows; r++)
+    {
+
+        for (c = 0; c < grid->areacolumns; c++)
+        {
+
+            if (grid->areas[r][c] != name)
+                continue;
+
+            top = min(top, r);
+            left = min(left, c);
+            bottom = max(bottom, r + 1);
+            right = max(right, c + 1);
+
+        }
+
+    }
+
+    if (bottom <= top)
+        return 0;
+
+    item->row = top;
+    item->column = left;
+    item->rows = bottom - top;
+    item->columns = right - left;
+
+    return 1;
+
+}
+
+static unsigned int isfree(unsigned int cells[GRIDROWS], unsigned int row, unsigned int column, unsigned int rows, unsigned int columns, unsigned int count)
+{
+
+    unsigned int mask = ((columns >= 32) ? 0xFFFFFFFF : ((1u << columns) - 1)) << column;
+    unsigned int r;
+
+    if (column + columns > count || row + rows > GRIDROWS)
+        return 0;
+
+    for (r = row; r < row + rows; r++)
+    {
+
+        if (cells[r] & mask)
+            return 0;
+
+    }
+
+    return 1;
+
+}
+
+static void occupy(unsigned int cells[GRIDROWS], struct layout_flexitem *item)
+{
+
+    unsigned int mask = ((item->columns >= 32) ? 0xFFFFFFFF : ((1u << item->columns) - 1)) << item->column;
+    unsigned int r;
+
+    for (r = item->row; r < item->row + item->rows && r < GRIDROWS; r++)
+        cells[r] |= mask;
+
+}
+
+static void placegriditems(struct layout *layout, struct css_grid *grid, unsigned int base, unsigned int count)
+{
+
+    unsigned int cells[GRIDROWS];
+    unsigned int cursorrow = 0;
+    unsigned int cursorcolumn = 0;
+    unsigned int pass;
+    unsigned int i;
+
+    for (i = 0; i < GRIDROWS; i++)
+        cells[i] = 0;
+
+    /* items with a fixed place go first, then the rest fill the gaps row by row */
+    for (pass = 0; pass < 2; pass++)
+    {
+
+        for (i = base; i < layout->flexcount; i++)
+        {
+
+            struct layout_flexitem *item = &layout->flexitems[i];
+            struct css_style *style = getstyle(layout, item->node);
+            struct gridplace rows = placeaxis(&style->gridlines[CSS_GRIDROWSTART], &style->gridlines[CSS_GRIDROWEND], GRIDROWS);
+            struct gridplace columns = placeaxis(&style->gridlines[CSS_GRIDCOLUMNSTART], &style->gridlines[CSS_GRIDCOLUMNEND], count);
+            unsigned int named = style->gridarea && findarea(grid, item, style->gridarea);
+
+            if (!named)
+            {
+
+                item->rows = min(rows.span, GRIDROWS);
+                item->columns = min(columns.span, count);
+                item->row = (rows.from >= 0) ? (unsigned int)rows.from : 0;
+                item->column = (columns.from >= 0) ? min((unsigned int)columns.from, count - item->columns) : 0;
+
+            }
+
+            if (pass == 0)
+            {
+
+                if (named || (rows.from >= 0 && columns.from >= 0))
+                    occupy(cells, item);
+
+                continue;
+
+            }
+
+            if (named || (rows.from >= 0 && columns.from >= 0))
+                continue;
+
+            if (columns.from >= 0)
+            {
+
+                while (item->row < GRIDROWS - 1 && !isfree(cells, item->row, item->column, item->rows, item->columns, count))
+                    item->row++;
+
+            }
+
+            else if (rows.from >= 0)
+            {
+
+                while (item->column + item->columns < count && !isfree(cells, item->row, item->column, item->rows, item->columns, count))
+                    item->column++;
+
+            }
+
+            else
+            {
+
+                while (cursorrow < GRIDROWS - 1 && !isfree(cells, cursorrow, cursorcolumn, item->rows, item->columns, count))
+                {
+
+                    cursorcolumn++;
+
+                    if (cursorcolumn + item->columns > count)
+                    {
+
+                        cursorcolumn = 0;
+                        cursorrow++;
+
+                    }
+
+                }
+
+                item->row = cursorrow;
+                item->column = cursorcolumn;
+                cursorcolumn += item->columns;
+
+            }
+
+            occupy(cells, item);
+
+        }
+
+    }
+
+}
+
+static void sizegridcolumns(struct layout *layout, struct css_grid *grid, unsigned int base, unsigned int count, int width, int gap, int sizes[GRIDCOLUMNS])
+{
+
+    struct gridtrack tracks[GRIDCOLUMNS];
+    int avail = width - gap * ((int)count - 1);
+    int used = 0;
+    int fractions = 0;
+    int stretch = 0;
+    unsigned int c;
+    unsigned int i;
+
+    for (c = 0; c < count; c++)
+    {
+
+        struct css_track track = columntrack(grid, c);
+        int smallest = 0;
+        int largest = 0;
+
+        /* content only counts for items in this one column, wider ones are left to the leftover space */
+        if (track.minkind >= CSS_TRACK_FR || track.minkind == CSS_TRACK_AUTO || track.maxkind >= CSS_TRACK_FR || track.maxkind == CSS_TRACK_AUTO)
+        {
+
+            for (i = base; i < layout->flexcount; i++)
+            {
+
+                struct layout_flexitem *item = &layout->flexitems[i];
+
+                if (item->column != c || item->columns != 1)
+                    continue;
+
+                smallest = max(smallest, measuremin(layout, item->node) + item->ml + item->mr);
+
+                if (track.maxkind == CSS_TRACK_AUTO || track.maxkind == CSS_TRACK_MAXCONTENT)
+                    largest = max(largest, measure(layout, item->node, max(avail, 0)) + item->ml + item->mr);
+
+            }
+
+        }
+
+        tracks[c].base = (track.minkind == CSS_TRACK_PX || track.minkind == CSS_TRACK_PERCENT) ? fixedsize(track.minkind, track.minvalue, width) : (track.minkind == CSS_TRACK_MAXCONTENT) ? largest : smallest;
+        tracks[c].fraction = (track.maxkind == CSS_TRACK_FR) ? track.maxvalue : 0;
+        tracks[c].limit = (track.maxkind == CSS_TRACK_PX || track.maxkind == CSS_TRACK_PERCENT) ? fixedsize(track.maxkind, track.maxvalue, width) : (track.maxkind == CSS_TRACK_MINCONTENT) ? smallest : (track.maxkind == CSS_TRACK_FR) ? tracks[c].base : max(largest, smallest);
+        tracks[c].limit = max(tracks[c].limit, tracks[c].base);
+        used += tracks[c].base;
+        fractions += tracks[c].fraction;
+        stretch += (track.maxkind == CSS_TRACK_AUTO);
+
+    }
+
+    /* tracks grow towards their limit first, what is left goes to the fractions or else to the auto tracks */
+    for (c = 0; c < count; c++)
+    {
+
+        int room = tracks[c].limit - tracks[c].base;
+        int grow = (tracks[c].fraction) ? 0 : min(room, max(avail - used, 0));
+
+        sizes[c] = tracks[c].base + grow;
+        used += grow;
+
+    }
+
+    if (fractions && avail > used)
+    {
+
+        int leftover = avail;
+
+        for (c = 0; c < count; c++)
+            leftover -= (tracks[c].fraction) ? 0 : sizes[c];
+
+        for (c = 0; c < count; c++)
+        {
+
+            if (tracks[c].fraction)
+                sizes[c] = max(tracks[c].base, leftover * tracks[c].fraction / fractions);
+
+        }
+
+    }
+
+    else if (stretch && avail > used)
+    {
+
+        int extra = (avail - used) / stretch;
+
+        for (c = 0; c < count; c++)
+        {
+
+            if (columntrack(grid, c).maxkind == CSS_TRACK_AUTO)
+                sizes[c] += extra;
+
+        }
+
+    }
+
+}
+
+static void layoutgrid(struct layout *layout, struct flow *flow, unsigned int node)
+{
+
+    struct css_style *style = getstyle(layout, node);
+    struct css_grid *grid = (style->grid) ? &layout->grids[style->grid - 1] : 0;
+    int width = flow->right - flow->left;
+    int columngap = style->columngap;
+    int rowgap = style->rowgap;
+    int fixed = layout->boxes[node].definite - 1;
+    unsigned int base = layout->flexcount;
+    unsigned int ordered = isordered(layout, node);
+    int sizes[GRIDCOLUMNS];
+    int offsets[GRIDCOLUMNS + 1];
+    int heights[GRIDROWS];
+    int tops[GRIDROWS + 1];
+    unsigned int count;
+    unsigned int rows = 0;
+    unsigned int child;
+    unsigned int i;
+    unsigned int r;
+    int fractions = 0;
+    int y = flow->y;
+
+    for (child = nextitem(layout, node, 0, ordered); child; child = nextitem(layout, node, child, ordered))
+    {
+
+        struct css_style *childstyle = getstyle(layout, child);
+        struct layout_flexitem *item;
+
+        if (layout->flexcount >= LAYOUT_FLEXITEMS)
+        {
+
+            layout->full = 1;
+
+            break;
+
+        }
+
+        item = &layout->flexitems[layout->flexcount++];
+        item->node = child;
+        item->ml = resolve(&childstyle->margin[CSS_LEFT], width);
+        item->mr = resolve(&childstyle->margin[CSS_RIGHT], width);
+        item->mt = resolve(&childstyle->margin[CSS_TOP], width);
+        item->mb = resolve(&childstyle->margin[CSS_BOTTOM], width);
+
+    }
+
+    count = countcolumns(grid, width, columngap, layout->flexcount - base);
+
+    placegriditems(layout, grid, base, count);
+    sizegridcolumns(layout, grid, base, count, width, columngap, sizes);
+
+    offsets[0] = 0;
+
+    for (i = 0; i < count; i++)
+        offsets[i + 1] = offsets[i] + sizes[i] + columngap;
+
+    for (i = base; i < layout->flexcount; i++)
+        rows = max(rows, layout->flexitems[i].row + layout->flexitems[i].rows);
+
+    rows = max(rows, (grid) ? max(grid->rowcount, grid->arearows) : 0);
+    rows = min(rows, GRIDROWS);
+
+    /* rows are filled top down, an item spanning rows makes the last of them big enough */
+    for (r = 0; r < rows; r++)
+    {
+
+        struct css_track track = rowtrack(grid, r);
+        int height = fixedsize(track.minkind, track.minvalue, (fixed >= 0) ? fixed : 0);
+
+        tops[r] = y;
+
+        for (i = base; i < layout->flexcount; i++)
+        {
+
+            struct layout_flexitem *item = &layout->flexitems[i];
+            struct css_style *itemstyle = getstyle(layout, item->node);
+            int span = offsets[item->column + item->columns] - offsets[item->column] - columngap;
+
+            if (item->row != r)
+                continue;
+
+            item->size = (itemstyle->width.unit == CSS_UNIT_PX || itemstyle->width.unit == CSS_UNIT_PERCENT) ? min(basesize(layout, item->node, span, 0), max(span - item->ml - item->mr, 0)) : max(span - item->ml - item->mr, 0);
+
+            placeflexitem(layout, item, flow->left + offsets[item->column], y);
+
+        }
+
+        for (i = base; i < layout->flexcount; i++)
+        {
+
+            struct layout_flexitem *item = &layout->flexitems[i];
+
+            if (item->row + item->rows - 1 == r)
+                height = max(height, item->mt + item->height + item->mb - (y - tops[item->row]));
+
+        }
+
+        if (track.maxkind == CSS_TRACK_PX || track.maxkind == CSS_TRACK_PERCENT)
+            height = fixedsize(track.maxkind, track.maxvalue, (fixed >= 0) ? fixed : 0);
+
+        fractions += (track.maxkind == CSS_TRACK_FR) ? track.maxvalue : 0;
+        heights[r] = height;
+        y += height + rowgap;
+
+    }
+
+    tops[rows] = y;
+
+    /* flexible rows share the height a container with one has left */
+    if (fixed >= 0 && fractions && !layout->measuring && fixed > y - flow->y - rowgap)
+    {
+
+        int extra = fixed - (y - flow->y - rowgap);
+        int shift = 0;
+
+        for (r = 0; r < rows; r++)
+        {
+
+            struct css_track track = rowtrack(grid, r);
+            int grow = (track.maxkind == CSS_TRACK_FR) ? extra * track.maxvalue / fractions : 0;
+
+            tops[r] += shift;
+            heights[r] += grow;
+            shift += grow;
+
+        }
+
+        tops[rows] += shift;
+
+        for (i = base; i < layout->flexcount; i++)
+        {
+
+            struct layout_flexitem *item = &layout->flexitems[i];
+            int moved = tops[item->row] - layout->boxes[item->node].y + item->mt;
+
+            if (moved)
+                translate(layout, item->node, item->fragmentstart, item->fragmentend, 0, moved, 1);
+
+        }
+
+    }
+
+    /* every item is stretched over its rows unless it says otherwise */
+    for (i = base; i < layout->flexcount; i++)
+    {
+
+        struct layout_flexitem *item = &layout->flexitems[i];
+        unsigned int last = min(item->row + item->rows, rows);
+        int span = tops[last] - tops[item->row] - rowgap;
+
+        alignflexitem(layout, item, getalign(style, getstyle(layout, item->node)), span - item->mt - item->height - item->mb, 0);
+
+    }
+
+    layout->flexcount = base;
+    flow->y = (rows) ? tops[rows] - rowgap : y;
+
+}
+
 static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int node)
 {
 
@@ -2613,7 +3119,8 @@ static void layoutflexrow(struct layout *layout, struct flow *flow, unsigned int
             struct layout_flexitem *item = &layout->flexitems[end];
             int outer = item->ml + item->size + item->mr + ((end > start) ? gap : 0);
 
-            if (style->wrap && end > start && used + outer > availw)
+            /* every item may have been rounded up by half a pixel, which must not push the last one down */
+            if (style->wrap && end > start && used + outer > availw + (int)(end - start + 2) / 2)
                 break;
 
             used += outer;
@@ -2813,6 +3320,39 @@ static unsigned int countautomargins(struct css_style *style, unsigned int first
 
 }
 
+static unsigned int columnalign(struct css_style *container, struct css_style *style)
+{
+
+    /* auto margins across a column push the item over instead of stretching it */
+    if (style->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
+        return (style->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO) ? CSS_FLEX_CENTER : CSS_FLEX_END;
+
+    if (style->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO)
+        return CSS_FLEX_START;
+
+    return getalign(container, style);
+
+}
+
+static unsigned int needsregrow(struct layout *layout, unsigned int base)
+{
+
+    unsigned int i;
+
+    for (i = base; i < layout->flexcount; i++)
+    {
+
+        struct css_style *style = getstyle(layout, layout->flexitems[i].node);
+
+        if (style->grow && (style->display == CSS_DISPLAY_FLEX || style->display == CSS_DISPLAY_GRID || haspercentchild(layout, layout->flexitems[i].node)))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned int node)
 {
 
@@ -2823,6 +3363,9 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
     int minimum = flexminimum(layout, node, availw);
     unsigned int base = layout->flexcount;
     unsigned int ordered = isordered(layout, node);
+    unsigned int fragmentcount = layout->fragmentcount;
+    unsigned int textcount = layout->textcount;
+    unsigned int absolutecount = layout->absolutecount;
     unsigned int child;
     unsigned int i;
     int y = flow->y;
@@ -2845,21 +3388,15 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
         }
 
         childstyle = getstyle(layout, child);
-        align = getalign(style, childstyle);
-
-        /* auto margins across a column push the item over instead of stretching it */
-        if (childstyle->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
-            align = (childstyle->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO) ? CSS_FLEX_CENTER : CSS_FLEX_END;
-        else if (childstyle->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO)
-            align = CSS_FLEX_START;
-
+        align = columnalign(style, childstyle);
         item = &layout->flexitems[layout->flexcount++];
         item->node = child;
         item->ml = resolve(&childstyle->margin[CSS_LEFT], availw);
         item->mr = resolve(&childstyle->margin[CSS_RIGHT], availw);
         item->mt = resolve(&childstyle->margin[CSS_TOP], availw);
         item->mb = resolve(&childstyle->margin[CSS_BOTTOM], availw);
-        item->size = (align == CSS_FLEX_STRETCH && childstyle->width.unit != CSS_UNIT_PX && childstyle->width.unit != CSS_UNIT_PERCENT && !isreplaced(layout, child)) ? max(availw - item->ml - item->mr, 0) : min(basesize(layout, child, availw, 0), max(availw - item->ml - item->mr, 0));
+        /* while shrinking to fit, a stretched item asks only for its content so the column can be narrow */
+        item->size = (align == CSS_FLEX_STRETCH && !layout->measuring && childstyle->width.unit != CSS_UNIT_PX && childstyle->width.unit != CSS_UNIT_PERCENT && !isreplaced(layout, child)) ? max(availw - item->ml - item->mr, 0) : min(basesize(layout, child, availw, 0), max(availw - item->ml - item->mr, 0));
 
         if (y > flow->y)
             y += gap;
@@ -2893,8 +3430,43 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
         for (i = base; i < layout->flexcount; i++)
             grow += getstyle(layout, layout->flexitems[i].node)->grow;
 
+        /* a grown item whose content is placed against its height is laid out again at that height */
+        if (free > 0 && grow && needsregrow(layout, base))
+        {
+
+            layout->fragmentcount = fragmentcount;
+            layout->textcount = textcount;
+            layout->absolutecount = absolutecount;
+            y = flow->y;
+
+            for (i = base; i < layout->flexcount; i++)
+            {
+
+                struct layout_flexitem *item = &layout->flexitems[i];
+                int share = free * getstyle(layout, item->node)->grow / (int)grow;
+
+                if (i > base)
+                    y += gap;
+
+                if (share > 0)
+                {
+
+                    layout->heightnode = item->node;
+                    layout->forceheight = item->height + share;
+
+                }
+
+                alignflexitem(layout, item, columnalign(style, getstyle(layout, item->node)), availw - placeflexitem(layout, item, flow->left, y), 1);
+
+                layout->heightnode = 0;
+                y += item->mt + item->height + item->mb;
+
+            }
+
+        }
+
         /* growing items take the free height first, the box gets taller and the rest moves down */
-        if (free > 0 && grow)
+        else if (free > 0 && grow)
         {
 
             for (i = base; i < layout->flexcount; i++)

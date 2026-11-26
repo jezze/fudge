@@ -82,6 +82,10 @@ struct layout_flexitem
     int mt;
     int mb;
     int height;
+    unsigned int row;
+    unsigned int column;
+    unsigned int rows;
+    unsigned int columns;
 
 };
 
@@ -119,6 +123,7 @@ struct layout
     struct html_document *document;
     struct css_style *styles;
     struct css_gradient *gradients;
+    struct css_grid *grids;
     struct font_set *fonts;
     struct layout_picture *pictures;
     unsigned short picture[HTML_NODES];

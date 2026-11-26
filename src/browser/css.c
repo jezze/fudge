@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      99
+#define PROPERTIES                      121
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -80,6 +80,29 @@
 #define PROP_TOPRIGHTRADIUS             96
 #define PROP_BOTTOMRIGHTRADIUS          97
 #define PROP_BOTTOMLEFTRADIUS           98
+#define PROP_INSET                      99
+#define PROP_MARGININLINE               100
+#define PROP_MARGINBLOCK                101
+#define PROP_PADDINGINLINE              102
+#define PROP_PADDINGBLOCK               103
+#define PROP_INSETINLINE                104
+#define PROP_INSETBLOCK                 105
+#define PROP_BORDERINLINE               106
+#define PROP_BORDERBLOCK                107
+#define PROP_GRIDTEMPLATEROWS           108
+#define PROP_GRIDTEMPLATEAREAS          109
+#define PROP_GRIDAUTOROWS               110
+#define PROP_GRIDCOLUMN                 111
+#define PROP_GRIDROW                    112
+#define PROP_GRIDCOLUMNSTART            113
+#define PROP_GRIDCOLUMNEND              114
+#define PROP_GRIDROWSTART               115
+#define PROP_GRIDROWEND                 116
+#define PROP_GRIDAREA                   117
+#define PROP_WORDBREAK                  118
+#define PROP_OVERFLOWWRAP               119
+#define PROP_WORDWRAP                   120
+#define ALIASES                         28
 #define PROP_CUSTOM                     255
 #define POOL_EXACT                      0
 #define POOL_LOWER                      1
@@ -103,6 +126,10 @@
 #define PART_IS                         17
 #define PART_ALTERNATIVE                18
 #define PART_HAS                        19
+#define HAS_DESCENDANT                  0
+#define HAS_CHILD                       1
+#define HAS_NEXT                        2
+#define HAS_LATER                       3
 #define COMBINATOR_NONE                 0
 #define COMBINATOR_FIRST                1
 #define COMBINATOR_DESCENDANT           2
@@ -134,7 +161,6 @@
 #define PHASE_OTHER                     2
 #define PHASES                          3
 #define GRADIENTARGS                    8
-#define GRIDTRACKS                      12
 #define CONTENTSIZE                     128
 
 struct parser
@@ -190,6 +216,15 @@ struct quantity
     int milli;
     int percent;
     unsigned int length;
+
+};
+
+struct channel
+{
+
+    int milli;
+    unsigned int length;
+    unsigned int percent;
 
 };
 
@@ -284,7 +319,18 @@ static char *properties[PROPERTIES] = {
     "row-gap", "column-gap", "grid-gap", "fill",
     "justify-content", "align-items", "align-self", "flex-grow", "flex-shrink", "flex-basis", "flex", "flex-wrap", "flex-flow",
     "float", "clear", "overflow", "overflow-x", "overflow-y",
-    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip", "vertical-align", "letter-spacing", "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"
+    "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip", "vertical-align", "letter-spacing", "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius",
+    "inset", "margin-inline", "margin-block", "padding-inline", "padding-block", "inset-inline", "inset-block", "border-inline", "border-block",
+    "grid-template-rows", "grid-template-areas", "grid-auto-rows", "grid-column", "grid-row", "grid-column-start", "grid-column-end", "grid-row-start", "grid-row-end", "grid-area", "word-break", "overflow-wrap", "word-wrap"
+};
+static char *aliases[ALIASES][2] = {
+    {"margin-inline-start", "margin-left"}, {"margin-inline-end", "margin-right"}, {"margin-block-start", "margin-top"}, {"margin-block-end", "margin-bottom"},
+    {"padding-inline-start", "padding-left"}, {"padding-inline-end", "padding-right"}, {"padding-block-start", "padding-top"}, {"padding-block-end", "padding-bottom"},
+    {"inset-inline-start", "left"}, {"inset-inline-end", "right"}, {"inset-block-start", "top"}, {"inset-block-end", "bottom"},
+    {"border-inline-start", "border-left"}, {"border-inline-end", "border-right"}, {"border-block-start", "border-top"}, {"border-block-end", "border-bottom"},
+    {"border-inline-start-width", "border-left-width"}, {"border-inline-end-width", "border-right-width"},
+    {"border-start-start-radius", "border-top-left-radius"}, {"border-start-end-radius", "border-top-right-radius"}, {"border-end-start-radius", "border-bottom-left-radius"}, {"border-end-end-radius", "border-bottom-right-radius"},
+    {"inline-size", "width"}, {"block-size", "height"}, {"min-inline-size", "min-width"}, {"max-inline-size", "max-width"}, {"min-block-size", "min-height"}, {"max-block-size", "max-height"}
 };
 static struct namedcolor colors[COLORS] = {
     {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
@@ -592,6 +638,15 @@ static unsigned int findproperty(char *text, unsigned int length)
 
         if (matchword(text, length, properties[i]))
             return i;
+
+    }
+
+    /* text runs left to right and top to bottom, so every logical side is one physical side */
+    for (i = 0; i < ALIASES; i++)
+    {
+
+        if (matchword(text, length, aliases[i][0]))
+            return findproperty(aliases[i][1], cstring_length(aliases[i][1]));
 
     }
 
@@ -970,16 +1025,13 @@ static unsigned int parsepseudo(struct selectorparser *selectorparser, unsigned 
 
             unsigned int list = sheet->partcount;
             unsigned int inner = skipspace(text, stop + 1, close);
-            unsigned int child = inner < close && text[inner] == '>';
+            unsigned int relation = (inner >= close) ? HAS_DESCENDANT : (text[inner] == '>') ? HAS_CHILD : (text[inner] == '+') ? HAS_NEXT : (text[inner] == '~') ? HAS_LATER : HAS_DESCENDANT;
 
-            if (inner < close && (text[inner] == '+' || text[inner] == '~'))
-                return 0;
-
-            if (!parselist(selectorparser, (child) ? inner + 1 : stop + 1, close, combinator, 0, 1))
+            if (!parselist(selectorparser, (relation == HAS_DESCENDANT) ? stop + 1 : inner + 1, close, combinator, 0, 1))
                 return 0;
 
             sheet->parts[list].type = PART_HAS;
-            sheet->parts[list].value = child;
+            sheet->parts[list].value = relation;
 
             return close + 1;
 
@@ -1667,17 +1719,21 @@ static struct quantity evaluatevalue(struct evaluator *evaluator)
     if (matchword(text, unit, "em"))
         return quantity(number.milli * (int)evaluator->fontsize, 0, 1);
 
-    if (matchword(text, unit, "rem"))
+    if (matchword(text, unit, "rem") && evaluator->context)
         return quantity(number.milli * (int)evaluator->context->rootsize, 0, 1);
 
-    if (matchword(text, unit, "vw"))
+    if (matchword(text, unit, "vw") && evaluator->context)
         return quantity(number.milli / 100 * (int)evaluator->context->width, 0, 1);
 
-    if (matchword(text, unit, "vh"))
+    if (matchword(text, unit, "vh") && evaluator->context)
         return quantity(number.milli / 100 * (int)evaluator->context->height, 0, 1);
 
     if (matchword(text, unit, "pt"))
         return quantity(number.milli * 4 / 3, 0, 1);
+
+    /* angles only turn up as hues, which are counted in degrees anyway */
+    if (matchword(text, unit, "deg"))
+        return quantity(number.milli, 0, 0);
 
     evaluator->valid = 0;
 
@@ -1926,6 +1982,60 @@ static unsigned int clampbyte(int value)
 
 }
 
+static struct channel readchannel(char *text, unsigned int length)
+{
+
+    struct channel channel;
+    struct number number;
+
+    channel.milli = 0;
+    channel.length = 0;
+    channel.percent = 0;
+
+    /* a calculated channel has no element to measure against, so only plain numbers and percentages work */
+    if (length > 4 && (buffer_match(text, "calc(", 5) || buffer_match(text, "min(", 4) || buffer_match(text, "max(", 4) || buffer_match(text, "clamp(", 6)))
+    {
+
+        unsigned int close = findclose(text, buffer_findbyte(text, length, '('), length);
+        struct evaluator evaluator;
+        struct quantity result;
+
+        evaluator.context = 0;
+        evaluator.text = text;
+        evaluator.offset = 0;
+        evaluator.count = (close < length) ? close + 1 : length;
+        evaluator.fontsize = 16;
+        evaluator.valid = 1;
+        evaluator.depth = 0;
+        result = evaluatevalue(&evaluator);
+
+        if (!evaluator.valid || (result.length && (result.milli || !result.percent)))
+            return channel;
+
+        channel.milli = (result.length) ? result.percent : result.milli;
+        channel.percent = result.length;
+        channel.length = evaluator.count;
+
+        return channel;
+
+    }
+
+    number = parsenumber(text, length);
+    channel.milli = number.milli;
+    channel.length = number.length;
+
+    if (number.length && number.length < length && text[number.length] == '%')
+    {
+
+        channel.percent = 1;
+        channel.length++;
+
+    }
+
+    return channel;
+
+}
+
 static struct colorvalue parsefunctioncolor(char *text, unsigned int length)
 {
 
@@ -1943,32 +2053,22 @@ static struct colorvalue parsefunctioncolor(char *text, unsigned int length)
     while (i < length && count < 4)
     {
 
-        struct number number;
+        struct channel channel;
 
         while (i < length && (isspace(text[i]) || text[i] == ',' || text[i] == '/'))
             i++;
 
-        number = parsenumber(text + i, length - i);
+        channel = readchannel(text + i, length - i);
 
-        if (!number.length)
+        if (!channel.length)
             break;
 
-        i += number.length;
+        i += channel.length;
 
-        if (i < length && text[i] == '%')
-        {
-
-            channels[count] = clampbyte(number.milli * 255 / 100000);
-            i++;
-
-        }
-
+        if (channel.percent)
+            channels[count] = clampbyte(channel.milli * 255 / 100000);
         else
-        {
-
-            channels[count] = (count == 3) ? clampbyte(number.milli * 255 / 1000) : clampbyte(roundmilli(number.milli));
-
-        }
+            channels[count] = (count == 3) ? clampbyte(channel.milli * 255 / 1000) : clampbyte(roundmilli(channel.milli));
 
         count++;
 
@@ -2013,25 +2113,20 @@ static struct colorvalue parsehsl(char *text, unsigned int length)
     while (i < length && count < 4)
     {
 
-        struct number number;
-        unsigned int percent;
+        struct channel channel;
 
         while (i < length && (isspace(text[i]) || text[i] == ',' || text[i] == '/'))
             i++;
 
-        number = parsenumber(text + i, length - i);
+        channel = readchannel(text + i, length - i);
 
-        if (!number.length)
+        if (!channel.length)
             break;
 
-        i += number.length;
-        percent = i < length && text[i] == '%';
+        i += channel.length;
 
         /* saturation and lightness are percentages even without the sign */
-        values[count] = (percent || count == 1 || count == 2) ? number.milli / 100 : number.milli;
-
-        if (percent)
-            i++;
+        values[count] = (channel.percent || count == 1 || count == 2) ? channel.milli / 100 : channel.milli;
 
         /* units after the hue, deg is the only one in use */
         while (i < length && cstring_isalpha(text[i]))
@@ -2171,6 +2266,10 @@ static struct colorvalue parsecolor(char *text, unsigned int length)
 
     if (length > 10 && buffer_match(text, "color-mix(", 10))
         return parsemix(text, length);
+
+    /* pages are drawn light, so the light half is taken */
+    if (length > 11 && buffer_match(text, "light-dark(", 11))
+        return parsecolor(text + 11, findstop(text, 11, length, ",") - 11);
 
     if (matchword(text, length, "transparent"))
         return colorvalue(0, 1);
@@ -3193,16 +3292,6 @@ static void setdecoration(struct context *context, char *value)
 
 }
 
-static unsigned int isfraction(char *text, unsigned int length)
-{
-
-    if (length > 7 && buffer_match(text, "minmax(", 7))
-        return length > 4 && buffer_match(text + length - 3, "fr)", 3);
-
-    return length > 2 && buffer_match(text + length - 2, "fr", 2);
-
-}
-
 static int gaplength(struct context *context, char *text, unsigned int length)
 {
 
@@ -3215,68 +3304,404 @@ static int gaplength(struct context *context, char *text, unsigned int length)
 
 }
 
-static void setcolumns(struct context *context, char *value)
+struct tracksize
 {
 
-    struct span spans[GRIDTRACKS];
-    unsigned int count = countspans(value, spans, GRIDTRACKS);
-    unsigned int columns = 0;
+    unsigned int kind;
+    int value;
+    unsigned int valid;
+
+};
+
+struct linepart
+{
+
+    unsigned int start;
+    unsigned int end;
+
+};
+
+static unsigned int hashname(char *text, unsigned int length)
+{
+
+    unsigned int hash = 2166136261u;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < length; i++)
+        hash = (hash ^ (unsigned char)text[i]) * 16777619u;
+
+    return (hash) ? hash : 1;
+
+}
+
+static struct css_grid *getgrid(struct context *context)
+{
+
+    struct css_sheet *sheet = context->sheet;
+    struct css_grid *grid;
+
+    if (context->style->grid)
+        return &sheet->grids[context->style->grid - 1];
+
+    if (sheet->gridcount >= CSS_GRIDS)
+        return 0;
+
+    grid = &sheet->grids[sheet->gridcount++];
+
+    buffer_clear(grid, sizeof (struct css_grid));
+
+    context->style->grid = sheet->gridcount;
+
+    return grid;
+
+}
+
+static struct tracksize parsetracksize(struct context *context, char *text, unsigned int length)
+{
+
+    struct tracksize size;
+    struct lengthvalue parsed;
+
+    size.kind = CSS_TRACK_AUTO;
+    size.value = 0;
+    size.valid = 1;
+
+    if (matchword(text, length, "auto"))
+        return size;
+
+    size.kind = (matchword(text, length, "min-content")) ? CSS_TRACK_MINCONTENT : (matchword(text, length, "max-content")) ? CSS_TRACK_MAXCONTENT : CSS_TRACK_AUTO;
+
+    if (size.kind != CSS_TRACK_AUTO)
+        return size;
+
+    if (length > 2 && text[length - 2] == 'f' && text[length - 1] == 'r')
+    {
+
+        struct number number = parsenumber(text, length - 2);
+
+        size.kind = CSS_TRACK_FR;
+        size.value = number.milli;
+        size.valid = number.length == length - 2;
+
+        return size;
+
+    }
+
+    parsed = parselength(context, text, length, context->style->fontsize);
+    size.kind = (parsed.length.unit == CSS_UNIT_PERCENT) ? CSS_TRACK_PERCENT : CSS_TRACK_PX;
+    size.value = parsed.length.value;
+    size.valid = parsed.valid && parsed.length.unit <= CSS_UNIT_PERCENT;
+
+    return size;
+
+}
+
+static struct css_track parsetrack(struct context *context, char *text, unsigned int length)
+{
+
+    struct css_track track;
+    struct tracksize low;
+    struct tracksize high;
+
+    if (length > 7 && (buffer_match(text, "minmax(", 7) || buffer_match(text, "fit-content(", 12)))
+    {
+
+        unsigned int open = buffer_findbyte(text, length, '(');
+        unsigned int close = findclose(text, open, length);
+        unsigned int comma = findstop(text, open + 1, close, ",");
+        unsigned int start = skipspace(text, comma + 1, close);
+
+        /* fit-content grows with its content up to the size given */
+        if (text[0] == 'f')
+        {
+
+            low.kind = CSS_TRACK_AUTO;
+            low.value = 0;
+            low.valid = 1;
+            high = parsetracksize(context, text + skipspace(text, open + 1, close), close - skipspace(text, open + 1, close));
+
+        }
+
+        else
+        {
+
+            low = parsetracksize(context, text + skipspace(text, open + 1, comma), comma - skipspace(text, open + 1, comma));
+            high = parsetracksize(context, text + start, close - start);
+
+        }
+
+    }
+
+    else
+    {
+
+        low = parsetracksize(context, text, length);
+        high = low;
+
+        if (low.kind == CSS_TRACK_FR)
+            low.kind = CSS_TRACK_AUTO;
+
+    }
+
+    track.minkind = (low.valid) ? low.kind : CSS_TRACK_AUTO;
+    track.minvalue = low.value;
+    track.maxkind = (high.valid) ? high.kind : CSS_TRACK_AUTO;
+    track.maxvalue = high.value;
+
+    return track;
+
+}
+
+static unsigned int addtracks(struct context *context, struct css_grid *grid, struct css_track *tracks, unsigned int count, char *value, unsigned int columns)
+{
+
+    struct span spans[CSS_TRACKS * 2];
+    unsigned int total = countspans(value, spans, CSS_TRACKS * 2);
+    unsigned int naming = 0;
+    unsigned int i;
+
+    for (i = 0; i < total; i++)
     {
 
         char *text = value + spans[i].start;
         unsigned int length = spans[i].length;
 
+        /* line names are not used for placing, so they are skipped */
+        if (text[0] == '[' || naming)
+        {
+
+            naming = text[length - 1] != ']';
+
+            continue;
+
+        }
+
         if (length > 7 && buffer_match(text, "repeat(", 7))
         {
 
-            unsigned int comma = buffer_findbyte(text, length, ',');
-            unsigned int start = comma + 1;
+            unsigned int close = findclose(text, 6, length);
+            unsigned int comma = findstop(text, 7, close, ",");
+            unsigned int start = skipspace(text, comma + 1, close);
+            char inner[VALUESIZE];
+            unsigned int times;
 
-            while (start < length && text[start] == ' ')
-                start++;
-
-            if (comma < length && (buffer_match(text + 7, "auto-fill", 9) || buffer_match(text + 7, "auto-fit", 8)) && buffer_match(text + start, "minmax(", 7))
-            {
-
-                context->style->columns = CSS_COLUMNS_AUTOFILL;
-                context->style->trackmin = gaplength(context, text + start + 7, buffer_findbyte(text + start + 7, length - start - 7, ','));
-
-                return;
-
-            }
-
-            if (comma < length && isfraction(text + start, length - start - 1))
-            {
-
-                columns += cstring_read_value(text + 7, comma - 7, 10);
-
+            if (comma >= close || close - start >= VALUESIZE)
                 continue;
 
+            buffer_copy(inner, text + start, close - start);
+
+            inner[close - start] = '\0';
+
+            if (columns && (buffer_match(text + 7, "auto-fill", 9) || buffer_match(text + 7, "auto-fit", 8)))
+            {
+
+                grid->repeat = (text[12] == 'f' && text[13] == 'i' && text[14] == 't') ? CSS_REPEAT_FIT : CSS_REPEAT_FILL;
+                tracks[0] = parsetrack(context, inner, close - start);
+
+                return 1;
+
             }
 
-            columns = 0;
+            for (times = cstring_read_value(text + 7, comma - 7, 10); times && count < CSS_TRACKS; times--)
+                count = addtracks(context, grid, tracks, count, inner, 0);
 
-            break;
-
-        }
-
-        if (!isfraction(text, length))
-        {
-
-            columns = 0;
-
-            break;
+            continue;
 
         }
 
-        columns++;
+        if (count < CSS_TRACKS)
+            tracks[count++] = parsetrack(context, text, length);
 
     }
 
-    context->style->columns = (columns > 32) ? 32 : columns;
+    return count;
+
+}
+
+static void settracks(struct context *context, char *value, unsigned int columns)
+{
+
+    struct css_grid *grid = getgrid(context);
+
+    if (!grid)
+        return;
+
+    if (columns)
+    {
+
+        grid->repeat = CSS_REPEAT_NONE;
+        grid->columncount = (matchword(value, cstring_length(value), "none")) ? 0 : addtracks(context, grid, grid->columns, 0, value, 1);
+
+    }
+
+    else
+    {
+
+        grid->rowcount = (matchword(value, cstring_length(value), "none")) ? 0 : addtracks(context, grid, grid->rows, 0, value, 0);
+
+    }
+
+}
+
+static void setautorows(struct context *context, char *value)
+{
+
+    struct css_grid *grid = getgrid(context);
+    struct span spans[1];
+
+    if (grid && countspans(value, spans, 1))
+        grid->autorow = parsetrack(context, value + spans[0].start, spans[0].length);
+
+}
+
+static void setareas(struct context *context, char *value)
+{
+
+    struct css_grid *grid = getgrid(context);
+    unsigned int i = 0;
+
+    if (!grid)
+        return;
+
+    grid->arearows = 0;
+    grid->areacolumns = 0;
+
+    /* every quoted string is a row of names, a dot leaves its cell unnamed */
+    while (value[i])
+    {
+
+        char quote = value[i++];
+        unsigned int column = 0;
+
+        if (quote != '"' && quote != '\'')
+            continue;
+
+        while (value[i] && value[i] != quote)
+        {
+
+            unsigned int start = i;
+
+            while (value[i] && value[i] != quote && !isspace(value[i]))
+                i++;
+
+            if (i > start && grid->arearows < CSS_TRACKS && column < CSS_TRACKS)
+                grid->areas[grid->arearows][column++] = (value[start] == '.') ? 0 : hashname(value + start, i - start);
+
+            while (value[i] && isspace(value[i]))
+                i++;
+
+        }
+
+        if (value[i])
+            i++;
+
+        if (grid->arearows < CSS_TRACKS)
+            grid->arearows++;
+
+        grid->areacolumns = (column > grid->areacolumns) ? column : grid->areacolumns;
+
+    }
+
+}
+
+static struct css_gridline parseline(char *text, unsigned int length)
+{
+
+    struct css_gridline line;
+    struct number number;
+
+    line.value = 0;
+    line.span = 0;
+
+    if (length > 4 && buffer_match(text, "span", 4) && isspace(text[4]))
+    {
+
+        unsigned int start = skipspace(text, 4, length);
+
+        line.span = (start < length) ? cstring_read_value(text + start, length - start, 10) : 1;
+
+        return line;
+
+    }
+
+    number = parsenumber(text, length);
+
+    if (number.length == length)
+        line.value = number.milli / 1000;
+
+    return line;
+
+}
+
+static struct linepart nextpart(char *value, unsigned int offset, unsigned int length)
+{
+
+    struct linepart part;
+
+    part.start = skipspace(value, offset, length);
+    part.end = findstop(value, part.start, length, "/");
+
+    while (part.end > part.start && isspace(value[part.end - 1]))
+        part.end--;
+
+    return part;
+
+}
+
+static void setlines(struct context *context, char *value, unsigned int first, unsigned int second)
+{
+
+    unsigned int length = cstring_length(value);
+    struct linepart start = nextpart(value, 0, length);
+    unsigned int slash = findstop(value, start.start, length, "/");
+    struct linepart end;
+
+    context->style->gridlines[first] = parseline(value + start.start, start.end - start.start);
+    context->style->gridlines[second].value = 0;
+    context->style->gridlines[second].span = 0;
+
+    if (slash >= length)
+        return;
+
+    end = nextpart(value, slash + 1, length);
+    context->style->gridlines[second] = parseline(value + end.start, end.end - end.start);
+
+}
+
+static void setarea(struct context *context, char *value)
+{
+
+    unsigned int length = cstring_length(value);
+    struct linepart part = nextpart(value, 0, length);
+    unsigned int index;
+
+    context->style->gridarea = 0;
+
+    for (index = 0; index < CSS_GRIDLINES; index++)
+    {
+
+        context->style->gridlines[index].value = 0;
+        context->style->gridlines[index].span = 0;
+
+    }
+
+    /* a single name places the item in the area of that name */
+    if (part.end > part.start && cstring_isalpha(value[part.start]) && !buffer_match(value + part.start, "span", 4) && findstop(value, 0, length, "/") >= length)
+    {
+
+        context->style->gridarea = hashname(value + part.start, part.end - part.start);
+
+        return;
+
+    }
+
+    for (index = 0; index < CSS_GRIDLINES && part.start < length; index++)
+    {
+
+        context->style->gridlines[index] = parseline(value + part.start, part.end - part.start);
+        part = nextpart(value, findstop(value, part.start, length, "/") + 1, length);
+
+    }
 
 }
 
@@ -3359,8 +3784,7 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
         break;
 
     case PROP_GRIDTEMPLATECOLUMNS:
-        style->columns = from->columns;
-        style->trackmin = from->trackmin;
+        style->grid = from->grid;
 
         break;
 
@@ -3536,6 +3960,13 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
     case PROP_BACKGROUNDCLIP:
     case PROP_WEBKITBACKGROUNDCLIP:
         style->textclip = from->textclip;
+
+        break;
+
+    case PROP_WORDBREAK:
+    case PROP_OVERFLOWWRAP:
+    case PROP_WORDWRAP:
+        style->breaking = from->breaking;
 
         break;
 
@@ -3851,10 +4282,6 @@ static void setshadow(struct context *context, char *value, unsigned int length)
 static void addcodepoint(struct content *content, unsigned int codepoint)
 {
 
-    /* private use codepoints are icon font glyphs, which have nothing to draw without the font */
-    if ((codepoint >= 0xE000 && codepoint <= 0xF8FF) || codepoint >= 0xF0000)
-        return;
-
     content->length += utf8_write(content->text + content->length, CONTENTSIZE - 1 - content->length, codepoint);
 
 }
@@ -3999,6 +4426,60 @@ static void setcontent(struct context *context, char *value, unsigned int length
 
 }
 
+static void apply(struct context *context, unsigned int property, char *value);
+
+static void applyspan(struct context *context, unsigned int property, char *value, struct span *span)
+{
+
+    char buffer[VALUESIZE];
+
+    if (span->length >= VALUESIZE)
+        return;
+
+    buffer_copy(buffer, value + span->start, span->length);
+
+    buffer[span->length] = '\0';
+
+    apply(context, property, buffer);
+
+}
+
+static void setpair(struct context *context, unsigned int start, unsigned int end, char *value)
+{
+
+    struct span spans[2];
+    unsigned int count = countspans(value, spans, 2);
+
+    if (!count)
+        return;
+
+    applyspan(context, start, value, &spans[0]);
+    applyspan(context, end, value, &spans[count - 1]);
+
+}
+
+static void setfour(struct context *context, unsigned int first, char *value)
+{
+
+    struct span spans[CSS_SIDES];
+    unsigned int count = countspans(value, spans, CSS_SIDES);
+    unsigned int side;
+
+    if (!count)
+        return;
+
+    /* top, right, bottom and left, with missing ones copied from the opposite side as for margins */
+    for (side = 0; side < CSS_SIDES; side++)
+    {
+
+        unsigned int source = (side < count) ? side : (side == CSS_BOTTOM) ? CSS_TOP : (count > 1) ? CSS_RIGHT : CSS_TOP;
+
+        applyspan(context, first + side, value, &spans[source]);
+
+    }
+
+}
+
 static void apply(struct context *context, unsigned int property, char *value)
 {
 
@@ -4073,7 +4554,56 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_GRIDTEMPLATECOLUMNS:
-        setcolumns(context, value);
+        settracks(context, value, 1);
+
+        break;
+
+    case PROP_GRIDTEMPLATEROWS:
+        settracks(context, value, 0);
+
+        break;
+
+    case PROP_GRIDTEMPLATEAREAS:
+        setareas(context, value);
+
+        break;
+
+    case PROP_GRIDAUTOROWS:
+        setautorows(context, value);
+
+        break;
+
+    case PROP_GRIDCOLUMN:
+        setlines(context, value, CSS_GRIDCOLUMNSTART, CSS_GRIDCOLUMNEND);
+
+        break;
+
+    case PROP_GRIDROW:
+        setlines(context, value, CSS_GRIDROWSTART, CSS_GRIDROWEND);
+
+        break;
+
+    case PROP_GRIDCOLUMNSTART:
+    case PROP_GRIDCOLUMNEND:
+    case PROP_GRIDROWSTART:
+    case PROP_GRIDROWEND:
+        context->style->gridlines[(property == PROP_GRIDROWSTART) ? CSS_GRIDROWSTART : (property == PROP_GRIDCOLUMNSTART) ? CSS_GRIDCOLUMNSTART : (property == PROP_GRIDROWEND) ? CSS_GRIDROWEND : CSS_GRIDCOLUMNEND] = parseline(value, length);
+
+        break;
+
+    case PROP_WORDBREAK:
+        style->breaking = (matchword(value, length, "break-all") || matchword(value, length, "break-word")) ? style->breaking | CSS_BREAK_WORDBREAK : style->breaking & ~CSS_BREAK_WORDBREAK;
+
+        break;
+
+    case PROP_OVERFLOWWRAP:
+    case PROP_WORDWRAP:
+        style->breaking = (matchword(value, length, "anywhere")) ? style->breaking | CSS_BREAK_OVERFLOWWRAP : style->breaking & ~CSS_BREAK_OVERFLOWWRAP;
+
+        break;
+
+    case PROP_GRIDAREA:
+        setarea(context, value);
 
         break;
 
@@ -4208,6 +4738,53 @@ static void apply(struct context *context, unsigned int property, char *value)
 
     case PROP_OPACITY:
         setopacity(context, value, length);
+
+        break;
+
+    case PROP_INSET:
+        setfour(context, PROP_TOP, value);
+
+        break;
+
+    case PROP_MARGININLINE:
+        setpair(context, PROP_MARGINTOP + CSS_LEFT, PROP_MARGINTOP + CSS_RIGHT, value);
+
+        break;
+
+    case PROP_MARGINBLOCK:
+        setpair(context, PROP_MARGINTOP + CSS_TOP, PROP_MARGINTOP + CSS_BOTTOM, value);
+
+        break;
+
+    case PROP_PADDINGINLINE:
+        setpair(context, PROP_PADDINGTOP + CSS_LEFT, PROP_PADDINGTOP + CSS_RIGHT, value);
+
+        break;
+
+    case PROP_PADDINGBLOCK:
+        setpair(context, PROP_PADDINGTOP + CSS_TOP, PROP_PADDINGTOP + CSS_BOTTOM, value);
+
+        break;
+
+    case PROP_INSETINLINE:
+        setpair(context, PROP_TOP + CSS_LEFT, PROP_TOP + CSS_RIGHT, value);
+
+        break;
+
+    case PROP_INSETBLOCK:
+        setpair(context, PROP_TOP + CSS_TOP, PROP_TOP + CSS_BOTTOM, value);
+
+        break;
+
+    case PROP_BORDERINLINE:
+        apply(context, PROP_BORDERTOP + CSS_LEFT, value);
+        apply(context, PROP_BORDERTOP + CSS_RIGHT, value);
+
+        break;
+
+    case PROP_BORDERBLOCK:
+        apply(context, PROP_BORDERTOP + CSS_TOP, value);
+        apply(context, PROP_BORDERTOP + CSS_BOTTOM, value);
 
         break;
 
@@ -4848,7 +5425,29 @@ static unsigned int matchhas(struct matcher *matcher, unsigned int index, unsign
     struct css_part *part = &matcher->sheet->parts[index];
     unsigned int other;
 
-    for (other = html_next(document, node, node); other; other = (part->value) ? document->nodes[other].next : html_next(document, other, node))
+    /* siblings are looked for after the element, everything else inside it */
+    if (part->value == HAS_NEXT || part->value == HAS_LATER)
+    {
+
+        for (other = document->nodes[node].next; other; other = document->nodes[other].next)
+        {
+
+            if (document->nodes[other].type != HTML_NODE_ELEMENT)
+                continue;
+
+            if (matchlist(matcher, index + 1, index + 1 + part->name, other))
+                return 1;
+
+            if (part->value == HAS_NEXT)
+                return 0;
+
+        }
+
+        return 0;
+
+    }
+
+    for (other = html_next(document, node, node); other; other = (part->value == HAS_CHILD) ? document->nodes[other].next : html_next(document, other, node))
     {
 
         if (document->nodes[other].type == HTML_NODE_ELEMENT && matchlist(matcher, index + 1, index + 1 + part->name, other))
@@ -5347,6 +5946,7 @@ static void inherit(struct css_style *style, struct css_style *parent)
     style->transform = parent->transform;
     style->opacity = parent->opacity;
     style->letterspacing = parent->letterspacing;
+    style->breaking = parent->breaking;
 
 }
 
@@ -5817,6 +6417,7 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
 
     sheet->customtotal = 0;
     sheet->gradientcount = 0;
+    sheet->gridcount = 0;
     context.sheet = sheet;
     context.document = document;
     context.rootsize = 16;
