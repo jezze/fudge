@@ -404,6 +404,7 @@ static char *agent =
     "hr{border:1px inset gray;margin:.5em 0}"
     "fieldset{border:2px groove gray;padding:.35em .75em .625em;margin:0 2px}"
     "button,input,select,textarea{font-size:13.333px}"
+    "button,select,input[type=submit],input[type=button],input[type=reset]{box-sizing:border-box}"
     "button{display:inline-block;padding:1px 6px;border:2px outset #c0c0c0;background-color:#e0e0e0;color:#000}"
     "input,select,textarea{display:inline-block;border:2px inset #c0c0c0;padding:1px 2px;background-color:#fff;color:#000}"
     "img{display:inline-block}"

@@ -133,7 +133,8 @@ struct font_glyph *font_getglyph(struct font_set *fonts, struct font_choice choi
     glyph = &fonts->entries[index];
     glyph->key = key;
     glyph->id = id;
-    glyph->advance = (face->ttf.unitsperem) ? (int)(ttf_getadvance(&face->ttf, id) * choice.size * 64 / face->ttf.unitsperem) : 0;
+    /* glyphs step whole pixels as hinted text does, which keeps every letter on the pixel grid */
+    glyph->advance = (face->ttf.unitsperem) ? scale(face, choice, (int)ttf_getadvance(&face->ttf, id)) * 64 : 0;
 
     /* icon fonts are not loaded, their glyphs keep the square they would take up and draw nothing */
     if (isicon(codepoint))
@@ -193,7 +194,7 @@ int font_getkerning(struct font_set *fonts, struct font_choice choice, unsigned 
     if (!left || !right)
         return 0;
 
-    return ttf_getkerning(&face->ttf, left, right) * (int)choice.size * 64 / (int)face->ttf.unitsperem;
+    return scale(face, choice, ttf_getkerning(&face->ttf, left, right)) * 64;
 
 }
 

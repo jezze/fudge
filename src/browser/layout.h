@@ -146,6 +146,8 @@ struct layout
     unsigned int heightnode;
     unsigned int wrapped;
     unsigned int measured;
+    int wrapedge;
+    unsigned int edgewraps;
     int natural;
     int forceheight;
     unsigned int baselinedepth;

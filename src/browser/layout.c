@@ -14,6 +14,7 @@
 #define NONE                            0xFFFFFFFF
 #define FLOW_NORMAL                     0
 #define FLOW_FLEXROW                    1
+#define LINE_CENTER                     4
 #define FLOW_FLEXCOLUMN                 2
 #define LABELSIZE                       128
 
@@ -552,13 +553,31 @@ static struct css_style *getitemstyle(struct layout *layout, struct flow *flow, 
 
 }
 
-static int alignitem(struct css_style *style, struct layout_item *item, int top, int baseline, int height, int middle)
+static unsigned int linealign(struct layout *layout, struct flow *flow, struct layout_item *item)
 {
 
-    if (!style)
-        return baseline;
+    struct css_style *style = getitemstyle(layout, flow, item);
+    unsigned int align;
 
-    switch (style->valign)
+    if (flow->type != FLOW_FLEXROW)
+        return (style) ? style->valign : CSS_VALIGN_BASELINE;
+
+    /* in a flex line the items and the text between them line up as flex items do */
+    align = getstyle(layout, flow->node)->alignitems;
+
+    if (item->atomic && style->alignself != CSS_FLEX_AUTO)
+        align = style->alignself;
+
+    return (align == CSS_FLEX_CENTER) ? LINE_CENTER : (align == CSS_FLEX_END) ? CSS_VALIGN_BOTTOM : CSS_VALIGN_TOP;
+
+}
+
+static int alignitem(struct layout *layout, struct flow *flow, struct layout_item *item, int top, int baseline, int height, int middle)
+{
+
+    struct css_style *style = getitemstyle(layout, flow, item);
+
+    switch (linealign(layout, flow, item))
     {
 
     case CSS_VALIGN_TOP:
@@ -570,9 +589,32 @@ static int alignitem(struct css_style *style, struct layout_item *item, int top,
     case CSS_VALIGN_MIDDLE:
         return baseline - middle - (item->ascent + item->descent) / 2 + item->ascent;
 
+    case LINE_CENTER:
+        return top + (height - item->ascent - item->descent) / 2 + item->ascent;
+
     }
 
-    return baseline - style->valignoffset;
+    return baseline - ((style) ? style->valignoffset : 0);
+
+}
+
+static unsigned int countlinemargins(struct layout *layout, struct flow *flow)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    for (i = flow->itemstart; i < layout->itemcount; i++)
+    {
+
+        struct layout_item *item = &layout->items[i];
+
+        if (item->atomic)
+            count += (getstyle(layout, item->node)->margin[CSS_LEFT].unit == CSS_UNIT_AUTO) + (getstyle(layout, item->node)->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO);
+
+    }
+
+    return count;
 
 }
 
@@ -581,12 +623,14 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
 
     struct metrics strut = getmetrics(layout, getstyle(layout, flow->node));
     struct css_style *style = getstyle(layout, flow->node);
-    int ascent = strut.ascent;
-    int descent = strut.descent;
+    int ascent = (flow->type == FLOW_FLEXROW) ? 0 : strut.ascent;
+    int descent = (flow->type == FLOW_FLEXROW) ? 0 : strut.descent;
     int used = flow->x - flow->left;
     int middle = style->fontsize / 4;
     int tallest = 0;
     int dx = 0;
+    int free = 0;
+    unsigned int automargins = 0;
     int baseline;
     unsigned int i;
 
@@ -617,14 +661,14 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
         struct layout_item *item = &layout->items[i];
         struct css_style *itemstyle = getitemstyle(layout, flow, item);
         int height = item->ascent + item->descent;
-        unsigned int valign = (itemstyle) ? itemstyle->valign : CSS_VALIGN_BASELINE;
         int offset = (itemstyle) ? itemstyle->valignoffset : 0;
 
-        switch (valign)
+        switch (linealign(layout, flow, item))
         {
 
         case CSS_VALIGN_TOP:
         case CSS_VALIGN_BOTTOM:
+        case LINE_CENTER:
             tallest = max(tallest, height);
 
             break;
@@ -648,10 +692,31 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
     /* boxes hung from the top or bottom only make the line taller once the rest has set it */
     descent = max(descent, tallest - ascent);
 
-    if (style->align == CSS_ALIGN_CENTER)
+    if (flow->type == FLOW_FLEXROW)
+    {
+
+        /* a flex line gives its free space to auto margins first, then places items as justify-content says */
+        automargins = countlinemargins(layout, flow);
+        free = max(flow->right - flow->left - used, 0);
+
+        if (!automargins)
+            dx = (style->justify == CSS_FLEX_CENTER) ? free / 2 : (style->justify == CSS_FLEX_END) ? free : 0;
+
+    }
+
+    else if (style->align == CSS_ALIGN_CENTER)
+    {
+
         dx = max((flow->right - flow->left - used) / 2, 0);
+
+    }
+
     else if (style->align == CSS_ALIGN_RIGHT)
+    {
+
         dx = max(flow->right - flow->left - used, 0);
+
+    }
 
     baseline = flow->y + ascent;
 
@@ -659,7 +724,10 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
     {
 
         struct layout_item *item = &layout->items[i];
-        int itembaseline = alignitem(getitemstyle(layout, flow, item), item, flow->y, baseline, ascent + descent, middle);
+        int itembaseline = alignitem(layout, flow, item, flow->y, baseline, ascent + descent, middle);
+
+        if (automargins && item->atomic && getstyle(layout, item->node)->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
+            dx += free / (int)automargins;
 
         if (item->atomic)
         {
@@ -675,6 +743,9 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
             layout->fragments[item->fragmentstart].y = itembaseline - item->shift;
 
         }
+
+        if (automargins && item->atomic && getstyle(layout, item->node)->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO)
+            dx += free / (int)automargins;
 
     }
 
@@ -760,6 +831,17 @@ static void placepiece(struct layout *layout, struct flow *flow, struct text *te
 
 }
 
+static void countwrap(struct layout *layout, struct flow *flow)
+{
+
+    layout->wrapped++;
+
+    /* a line broken against the edge of the box being measured means its content wants more room than it has */
+    if (flow->right >= layout->wrapedge)
+        layout->edgewraps++;
+
+}
+
 static void placeword(struct layout *layout, struct flow *flow, struct text *text, unsigned int start, unsigned int end)
 {
 
@@ -770,7 +852,7 @@ static void placeword(struct layout *layout, struct flow *flow, struct text *tex
     if (text->wrap && !isempty(layout, flow) && flow->x + spacewidth + width > flow->right)
     {
 
-        layout->wrapped++;
+        countwrap(layout, flow);
 
         closefragment(text);
         flushline(layout, flow, 0);
@@ -790,7 +872,7 @@ static void placeword(struct layout *layout, struct flow *flow, struct text *tex
         if (split >= end - start)
             break;
 
-        layout->wrapped++;
+        countwrap(layout, flow);
 
         placepiece(layout, flow, text, start, start + split, measuretext(layout, &text->metrics, data + start, split, 0), 0);
         closefragment(text);
@@ -1204,6 +1286,8 @@ static int measure(struct layout *layout, unsigned int node, int availw)
     unsigned int marker = layout->marker;
     unsigned int truncated = layout->truncated;
     int extent = layout->extent;
+    int wrapedge = layout->wrapedge;
+    unsigned int edgewraps = layout->edgewraps;
     int ml = resolve(&style->margin[CSS_LEFT], availw);
     int needed;
     int extra;
@@ -1223,6 +1307,8 @@ static int measure(struct layout *layout, unsigned int node, int availw)
     if (!layout->measuring)
         layout->measured = node;
 
+    layout->wrapedge = availw - resolve(&style->margin[CSS_RIGHT], availw) - style->borderwidth[CSS_RIGHT] - resolve(&style->padding[CSS_RIGHT], availw);
+    layout->edgewraps = 0;
     layout->measuring++;
     layout->truncated = 0;
     layout->extent = 0;
@@ -1237,6 +1323,11 @@ static int measure(struct layout *layout, unsigned int node, int availw)
 
     /* content that cannot wrap any narrower makes the box wider than the room it was given, as in css */
     needed = max(needed, 0);
+
+    /* content that had to break against the box's own edge would rather have all the room there is */
+    if (!layout->minimum && layout->edgewraps)
+        needed = max(needed, availw - ml - resolve(&style->margin[CSS_RIGHT], availw));
+
     extra = style->borderwidth[CSS_LEFT] + style->borderwidth[CSS_RIGHT] + resolve(&style->padding[CSS_LEFT], availw) + resolve(&style->padding[CSS_RIGHT], availw);
 
     /* but never past a max-width or short of a min-width, whatever the content wants */
@@ -1257,6 +1348,8 @@ static int measure(struct layout *layout, unsigned int node, int availw)
 
     layout->measuring--;
     layout->truncated = layout->truncated || truncated;
+    layout->wrapedge = wrapedge;
+    layout->edgewraps = edgewraps;
     layout->fragmentcount = fragmentcount;
     layout->floatcount = floatcount;
     layout->textcount = textcount;
@@ -1288,7 +1381,7 @@ static void placeatomic(struct layout *layout, struct flow *flow, unsigned int n
     if (wrap && !isempty(layout, flow) && flow->x + spacewidth + gap + ml + width + mr > flow->right)
     {
 
-        layout->wrapped++;
+        countwrap(layout, flow);
 
         flushline(layout, flow, 0);
 
@@ -4203,6 +4296,8 @@ void layout_document(struct layout *layout, unsigned int width, unsigned int hei
     layout->forcenode = 0;
     layout->heightnode = 0;
     layout->wrapped = 0;
+    layout->wrapedge = 0x7FFFFFFF;
+    layout->edgewraps = 0;
     layout->flexcount = 0;
     layout->floatcount = 0;
     layout->floatbase = 0;
