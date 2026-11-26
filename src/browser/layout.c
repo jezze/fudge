@@ -69,6 +69,8 @@ struct columns
     int widths[COLUMNS];
     unsigned int count;
     int spacing;
+    unsigned int collapse;
+    int overlap;
 
 };
 
@@ -1990,7 +1992,9 @@ static int computecolumns(struct layout *layout, unsigned int node, struct colum
     buffer_clear(fixed, sizeof (int) * COLUMNS);
 
     columns->count = 0;
-    columns->spacing = (getstyle(layout, node)->collapse) ? 0 : getstyle(layout, node)->spacing;
+    columns->collapse = getstyle(layout, node)->collapse;
+    columns->spacing = (columns->collapse) ? 0 : getstyle(layout, node)->spacing;
+    columns->overlap = 0;
 
     if (isrow(layout, node))
     {
@@ -2122,6 +2126,24 @@ static int computecolumns(struct layout *layout, unsigned int node, struct colum
 
 }
 
+static int rowborder(struct layout *layout, unsigned int row, unsigned int side)
+{
+
+    int width = 0;
+    unsigned int cell;
+
+    for (cell = getnode(layout, row)->first; cell; cell = getnode(layout, cell)->next)
+    {
+
+        if (iscell(layout, cell))
+            width = max(width, getstyle(layout, cell)->borderwidth[side]);
+
+    }
+
+    return width;
+
+}
+
 static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row, struct columns *columns)
 {
 
@@ -2131,6 +2153,7 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
     unsigned int column = 0;
     int x = flow->left + columns->spacing;
     int rowheight = 0;
+    int shared = 0;
     unsigned int cell;
     unsigned int i;
 
@@ -2142,6 +2165,12 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
     box->x = flow->left;
     box->y = flow->y + columns->spacing;
     box->w = flow->right - flow->left;
+
+    /* collapsed borders are shared, the wider of two touching ones is drawn and the narrower one takes no room */
+    if (columns->collapse)
+        box->y -= min(columns->overlap, rowborder(layout, row, CSS_TOP));
+
+    columns->overlap = 0;
 
     for (cell = getnode(layout, row)->first; cell && column < columns->count && count < COLUMNS; cell = getnode(layout, cell)->next)
     {
@@ -2170,6 +2199,9 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
 
         }
 
+        if (columns->collapse)
+            x -= min(shared, getstyle(layout, cell)->borderwidth[CSS_LEFT]);
+
         cells[count].node = cell;
         cells[count].fragmentstart = layout->fragmentcount;
 
@@ -2187,6 +2219,7 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
         cells[count].fragmentend = layout->fragmentcount;
         rowheight = max(rowheight, cells[count].height);
         x += width + columns->spacing;
+        shared = getstyle(layout, cell)->borderwidth[CSS_RIGHT];
         column += span;
         count++;
 
@@ -2209,6 +2242,7 @@ static void layoutrow(struct layout *layout, struct flow *flow, unsigned int row
 
     box->h = rowheight;
     flow->y = box->y + rowheight;
+    columns->overlap = min(rowborder(layout, row, CSS_BOTTOM), rowheight);
 
 }
 
@@ -2301,6 +2335,30 @@ static unsigned int hastext(struct layout *layout, unsigned int node)
     {
 
         if (getnode(layout, child)->type == HTML_NODE_TEXT && !isblank(layout, child))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int hostsrows(struct layout *layout, unsigned int node)
+{
+
+    struct css_style *style = getstyle(layout, node);
+    unsigned int child;
+
+    if (style->display != CSS_DISPLAY_BLOCK || style->flexbox || hastext(layout, node))
+        return 0;
+
+    /* rows in a plain block share one anonymous table, as a table made display block keeps its columns */
+    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    {
+
+        unsigned int display = (iscell(layout, child)) ? getstyle(layout, child)->display : CSS_DISPLAY_NONE;
+
+        if (display == CSS_DISPLAY_ROW || display == CSS_DISPLAY_ROWGROUP)
             return 1;
 
     }
@@ -4080,6 +4138,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     int cw = availw - ml - mr - extra;
     unsigned int constrained = 0;
     unsigned int sized = 0;
+    int rowswidth = 0;
     unsigned int capped = 0;
     unsigned int wrapped = layout->wrapped;
     unsigned int floatstart = layout->floatcount;
@@ -4140,7 +4199,14 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
     }
 
-    if (style->display == CSS_DISPLAY_TABLE || style->display == CSS_DISPLAY_ROW)
+    if (hostsrows(layout, node))
+    {
+
+        rowswidth = computecolumns(layout, node, &columns, cw, 0);
+
+    }
+
+    else if (style->display == CSS_DISPLAY_TABLE || style->display == CSS_DISPLAY_ROW)
     {
 
         int width = computecolumns(layout, node, &columns, cw, style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT);
@@ -4214,6 +4280,16 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
     else if (style->display == CSS_DISPLAY_TABLE)
     {
+
+        layouttable(layout, &flow, node, &columns);
+
+    }
+
+    else if (rowswidth)
+    {
+
+        flow.boxright = min(flow.boxright, flow.boxleft + rowswidth);
+        flow.right = min(flow.right, flow.boxright);
 
         layouttable(layout, &flow, node, &columns);
 

@@ -949,6 +949,25 @@ static unsigned int parsenth(char *text, unsigned int start, unsigned int end, s
 
 }
 
+static unsigned int findcompound(struct css_part *parts, unsigned int first, unsigned int end)
+{
+
+    unsigned int start = first;
+    unsigned int i;
+
+    /* the last compound starts at the last combinator outside :is, :not and :has, whose own parts can have combinators too */
+    for (i = first; i < end; i += (parts[i].type == PART_IS || parts[i].type == PART_HAS) ? parts[i].name + 1 : 1)
+    {
+
+        if (parts[i].combinator != COMBINATOR_NONE)
+            start = i;
+
+    }
+
+    return start;
+
+}
+
 static unsigned int parsesimple(struct selectorparser *selectorparser, unsigned int offset, unsigned int end, unsigned int combinator);
 
 static unsigned int parsealternative(struct selectorparser *selectorparser, unsigned int start, unsigned int end)
@@ -957,6 +976,7 @@ static unsigned int parsealternative(struct selectorparser *selectorparser, unsi
     struct css_sheet *sheet = selectorparser->sheet;
     unsigned int alternative = sheet->partcount;
     unsigned int offset = skipspace(selectorparser->text, start, end);
+    unsigned int combinator = COMBINATOR_NONE;
 
     while (end > offset && isspace(selectorparser->text[end - 1]))
         end--;
@@ -967,12 +987,47 @@ static unsigned int parsealternative(struct selectorparser *selectorparser, unsi
     while (offset < end)
     {
 
-        offset = parsesimple(selectorparser, offset, end, COMBINATOR_NONE);
+        char c = selectorparser->text[offset];
+
+        if (isspace(c) || c == '>' || c == '+' || c == '~')
+        {
+
+            offset = skipspace(selectorparser->text, offset, end);
+
+            if (offset < end && (selectorparser->text[offset] == '>' || selectorparser->text[offset] == '+' || selectorparser->text[offset] == '~'))
+            {
+
+                c = selectorparser->text[offset];
+                combinator = (c == '>') ? COMBINATOR_CHILD : (c == '+') ? COMBINATOR_ADJACENT : COMBINATOR_SIBLING;
+                offset = skipspace(selectorparser->text, offset + 1, end);
+
+            }
+
+            else
+            {
+
+                combinator = COMBINATOR_DESCENDANT;
+
+            }
+
+            if (sheet->partcount == alternative + 1)
+                return 0;
+
+            continue;
+
+        }
+
+        offset = parsesimple(selectorparser, offset, end, combinator);
 
         if (!offset)
             return 0;
 
+        combinator = COMBINATOR_NONE;
+
     }
+
+    if (combinator != COMBINATOR_NONE)
+        return 0;
 
     sheet->parts[alternative].name = sheet->partcount - alternative - 1;
 
@@ -1279,14 +1334,8 @@ static unsigned int parsesimple(struct selectorparser *selectorparser, unsigned 
 static void setkey(struct css_sheet *sheet, struct css_selector *selector)
 {
 
-    unsigned int start = selector->part + selector->count;
+    unsigned int start = findcompound(sheet->parts, selector->part, selector->part + selector->count);
     unsigned int i;
-
-    while (start > selector->part && sheet->parts[start - 1].combinator == COMBINATOR_NONE)
-        start--;
-
-    if (start > selector->part)
-        start--;
 
     selector->keytype = KEY_NONE;
 
@@ -5618,6 +5667,7 @@ static unsigned int matchpart(struct matcher *matcher, struct css_part *part, un
 
 static unsigned int matchcompound(struct matcher *matcher, unsigned int start, unsigned int end, unsigned int node);
 static unsigned int matchhas(struct matcher *matcher, unsigned int index, unsigned int node);
+static unsigned int matchselector(struct matcher *matcher, unsigned int first, unsigned int end, unsigned int node);
 
 static unsigned int matchlist(struct matcher *matcher, unsigned int start, unsigned int end, unsigned int node)
 {
@@ -5627,7 +5677,7 @@ static unsigned int matchlist(struct matcher *matcher, unsigned int start, unsig
     for (i = start; i < end; i += matcher->sheet->parts[i].name + 1)
     {
 
-        if (matchcompound(matcher, i + 1, i + 1 + matcher->sheet->parts[i].name, node))
+        if (matchselector(matcher, i + 1, i + 1 + matcher->sheet->parts[i].name, node))
             return 1;
 
     }
@@ -5704,11 +5754,8 @@ static unsigned int matchselector(struct matcher *matcher, unsigned int first, u
 {
 
     struct css_part *parts = matcher->sheet->parts;
-    unsigned int start = end - 1;
+    unsigned int start = findcompound(parts, first, end);
     unsigned int other;
-
-    while (start > first && parts[start].combinator == COMBINATOR_NONE)
-        start--;
 
     if (!matchcompound(matcher, start, end, node))
         return 0;
