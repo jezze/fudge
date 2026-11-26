@@ -7,6 +7,7 @@
 
 #define COLUMNS                         16
 #define FLEXLINES                       64
+#define FLOWDEFERRED                    8
 #define GRIDCOLUMNS                     32
 #define GRIDROWS                        128
 #define MEASUREDEPTH                    8
@@ -33,6 +34,8 @@ struct flow
     unsigned int node;
     unsigned int type;
     unsigned int collapsed;
+    unsigned int deferred[FLOWDEFERRED];
+    unsigned int deferredcount;
 
 };
 
@@ -117,6 +120,9 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 static void layoutnode(struct layout *layout, struct flow *flow, unsigned int node);
 static unsigned int isroot(struct layout *layout, unsigned int node);
 static int leadingmargin(struct layout *layout, unsigned int node, int availw);
+static void translate(struct layout *layout, unsigned int node, unsigned int fragmentstart, unsigned int fragmentend, int dx, int dy, unsigned int self);
+static void placefloat(struct layout *layout, struct flow *flow, unsigned int node);
+static int firstbottom(struct layout *layout, unsigned int node);
 
 static struct css_style *getstyle(struct layout *layout, unsigned int node)
 {
@@ -406,6 +412,27 @@ static struct band findband(struct layout *layout, struct flow *flow, int y)
 
 }
 
+static void shiftline(struct layout *layout, struct flow *flow, int dx)
+{
+
+    unsigned int i;
+
+    for (i = flow->itemstart; i < layout->itemcount; i++)
+    {
+
+        struct layout_item *item = &layout->items[i];
+
+        if (item->atomic)
+            translate(layout, item->node, item->fragmentstart, item->fragmentend, dx, 0, 1);
+        else if (item->fragmentstart != NONE)
+            layout->fragments[item->fragmentstart].x += dx;
+
+    }
+
+    flow->x += dx;
+
+}
+
 static void fitline(struct layout *layout, struct flow *flow)
 {
 
@@ -416,8 +443,11 @@ static void fitline(struct layout *layout, struct flow *flow)
 
     band = findband(layout, flow, flow->y);
 
+    /* a left float placed beside a line already started pushes what is on it over */
     if (isempty(layout, flow))
         flow->x += band.left - flow->left;
+    else if (band.left > flow->left)
+        shiftline(layout, flow, band.left - flow->left);
 
     flow->left = band.left;
     flow->right = band.right;
@@ -774,6 +804,22 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
     flow->space = 0;
 
     fitline(layout, flow);
+
+    /* floats that did not fit beside the line go below it, now that it is done */
+    if (flow->deferredcount)
+    {
+
+        unsigned int deferred[FLOWDEFERRED];
+        unsigned int count = flow->deferredcount;
+
+        buffer_copy(deferred, flow->deferred, sizeof (unsigned int) * count);
+
+        flow->deferredcount = 0;
+
+        for (i = 0; i < count; i++)
+            placefloat(layout, flow, deferred[i]);
+
+    }
 
 }
 
@@ -1428,6 +1474,8 @@ static void placeatomic(struct layout *layout, struct flow *flow, unsigned int n
     /* an inline-block sits on the baseline of its last line box, or on its bottom edge without one */
     if (flow->type == FLOW_NORMAL && !isreplaced(layout, node) && layout->baselinedepth == layout->atomicdepth + 1)
         ascent = min(max(layout->baseline - flow->y, 0), mt + height + mb);
+    else if (flow->type == FLOW_NORMAL && getstyle(layout, node)->flexbox)
+        ascent = min(max(firstbottom(layout, node) - flow->y, 0), mt + height + mb);
 
     additem(layout, node, 1, fragmentstart, layout->fragmentcount, ascent, mt + height + mb - ascent, 0);
 
@@ -1524,8 +1572,17 @@ static void placefloat(struct layout *layout, struct flow *flow, unsigned int no
     width = measure(layout, node, availw);
     outer = ml + width + mr;
 
-    /* a right float that fits beside the text already on the line stays on it, a left one would have to move that text */
-    sameline = style->floating == CSS_FLOAT_RIGHT && !style->clear && !isempty(layout, flow) && flow->x + outer <= flow->right;
+    /* a float that fits beside the text already on the line stays on it, a left one moves that text over */
+    sameline = (!style->clear || clearance(layout, style->clear, flow->y) == flow->y) && !isempty(layout, flow) && flow->x + outer <= flow->right && !(layout->floatcount > layout->floatbase && layout->floats[layout->floatcount - 1].top > flow->y);
+
+    if (!isempty(layout, flow) && !sameline && flow->type == FLOW_NORMAL && flow->deferredcount < FLOWDEFERRED)
+    {
+
+        flow->deferred[flow->deferredcount++] = node;
+
+        return;
+
+    }
 
     if (!isempty(layout, flow) && !sameline)
         flushline(layout, flow, 0);
@@ -1580,6 +1637,24 @@ static unsigned int isvisible(struct css_style *style)
 {
 
     return style->display != CSS_DISPLAY_NONE && style->position != CSS_POSITION_ABSOLUTE && style->position != CSS_POSITION_FIXED;
+
+}
+
+static int firstbottom(struct layout *layout, unsigned int node)
+{
+
+    unsigned int child;
+
+    /* a flex item without lines of its own is taken to sit on its bottom edge, so the container does too */
+    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    {
+
+        if (getnode(layout, child)->type == HTML_NODE_ELEMENT && isvisible(getstyle(layout, child)) && layout->boxes[child].placed)
+            return layout->boxes[child].y + layout->boxes[child].h;
+
+    }
+
+    return layout->boxes[node].y + layout->boxes[node].h;
 
 }
 
@@ -1869,6 +1944,7 @@ static void initflow(struct layout *layout, struct flow *flow, unsigned int node
     flow->collapsed = 0;
     flow->node = node;
     flow->type = FLOW_NORMAL;
+    flow->deferredcount = 0;
 
     if (style->display == CSS_DISPLAY_FLEX)
         flow->type = (style->column) ? FLOW_FLEXCOLUMN : FLOW_FLEXROW;
