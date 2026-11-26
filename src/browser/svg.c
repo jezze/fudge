@@ -51,6 +51,15 @@ struct render
 
 };
 
+struct viewport
+{
+
+    struct svg_matrix matrix;
+    int width;
+    int height;
+
+};
+
 static char *properties[PROPERTIES] = {"fill", "stroke", "stroke-width", "fill-opacity", "stroke-opacity", "opacity", "fill-rule", "stroke-linecap", "color", "display", "visibility"};
 static struct render raster;
 
@@ -753,6 +762,53 @@ static void drawshape(struct render *render, struct state *state)
 
 }
 
+static struct viewport fitviewbox(char *viewbox, char *aspect, int width, int height)
+{
+
+    unsigned int aspectlength = (aspect) ? cstring_length(aspect) : 0;
+    struct viewport viewport;
+    struct svg_reader reader;
+    int values[4];
+    int sx;
+    int sy;
+
+    svg_setmatrix(&viewport.matrix, SVG_ONE, 0, 0, SVG_ONE, 0, 0);
+
+    viewport.width = width;
+    viewport.height = height;
+
+    if (!viewbox)
+        return viewport;
+
+    reader.text = viewbox;
+    reader.offset = 0;
+
+    if (!svg_readpoints(&reader, values, 4) || values[2] <= 0 || values[3] <= 0)
+        return viewport;
+
+    sx = svg_divfix(width, values[2]);
+    sy = svg_divfix(height, values[3]);
+
+    if (!(aspect && cstring_match(aspect, "none")))
+    {
+
+        unsigned int slice = aspectlength >= 5 && buffer_match(aspect + aspectlength - 5, "slice", 5);
+        int scale = (slice) ? ((sx > sy) ? sx : sy) : ((sx < sy) ? sx : sy);
+
+        sx = scale;
+        sy = scale;
+
+    }
+
+    svg_setmatrix(&viewport.matrix, sx, 0, 0, sy, (width - svg_mulfix(values[2], sx)) / 2 - svg_mulfix(values[0], sx), (height - svg_mulfix(values[3], sy)) / 2 - svg_mulfix(values[1], sy));
+
+    viewport.width = values[2];
+    viewport.height = values[3];
+
+    return viewport;
+
+}
+
 static void walk(struct render *render, unsigned int node, struct state *parent, unsigned int depth);
 
 static void walkchildren(struct render *render, unsigned int node, struct state *state, unsigned int depth)
@@ -800,11 +856,24 @@ static void walkuse(struct render *render, unsigned int node, struct state *stat
     svg_setmatrix(&shift, SVG_ONE, 0, 0, SVG_ONE, getlength(render, node, "x", render->viewwidth, 0), getlength(render, node, "y", render->viewheight, 0));
     svg_multiply(&state->matrix, &shift);
 
+    /* a symbol fits its own viewbox into the use, which fills the viewport unless it says otherwise */
     if (matchname(render, target, "symbol"))
     {
 
+        int viewwidth = render->viewwidth;
+        int viewheight = render->viewheight;
+        struct viewport viewport = fitviewbox(html_getattribute(render->document, target, "viewbox"), html_getattribute(render->document, target, "preserveaspectratio"), getlength(render, node, "width", viewwidth, viewwidth), getlength(render, node, "height", viewheight, viewheight));
+
+        svg_multiply(&state->matrix, &viewport.matrix);
+
+        render->viewwidth = viewport.width;
+        render->viewheight = viewport.height;
+
         applyattributes(render, state, target);
         walkchildren(render, target, state, depth + 1);
+
+        render->viewwidth = viewwidth;
+        render->viewheight = viewheight;
 
     }
 
@@ -986,11 +1055,9 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
 {
 
     struct state state;
-    char *viewbox = html_getattribute(document, root, "viewbox");
-    char *aspect = html_getattribute(document, root, "preserveaspectratio");
-    unsigned int aspectlength = (aspect) ? cstring_length(aspect) : 0;
     int width = (int)canvas->width << 16;
     int height = (int)canvas->height << 16;
+    struct viewport viewport = fitviewbox(html_getattribute(document, root, "viewbox"), html_getattribute(document, root, "preserveaspectratio"), width, height);
 
     if (!canvas->width || canvas->width > SVG_WIDTH || !canvas->height)
         return;
@@ -999,13 +1066,13 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
     raster.svg.width = canvas->width;
     raster.svg.height = canvas->height;
     raster.document = document;
-    raster.viewwidth = width;
-    raster.viewheight = height;
+    raster.viewwidth = viewport.width;
+    raster.viewheight = viewport.height;
 
     findstyles(&raster, root);
 
     buffer_clear(&state, sizeof (struct state));
-    svg_setmatrix(&state.matrix, SVG_ONE, 0, 0, SVG_ONE, 0, 0);
+    buffer_copy(&state.matrix, &viewport.matrix, sizeof (struct svg_matrix));
 
     state.fill.kind = PAINT_COLOR;
     state.fill.color = 0xFF000000;
@@ -1017,41 +1084,6 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
     state.opacity = 255;
     state.display = 1;
     state.visible = 1;
-
-    if (viewbox)
-    {
-
-        struct svg_reader reader;
-        int values[4];
-
-        reader.text = viewbox;
-        reader.offset = 0;
-
-        if (svg_readpoints(&reader, values, 4) && values[2] > 0 && values[3] > 0)
-        {
-
-            int sx = svg_divfix(width, values[2]);
-            int sy = svg_divfix(height, values[3]);
-
-            if (!(aspect && cstring_match(aspect, "none")))
-            {
-
-                unsigned int slice = aspectlength >= 5 && buffer_match(aspect + aspectlength - 5, "slice", 5);
-                int scale = (slice) ? ((sx > sy) ? sx : sy) : ((sx < sy) ? sx : sy);
-
-                sx = scale;
-                sy = scale;
-
-            }
-
-            svg_setmatrix(&state.matrix, sx, 0, 0, sy, (width - svg_mulfix(values[2], sx)) / 2 - svg_mulfix(values[0], sx), (height - svg_mulfix(values[3], sy)) / 2 - svg_mulfix(values[1], sy));
-
-            raster.viewwidth = values[2];
-            raster.viewheight = values[3];
-
-        }
-
-    }
 
     applyattributes(&raster, &state, root);
 
