@@ -159,6 +159,8 @@ struct css_style
     unsigned short grid;
     struct css_gridline gridlines[CSS_GRIDLINES];
     unsigned int gridarea;
+    unsigned int aspect;
+    struct css_length shift[2];
     unsigned short rowgap;
     unsigned short columngap;
     unsigned short grow;

@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      121
+#define PROPERTIES                      123
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -102,6 +102,8 @@
 #define PROP_WORDBREAK                  118
 #define PROP_OVERFLOWWRAP               119
 #define PROP_WORDWRAP                   120
+#define PROP_ASPECTRATIO                121
+#define PROP_TRANSFORM                  122
 #define ALIASES                         28
 #define PROP_CUSTOM                     255
 #define POOL_EXACT                      0
@@ -148,7 +150,7 @@
 #define KEY_ID                          2
 #define KEY_CLASS                       3
 #define MATCHES                         128
-#define COLORS                          40
+#define COLORS                          148
 #define NOLIMIT                         0x7FFFFFFF
 #define VALUESIZE                       64
 #define FONTTOKENS                      8
@@ -321,7 +323,7 @@ static char *properties[PROPERTIES] = {
     "float", "clear", "overflow", "overflow-x", "overflow-y",
     "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip", "vertical-align", "letter-spacing", "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius",
     "inset", "margin-inline", "margin-block", "padding-inline", "padding-block", "inset-inline", "inset-block", "border-inline", "border-block",
-    "grid-template-rows", "grid-template-areas", "grid-auto-rows", "grid-column", "grid-row", "grid-column-start", "grid-column-end", "grid-row-start", "grid-row-end", "grid-area", "word-break", "overflow-wrap", "word-wrap"
+    "grid-template-rows", "grid-template-areas", "grid-auto-rows", "grid-column", "grid-row", "grid-column-start", "grid-column-end", "grid-row-start", "grid-row-end", "grid-area", "word-break", "overflow-wrap", "word-wrap", "aspect-ratio", "transform"
 };
 static char *aliases[ALIASES][2] = {
     {"margin-inline-start", "margin-left"}, {"margin-inline-end", "margin-right"}, {"margin-block-start", "margin-top"}, {"margin-block-end", "margin-bottom"},
@@ -333,11 +335,31 @@ static char *aliases[ALIASES][2] = {
     {"inline-size", "width"}, {"block-size", "height"}, {"min-inline-size", "min-width"}, {"max-inline-size", "max-width"}, {"min-block-size", "min-height"}, {"max-block-size", "max-height"}
 };
 static struct namedcolor colors[COLORS] = {
-    {"black", 0x000000}, {"white", 0xFFFFFF}, {"red", 0xFF0000}, {"green", 0x008000}, {"blue", 0x0000FF}, {"yellow", 0xFFFF00}, {"gray", 0x808080}, {"grey", 0x808080},
-    {"silver", 0xC0C0C0}, {"maroon", 0x800000}, {"purple", 0x800080}, {"fuchsia", 0xFF00FF}, {"magenta", 0xFF00FF}, {"lime", 0x00FF00}, {"olive", 0x808000}, {"navy", 0x000080},
-    {"teal", 0x008080}, {"aqua", 0x00FFFF}, {"cyan", 0x00FFFF}, {"orange", 0xFFA500}, {"pink", 0xFFC0CB}, {"brown", 0xA52A2A}, {"gold", 0xFFD700}, {"darkgray", 0xA9A9A9},
-    {"darkgrey", 0xA9A9A9}, {"lightgray", 0xD3D3D3}, {"lightgrey", 0xD3D3D3}, {"darkblue", 0x00008B}, {"darkred", 0x8B0000}, {"darkgreen", 0x006400}, {"lightblue", 0xADD8E6}, {"lightyellow", 0xFFFFE0},
-    {"whitesmoke", 0xF5F5F5}, {"gainsboro", 0xDCDCDC}, {"dimgray", 0x696969}, {"orangered", 0xFF4500}, {"steelblue", 0x4682B4}, {"indigo", 0x4B0082}, {"violet", 0xEE82EE}, {"crimson", 0xDC143C}
+    {"aliceblue", 0xF0F8FF}, {"antiquewhite", 0xFAEBD7}, {"aqua", 0x00FFFF}, {"aquamarine", 0x7FFFD4}, {"azure", 0xF0FFFF}, {"beige", 0xF5F5DC},
+    {"bisque", 0xFFE4C4}, {"black", 0x000000}, {"blanchedalmond", 0xFFEBCD}, {"blue", 0x0000FF}, {"blueviolet", 0x8A2BE2}, {"brown", 0xA52A2A},
+    {"burlywood", 0xDEB887}, {"cadetblue", 0x5F9EA0}, {"chartreuse", 0x7FFF00}, {"chocolate", 0xD2691E}, {"coral", 0xFF7F50}, {"cornflowerblue", 0x6495ED},
+    {"cornsilk", 0xFFF8DC}, {"crimson", 0xDC143C}, {"cyan", 0x00FFFF}, {"darkblue", 0x00008B}, {"darkcyan", 0x008B8B}, {"darkgoldenrod", 0xB8860B},
+    {"darkgray", 0xA9A9A9}, {"darkgreen", 0x006400}, {"darkgrey", 0xA9A9A9}, {"darkkhaki", 0xBDB76B}, {"darkmagenta", 0x8B008B}, {"darkolivegreen", 0x556B2F},
+    {"darkorange", 0xFF8C00}, {"darkorchid", 0x9932CC}, {"darkred", 0x8B0000}, {"darksalmon", 0xE9967A}, {"darkseagreen", 0x8FBC8F}, {"darkslateblue", 0x483D8B},
+    {"darkslategray", 0x2F4F4F}, {"darkslategrey", 0x2F4F4F}, {"darkturquoise", 0x00CED1}, {"darkviolet", 0x9400D3}, {"deeppink", 0xFF1493}, {"deepskyblue", 0x00BFFF},
+    {"dimgray", 0x696969}, {"dimgrey", 0x696969}, {"dodgerblue", 0x1E90FF}, {"firebrick", 0xB22222}, {"floralwhite", 0xFFFAF0}, {"forestgreen", 0x228B22},
+    {"fuchsia", 0xFF00FF}, {"gainsboro", 0xDCDCDC}, {"ghostwhite", 0xF8F8FF}, {"gold", 0xFFD700}, {"goldenrod", 0xDAA520}, {"gray", 0x808080},
+    {"green", 0x008000}, {"greenyellow", 0xADFF2F}, {"grey", 0x808080}, {"honeydew", 0xF0FFF0}, {"hotpink", 0xFF69B4}, {"indianred", 0xCD5C5C},
+    {"indigo", 0x4B0082}, {"ivory", 0xFFFFF0}, {"khaki", 0xF0E68C}, {"lavender", 0xE6E6FA}, {"lavenderblush", 0xFFF0F5}, {"lawngreen", 0x7CFC00},
+    {"lemonchiffon", 0xFFFACD}, {"lightblue", 0xADD8E6}, {"lightcoral", 0xF08080}, {"lightcyan", 0xE0FFFF}, {"lightgoldenrodyellow", 0xFAFAD2}, {"lightgray", 0xD3D3D3},
+    {"lightgreen", 0x90EE90}, {"lightgrey", 0xD3D3D3}, {"lightpink", 0xFFB6C1}, {"lightsalmon", 0xFFA07A}, {"lightseagreen", 0x20B2AA}, {"lightskyblue", 0x87CEFA},
+    {"lightslategray", 0x778899}, {"lightslategrey", 0x778899}, {"lightsteelblue", 0xB0C4DE}, {"lightyellow", 0xFFFFE0}, {"lime", 0x00FF00}, {"limegreen", 0x32CD32},
+    {"linen", 0xFAF0E6}, {"magenta", 0xFF00FF}, {"maroon", 0x800000}, {"mediumaquamarine", 0x66CDAA}, {"mediumblue", 0x0000CD}, {"mediumorchid", 0xBA55D3},
+    {"mediumpurple", 0x9370DB}, {"mediumseagreen", 0x3CB371}, {"mediumslateblue", 0x7B68EE}, {"mediumspringgreen", 0x00FA9A}, {"mediumturquoise", 0x48D1CC}, {"mediumvioletred", 0xC71585},
+    {"midnightblue", 0x191970}, {"mintcream", 0xF5FFFA}, {"mistyrose", 0xFFE4E1}, {"moccasin", 0xFFE4B5}, {"navajowhite", 0xFFDEAD}, {"navy", 0x000080},
+    {"oldlace", 0xFDF5E6}, {"olive", 0x808000}, {"olivedrab", 0x6B8E23}, {"orange", 0xFFA500}, {"orangered", 0xFF4500}, {"orchid", 0xDA70D6},
+    {"palegoldenrod", 0xEEE8AA}, {"palegreen", 0x98FB98}, {"paleturquoise", 0xAFEEEE}, {"palevioletred", 0xDB7093}, {"papayawhip", 0xFFEFD5}, {"peachpuff", 0xFFDAB9},
+    {"peru", 0xCD853F}, {"pink", 0xFFC0CB}, {"plum", 0xDDA0DD}, {"powderblue", 0xB0E0E6}, {"purple", 0x800080}, {"rebeccapurple", 0x663399},
+    {"red", 0xFF0000}, {"rosybrown", 0xBC8F8F}, {"royalblue", 0x4169E1}, {"saddlebrown", 0x8B4513}, {"salmon", 0xFA8072}, {"sandybrown", 0xF4A460},
+    {"seagreen", 0x2E8B57}, {"seashell", 0xFFF5EE}, {"sienna", 0xA0522D}, {"silver", 0xC0C0C0}, {"skyblue", 0x87CEEB}, {"slateblue", 0x6A5ACD},
+    {"slategray", 0x708090}, {"slategrey", 0x708090}, {"snow", 0xFFFAFA}, {"springgreen", 0x00FF7F}, {"steelblue", 0x4682B4}, {"tan", 0xD2B48C},
+    {"teal", 0x008080}, {"thistle", 0xD8BFD8}, {"tomato", 0xFF6347}, {"turquoise", 0x40E0D0}, {"violet", 0xEE82EE}, {"wheat", 0xF5DEB3},
+    {"white", 0xFFFFFF}, {"whitesmoke", 0xF5F5F5}, {"yellow", 0xFFFF00}, {"yellowgreen", 0x9ACD32}
 };
 static char *agent =
     "html,address,blockquote,body,center,dd,details,dialog,div,dl,dt,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,hr,legend,main,menu,nav,ol,p,pre,search,section,summary,ul,article,aside,caption,listing,plaintext,xmp,optgroup{display:block}"
@@ -738,7 +760,7 @@ static void parsedeclaration(struct css_sheet *sheet, char *text, unsigned int s
     sheet->declarations[sheet->declarationcount].property = property;
     sheet->declarations[sheet->declarationcount].important = important;
     sheet->declarations[sheet->declarationcount].name = (property == PROP_CUSTOM) ? pooladd(sheet, name, namelength, POOL_LOWER) : 0;
-    sheet->declarations[sheet->declarationcount].value = pooladd(sheet, text + start, (end > start) ? end - start : 0, (property == PROP_CONTENT) ? POOL_RAW : POOL_LOWER);
+    sheet->declarations[sheet->declarationcount].value = pooladd(sheet, text + start, (end > start) ? end - start : 0, (property == PROP_CONTENT || property == PROP_CUSTOM) ? POOL_RAW : POOL_LOWER);
 
     if (sheet->declarations[sheet->declarationcount].value && (property != PROP_CUSTOM || sheet->declarations[sheet->declarationcount].name))
         sheet->declarationcount++;
@@ -3963,6 +3985,17 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
         break;
 
+    case PROP_ASPECTRATIO:
+        style->aspect = from->aspect;
+
+        break;
+
+    case PROP_TRANSFORM:
+        copylength(&style->shift[0], &from->shift[0]);
+        copylength(&style->shift[1], &from->shift[1]);
+
+        break;
+
     case PROP_WORDBREAK:
     case PROP_OVERFLOWWRAP:
     case PROP_WORDWRAP:
@@ -4152,6 +4185,144 @@ static void setradii(struct context *context, char *value)
         setradius(context, value + spans[source].start, spans[source].length, i);
 
     }
+
+}
+
+static void addshift(struct context *context, unsigned int axis, char *text, unsigned int length)
+{
+
+    struct css_length *shift = &context->style->shift[axis];
+    struct lengthvalue parsed = parselength(context, text, length, context->style->fontsize);
+
+    if (!parsed.valid || parsed.length.unit > CSS_UNIT_PERCENT)
+        return;
+
+    /* a pixel part rides along with a percentage as its offset, so both kinds add up */
+    if (parsed.length.unit == CSS_UNIT_PERCENT)
+    {
+
+        shift->offset = (shift->unit == CSS_UNIT_PERCENT) ? shift->offset + parsed.length.offset : shift->value + parsed.length.offset;
+        shift->value = (shift->unit == CSS_UNIT_PERCENT) ? shift->value + parsed.length.value : parsed.length.value;
+        shift->unit = CSS_UNIT_PERCENT;
+
+    }
+
+    else if (shift->unit == CSS_UNIT_PERCENT)
+    {
+
+        shift->offset += parsed.length.value;
+
+    }
+
+    else
+    {
+
+        shift->value += parsed.length.value;
+        shift->unit = CSS_UNIT_PX;
+
+    }
+
+}
+
+static void settransform(struct context *context, char *value, unsigned int length)
+{
+
+    unsigned int offset = 0;
+    unsigned int axis;
+
+    for (axis = 0; axis < 2; axis++)
+    {
+
+        context->style->shift[axis].unit = CSS_UNIT_PX;
+        context->style->shift[axis].value = 0;
+        context->style->shift[axis].offset = 0;
+
+    }
+
+    /* only moves are kept, turning and scaling would need the whole picture redrawn */
+    while (offset < length)
+    {
+
+        unsigned int open = offset + buffer_findbyte(value + offset, length - offset, '(');
+        unsigned int close;
+        unsigned int comma;
+        unsigned int start;
+
+        if (open >= length)
+            break;
+
+        close = findclose(value, open, length);
+        comma = findstop(value, open + 1, close, ",");
+        start = skipspace(value, open + 1, close);
+
+        if (open - offset >= 9 && buffer_match(value + open - 9, "translate", 9))
+        {
+
+            addshift(context, 0, value + start, comma - start);
+
+            if (comma < close)
+                addshift(context, 1, value + skipspace(value, comma + 1, close), findstop(value, skipspace(value, comma + 1, close), close, ",") - skipspace(value, comma + 1, close));
+
+        }
+
+        else if (open - offset >= 10 && buffer_match(value + open - 10, "translatex", 10))
+        {
+
+            addshift(context, 0, value + start, close - start);
+
+        }
+
+        else if (open - offset >= 10 && buffer_match(value + open - 10, "translatey", 10))
+        {
+
+            addshift(context, 1, value + start, close - start);
+
+        }
+
+        else if (open - offset >= 11 && buffer_match(value + open - 11, "translate3d", 11))
+        {
+
+            addshift(context, 0, value + start, comma - start);
+
+            if (comma < close)
+                addshift(context, 1, value + skipspace(value, comma + 1, close), findstop(value, skipspace(value, comma + 1, close), close, ",") - skipspace(value, comma + 1, close));
+
+        }
+
+        offset = close + 1;
+
+    }
+
+}
+
+static void setaspect(struct context *context, char *value, unsigned int length)
+{
+
+    unsigned int start = (length > 4 && buffer_match(value, "auto", 4)) ? skipspace(value, 4, length) : 0;
+    unsigned int slash = findstop(value, start, length, "/");
+    struct number width = parsenumber(value + start, slash - start);
+    struct number height;
+
+    context->style->aspect = 0;
+
+    if (!width.length || width.milli <= 0)
+        return;
+
+    /* the ratio is kept in thousandths of width per height, a single number means a height of one */
+    if (slash >= length)
+    {
+
+        context->style->aspect = width.milli;
+
+        return;
+
+    }
+
+    start = skipspace(value, slash + 1, length);
+    height = parsenumber(value + start, length - start);
+
+    if (height.length && height.milli > 0)
+        context->style->aspect = width.milli * 10 / (height.milli / 100);
 
 }
 
@@ -4588,6 +4759,16 @@ static void apply(struct context *context, unsigned int property, char *value)
     case PROP_GRIDROWSTART:
     case PROP_GRIDROWEND:
         context->style->gridlines[(property == PROP_GRIDROWSTART) ? CSS_GRIDROWSTART : (property == PROP_GRIDCOLUMNSTART) ? CSS_GRIDCOLUMNSTART : (property == PROP_GRIDROWEND) ? CSS_GRIDROWEND : CSS_GRIDCOLUMNEND] = parseline(value, length);
+
+        break;
+
+    case PROP_ASPECTRATIO:
+        setaspect(context, value, length);
+
+        break;
+
+    case PROP_TRANSFORM:
+        settransform(context, value, length);
 
         break;
 

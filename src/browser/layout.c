@@ -1057,6 +1057,19 @@ static int replacedwidth(struct layout *layout, unsigned int node, struct metric
 
 }
 
+static unsigned int haswidth(struct layout *layout, unsigned int node)
+{
+
+    struct css_style *style = getstyle(layout, node);
+
+    /* a percentage of a width still being measured is no width yet, only the box being measured has one */
+    if (style->width.unit == CSS_UNIT_PERCENT)
+        return !layout->measuring || node == layout->measured;
+
+    return style->width.unit == CSS_UNIT_PX;
+
+}
+
 static int layoutreplaced(struct layout *layout, unsigned int node, int x, int top, int availw)
 {
 
@@ -1070,7 +1083,7 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
     int bt = style->borderwidth[CSS_TOP] + resolve(&style->padding[CSS_TOP], availw);
     int bb = style->borderwidth[CSS_BOTTOM] + resolve(&style->padding[CSS_BOTTOM], availw);
     struct layout_picture *picture = (layout->picture[node]) ? &layout->pictures[layout->picture[node] - 1] : 0;
-    unsigned int haswidth = style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT;
+    unsigned int sized = haswidth(layout, node);
     struct css_style *parent = getstyle(layout, getnode(layout, node)->parent);
     unsigned int haspercent = style->height.unit == CSS_UNIT_PERCENT && parent->height.unit == CSS_UNIT_PX;
     unsigned int hasheight = style->height.unit == CSS_UNIT_PX || haspercent;
@@ -1082,13 +1095,13 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
     getlabel(layout, node, &label);
 
     labelwidth = measuretext(layout, &metrics, label.text, label.length, 1);
-    width = (haswidth) ? resolve(&style->width, availw) : replacedwidth(layout, node, &metrics, labelwidth);
+    width = (sized) ? resolve(&style->width, availw) : replacedwidth(layout, node, &metrics, labelwidth);
 
     if (style->height.unit != CSS_UNIT_PX && rows && cstring_match(html_getstring(layout->document, getnode(layout, node)->name), "textarea"))
         height = (metrics.ascent + metrics.descent) * (int)cstring_read_value(rows, cstring_length(rows), 10);
 
     /* border-box only changes a size the page set, a natural size is always the content */
-    if (style->borderbox && haswidth)
+    if (style->borderbox && sized)
         width = max(width - bl - br, 0);
 
     if (style->borderbox && hasheight)
@@ -1101,13 +1114,13 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
         int ratioheight = (int)picture->ratioheight;
 
         /* without a size of its own a picture with only a ratio fills the line, like an svg without width */
-        if (!haswidth && !hasheight)
+        if (!sized && !hasheight)
             width = (picture->width) ? (int)picture->width : (picture->height && ratioheight) ? (int)picture->height * ratiowidth / ratioheight : (ratioheight) ? max(availw - bl - br - resolve(&style->margin[CSS_LEFT], availw) - resolve(&style->margin[CSS_RIGHT], availw), 0) : 300;
-        else if (!haswidth)
+        else if (!sized)
             width = (ratioheight) ? height * ratiowidth / ratioheight : (picture->width) ? (int)picture->width : 300;
 
         if (!hasheight)
-            height = (!haswidth && picture->width && picture->height) ? (int)picture->height : (ratiowidth) ? width * ratioheight / ratiowidth : (picture->height) ? (int)picture->height : 150;
+            height = (!sized && picture->width && picture->height) ? (int)picture->height : (ratiowidth) ? width * ratioheight / ratiowidth : (picture->height) ? (int)picture->height : 150;
 
         label.length = 0;
 
@@ -1207,6 +1220,9 @@ static int measure(struct layout *layout, unsigned int node, int availw)
 
     }
 
+    if (!layout->measuring)
+        layout->measured = node;
+
     layout->measuring++;
     layout->truncated = 0;
     layout->extent = 0;
@@ -1231,7 +1247,7 @@ static int measure(struct layout *layout, unsigned int node, int availw)
         needed = max(needed, style->minwidth.value + ((style->borderbox) ? 0 : extra));
 
     /* a width guessed at the depth limit is not kept, so it never stands in for a real one */
-    if (!layout->truncated && !layout->minimum)
+    if (!layout->truncated && !layout->minimum && layout->measured == node)
     {
 
         cached->availw = availw;
@@ -2195,7 +2211,7 @@ static int basesize(struct layout *layout, unsigned int node, int availw, unsign
         size = resolve(&style->basis, availw) + extra;
     else if (usebasis && style->basis.unit == CSS_UNIT_MINCONTENT)
         size = measuremin(layout, node);
-    else if ((style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT) && !isreplaced(layout, node))
+    else if (haswidth(layout, node) && !isreplaced(layout, node))
         size = resolve(&style->width, availw) + extra;
     else
         size = measure(layout, node, availw);
@@ -2330,7 +2346,7 @@ static int minimumsize(struct layout *layout, unsigned int node, int availw)
 
     size = measuremin(layout, node);
 
-    if ((style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT) && !isreplaced(layout, node))
+    if (haswidth(layout, node) && !isreplaced(layout, node))
         size = min(size, resolve(&style->width, availw) + ((style->borderbox) ? 0 : padded(style, availw)));
 
     return size;
@@ -2351,10 +2367,11 @@ static void flexsizes(struct layout *layout, unsigned int start, unsigned int en
         /* growing only goes below the content from a basis smaller than it, like flex: 1 */
         item->frozen = 0;
         item->minimum = (free < 0 || style->basis.unit == CSS_UNIT_PX || style->basis.unit == CSS_UNIT_PERCENT) ? minimumsize(layout, item->node, availw) : 0;
+        item->maximum = (style->maxwidth.unit == CSS_UNIT_PX || style->maxwidth.unit == CSS_UNIT_PERCENT) ? resolve(&style->maxwidth, availw) + ((style->borderbox) ? 0 : padded(style, availw)) : 0x7FFFFFFF;
 
     }
 
-    /* items that would shrink below their minimum are held there and the rest shrink again */
+    /* items that would shrink below their minimum or grow past their maximum are held there and the rest share again */
     while (free)
     {
 
@@ -2388,6 +2405,16 @@ static void flexsizes(struct layout *layout, unsigned int start, unsigned int en
 
                 remaining -= item->minimum - item->size;
                 item->size = item->minimum;
+                item->frozen = 1;
+                violated = 1;
+
+            }
+
+            else if (!item->frozen && free > 0 && item->size + free * (int)(weight * 1024 / total) / 1024 > item->maximum)
+            {
+
+                remaining -= max(item->maximum - item->size, 0);
+                item->size = max(item->maximum, item->size);
                 item->frozen = 1;
                 violated = 1;
 
@@ -3852,7 +3879,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     if (isreplaced(layout, node))
         return layoutreplaced(layout, node, x, top, availw);
 
-    if (style->width.unit == CSS_UNIT_PX || style->width.unit == CSS_UNIT_PERCENT)
+    if (haswidth(layout, node))
     {
 
         cw = resolve(&style->width, availw) - ((style->borderbox) ? extra : 0);
@@ -3923,6 +3950,10 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     box->x = x + ml;
     box->y = top;
     box->definite = definiteheight(layout, node, availw) + 1;
+
+    /* an aspect ratio turns the width into a height when nothing else gives one */
+    if (!box->definite && style->aspect)
+        box->definite = max(((style->borderbox) ? cw + extra : cw) * 1000 / (int)style->aspect - ((style->borderbox) ? bt + bb + pt + pb : 0), 0) + 1;
 
     if (isroot(layout, node))
         layout->floatbase = floatstart;
@@ -4044,6 +4075,10 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
     if (!layout->measuring && style->position == CSS_POSITION_RELATIVE)
         shiftrelative(layout, node, fragmentstart, availw);
+
+    /* a transform moves the box once it has its size, percentages being of that size */
+    if (!layout->measuring && (resolve(&style->shift[0], box->w) || resolve(&style->shift[1], box->h)))
+        translate(layout, node, fragmentstart, layout->fragmentcount, resolve(&style->shift[0], box->w), resolve(&style->shift[1], box->h), 1);
 
     layout->trailing = trailing;
 

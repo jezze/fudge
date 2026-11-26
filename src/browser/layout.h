@@ -77,6 +77,7 @@ struct layout_flexitem
     unsigned int frozen;
     int size;
     int minimum;
+    int maximum;
     int ml;
     int mr;
     int mt;
@@ -144,6 +145,7 @@ struct layout
     unsigned int forcenode;
     unsigned int heightnode;
     unsigned int wrapped;
+    unsigned int measured;
     int natural;
     int forceheight;
     unsigned int baselinedepth;
