@@ -16,6 +16,8 @@
 #define LINE_CENTER                     4
 #define FLOW_FLEXCOLUMN                 2
 #define LABELSIZE                       128
+#define SCROLLBARWIDTH                  15
+#define CHECKBOXSIZE                    13
 
 struct flow
 {
@@ -149,6 +151,14 @@ static int min(int a, int b)
 {
 
     return (a < b) ? a : b;
+
+}
+
+static int half(int value)
+{
+
+    /* centered boxes land on whole pixels the way css snaps them: halves round up */
+    return (value >= 0) ? (value + 1) / 2 : value / 2;
 
 }
 
@@ -645,7 +655,7 @@ static int alignitem(struct layout *layout, struct flow *flow, struct layout_ite
         return baseline - middle - (item->ascent + item->descent) / 2 + item->ascent;
 
     case LINE_CENTER:
-        return top + (height - item->ascent - item->descent) / 2 + item->ascent;
+        return top + half(height - item->ascent - item->descent) + item->ascent;
 
     }
 
@@ -687,6 +697,7 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
     int free = 0;
     unsigned int automargins = 0;
     int baseline;
+    int firstbaseline = 0;
     unsigned int i;
 
     if (isempty(layout, flow))
@@ -755,7 +766,7 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
         free = max(flow->right - flow->left - used, 0);
 
         if (!automargins)
-            dx = (style->justify == CSS_FLEX_CENTER) ? free / 2 : (style->justify == CSS_FLEX_END) ? free : 0;
+            dx = (style->justify == CSS_FLEX_CENTER) ? half(free) : (style->justify == CSS_FLEX_END) ? free : 0;
 
     }
 
@@ -780,6 +791,10 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
 
         struct layout_item *item = &layout->items[i];
         int itembaseline = alignitem(layout, flow, item, flow->y, baseline, ascent + descent, middle);
+
+        /* a flex line has no baseline of its own, it takes the one of its first item */
+        if (flow->type == FLOW_FLEXROW && i == flow->itemstart)
+            firstbaseline = itembaseline;
 
         if (automargins && item->atomic && getstyle(layout, item->node)->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
             dx += free / (int)automargins;
@@ -807,7 +822,7 @@ static void flushline(struct layout *layout, struct flow *flow, unsigned int for
     if (layout->marker && layout->markerdepth == layout->atomicdepth && !layout->measuring)
         placemarker(layout, baseline);
 
-    layout->baseline = baseline;
+    layout->baseline = (flow->type == FLOW_FLEXROW) ? firstbaseline : baseline;
     layout->baselinedepth = layout->atomicdepth;
 
     layout->extent = max(layout->extent, flow->left + used);
@@ -958,6 +973,27 @@ static void placeword(struct layout *layout, struct flow *flow, struct text *tex
 
 }
 
+static unsigned int isletter(char c)
+{
+
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c & 0x80);
+
+}
+
+static unsigned int breaksafter(char *data, unsigned int start, unsigned int stop)
+{
+
+    /* a hyphen between letters and an em dash before anything but space allow a break after them */
+    if (data[stop - 1] == '-')
+        return stop - start > 1 && isletter(data[stop - 2]) && isletter(data[stop]);
+
+    if (stop - start > 3 && (unsigned char)data[stop - 3] == 0xE2 && (unsigned char)data[stop - 2] == 0x80 && (unsigned char)data[stop - 1] == 0x94)
+        return !isspace(data[stop]);
+
+    return 0;
+
+}
+
 static void addtext(struct layout *layout, struct flow *flow, unsigned int node)
 {
 
@@ -968,6 +1004,7 @@ static void addtext(struct layout *layout, struct flow *flow, unsigned int node)
     unsigned int end = textnode->text + textnode->length;
     struct text text;
     unsigned int i = textnode->text;
+    unsigned int started = 0;
 
     text.node = node;
     text.metrics = getmetrics(layout, style);
@@ -1023,7 +1060,27 @@ static void addtext(struct layout *layout, struct flow *flow, unsigned int node)
         }
 
         while (stop < end && !((text.collapse && isspace(text.data[stop])) || (!text.collapse && (text.data[stop] == '\n' || text.data[stop] == '\t'))))
+        {
+
             stop++;
+
+            if (text.wrap && stop < end && breaksafter(text.data, i, stop))
+                break;
+
+        }
+
+        /* text in a flex row is one item: its spaces are trimmed and it keeps the gap to the item before */
+        if (flow->type == FLOW_FLEXROW && !started)
+        {
+
+            flow->space = 0;
+
+            if (!isempty(layout, flow))
+                flow->x += style->columngap;
+
+        }
+
+        started = 1;
 
         if (text.collapse && text.open != NONE && flow->space)
         {
@@ -1194,6 +1251,27 @@ static unsigned int attributesize(struct layout *layout, unsigned int node, char
 
 }
 
+static unsigned int ischeckable(struct layout *layout, unsigned int node)
+{
+
+    char *type = html_getattribute(layout->document, node, "type");
+
+    return getnode(layout, node)->tag == HTML_TAG_INPUT && type && (cstring_match(type, "checkbox") || cstring_match(type, "radio"));
+
+}
+
+static unsigned int hastextbaseline(struct layout *layout, unsigned int node)
+{
+
+    char *type = html_getattribute(layout->document, node, "type");
+
+    if (getnode(layout, node)->tag == HTML_TAG_SELECT)
+        return 1;
+
+    return getnode(layout, node)->tag == HTML_TAG_INPUT && !ischeckable(layout, node) && !(type && cstring_match(type, "image"));
+
+}
+
 static int replacedwidth(struct layout *layout, unsigned int node, struct metrics *metrics, int labelwidth)
 {
 
@@ -1204,21 +1282,23 @@ static int replacedwidth(struct layout *layout, unsigned int node, struct metric
     int charwidth = max(font_getaveragewidth(layout->fonts, metrics->choice), 1);
     int widest = font_getboxwidth(layout->fonts, metrics->choice);
 
-    if (element->tag == HTML_TAG_INPUT && type && (cstring_match(type, "checkbox") || cstring_match(type, "radio")))
-        return metrics->glyphheight;
+    if (ischeckable(layout, node))
+        return CHECKBOXSIZE;
 
     if (element->tag == HTML_TAG_INPUT && !(type && (cstring_match(type, "submit") || cstring_match(type, "button") || cstring_match(type, "reset") || cstring_match(type, "image"))))
         return charwidth * ((size) ? (int)cstring_read_value(size, cstring_length(size), 10) : 20) + max(widest - charwidth, 0);
 
+    /* a select keeps room for its arrow and a little inner padding whatever padding the page gives it */
     if (element->tag == HTML_TAG_SELECT)
-        return labelwidth + charwidth * 2;
+        return labelwidth + 16 + getstyle(layout, node)->fontsize / 4;
 
     if (cstring_match(html_getstring(document, element->name), "textarea"))
     {
 
         char *cols = html_getattribute(document, node, "cols");
 
-        return charwidth * ((cols) ? (int)cstring_read_value(cols, cstring_length(cols), 10) : 20);
+        /* a text area keeps room for its scrollbar beside the columns */
+        return charwidth * ((cols) ? (int)cstring_read_value(cols, cstring_length(cols), 10) : 20) + SCROLLBARWIDTH;
 
     }
 
@@ -1279,8 +1359,14 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
     labelwidth = measuretext(layout, &metrics, label.text, label.length, 1);
     width = (sized) ? resolve(&style->width, availw) : replacedwidth(layout, node, &metrics, labelwidth);
 
-    if (style->height.unit != CSS_UNIT_PX && rows && cstring_match(html_getstring(layout->document, getnode(layout, node)->name), "textarea"))
-        height = (metrics.ascent + metrics.descent) * (int)cstring_read_value(rows, cstring_length(rows), 10);
+    if (!hasheight && getnode(layout, node)->tag == HTML_TAG_SELECT)
+        height += 2;
+
+    if (!hasheight && ischeckable(layout, node))
+        height = CHECKBOXSIZE;
+
+    if (style->height.unit != CSS_UNIT_PX && cstring_match(html_getstring(layout->document, getnode(layout, node)->name), "textarea"))
+        height = (metrics.ascent + metrics.descent) * ((rows) ? (int)cstring_read_value(rows, cstring_length(rows), 10) : 2);
 
     /* border-box only changes a size the page set, a natural size is always the content */
     if (style->borderbox && sized)
@@ -1345,6 +1431,24 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
         box->x = x + max((style->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO) ? (availw - box->w) / 2 : availw - box->w - resolve(&style->margin[CSS_RIGHT], availw), 0);
 
     box->h = bt + height + bb;
+
+    /* a text field or select sits on the line by the baseline of its text, even when it has none */
+    if (!picture && hastextbaseline(layout, node))
+    {
+
+        layout->baseline = top + bt + (height - metrics.glyphheight) / 2 + metrics.glyphascent;
+        layout->baselinedepth = layout->atomicdepth;
+
+    }
+
+    /* a checkbox or radio sits on the line by its bottom edge, its margin hangs below */
+    if (ischeckable(layout, node))
+    {
+
+        layout->baseline = top + bt + height + bb;
+        layout->baselinedepth = layout->atomicdepth;
+
+    }
 
     if (label.length && width > 0)
     {
@@ -1523,7 +1627,7 @@ static void placeatomic(struct layout *layout, struct flow *flow, unsigned int n
     ascent = mt + height + mb;
 
     /* an inline-block sits on the baseline of its last line box, or on its bottom edge without one */
-    if (flow->type == FLOW_NORMAL && !isreplaced(layout, node) && layout->baselinedepth == layout->atomicdepth + 1)
+    if (layout->baselinedepth == layout->atomicdepth + 1)
         ascent = min(max(layout->baseline - flow->y, 0), mt + height + mb);
     else if (flow->type == FLOW_NORMAL && getstyle(layout, node)->flexbox)
         ascent = min(max(firstbottom(layout, node) - flow->y, 0), mt + height + mb);
@@ -2009,7 +2113,7 @@ static void initflow(struct layout *layout, struct flow *flow, unsigned int node
     flow->type = FLOW_NORMAL;
     flow->deferredcount = 0;
 
-    if (style->display == CSS_DISPLAY_FLEX)
+    if (style->flexbox)
         flow->type = (style->column) ? FLOW_FLEXCOLUMN : FLOW_FLEXROW;
 
     /* only the first line of a block is indented, a percentage counts as nothing while the width is still being found */
@@ -2651,7 +2755,7 @@ static void alignflexitem(struct layout *layout, struct layout_flexitem *item, u
 {
 
     struct css_style *style = getstyle(layout, item->node);
-    int delta = (align == CSS_FLEX_CENTER) ? space / 2 : (align == CSS_FLEX_END) ? space : 0;
+    int delta = (align == CSS_FLEX_CENTER) ? half(space) : (align == CSS_FLEX_END) ? space : 0;
 
     /* an item taller than its line still centers on it or hangs from its end */
     if (space <= 0 && !delta)
@@ -2884,7 +2988,7 @@ static struct spread spreadcontent(unsigned int align, int extra, unsigned int c
     {
 
     case CSS_FLEX_CENTER:
-        spread.lead = extra / 2;
+        spread.lead = half(extra);
 
         break;
 
@@ -3486,7 +3590,7 @@ static void layoutgrid(struct layout *layout, struct flow *flow, unsigned int no
                 item->size = inside;
 
             if (justify == CSS_FLEX_CENTER)
-                shift = (inside - item->size) / 2;
+                shift = half(inside - item->size);
             else if (justify == CSS_FLEX_END)
                 shift = inside - item->size;
 
@@ -4023,7 +4127,7 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
                 break;
 
             case CSS_FLEX_CENTER:
-                offset = free / 2;
+                offset = half(free);
 
                 break;
 
@@ -4353,6 +4457,10 @@ static void shiftrelative(struct layout *layout, unsigned int node, unsigned int
     struct css_style *style = getstyle(layout, node);
     int dx = 0;
     int dy = 0;
+
+    /* sticky boxes stay where they are until scrolled to their inset, which never happens at the top of the page */
+    if (style->sticky)
+        return;
 
     if (style->inset[CSS_LEFT].unit <= CSS_UNIT_PERCENT)
         dx = resolve(&style->inset[CSS_LEFT], availw);

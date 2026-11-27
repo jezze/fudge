@@ -1290,14 +1290,14 @@ static void rasterize(void)
         {
 
             html_parse(svgdocument, (char *)pixels + sources[i].source, sources[i].length);
-            svg_render(&canvas, svgdocument, svg_findroot(svgdocument), 0xFF000000, 0);
+            svg_render(&canvas, svgdocument, 0, svg_findroot(svgdocument), 0xFF000000, 0);
 
         }
 
         else
         {
 
-            svg_render(&canvas, document, sources[i].node, styles[sources[i].node].color, styles[sources[i].node].fill);
+            svg_render(&canvas, document, sheet, sources[i].node, styles[sources[i].node].color, styles[sources[i].node].fill);
 
         }
 

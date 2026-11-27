@@ -75,6 +75,13 @@ static int max(int a, int b)
 
 }
 
+static int min(int a, int b)
+{
+
+    return (a < b) ? a : b;
+
+}
+
 struct corners
 {
 
@@ -525,6 +532,34 @@ static void paintshadow(struct paint_canvas *canvas, struct layout_box *box, str
 
 }
 
+static void paintinset(struct paint_canvas *canvas, struct layout_box *box, struct css_style *style)
+{
+
+    unsigned int color = fade(style->insetshadow, style->opacity);
+    int left = box->x + style->borderwidth[CSS_LEFT];
+    int top = box->y + style->borderwidth[CSS_TOP];
+    int right = box->x + box->w - style->borderwidth[CSS_RIGHT];
+    int bottom = box->y + box->h - style->borderwidth[CSS_BOTTOM];
+    int holeleft = min(max(left + style->insetx + style->insetspread, left), right);
+    int holetop = min(max(top + style->insety + style->insetspread, top), bottom);
+    int holeright = max(min(right + style->insetx - style->insetspread, right), holeleft);
+    int holebottom = max(min(bottom + style->insety - style->insetspread, bottom), holetop);
+
+    /* the shadow covers the padding box except where the box, moved by the offset and shrunk by the spread, still is */
+    fill(canvas, left, top, right - left, holetop - top, color);
+    fill(canvas, left, holebottom, right - left, bottom - holebottom, color);
+    fill(canvas, left, holetop, holeleft - left, holebottom - holetop, color);
+    fill(canvas, holeright, holetop, right - holeright, holebottom - holetop, color);
+
+}
+
+static int padding(struct css_length *length)
+{
+
+    return (length->unit == CSS_UNIT_PX) ? length->value : 0;
+
+}
+
 static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct layout_box *box, struct css_style *style, unsigned int backdrop)
 {
 
@@ -542,10 +577,19 @@ static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct 
     if (!isrounded(&corners))
     {
 
-        fill(canvas, box->x, box->y, box->w, box->h, fade(background, style->opacity));
+        /* a clipped background leaves the border, and with content-box the padding, uncovered */
+        int cl = (style->backgroundclip == CSS_CLIP_BORDER) ? 0 : bl + ((style->backgroundclip == CSS_CLIP_CONTENT) ? padding(&style->padding[CSS_LEFT]) : 0);
+        int cr = (style->backgroundclip == CSS_CLIP_BORDER) ? 0 : br + ((style->backgroundclip == CSS_CLIP_CONTENT) ? padding(&style->padding[CSS_RIGHT]) : 0);
+        int ct = (style->backgroundclip == CSS_CLIP_BORDER) ? 0 : bt + ((style->backgroundclip == CSS_CLIP_CONTENT) ? padding(&style->padding[CSS_TOP]) : 0);
+        int cb = (style->backgroundclip == CSS_CLIP_BORDER) ? 0 : bb + ((style->backgroundclip == CSS_CLIP_CONTENT) ? padding(&style->padding[CSS_BOTTOM]) : 0);
+
+        fill(canvas, box->x + cl, box->y + ct, box->w - cl - cr, box->h - ct - cb, fade(background, style->opacity));
 
         if (style->gradient && !style->textclip && backdrop)
             paintgradient(canvas, &layout->gradients[style->gradient - 1], box, &corners, style->opacity);
+
+        if (style->insetshadow)
+            paintinset(canvas, box, style);
 
         if (ismitred(style))
         {
@@ -623,13 +667,6 @@ static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct 
 
 }
 
-static int padding(struct css_length *length)
-{
-
-    return (length->unit == CSS_UNIT_PX) ? length->value : 0;
-
-}
-
 static void paintplaceholder(struct paint_canvas *canvas, struct layout_box *box)
 {
 
@@ -644,8 +681,13 @@ static void paintplaceholder(struct paint_canvas *canvas, struct layout_box *box
 
 }
 
-static void paintpicture(struct paint_canvas *canvas, struct layout_picture *picture, int x, int y, int w, int h, unsigned int opacity)
+static void paintpicture(struct paint_canvas *canvas, struct layout_picture *picture, struct paint_area *area, struct layout_box *box, struct corners *corners, unsigned int opacity)
 {
+
+    int x = area->x;
+    int y = area->y;
+    int w = area->w;
+    int h = area->h;
 
     unsigned int *pixels = canvas->heap + picture->offset / 4;
     int x0 = (x < canvas->clipleft) ? canvas->clipleft : x;
@@ -663,8 +705,12 @@ static void paintpicture(struct paint_canvas *canvas, struct layout_picture *pic
 
         unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
         unsigned int *source = pixels + (unsigned int)(j - y) * picture->rows / (unsigned int)h * picture->columns;
+        struct insets insets = rowinsets(corners, j - box->y, box->h);
+        int left = max(x0, box->x + insets.left);
+        int right = min(x1, box->x + box->w - insets.right);
 
-        for (i = x0; i < x1; i++)
+        /* a rounded box cuts its picture to the same corners */
+        for (i = left; i < right; i++)
         {
 
             unsigned int color = fade(source[(unsigned int)(i - x) * picture->columns / (unsigned int)w], opacity);
@@ -1063,8 +1109,10 @@ static void paintboxes(struct paint_canvas *canvas, struct layout *layout, unsig
                 struct layout_picture *picture = (layout->picture[node]) ? &layout->pictures[layout->picture[node] - 1] : 0;
                 struct paint_area area = paint_getcontent(layout, node);
 
+                struct corners corners = getcorners(style, box);
+
                 if (picture && picture->columns && canvas->heap)
-                    paintpicture(canvas, picture, area.x, area.y, area.w, area.h, style->opacity);
+                    paintpicture(canvas, picture, &area, box, &corners, style->opacity);
                 else if (document->nodes[node].tag == HTML_TAG_IMG)
                     paintplaceholder(canvas, box);
 

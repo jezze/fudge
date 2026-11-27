@@ -256,6 +256,17 @@
 #define NATIVE_ISINTEGER                136
 #define NATIVE_GETOWNDESCRIPTOR         137
 #define NATIVE_NEWURL                   138
+#define NATIVE_HASOWN                   139
+#define NATIVE_FETCH                    140
+#define NATIVE_PENDING                  141
+#define NATIVE_PROMISE                  142
+#define NATIVE_PROMISERESOLVE           143
+#define NATIVE_PROMISENEVER             144
+#define NATIVE_SETTLED                  145
+#define NATIVE_OBSERVER                 146
+#define NATIVE_NORECORDS                147
+#define NATIVE_CONTAINS                 148
+#define NATIVE_DEFINEPROPERTIES         149
 #define NATIVE_FILL                     99
 #define SELECTORSIZE                    128
 #define STYLESIZE                       512
@@ -265,6 +276,7 @@
 #define ARRAYMETHODS                    25
 #define DATEFIELDS                      10
 #define LOCATIONFIELDS                  8
+#define NAVIGATORFIELDS                 5
 #define COLLECTIONMETHODS               11
 #define SYMBOLS                         4
 #define REPEATMAX                       0x7FFF
@@ -405,6 +417,7 @@ static struct method arraymethods[ARRAYMETHODS] = {
     {"splice", NATIVE_SPLICE}, {"fill", NATIVE_FILL}, {"toString", NATIVE_TOSTRING}, {"item", NATIVE_ARRAYITEM}, {"keys", NATIVE_KEYS}
 };
 static char *locationfields[LOCATIONFIELDS] = {"href", "hash", "search", "pathname", "host", "hostname", "origin", "protocol"};
+static char *navigatorfields[NAVIGATORFIELDS][2] = {{"userAgent", "Mozilla/5.0 (fudge)"}, {"appVersion", "5.0 (fudge)"}, {"platform", "fudge"}, {"vendor", ""}, {"language", "en-US"}};
 static struct method collectionmethods[COLLECTIONMETHODS] = {
     {"set", NATIVE_COLLECTIONSET}, {"add", NATIVE_COLLECTIONSET}, {"get", NATIVE_COLLECTIONGET}, {"has", NATIVE_COLLECTIONHAS},
     {"delete", NATIVE_COLLECTIONDELETE}, {"clear", NATIVE_COLLECTIONCLEAR}, {"forEach", NATIVE_COLLECTIONFOREACH}, {"keys", NATIVE_COLLECTIONKEYS},
@@ -3793,7 +3806,6 @@ static struct js_value selectvalue(struct js_engine *js, unsigned int node)
     struct html_document *document = js->document;
     unsigned int option = 0;
     unsigned int current;
-    char content[TEXTSIZE];
 
     /* a select gives the value of its selected option, or of the first one; an option without a value gives its text */
     for (current = (document->nodes[node].tag == HTML_TAG_OPTION) ? node : html_next(document, node, node); current; current = html_next(document, current, node))
@@ -3816,7 +3828,7 @@ static struct js_value selectvalue(struct js_engine *js, unsigned int node)
     if (html_getattribute(document, option, "value"))
         return stringvalue(js, html_getattribute(document, option, "value"));
 
-    return value(JS_STRING, addstring(js, content, collecttext(js, option, content, TEXTSIZE)));
+    return value(JS_STRING, addstring(js, js->text, collecttext(js, option, js->text, TEXTSIZE)));
 
 }
 
@@ -4055,6 +4067,9 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         if (cstring_match(text, "matches"))
             return value(JS_OBJECT, nativefor(js, NATIVE_MATCHES));
+
+        if (cstring_match(text, "contains"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CONTAINS));
 
         if (cstring_match(text, "firstElementChild") || cstring_match(text, "nextElementSibling") || cstring_match(text, "previousElementSibling"))
         {
@@ -6241,6 +6256,66 @@ static struct js_value newurl(struct js_engine *js, struct js_value *address, st
 
 }
 
+static void defineproperty(struct js_engine *js, struct js_value *target, unsigned int name, struct js_value *descriptor)
+{
+
+    struct js_value getter = getproperty(js, descriptor, internstring(js, "get"));
+
+    /* setters are not kept, as with get in literals and classes */
+    if (isfunction(js, &getter))
+    {
+
+        struct js_value item = value(JS_OBJECT, newobject(js, KIND_GETTER, 0, getter.number));
+
+        if (item.number)
+            putproperty(js, target->number, name, &item);
+
+    }
+
+    else
+    {
+
+        struct js_value item = getproperty(js, descriptor, internstring(js, "value"));
+
+        setproperty(js, target, name, &item);
+
+    }
+
+}
+
+static unsigned int isthenable(struct js_engine *js, struct js_value *target)
+{
+
+    struct js_value then;
+
+    if (target->type != JS_OBJECT)
+        return 0;
+
+    then = getproperty(js, target, internstring(js, "then"));
+
+    return isfunction(js, &then);
+
+}
+
+static struct js_value newthenable(struct js_engine *js, unsigned int then, struct js_value *result)
+{
+
+    struct js_value promise = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+    struct js_value method = value(JS_OBJECT, js->natives[then]);
+    struct js_value pending = value(JS_OBJECT, js->natives[NATIVE_PENDING]);
+
+    if (!promise.number)
+        return undefined();
+
+    putproperty(js, promise.number, internstring(js, "then"), &method);
+    putproperty(js, promise.number, internstring(js, "catch"), &pending);
+    putproperty(js, promise.number, internstring(js, "finally"), &pending);
+    putproperty(js, promise.number, internstring(js, "@@result"), result);
+
+    return promise;
+
+}
+
 static struct js_value callnative(struct js_engine *js, struct call *call)
 {
 
@@ -6306,6 +6381,17 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
     case NATIVE_MATCHES:
         return value(JS_BOOLEAN, element && matchlist(js, element, getstring(js, tostring(js, first))));
+
+    case NATIVE_CONTAINS:
+        for (node = nodeof(js, first); element && node; node = js->document->nodes[node].parent)
+        {
+
+            if (node == element)
+                return value(JS_BOOLEAN, 1);
+
+        }
+
+        return value(JS_BOOLEAN, 0);
 
     case NATIVE_CLASSADD:
     case NATIVE_CLASSREMOVE:
@@ -6638,6 +6724,128 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
     case NATIVE_IDENTITY:
         return call->arguments[0];
 
+    case NATIVE_FETCH:
+        {
+
+            /* nothing is fetched: the response never settles, so its callbacks never run */
+            struct js_value none = undefined();
+            struct js_value response = newthenable(js, NATIVE_PENDING, &none);
+            struct js_value no = value(JS_BOOLEAN, 0);
+            struct js_value pending = value(JS_OBJECT, js->natives[NATIVE_PENDING]);
+
+            if (!response.number)
+                return undefined();
+
+            putproperty(js, response.number, internstring(js, "ok"), &no);
+            putproperty(js, response.number, internstring(js, "json"), &pending);
+            putproperty(js, response.number, internstring(js, "text"), &pending);
+
+            return response;
+
+        }
+
+    case NATIVE_PENDING:
+        return call->self;
+
+    case NATIVE_OBSERVER:
+        {
+
+            /* the document is never watched, so observers report nothing */
+            struct js_value observer = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value nothing = value(JS_OBJECT, js->natives[NATIVE_ZERO]);
+            struct js_value norecords = value(JS_OBJECT, js->natives[NATIVE_NORECORDS]);
+
+            if (!observer.number)
+                return undefined();
+
+            putproperty(js, observer.number, internstring(js, "observe"), &nothing);
+            putproperty(js, observer.number, internstring(js, "unobserve"), &nothing);
+            putproperty(js, observer.number, internstring(js, "disconnect"), &nothing);
+            putproperty(js, observer.number, internstring(js, "takeRecords"), &norecords);
+
+            return observer;
+
+        }
+
+    case NATIVE_NORECORDS:
+        return newarray(js);
+
+    case NATIVE_PROMISE:
+        if (isfunction(js, first))
+        {
+
+            struct call executor;
+            unsigned int argument;
+
+            /* resolving does nothing: a constructed promise stays pending */
+            copyvalue(&executor.function, first);
+
+            executor.self = undefined();
+            executor.count = 2;
+
+            for (argument = 0; argument < ARGUMENTS; argument++)
+                executor.arguments[argument] = (argument < 2) ? value(JS_OBJECT, js->natives[NATIVE_ZERO]) : undefined();
+
+            callfunction(js, &executor);
+
+        }
+
+        {
+
+            struct js_value none = undefined();
+
+            return newthenable(js, NATIVE_PENDING, &none);
+
+        }
+
+    case NATIVE_PROMISERESOLVE:
+        if (isthenable(js, first))
+            return call->arguments[0];
+
+        return newthenable(js, NATIVE_SETTLED, first);
+
+    case NATIVE_PROMISENEVER:
+        return newthenable(js, NATIVE_PENDING, first);
+
+    case NATIVE_SETTLED:
+        if (isfunction(js, first))
+        {
+
+            struct js_value result = getproperty(js, self, internstring(js, "@@result"));
+            struct call then;
+            unsigned int argument;
+
+            copyvalue(&then.function, first);
+
+            then.self = undefined();
+            then.count = 1;
+
+            for (argument = 0; argument < ARGUMENTS; argument++)
+                then.arguments[argument] = (argument) ? undefined() : result;
+
+            result = callfunction(js, &then);
+
+            /* a throw would reject the next promise, which then never settles */
+            if (js->throwing)
+            {
+
+                struct js_value none = undefined();
+
+                js->throwing = 0;
+
+                return newthenable(js, NATIVE_PENDING, &none);
+
+            }
+
+            if (isthenable(js, &result))
+                return result;
+
+            return newthenable(js, NATIVE_SETTLED, &result);
+
+        }
+
+        return call->self;
+
     case NATIVE_NEWURL:
         return newurl(js, first, second);
 
@@ -6648,7 +6856,6 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             struct js_value descriptor;
             struct js_value yes = value(JS_BOOLEAN, 1);
 
-            /* every property here is a plain writable data property */
             if (!property)
                 return undefined();
 
@@ -6657,7 +6864,22 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             if (!descriptor.number)
                 return undefined();
 
-            putproperty(js, descriptor.number, internstring(js, "value"), &property->value);
+            if (property->value.type == JS_OBJECT && js->objects[property->value.number].kind == KIND_GETTER)
+            {
+
+                struct js_value getter = value(JS_OBJECT, js->objects[property->value.number].data);
+
+                putproperty(js, descriptor.number, internstring(js, "get"), &getter);
+
+            }
+
+            else
+            {
+
+                putproperty(js, descriptor.number, internstring(js, "value"), &property->value);
+
+            }
+
             putproperty(js, descriptor.number, internstring(js, "writable"), &yes);
             putproperty(js, descriptor.number, internstring(js, "enumerable"), &yes);
             putproperty(js, descriptor.number, internstring(js, "configurable"), &yes);
@@ -6666,15 +6888,27 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
         }
 
-    case NATIVE_DEFINEPROPERTY:
-        if (first->type == JS_OBJECT && call->arguments[2].type == JS_OBJECT)
+    case NATIVE_DEFINEPROPERTIES:
+        if (first->type == JS_OBJECT && second->type == JS_OBJECT)
         {
 
-            struct js_value item = getproperty(js, &call->arguments[2], internstring(js, "value"));
+            unsigned int index;
 
-            setproperty(js, first, internstring(js, getstring(js, tostring(js, second))), &item);
+            for (index = js->objects[second->number].property; index; index = js->properties[index].next)
+            {
+
+                if (js->properties[index].value.type == JS_OBJECT)
+                    defineproperty(js, first, js->properties[index].name, &js->properties[index].value);
+
+            }
 
         }
+
+        return call->arguments[0];
+
+    case NATIVE_DEFINEPROPERTY:
+        if (first->type == JS_OBJECT && call->arguments[2].type == JS_OBJECT)
+            defineproperty(js, first, internstring(js, getstring(js, tostring(js, second))), &call->arguments[2]);
 
         return call->arguments[0];
 
@@ -7536,6 +7770,9 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
     case NATIVE_HASOWNPROPERTY:
         return value(JS_BOOLEAN, self->type == JS_OBJECT && findproperty(js, self->number, internstring(js, getstring(js, tostring(js, first)))) != 0);
+
+    case NATIVE_HASOWN:
+        return value(JS_BOOLEAN, first->type == JS_OBJECT && findproperty(js, first->number, internstring(js, getstring(js, tostring(js, second)))) != 0);
 
     case NATIVE_CREATEELEMENT:
         return elementvalue(js, html_createelement(js->document, getstring(js, tostring(js, first))));
@@ -9489,6 +9726,17 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addglobal(js, "globalThis", js->global);
     addglobal(js, "document", js->documentobject);
     addglobal(js, "localStorage", js->storage);
+
+    {
+
+        struct js_value empty = value(JS_STRING, internstring(js, ""));
+
+        /* no cookies are kept, and pages are not opened from a referrer */
+        putproperty(js, js->documentobject, internstring(js, "cookie"), &empty);
+        putproperty(js, js->documentobject, internstring(js, "referrer"), &empty);
+
+    }
+
     addglobal(js, "sessionStorage", js->storage);
     addglobal(js, "console", newobject(js, KIND_CONSOLE, 0, 0));
     addglobal(js, "matchMedia", js->natives[NATIVE_MATCHMEDIA]);
@@ -9525,6 +9773,17 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addglobal(js, "DOMParser", js->natives[NATIVE_DOMPARSER]);
     addglobal(js, "Map", js->natives[NATIVE_NEWMAP]);
     addglobal(js, "URL", js->natives[NATIVE_NEWURL]);
+    addglobal(js, "fetch", js->natives[NATIVE_FETCH]);
+    addglobal(js, "Promise", js->natives[NATIVE_PROMISE]);
+    addglobal(js, "MutationObserver", js->natives[NATIVE_OBSERVER]);
+    addglobal(js, "ResizeObserver", js->natives[NATIVE_OBSERVER]);
+    addglobal(js, "IntersectionObserver", js->natives[NATIVE_OBSERVER]);
+    addmethod(js, "Promise", "resolve", NATIVE_PROMISERESOLVE);
+    addmethod(js, "Promise", "reject", NATIVE_PROMISENEVER);
+    addmethod(js, "Promise", "all", NATIVE_PROMISENEVER);
+    addmethod(js, "Promise", "allSettled", NATIVE_PROMISENEVER);
+    addmethod(js, "Promise", "race", NATIVE_PROMISENEVER);
+    addmethod(js, "Promise", "any", NATIVE_PROMISENEVER);
 
     {
 
@@ -9577,6 +9836,9 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "Object", "freeze", NATIVE_IDENTITY);
     addmethod(js, "Object", "defineProperty", NATIVE_DEFINEPROPERTY);
     addmethod(js, "Object", "getOwnPropertyDescriptor", NATIVE_GETOWNDESCRIPTOR);
+    addmethod(js, "Object", "hasOwn", NATIVE_HASOWN);
+    addmethod(js, "Object", "defineProperties", NATIVE_DEFINEPROPERTIES);
+    addmethod(js, "Symbol", "for", NATIVE_SYMBOL);
     addmethod(js, "Date", "now", NATIVE_ZERO);
     addmethod(js, "JSON", "stringify", NATIVE_STRINGIFY);
     addmethod(js, "JSON", "parse", NATIVE_PARSE);
@@ -9617,6 +9879,16 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
 
         }
 
+        for (i = 0; i < NAVIGATORFIELDS; i++)
+        {
+
+            struct js_value field = value(JS_STRING, internstring(js, navigatorfields[i][1]));
+            struct js_property *navigator = findproperty(js, js->global, internstring(js, "navigator"));
+
+            putproperty(js, navigator->value.number, internstring(js, navigatorfields[i][0]), &field);
+
+        }
+
         prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
 
         putproperty(js, js->natives[NATIVE_ELEMENT], internstring(js, "prototype"), &prototype);
@@ -9624,6 +9896,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
         addnative(js, prototype.number, "querySelectorAll", NATIVE_QUERYSELECTORALL);
         addnative(js, prototype.number, "matches", NATIVE_MATCHES);
         addnative(js, prototype.number, "closest", NATIVE_CLOSEST);
+        addnative(js, prototype.number, "contains", NATIVE_CONTAINS);
 
         prototype = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
 

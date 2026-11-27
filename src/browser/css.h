@@ -1,7 +1,7 @@
-#define CSS_PARTS                       32768
-#define CSS_SELECTORS                   16384
-#define CSS_DECLARATIONS                32768
-#define CSS_RULES                       16384
+#define CSS_PARTS                       65536
+#define CSS_SELECTORS                   32768
+#define CSS_DECLARATIONS                65536
+#define CSS_RULES                       32768
 #define CSS_POOLSIZE                    0x200000
 #define CSS_CUSTOMS                     16384
 #define CSS_GRADIENTS                   64
@@ -75,6 +75,9 @@
 #define CSS_POSITION_RELATIVE           1
 #define CSS_POSITION_ABSOLUTE           2
 #define CSS_POSITION_FIXED              3
+#define CSS_CLIP_BORDER                 0
+#define CSS_CLIP_PADDING                1
+#define CSS_CLIP_CONTENT                2
 #define CSS_TOP                         0
 #define CSS_RIGHT                       1
 #define CSS_BOTTOM                      2
@@ -140,6 +143,7 @@ struct css_style
     unsigned char hidden;
     unsigned char borderbox;
     unsigned char position;
+    unsigned char sticky;
     unsigned char column;
     unsigned char transform;
     unsigned char flexbox;
@@ -161,6 +165,7 @@ struct css_style
     unsigned char stacked;
     unsigned char opacity;
     unsigned char textclip;
+    unsigned char backgroundclip;
     unsigned char valign;
     unsigned char breaking;
     unsigned char borderstyle[CSS_SIDES];
@@ -187,6 +192,10 @@ struct css_style
     short shadowblur;
     short shadowspread;
     unsigned int shadow;
+    short insetx;
+    short insety;
+    short insetspread;
+    unsigned int insetshadow;
     unsigned int color;
     unsigned int fill;
     unsigned int background;
@@ -346,5 +355,6 @@ struct css_color
 
 void css_reset(struct css_sheet *sheet);
 struct css_color css_parsecolor(char *text, unsigned int length);
+char *css_findcustom(struct css_sheet *sheet, struct html_document *document, unsigned int node, char *name, unsigned int length);
 void css_parse(struct css_sheet *sheet, char *text, unsigned int count, unsigned int origin);
 void css_compute(struct css_sheet *sheet, struct html_document *document, struct css_style *styles, unsigned int width, unsigned int height, unsigned int scheme);

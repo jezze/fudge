@@ -19,4 +19,4 @@ struct svg_size
 
 unsigned int svg_findroot(struct html_document *document);
 struct svg_size svg_measure(struct html_document *document, unsigned int root, unsigned int fontsize);
-void svg_render(struct svg_canvas *canvas, struct html_document *document, unsigned int root, unsigned int color, unsigned int fill);
+void svg_render(struct svg_canvas *canvas, struct html_document *document, struct css_sheet *sheet, unsigned int root, unsigned int color, unsigned int fill);

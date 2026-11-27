@@ -43,6 +43,9 @@ struct render
 
     struct svg svg;
     struct html_document *document;
+    struct css_sheet *sheet;
+    unsigned int node;
+    unsigned int depth;
     int viewwidth;
     int viewheight;
     char *styles[STYLES];
@@ -216,6 +219,27 @@ static void parsepaint(struct render *render, struct state *state, struct paint 
     {
 
         paint->kind = PAINT_NONE;
+
+        return;
+
+    }
+
+    /* custom properties come from the page's css, with the fallback after the comma when there is none */
+    if (length > 6 && buffer_match(text, "var(", 4) && render->sheet && render->depth < DEPTH)
+    {
+
+        unsigned int close = buffer_findbyte(text, length, ')');
+        unsigned int comma = buffer_findbyte(text, close, ',');
+        char *custom = css_findcustom(render->sheet, render->document, render->node, text + 4, comma - 4);
+
+        render->depth++;
+
+        if (custom)
+            parsepaint(render, state, paint, custom, cstring_length(custom));
+        else if (comma < close)
+            parsepaint(render, state, paint, text + comma + 1, close - comma - 1);
+
+        render->depth--;
 
         return;
 
@@ -555,6 +579,8 @@ static void applyattributes(struct render *render, struct state *state, unsigned
 
     char *value;
     unsigned int i;
+
+    render->node = node;
 
     for (i = 0; i < PROPERTIES; i++)
     {
@@ -1051,7 +1077,7 @@ struct svg_size svg_measure(struct html_document *document, unsigned int root, u
 
 }
 
-void svg_render(struct svg_canvas *canvas, struct html_document *document, unsigned int root, unsigned int color, unsigned int fill)
+void svg_render(struct svg_canvas *canvas, struct html_document *document, struct css_sheet *sheet, unsigned int root, unsigned int color, unsigned int fill)
 {
 
     struct state state;
@@ -1066,6 +1092,8 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
     raster.svg.width = canvas->width;
     raster.svg.height = canvas->height;
     raster.document = document;
+    raster.sheet = sheet;
+    raster.depth = 0;
     raster.viewwidth = viewport.width;
     raster.viewheight = viewport.height;
 
@@ -1099,3 +1127,4 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, unsig
         walkchildren(&raster, root, &state, 0);
 
 }
+

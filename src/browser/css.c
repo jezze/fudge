@@ -138,6 +138,7 @@
 #define PART_IS                         17
 #define PART_ALTERNATIVE                18
 #define PART_HAS                        19
+#define PART_NTHOFTYPE                  20
 #define HAS_DESCENDANT                  0
 #define HAS_CHILD                       1
 #define HAS_NEXT                        2
@@ -427,6 +428,11 @@ static char *agent =
     "button,select,input[type=submit],input[type=button],input[type=reset]{box-sizing:border-box}"
     "button{display:inline-block;padding:1px 6px;border:2px outset #c0c0c0;background-color:#e0e0e0;color:#000}"
     "input,select,textarea{display:inline-block;border:2px inset #c0c0c0;padding:1px 2px;background-color:#fff;color:#000}"
+    "select{border:1px solid #767676;padding:0}"
+    "input[type=submit],input[type=button],input[type=reset]{padding:1px 6px;border:2px outset #c0c0c0;background-color:#e0e0e0}"
+    "input[type=checkbox],input[type=radio]{padding:0;border:0;margin:3px 3px 3px 4px}"
+    "input[type=radio]{margin:3px 3px 0 5px}"
+    "textarea{border:1px solid #767676;padding:2px}"
     "img{display:inline-block}"
     "nobr{white-space:nowrap}";
 
@@ -1158,10 +1164,10 @@ static unsigned int parsepseudo(struct selectorparser *selectorparser, unsigned 
 
         }
 
-        if (cstring_match(name, "nth-child"))
+        if (cstring_match(name, "nth-child") || cstring_match(name, "nth-of-type"))
         {
 
-            part = addpart(sheet, PART_NTHCHILD, combinator);
+            part = addpart(sheet, (cstring_match(name, "nth-child")) ? PART_NTHCHILD : PART_NTHOFTYPE, combinator);
 
             if (!part || !parsenth(text, stop + 1, close, part))
                 return 0;
@@ -4520,6 +4526,7 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
     case PROP_POSITION:
         style->position = from->position;
+        style->sticky = from->sticky;
 
         break;
 
@@ -4575,6 +4582,7 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
     case PROP_BACKGROUNDCLIP:
     case PROP_WEBKITBACKGROUNDCLIP:
         style->textclip = from->textclip;
+        style->backgroundclip = from->backgroundclip;
 
         break;
 
@@ -4618,6 +4626,10 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
         style->shadowy = from->shadowy;
         style->shadowblur = from->shadowblur;
         style->shadowspread = from->shadowspread;
+        style->insetshadow = from->insetshadow;
+        style->insetx = from->insetx;
+        style->insety = from->insety;
+        style->insetspread = from->insetspread;
 
         break;
 
@@ -5004,7 +5016,7 @@ static void setvalign(struct context *context, char *value, unsigned int length)
 
 }
 
-static unsigned int parseshadow(struct context *context, char *value, unsigned int start, unsigned int end)
+static void parseshadow(struct context *context, char *value, unsigned int start, unsigned int end)
 {
 
     struct css_style *style = context->style;
@@ -5012,6 +5024,7 @@ static unsigned int parseshadow(struct context *context, char *value, unsigned i
     int lengths[4];
     unsigned int count = 0;
     unsigned int offset = start;
+    unsigned int inset = 0;
 
     while (offset < end)
     {
@@ -5027,7 +5040,13 @@ static unsigned int parseshadow(struct context *context, char *value, unsigned i
         offset = span.start + span.length;
 
         if (matchword(text, span.length, "inset"))
-            return 0;
+        {
+
+            inset = 1;
+
+            continue;
+
+        }
 
         parsed = parselength(context, text, span.length, style->fontsize);
 
@@ -5043,22 +5062,39 @@ static unsigned int parseshadow(struct context *context, char *value, unsigned i
         parsedcolor = parsecolor(text, span.length);
 
         if (!parsedcolor.valid)
-            return 0;
+            return;
 
         color = parsedcolor.value;
 
     }
 
     if (count < 2)
-        return 0;
+        return;
+
+    /* an inset shadow is drawn only without blur, as a solid frame inside the padding box */
+    if (inset)
+    {
+
+        if (style->insetshadow || (count > 2 && lengths[2] > 0))
+            return;
+
+        style->insetshadow = color;
+        style->insetx = lengths[0];
+        style->insety = lengths[1];
+        style->insetspread = (count > 3) ? lengths[3] : 0;
+
+        return;
+
+    }
+
+    if (style->shadow)
+        return;
 
     style->shadow = color;
     style->shadowx = lengths[0];
     style->shadowy = lengths[1];
     style->shadowblur = (count > 2 && lengths[2] > 0) ? lengths[2] : 0;
     style->shadowspread = (count > 3) ? lengths[3] : 0;
-
-    return 1;
 
 }
 
@@ -5068,15 +5104,15 @@ static void setshadow(struct context *context, char *value, unsigned int length)
     unsigned int start = 0;
 
     context->style->shadow = 0;
+    context->style->insetshadow = 0;
 
-    /* only the first outer shadow is drawn, inset ones would need the box drawn first */
+    /* only the first outer and the first inset shadow are drawn */
     while (start < length)
     {
 
         unsigned int end = findstop(value, start, length, ",");
 
-        if (parseshadow(context, value, start, end))
-            return;
+        parseshadow(context, value, start, end);
 
         start = end + 1;
 
@@ -5673,6 +5709,8 @@ static void apply(struct context *context, unsigned int property, char *value)
         break;
 
     case PROP_POSITION:
+        style->sticky = matchword(value, length, "sticky");
+
         if (matchword(value, length, "static"))
             style->position = CSS_POSITION_STATIC;
         else if (matchword(value, length, "relative") || matchword(value, length, "sticky"))
@@ -5771,6 +5809,7 @@ static void apply(struct context *context, unsigned int property, char *value)
     case PROP_BACKGROUNDCLIP:
     case PROP_WEBKITBACKGROUNDCLIP:
         style->textclip = matchword(value, length, "text");
+        style->backgroundclip = (matchword(value, length, "padding-box")) ? CSS_CLIP_PADDING : (matchword(value, length, "content-box")) ? CSS_CLIP_CONTENT : CSS_CLIP_BORDER;
 
         break;
 
@@ -6242,6 +6281,9 @@ static unsigned int matchpart(struct matcher *matcher, struct css_part *part, un
     case PART_NTHCHILD:
         return matchnth((int)part->name, (int)part->value, elementindex(document, node, 0));
 
+    case PART_NTHOFTYPE:
+        return matchnth((int)part->name, (int)part->value, elementindex(document, node, 1));
+
     case PART_CHECKED:
         return html_getattribute(document, node, "checked") || html_getattribute(document, node, "selected");
 
@@ -6531,11 +6573,8 @@ static void setcustom(struct context *context, unsigned int name, unsigned int v
 
 }
 
-static char *findcustom(struct context *context, char *name, unsigned int length)
+char *css_findcustom(struct css_sheet *sheet, struct html_document *document, unsigned int node, char *name, unsigned int length)
 {
-
-    struct css_sheet *sheet = context->sheet;
-    unsigned int node = context->node;
 
     while (node)
     {
@@ -6546,16 +6585,24 @@ static char *findcustom(struct context *context, char *name, unsigned int length
         for (i = start; i < start + sheet->customcount[node]; i++)
         {
 
+            /* initial is the guaranteed-invalid value, so var() takes its fallback */
             if (matchword(name, length, poolstring(sheet, sheet->customs[i].name)))
-                return poolstring(sheet, sheet->customs[i].value);
+                return (cstring_match(poolstring(sheet, sheet->customs[i].value), "initial")) ? 0 : poolstring(sheet, sheet->customs[i].value);
 
         }
 
-        node = parentelement(context->document, node);
+        node = parentelement(document, node);
 
     }
 
     return 0;
+
+}
+
+static char *findcustom(struct context *context, char *name, unsigned int length)
+{
+
+    return css_findcustom(context->sheet, context->document, context->node, name, length);
 
 }
 
@@ -6901,6 +6948,9 @@ static void finish(struct css_style *style)
 
     if (style->shadow == CSS_CURRENTCOLOR)
         style->shadow = style->color;
+
+    if (style->insetshadow == CSS_CURRENTCOLOR)
+        style->insetshadow = style->color;
 
 }
 
