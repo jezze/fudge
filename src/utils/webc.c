@@ -45,7 +45,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         if ((message = channel_poll(1, target, MESSAGE_TYPE_READY)))
         {
 
-            channel_send_fmt(1, target, MESSAGE_TYPE_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", (url->path) ? url->path : "", url->host);
+            channel_send_fmt(1, target, MESSAGE_TYPE_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (fudge)\r\nConnection: close\r\n\r\n", (url->path) ? url->path : "", url->host);
 
             while ((message = channel_poll(1, target, MESSAGE_TYPE_DATA)))
                 channel_forward(0, source, MESSAGE_TYPE_DATA, message);
