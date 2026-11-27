@@ -9,6 +9,7 @@
 #define TYPE_PNG                        1
 #define TYPE_TOFFEE                     2
 #define TYPE_JPEG                       3
+#define TYPE_GIF                        4
 
 static char source[1024];
 static unsigned int paths;
@@ -19,6 +20,7 @@ static unsigned int height;
 static unsigned int *pixels;
 static struct png png;
 static struct jpeg jpeg;
+static struct gif gif;
 static unsigned char colormap[768];
 static unsigned char rawline[ROWSIZE * 2];
 static unsigned char line[ROWSIZE];
@@ -60,6 +62,33 @@ static unsigned int decodepng(void)
     }
 
     return 1;
+
+}
+
+static unsigned int readgif(struct gif *gif, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return fs_read_full(1, filetarget, fileid, buffer, count, offset);
+
+}
+
+static unsigned int opengif(void)
+{
+
+    if (!gif_open(&gif, readgif))
+        return 0;
+
+    width = gif.width;
+    height = gif.height;
+
+    return 1;
+
+}
+
+static unsigned int decodegif(void)
+{
+
+    return gif_decode(&gif, pixels);
 
 }
 
@@ -303,6 +332,9 @@ static unsigned int gettype(char *path)
     if (length > 4 && cstring_match(path + length - 4, ".tof"))
         return TYPE_TOFFEE;
 
+    if (length > 4 && cstring_match(path + length - 4, ".gif"))
+        return TYPE_GIF;
+
     if ((length > 4 && cstring_match(path + length - 4, ".jpg")) || (length > 5 && cstring_match(path + length - 5, ".jpeg")))
         return TYPE_JPEG;
 
@@ -325,6 +357,9 @@ static unsigned int open(unsigned int type, struct pcx_header *header)
     case TYPE_JPEG:
         return openjpeg();
 
+    case TYPE_GIF:
+        return opengif();
+
     }
 
     return openpcx(header);
@@ -345,6 +380,9 @@ static unsigned int decode(unsigned int type, struct pcx_header *header)
 
     case TYPE_JPEG:
         return decodejpeg();
+
+    case TYPE_GIF:
+        return decodegif();
 
     }
 
