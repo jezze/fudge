@@ -1428,7 +1428,7 @@ static int layoutreplaced(struct layout *layout, unsigned int node, int x, int t
 
     /* a block-level picture centers with auto margins like any block */
     if (style->display != CSS_DISPLAY_INLINE && style->display != CSS_DISPLAY_INLINEBLOCK && style->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
-        box->x = x + max((style->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO) ? (availw - box->w) / 2 : availw - box->w - resolve(&style->margin[CSS_RIGHT], availw), 0);
+        box->x = x + max((style->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO) ? half(availw - box->w) : availw - box->w - resolve(&style->margin[CSS_RIGHT], availw), 0);
 
     box->h = bt + height + bb;
 
@@ -1669,8 +1669,8 @@ static void layoutblockchild(struct layout *layout, struct flow *flow, unsigned 
     if (style->clear)
         top = max(top, clearance(layout, style->clear, flow->y));
 
-    /* a box sized to its content is measured first and then placed at that width */
-    if (style->width.unit == CSS_UNIT_FIT && !isreplaced(layout, node))
+    /* a box sized to its content is measured first and then placed at that width, as a button is even when it is a block */
+    if ((style->width.unit == CSS_UNIT_FIT || (getnode(layout, node)->tag == HTML_TAG_BUTTON && style->width.unit == CSS_UNIT_AUTO)) && !isreplaced(layout, node))
     {
 
         int width = measure(layout, node, availw);
@@ -2938,6 +2938,17 @@ static unsigned int usesheight(struct layout *layout, unsigned int node)
 
 }
 
+static unsigned int wantsstretch(struct layout *layout, struct css_style *container, struct layout_flexitem *item, int cross)
+{
+
+    /* a percentage height inside resolves against the stretched height even when the item already fills it */
+    if (!isstretched(layout, container, item))
+        return 0;
+
+    return haspercentchild(layout, item->node) || (item->mt + item->height + item->mb < cross && usesheight(layout, item->node));
+
+}
+
 static unsigned int needsrestretch(struct layout *layout, struct css_style *container, unsigned int start, unsigned int end, int cross)
 {
 
@@ -2946,9 +2957,7 @@ static unsigned int needsrestretch(struct layout *layout, struct css_style *cont
     for (i = start; i < end; i++)
     {
 
-        struct layout_flexitem *item = &layout->flexitems[i];
-
-        if (isstretched(layout, container, item) && item->mt + item->height + item->mb < cross && usesheight(layout, item->node))
+        if (wantsstretch(layout, container, &layout->flexitems[i], cross))
             return 1;
 
     }
@@ -3461,6 +3470,30 @@ static void sizegridcolumns(struct layout *layout, struct css_grid *grid, unsign
 
 }
 
+static int gridspan(struct layout_grid *state, struct layout_flexitem *item, unsigned int rows, int rowgap)
+{
+
+    return state->tops[min(item->row + item->rows, rows)] - state->tops[item->row] - rowgap;
+
+}
+
+static unsigned int needsgridrestretch(struct layout *layout, struct css_style *container, unsigned int base, struct layout_grid *state, unsigned int rows, int rowgap)
+{
+
+    unsigned int i;
+
+    for (i = base; i < layout->flexcount; i++)
+    {
+
+        if (wantsstretch(layout, container, &layout->flexitems[i], gridspan(state, &layout->flexitems[i], rows, rowgap)))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static void layoutgrid(struct layout *layout, struct flow *flow, unsigned int node)
 {
 
@@ -3482,6 +3515,9 @@ static void layoutgrid(struct layout *layout, struct flow *flow, unsigned int no
     int autos = 0;
     int room = (fixed >= 0) ? fixed : flexminimum(layout, node, width);
     int y = flow->y;
+    unsigned int fragmentcount = layout->fragmentcount;
+    unsigned int textcount = layout->textcount;
+    unsigned int absolutecount = layout->absolutecount;
     struct spread spread;
 
     /* the track arrays live in the layout, one set per grid nested in a grid, so the stack stays small for every block */
@@ -3662,15 +3698,42 @@ static void layoutgrid(struct layout *layout, struct flow *flow, unsigned int no
 
     }
 
+    /* a stretched item has a definite height, so every item is placed again in its final row for what depends on it */
+    if (!layout->measuring && needsgridrestretch(layout, style, base, state, rows, rowgap))
+    {
+
+        layout->fragmentcount = fragmentcount;
+        layout->textcount = textcount;
+        layout->absolutecount = absolutecount;
+
+        for (i = base; i < layout->flexcount; i++)
+        {
+
+            struct layout_flexitem *item = &layout->flexitems[i];
+
+            if (isstretched(layout, style, item))
+            {
+
+                layout->heightnode = item->node;
+                layout->forceheight = gridspan(state, item, rows, rowgap) - item->mt - item->mb;
+
+            }
+
+            placeflexitem(layout, item, layout->boxes[item->node].x - item->ml, state->tops[item->row]);
+
+            layout->heightnode = 0;
+
+        }
+
+    }
+
     /* every item is stretched over its rows unless it says otherwise */
     for (i = base; i < layout->flexcount; i++)
     {
 
         struct layout_flexitem *item = &layout->flexitems[i];
-        unsigned int last = min(item->row + item->rows, rows);
-        int span = state->tops[last] - state->tops[item->row] - rowgap;
 
-        alignflexitem(layout, item, getalign(style, getstyle(layout, item->node)), span - item->mt - item->height - item->mb, 0);
+        alignflexitem(layout, item, getalign(style, getstyle(layout, item->node)), gridspan(state, item, rows, rowgap) - item->mt - item->height - item->mb, 0);
 
     }
 
@@ -3959,6 +4022,47 @@ static unsigned int needsregrow(struct layout *layout, unsigned int base)
 
 }
 
+static int shrinkfloor(struct layout *layout, struct layout_flexitem *item)
+{
+
+    struct css_style *style = getstyle(layout, item->node);
+    int floor = (style->minheight.unit == CSS_UNIT_PX) ? style->minheight.value : 0;
+
+    /* an item sized by its content cannot get smaller than it, unless it clips what overflows */
+    if (style->height.unit == CSS_UNIT_AUTO && !style->overflow && !isreplaced(layout, item->node))
+        return item->height;
+
+    return min(floor, item->height);
+
+}
+
+static int shrinkweight(struct layout *layout, struct layout_flexitem *item)
+{
+
+    struct css_style *style = getstyle(layout, item->node);
+    int inner = item->height - style->borderwidth[CSS_TOP] - style->borderwidth[CSS_BOTTOM] - resolve(&style->padding[CSS_TOP], 0) - resolve(&style->padding[CSS_BOTTOM], 0);
+
+    if (shrinkfloor(layout, item) >= item->height)
+        return 0;
+
+    /* shrinking goes by the size inside padding and border, scaled by flex-shrink */
+    return style->shrink * max(inner, 0) / 100;
+
+}
+
+static int shrinktotal(struct layout *layout, unsigned int base)
+{
+
+    int total = 0;
+    unsigned int i;
+
+    for (i = base; i < layout->flexcount; i++)
+        total += shrinkweight(layout, &layout->flexitems[i]);
+
+    return total;
+
+}
+
 static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned int node)
 {
 
@@ -4059,6 +4163,43 @@ static void layoutflexcolumn(struct layout *layout, struct flow *flow, unsigned 
 
                     layout->heightnode = item->node;
                     layout->forceheight = item->height + share;
+
+                }
+
+                alignflexitem(layout, item, columnalign(style, getstyle(layout, item->node)), availw - placeflexitem(layout, item, flow->left, y), 1);
+
+                layout->heightnode = 0;
+                y += item->mt + item->height + item->mb;
+
+            }
+
+        }
+
+        /* items too tall for the box give up height by their shrink and size, down to what they cannot lose */
+        else if (free < 0 && shrinktotal(layout, base))
+        {
+
+            int total = shrinktotal(layout, base);
+
+            layout->fragmentcount = fragmentcount;
+            layout->textcount = textcount;
+            layout->absolutecount = absolutecount;
+            y = flow->y;
+
+            for (i = base; i < layout->flexcount; i++)
+            {
+
+                struct layout_flexitem *item = &layout->flexitems[i];
+                int target = max(item->height + free * shrinkweight(layout, item) / total, shrinkfloor(layout, item));
+
+                if (i > base)
+                    y += gap;
+
+                if (target < item->height)
+                {
+
+                    layout->heightnode = item->node;
+                    layout->forceheight = target;
 
                 }
 
@@ -4250,6 +4391,15 @@ static struct area getcontaining(struct layout *layout, unsigned int container, 
     area.y = box->y + style->borderwidth[CSS_TOP];
     area.w = box->w - style->borderwidth[CSS_LEFT] - style->borderwidth[CSS_RIGHT];
     area.h = box->h - style->borderwidth[CSS_TOP] - style->borderwidth[CSS_BOTTOM];
+
+    /* without a positioned ancestor the box is placed against the first screen, not the whole page */
+    if (container == layout->document->html && style->position == CSS_POSITION_STATIC)
+    {
+
+        area.y = 0;
+        area.h = layout->viewheight;
+
+    }
 
     if (!owner)
         return area;
@@ -4511,6 +4661,50 @@ static int definiteheight(struct layout *layout, unsigned int node, int availw)
 
 }
 
+static unsigned int findlegend(struct layout *layout, unsigned int node)
+{
+
+    struct css_style *style = getstyle(layout, node);
+    unsigned int child;
+
+    if (!cstring_match(html_getstring(layout->document, getnode(layout, node)->name), "fieldset") || style->display != CSS_DISPLAY_BLOCK || style->flexbox)
+        return 0;
+
+    for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
+    {
+
+        struct css_style *childstyle = getstyle(layout, child);
+
+        if (getnode(layout, child)->type == HTML_NODE_ELEMENT && cstring_match(html_getstring(layout->document, getnode(layout, child)->name), "legend"))
+            return (isvisible(childstyle) && !childstyle->floating && !isabsolute(childstyle)) ? child : 0;
+
+    }
+
+    return 0;
+
+}
+
+static int placelegend(struct layout *layout, unsigned int legend, int x, int top, int availw)
+{
+
+    struct css_style *style = getstyle(layout, legend);
+    int mt = resolve(&style->margin[CSS_TOP], availw);
+    int mb = resolve(&style->margin[CSS_BOTTOM], availw);
+
+    if (style->width.unit == CSS_UNIT_FIT)
+    {
+
+        int width = measure(layout, legend, availw);
+
+        layout->forcenode = legend;
+        layout->forcewidth = width;
+
+    }
+
+    return mt + layoutblock(layout, legend, x, top + mt, availw) + mb;
+
+}
+
 static int layoutblock(struct layout *layout, unsigned int node, int x, int top, int availw)
 {
 
@@ -4543,6 +4737,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     int contentheight;
     int trailing;
     unsigned int child;
+    unsigned int legend;
 
     if (isreplaced(layout, node))
         return layoutreplaced(layout, node, x, top, availw);
@@ -4623,7 +4818,7 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
         int free = availw - cw - extra;
 
         if (style->margin[CSS_LEFT].unit == CSS_UNIT_AUTO && style->margin[CSS_RIGHT].unit == CSS_UNIT_AUTO)
-            ml = max(free / 2, 0);
+            ml = max(half(free), 0);
         else if (style->margin[CSS_LEFT].unit == CSS_UNIT_AUTO)
             ml = max(free - mr, 0);
         else if (style->margin[CSS_RIGHT].unit != CSS_UNIT_AUTO && !layout->measuring && iswebkitcentered(layout, node))
@@ -4644,6 +4839,12 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
         layout->floatbase = floatstart;
 
     layout->extent = 0;
+
+    legend = findlegend(layout, node);
+
+    /* a fieldset's legend sits on its top border, which is as thick as the legend for what comes after */
+    if (legend)
+        bt = max(bt, placelegend(layout, legend, box->x + bl + pl, top, cw));
 
     initflow(layout, &flow, node, box->x + bl + pl, box->x + bl + pl + cw, top + bt + pt);
 
@@ -4713,7 +4914,12 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
     {
 
         for (child = getnode(layout, node)->first; child; child = getnode(layout, child)->next)
-            layoutnode(layout, &flow, child);
+        {
+
+            if (child != legend)
+                layoutnode(layout, &flow, child);
+
+        }
 
         flushline(layout, &flow, 0);
 
@@ -5019,6 +5225,13 @@ unsigned int layout_findlink(struct layout *layout, int x, int y)
     unsigned int node = layout_findnode(layout, x, y);
 
     return (node) ? findanchor(layout, node) : 0;
+
+}
+
+unsigned int layout_findlegend(struct layout *layout, unsigned int node)
+{
+
+    return findlegend(layout, node);
 
 }
 

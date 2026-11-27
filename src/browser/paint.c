@@ -667,6 +667,32 @@ static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct 
 
 }
 
+static void paintfieldset(struct paint_canvas *canvas, struct layout *layout, struct layout_box *box, struct css_style *style, struct layout_box *legend)
+{
+
+    struct css_style plain;
+    struct layout_box below;
+    int bt = style->borderwidth[CSS_TOP];
+    int offset = max(legend->y + legend->h / 2 - bt / 2 - box->y, 0);
+    unsigned int color = fade(style->bordercolor[CSS_TOP], style->opacity);
+
+    /* the box starts at the middle of its legend and its top border leaves a gap where the legend is */
+    buffer_copy(&plain, style, sizeof (struct css_style));
+
+    plain.borderwidth[CSS_TOP] = 0;
+    below.x = box->x;
+    below.y = box->y + offset;
+    below.w = box->w;
+    below.h = box->h - offset;
+    below.definite = box->definite;
+    below.placed = box->placed;
+
+    paintbox(canvas, layout, &below, &plain, 1);
+    fill(canvas, below.x, below.y, legend->x - below.x, bt, color);
+    fill(canvas, legend->x + legend->w, below.y, below.x + below.w - legend->x - legend->w, bt, color);
+
+}
+
 static void paintplaceholder(struct paint_canvas *canvas, struct layout_box *box)
 {
 
@@ -1100,7 +1126,9 @@ static void paintboxes(struct paint_canvas *canvas, struct layout *layout, unsig
             if (style->display != CSS_DISPLAY_INLINE && style->shadow)
                 paintshadow(canvas, box, style);
 
-            if (style->display != CSS_DISPLAY_INLINE)
+            if (style->display != CSS_DISPLAY_INLINE && layout_findlegend(layout, node))
+                paintfieldset(canvas, layout, box, style, &layout->boxes[layout_findlegend(layout, node)]);
+            else if (style->display != CSS_DISPLAY_INLINE)
                 paintbox(canvas, layout, box, style, node != canvasnode(layout));
 
             if (document->nodes[node].tag == HTML_TAG_IMG || document->nodes[node].tag == HTML_TAG_SVG)

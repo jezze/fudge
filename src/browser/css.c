@@ -422,7 +422,7 @@ static char *agent =
     "big{font-size:larger}"
     "mark{background-color:yellow}"
     "hr{border:1px inset gray;margin:.5em 0}"
-    "fieldset{border:2px groove gray;padding:.35em .75em .625em;margin:0 2px}"
+    "fieldset{border:2px groove #c0c0c0;padding:.35em .75em .625em;margin:0 2px}"
     "fieldset>legend{width:fit-content;padding:0 2px}"
     "button,input,select,textarea{font-size:13.333px}"
     "button,select,input[type=submit],input[type=button],input[type=reset]{box-sizing:border-box}"
@@ -6971,6 +6971,34 @@ static unsigned int isatomic(unsigned int tag)
 
 }
 
+static void quirkmargins(struct context *context, struct html_document *document, unsigned int node)
+{
+
+    unsigned int parent = parentelement(document, node);
+    unsigned int tag = (parent) ? document->nodes[parent].tag : HTML_TAG_OTHER;
+
+    /* in quirks mode the default margins at the top and bottom of a body or cell are dropped, a page's own are kept */
+    if (tag != HTML_TAG_BODY && tag != HTML_TAG_TD && tag != HTML_TAG_TH)
+        return;
+
+    if (!prevelement(document, node))
+    {
+
+        context->style->margin[CSS_TOP].unit = CSS_UNIT_PX;
+        context->style->margin[CSS_TOP].value = 0;
+
+    }
+
+    if (!nextelement(document, node))
+    {
+
+        context->style->margin[CSS_BOTTOM].unit = CSS_UNIT_PX;
+        context->style->margin[CSS_BOTTOM].value = 0;
+
+    }
+
+}
+
 static void computeelement(struct css_sheet *sheet, struct html_document *document, struct context *context, unsigned int node)
 {
 
@@ -6990,6 +7018,9 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
     {
 
         applyrules(context, sheet, matches, count, CSS_ORIGIN_AGENT, 0, phase);
+
+        if (document->quirks)
+            quirkmargins(context, document, node);
 
         if (phase != PHASE_CUSTOM)
             applyhints(context, document, node, phase == PHASE_FONT);
