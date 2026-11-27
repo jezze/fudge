@@ -2,9 +2,9 @@
 #define JS_OBJECTS                      16384
 #define JS_PROPERTIES                   32768
 #define JS_STRINGSIZE                   0x80000
-#define JS_INTERNS                      4096
+#define JS_INTERNS                      65536
 #define JS_LISTENERS                    64
-#define JS_NATIVES                      160
+#define JS_NATIVES                      256
 #define JS_TIMERS                       32
 #define JS_SCRATCH                      8192
 #define JS_TEXTSIZE                     4096
@@ -24,6 +24,7 @@ struct js_value
 
     unsigned int type;
     int number;
+    double real;
 
 };
 
@@ -37,6 +38,7 @@ struct js_node
     unsigned int c;
     unsigned int next;
     int value;
+    double real;
 
 };
 
@@ -141,6 +143,9 @@ struct js_engine
     unsigned int dark;
     unsigned int steps;
     unsigned int depth;
+    unsigned int generator;
+    unsigned int generatorstop;
+    unsigned int seed;
     unsigned int constructing;
     unsigned int throwing;
     struct js_value thrown;
