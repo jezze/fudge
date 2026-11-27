@@ -92,6 +92,7 @@ static unsigned int heapbase;
 static unsigned int picturecount;
 static unsigned int heapused;
 static struct png png;
+static struct gif gif;
 static struct jpeg *jpeg;
 static unsigned int pngcount;
 static unsigned int pngtarget;
@@ -551,7 +552,7 @@ static struct page loadfile(char *url)
     if (matchsuffix(url, ".html") || matchsuffix(url, ".htm"))
         return page(count, PAGE_HTML);
 
-    if (matchsuffix(url, ".png") || matchsuffix(url, ".jpg") || matchsuffix(url, ".jpeg"))
+    if (matchsuffix(url, ".png") || matchsuffix(url, ".jpg") || matchsuffix(url, ".jpeg") || matchsuffix(url, ".gif"))
         return page(count, PAGE_OTHER);
 
     return page(count, PAGE_TEXT);
@@ -882,6 +883,22 @@ static unsigned int readjpeg(struct jpeg *jpeg, void *buffer, unsigned int count
 
 }
 
+static unsigned int readgif(struct gif *gif, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return readpicture(buffer, count, offset);
+
+}
+
+static unsigned int isgif(void)
+{
+
+    unsigned char magic[4];
+
+    return readpicture(magic, 4, 0) == 4 && buffer_match(magic, "GIF8", 4);
+
+}
+
 static unsigned int isjpeg(void)
 {
 
@@ -895,6 +912,7 @@ static unsigned int decodepicture(struct layout_picture *picture)
 {
 
     unsigned int jpg = isjpeg();
+    unsigned int gifs = isgif();
     unsigned int width;
     unsigned int height;
     unsigned int size;
@@ -903,11 +921,11 @@ static unsigned int decodepicture(struct layout_picture *picture)
     unsigned int *pixels;
     unsigned int y;
 
-    if (!heap.id || !((jpg) ? jpeg_open(jpeg, readjpeg) : png_open(&png, readpng)))
+    if (!heap.id || !((gifs) ? gif_open(&gif, readgif) : (jpg) ? jpeg_open(jpeg, readjpeg) : png_open(&png, readpng)))
         return 0;
 
-    width = (jpg) ? jpeg->width : png.width;
-    height = (jpg) ? jpeg->height : png.height;
+    width = (gifs) ? gif.width : (jpg) ? jpeg->width : png.width;
+    height = (gifs) ? gif.height : (jpg) ? jpeg->height : png.height;
 
     if (!width || !height)
         return 0;
@@ -930,13 +948,26 @@ static unsigned int decodepicture(struct layout_picture *picture)
     if (extra)
         jpeg_decode(jpeg, (short *)(pixels + (heapused + size) / 4));
 
-    for (y = 0; y < height; y++)
+    /* a gif comes whole, as its rows can be interlaced */
+    if (gifs)
     {
 
-        unsigned int *row = pixels + heapused / 4 + y * width;
+        y = (gif_decode(&gif, pixels + heapused / 4)) ? height : 0;
 
-        if (!((jpg) ? jpeg_readrow(jpeg, row) : png_readrow(&png, row)))
-            break;
+    }
+
+    else
+    {
+
+        for (y = 0; y < height; y++)
+        {
+
+            unsigned int *row = pixels + heapused / 4 + y * width;
+
+            if (!((jpg) ? jpeg_readrow(jpeg, row) : png_readrow(&png, row)))
+                break;
+
+        }
 
     }
 

@@ -1,3 +1,4 @@
+#include <image/gif.h>
 #include <image/jpeg.h>
 #include <image/pcx.h>
 #include <image/png.h>
