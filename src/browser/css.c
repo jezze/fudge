@@ -2,7 +2,7 @@
 #include "html.h"
 #include "css.h"
 
-#define PROPERTIES                      133
+#define PROPERTIES                      151
 #define PROP_DISPLAY                    1
 #define PROP_COLOR                      2
 #define PROP_BACKGROUND                 3
@@ -114,11 +114,30 @@
 #define PROP_GRIDAUTOCOLUMNS            130
 #define PROP_GRIDTEMPLATE               131
 #define PROP_TEXTINDENT                 132
+#define PROP_ANIMATION                  133
+#define PROP_ANIMATIONNAME              134
+#define PROP_ANIMATIONFILLMODE          135
+#define PROP_ANIMATIONITERATIONCOUNT    136
+#define PROP_TEXTOVERFLOW               137
+#define PROP_WEBKITLINECLAMP            138
+#define PROP_LINECLAMP                  139
+#define PROP_BACKGROUNDSIZE             140
+#define PROP_BACKGROUNDPOSITION         141
+#define PROP_BACKGROUNDREPEAT           142
+#define PROP_TRANSFORMORIGIN            143
+#define PROP_OUTLINE                    144
+#define PROP_OUTLINEWIDTH               145
+#define PROP_OUTLINESTYLE               146
+#define PROP_OUTLINECOLOR               147
+#define PROP_OUTLINEOFFSET              148
+#define PROP_TEXTSHADOW                 149
+#define PROP_FILTER                     150
 #define ALIASES                         30
 #define PROP_CUSTOM                     255
 #define POOL_EXACT                      0
 #define POOL_LOWER                      1
 #define POOL_RAW                        2
+#define POOL_URL                        3
 #define PART_TAG                        1
 #define PART_UNIVERSAL                  2
 #define PART_ID                         3
@@ -298,6 +317,7 @@ struct context
     unsigned int width;
     unsigned int height;
     unsigned int scheme;
+    unsigned int base;
 
 };
 
@@ -341,7 +361,10 @@ static char *properties[PROPERTIES] = {
     "top", "right", "bottom", "left", "opacity", "max-height", "font-family", "border-spacing", "border-collapse", "order", "z-index", "content", "box-shadow", "background-clip", "-webkit-background-clip", "vertical-align", "letter-spacing", "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius",
     "inset", "margin-inline", "margin-block", "padding-inline", "padding-block", "inset-inline", "inset-block", "border-inline", "border-block",
     "grid-template-rows", "grid-template-areas", "grid-auto-rows", "grid-column", "grid-row", "grid-column-start", "grid-column-end", "grid-row-start", "grid-row-end", "grid-area", "word-break", "overflow-wrap", "word-wrap", "aspect-ratio", "transform",
-    "justify-items", "justify-self", "align-content", "place-items", "place-content", "place-self", "grid-auto-flow", "grid-auto-columns", "grid-template", "text-indent"
+    "justify-items", "justify-self", "align-content", "place-items", "place-content", "place-self", "grid-auto-flow", "grid-auto-columns", "grid-template", "text-indent",
+    "animation", "animation-name", "animation-fill-mode", "animation-iteration-count", "text-overflow", "-webkit-line-clamp", "line-clamp",
+    "background-size", "background-position", "background-repeat", "transform-origin",
+    "outline", "outline-width", "outline-style", "outline-color", "outline-offset", "text-shadow", "filter"
 };
 static char *aliases[ALIASES][2] = {
     {"margin-inline-start", "margin-left"}, {"margin-inline-end", "margin-right"}, {"margin-block-start", "margin-top"}, {"margin-block-end", "margin-bottom"},
@@ -627,12 +650,13 @@ static unsigned int pooladd(struct css_sheet *sheet, char *text, unsigned int le
 
     unsigned int offset = sheet->poolcount;
     unsigned int space = 0;
+    unsigned int rawfrom = 0;
     unsigned int i = 0;
 
     while (i < length)
     {
 
-        unsigned int next = skipcomment(text, i, length);
+        unsigned int next = (rawfrom) ? i : skipcomment(text, i, length);
         char c;
 
         if (next != i)
@@ -644,7 +668,14 @@ static unsigned int pooladd(struct css_sheet *sheet, char *text, unsigned int le
 
         }
 
-        c = (mode == POOL_LOWER) ? lower(text[i]) : text[i];
+        /* an address keeps its case, everything around it is lowered */
+        if (mode == POOL_URL && !rawfrom && i + 4 <= length && lower(text[i]) == 'u' && lower(text[i + 1]) == 'r' && lower(text[i + 2]) == 'l' && text[i + 3] == '(')
+            rawfrom = i + 4;
+
+        if (rawfrom && i >= rawfrom && text[i] == ')')
+            rawfrom = 0;
+
+        c = (rawfrom && i >= rawfrom) ? text[i] : (mode == POOL_LOWER || mode == POOL_URL) ? lower(text[i]) : text[i];
 
         /* raw text keeps its escapes, generated content decodes them itself */
         if (c == '\\' && i + 1 < length && mode != POOL_RAW)
@@ -810,7 +841,8 @@ static void parsedeclaration(struct css_sheet *sheet, char *text, unsigned int s
     sheet->declarations[sheet->declarationcount].property = property;
     sheet->declarations[sheet->declarationcount].important = important;
     sheet->declarations[sheet->declarationcount].name = (property == PROP_CUSTOM) ? pooladd(sheet, name, namelength, POOL_LOWER) : 0;
-    sheet->declarations[sheet->declarationcount].value = pooladd(sheet, text + start, (end > start) ? end - start : 0, (property == PROP_CONTENT || property == PROP_CUSTOM) ? POOL_RAW : POOL_LOWER);
+    sheet->declarations[sheet->declarationcount].value = pooladd(sheet, text + start, (end > start) ? end - start : 0, (property == PROP_CONTENT || property == PROP_CUSTOM) ? POOL_RAW : (property == PROP_BACKGROUND || property == PROP_BACKGROUNDIMAGE) ? POOL_URL : POOL_LOWER);
+    sheet->declarations[sheet->declarationcount].base = sheet->currentbase;
 
     if (sheet->declarations[sheet->declarationcount].value && (property != PROP_CUSTOM || sheet->declarations[sheet->declarationcount].name))
         sheet->declarationcount++;
@@ -3182,7 +3214,8 @@ static void setflexflow(struct context *context, char *value)
 static unsigned int parsedisplay(char *text, unsigned int length)
 {
 
-    if (matchword(text, length, "block") || matchword(text, length, "flow-root") || matchword(text, length, "table-caption"))
+    /* the old -webkit-box is kept for line-clamp, where it lays out like a block */
+    if (matchword(text, length, "block") || matchword(text, length, "flow-root") || matchword(text, length, "table-caption") || matchword(text, length, "-webkit-box"))
         return CSS_DISPLAY_BLOCK;
 
     if (matchword(text, length, "grid"))
@@ -3191,7 +3224,7 @@ static unsigned int parsedisplay(char *text, unsigned int length)
     if (matchword(text, length, "inline") || matchword(text, length, "contents"))
         return CSS_DISPLAY_INLINE;
 
-    if (matchword(text, length, "inline-block") || matchword(text, length, "inline-flex") || matchword(text, length, "inline-grid") || matchword(text, length, "inline-table"))
+    if (matchword(text, length, "inline-block") || matchword(text, length, "-webkit-inline-box") || matchword(text, length, "inline-flex") || matchword(text, length, "inline-grid") || matchword(text, length, "inline-table"))
         return CSS_DISPLAY_INLINEBLOCK;
 
     if (matchword(text, length, "list-item"))
@@ -3692,30 +3725,321 @@ static unsigned int parsegradient(struct context *context, char *text, unsigned 
 
 }
 
+static void storeurl(struct context *context, char *text, unsigned int length)
+{
+
+    struct css_sheet *sheet = context->sheet;
+    unsigned int start = 4;
+    unsigned int end = length;
+
+    /* the address inside url(...) without its quotes, kept until the styles are computed again */
+    if (end && text[end - 1] == ')')
+        end--;
+
+    while (start < end && (isspace(text[start]) || text[start] == '"' || text[start] == '\''))
+        start++;
+
+    while (end > start && (isspace(text[end - 1]) || text[end - 1] == '"' || text[end - 1] == '\''))
+        end--;
+
+    if (end == start || sheet->urltextcount + end - start + 1 > CSS_URLTEXT)
+        return;
+
+    buffer_copy(sheet->urltext + sheet->urltextcount, text + start, end - start);
+
+    context->style->bgurl = sheet->urltextcount + 1;
+    context->style->bgbase = context->base;
+    sheet->urltextcount += end - start;
+    sheet->urltext[sheet->urltextcount++] = '\0';
+
+}
+
+static unsigned int bgkeyword(char *text, unsigned int length, unsigned int *vertical)
+{
+
+    /* left and top are 0%, center 50%, right and bottom 100%, in thousandths of a percent */
+    vertical[0] = matchword(text, length, "top") || matchword(text, length, "bottom");
+
+    if (matchword(text, length, "left") || matchword(text, length, "top"))
+        return 1;
+
+    if (matchword(text, length, "center"))
+        return 50001;
+
+    if (matchword(text, length, "right") || matchword(text, length, "bottom"))
+        return 100001;
+
+    return 0;
+
+}
+
+static void setbgposition(struct context *context, struct span *spans, unsigned int count, char *value)
+{
+
+    unsigned int filled = 0;
+    unsigned int i;
+
+    for (i = 0; i < count && i < 4; i++)
+    {
+
+        char *text = value + spans[i].start;
+        unsigned int vertical = 0;
+        unsigned int keyword = bgkeyword(text, spans[i].length, &vertical);
+        unsigned int axis = (vertical) ? 1 : (filled & 1) ? 1 : 0;
+
+        if (keyword)
+        {
+
+            context->style->bgposition[axis].unit = CSS_UNIT_PERCENT;
+            context->style->bgposition[axis].value = keyword - 1;
+            context->style->bgposition[axis].offset = 0;
+            context->style->bgposition[axis].limits = 0;
+
+            /* an edge followed by a length is that far in from the edge */
+            if (keyword != 50001 && i + 1 < count && !bgkeyword(value + spans[i + 1].start, spans[i + 1].length, &vertical))
+            {
+
+                struct lengthvalue length = parselength(context, value + spans[i + 1].start, spans[i + 1].length, context->style->fontsize);
+
+                vertical = (keyword - 1 == 0) ? 0 : 1;
+
+                if (length.valid && length.length.unit == CSS_UNIT_PX)
+                {
+
+                    context->style->bgposition[axis].offset = (vertical) ? -length.length.value : length.length.value;
+
+                    i++;
+
+                }
+
+            }
+
+        }
+
+        else
+        {
+
+            struct lengthvalue length = parselength(context, text, spans[i].length, context->style->fontsize);
+
+            if (!length.valid)
+                continue;
+
+            copylength(&context->style->bgposition[axis], &length.length);
+
+        }
+
+        filled |= 1 << axis;
+
+    }
+
+    /* a single value leaves the other axis centered */
+    if (filled == 1)
+    {
+
+        context->style->bgposition[1].unit = CSS_UNIT_PERCENT;
+        context->style->bgposition[1].value = 50000;
+
+    }
+
+    if (filled == 2)
+    {
+
+        context->style->bgposition[0].unit = CSS_UNIT_PERCENT;
+        context->style->bgposition[0].value = 50000;
+
+    }
+
+}
+
+static void setbgsize(struct context *context, struct span *spans, unsigned int count, char *value)
+{
+
+    unsigned int i;
+
+    context->style->bgsizemode = CSS_SIZE_AUTO;
+
+    if (count && matchword(value + spans[0].start, spans[0].length, "cover"))
+        context->style->bgsizemode = CSS_SIZE_COVER;
+    else if (count && matchword(value + spans[0].start, spans[0].length, "contain"))
+        context->style->bgsizemode = CSS_SIZE_CONTAIN;
+    else
+    {
+
+        /* one or two lengths, where auto keeps the picture's proportions */
+        for (i = 0; i < count && i < 2; i++)
+        {
+
+            struct lengthvalue length = parselength(context, value + spans[i].start, spans[i].length, context->style->fontsize);
+
+            if (length.valid)
+            {
+
+                copylength(&context->style->bgsize[i], &length.length);
+
+                context->style->bgsizemode = CSS_SIZE_LENGTH;
+
+            }
+
+            else
+            {
+
+                context->style->bgsize[i].unit = CSS_UNIT_AUTO;
+
+            }
+
+        }
+
+        if (count == 1)
+            context->style->bgsize[1].unit = CSS_UNIT_AUTO;
+
+    }
+
+}
+
+static unsigned int setbgrepeat(struct context *context, char *text, unsigned int length)
+{
+
+    if (matchword(text, length, "no-repeat"))
+        context->style->bgrepeat = 0;
+    else if (matchword(text, length, "repeat-x"))
+        context->style->bgrepeat = CSS_REPEAT_X;
+    else if (matchword(text, length, "repeat-y"))
+        context->style->bgrepeat = CSS_REPEAT_Y;
+    else if (matchword(text, length, "repeat") || matchword(text, length, "space") || matchword(text, length, "round"))
+        context->style->bgrepeat = CSS_REPEAT_X | CSS_REPEAT_Y;
+    else
+        return 0;
+
+    return 1;
+
+}
+
+static void resetbackground(struct css_style *style)
+{
+
+    style->bgurl = 0;
+    style->bgsizemode = CSS_SIZE_AUTO;
+    style->bgrepeat = CSS_REPEAT_X | CSS_REPEAT_Y;
+    style->bgposition[0].unit = CSS_UNIT_PERCENT;
+    style->bgposition[0].value = 0;
+    style->bgposition[1].unit = CSS_UNIT_PERCENT;
+    style->bgposition[1].value = 0;
+
+}
+
 static void setbackground(struct context *context, char *value, unsigned int image)
 {
 
-    struct span spans[8];
-    unsigned int count = countspans(value, spans, 8);
+    struct span spans[12];
+    unsigned int count = countspans(value, spans, 12);
     unsigned int color = 0;
     unsigned int gradient = 0;
+    struct span positions[4];
+    unsigned int positioncount = 0;
+    struct span sizes[2];
+    unsigned int sizecount = 0;
+    unsigned int insize = 0;
     unsigned int i;
+
+    /* the shorthand sets every part, whatever it does not name goes back to the initial value */
+    if (!image)
+        resetbackground(context->style);
+    else
+        context->style->bgurl = 0;
 
     for (i = 0; i < count; i++)
     {
 
         char *text = value + spans[i].start;
-        struct colorvalue parsed = parsecolor(text, spans[i].length);
+        unsigned int length = spans[i].length;
+        unsigned int slash = buffer_findbyte(text, length, '/');
+        struct colorvalue parsed = parsecolor(text, length);
 
-        if (!gradient && isgradient(text, spans[i].length))
-            gradient = parsegradient(context, text, spans[i].length);
-        else if (parsed.valid && !image)
+        if (length > 4 && buffer_match(text, "url(", 4))
+        {
+
+            storeurl(context, text, length);
+
+            continue;
+
+        }
+
+        if (!gradient && isgradient(text, length))
+        {
+
+            gradient = parsegradient(context, text, length);
+
+            continue;
+
+        }
+
+        if (image)
+            continue;
+
+        /* position / size, where the slash can stand alone or inside a word */
+        if (slash < length)
+        {
+
+            if (slash && positioncount < 4)
+            {
+
+                positions[positioncount].start = spans[i].start;
+                positions[positioncount++].length = slash;
+
+            }
+
+            if (slash + 1 < length && sizecount < 2)
+            {
+
+                sizes[sizecount].start = spans[i].start + slash + 1;
+                sizes[sizecount++].length = length - slash - 1;
+
+            }
+
+            insize = 1;
+
+            continue;
+
+        }
+
+        if (setbgrepeat(context, text, length))
+            continue;
+
+        if (parsed.valid)
+        {
+
             color = (parsed.value == CSS_CURRENTCOLOR) ? context->style->color : parsed.value;
+
+            continue;
+
+        }
+
+        if (insize && sizecount < 2)
+        {
+
+            sizes[sizecount++] = spans[i];
+
+            continue;
+
+        }
+
+        if (positioncount < 4)
+            positions[positioncount++] = spans[i];
 
     }
 
     if (!image)
+    {
+
         context->style->background = color;
+
+        if (positioncount)
+            setbgposition(context, positions, positioncount, value);
+
+        if (sizecount)
+            setbgsize(context, sizes, sizecount, value);
+
+    }
 
     context->style->gradient = gradient;
 
@@ -4484,7 +4808,7 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
         break;
 
     case PROP_OPACITY:
-        style->hidden = from->hidden;
+        style->faded = from->faded;
         style->opacity = from->opacity;
 
         break;
@@ -4595,6 +4919,12 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
         copylength(&style->shift[0], &from->shift[0]);
         copylength(&style->shift[1], &from->shift[1]);
 
+        style->matrix[0] = from->matrix[0];
+        style->matrix[1] = from->matrix[1];
+        style->matrix[2] = from->matrix[2];
+        style->matrix[3] = from->matrix[3];
+        style->turned = from->turned;
+
         break;
 
     case PROP_WORDBREAK:
@@ -4611,6 +4941,82 @@ static void copyproperty(struct css_style *style, struct css_style *from, unsign
 
     case PROP_TEXTINDENT:
         copylength(&style->indent, &from->indent);
+
+        break;
+
+    case PROP_BACKGROUNDSIZE:
+        style->bgsizemode = from->bgsizemode;
+
+        copylength(&style->bgsize[0], &from->bgsize[0]);
+        copylength(&style->bgsize[1], &from->bgsize[1]);
+
+        break;
+
+    case PROP_BACKGROUNDPOSITION:
+        copylength(&style->bgposition[0], &from->bgposition[0]);
+        copylength(&style->bgposition[1], &from->bgposition[1]);
+
+        break;
+
+    case PROP_BACKGROUNDREPEAT:
+        style->bgrepeat = from->bgrepeat;
+
+        break;
+
+    case PROP_TRANSFORMORIGIN:
+        copylength(&style->origin[0], &from->origin[0]);
+        copylength(&style->origin[1], &from->origin[1]);
+
+        break;
+
+    case PROP_OUTLINE:
+    case PROP_OUTLINEWIDTH:
+    case PROP_OUTLINESTYLE:
+    case PROP_OUTLINECOLOR:
+    case PROP_OUTLINEOFFSET:
+        style->outlinewidth = from->outlinewidth;
+        style->outlinecolor = from->outlinecolor;
+        style->outlineoffset = from->outlineoffset;
+
+        break;
+
+    case PROP_TEXTSHADOW:
+        style->textshadow = from->textshadow;
+        style->textshadowx = from->textshadowx;
+        style->textshadowy = from->textshadowy;
+
+        break;
+
+    case PROP_FILTER:
+        style->filtered = from->filtered;
+        style->grayscale = from->grayscale;
+        style->sepia = from->sepia;
+        style->invert = from->invert;
+        style->brightness = from->brightness;
+        style->contrast = from->contrast;
+        style->saturate = from->saturate;
+        style->filteropacity = from->filteropacity;
+
+        break;
+
+    case PROP_TEXTOVERFLOW:
+        style->ellipsis = from->ellipsis;
+
+        break;
+
+    case PROP_WEBKITLINECLAMP:
+    case PROP_LINECLAMP:
+        style->lineclamp = from->lineclamp;
+
+        break;
+
+    case PROP_ANIMATION:
+    case PROP_ANIMATIONNAME:
+    case PROP_ANIMATIONFILLMODE:
+    case PROP_ANIMATIONITERATIONCOUNT:
+        style->animation = from->animation;
+        style->animationfill = from->animationfill;
+        style->animationinfinite = from->animationinfinite;
 
         break;
 
@@ -4753,6 +5159,15 @@ static void initstyle(struct css_style *style)
     style->justifyself = CSS_FLEX_AUTO;
     style->aligncontent = CSS_FLEX_AUTO;
     style->opacity = 0xFF;
+    style->bgrepeat = CSS_REPEAT_X | CSS_REPEAT_Y;
+    style->bgposition[0].unit = CSS_UNIT_PERCENT;
+    style->bgposition[1].unit = CSS_UNIT_PERCENT;
+    style->matrix[0] = 1000;
+    style->matrix[3] = 1000;
+    style->origin[0].unit = CSS_UNIT_PERCENT;
+    style->origin[0].value = 50000;
+    style->origin[1].unit = CSS_UNIT_PERCENT;
+    style->origin[1].value = 50000;
 
     for (side = 0; side < CSS_SIDES; side++)
     {
@@ -4782,8 +5197,8 @@ static void setopacity(struct context *context, char *value, unsigned int length
     /* a box fades with everything inside it, so the factor multiplies down the tree */
     context->style->opacity = context->parent->opacity * milli / 1000;
 
-    if (!milli)
-        context->style->hidden = 1;
+    /* a later opacity, like an animation's last frame, can bring back what zero hid */
+    context->style->faded = !milli;
 
 }
 
@@ -4870,6 +5285,422 @@ static void addshift(struct context *context, unsigned int axis, char *text, uns
 
 }
 
+static int sinetenths(int tenths)
+{
+
+    unsigned int x;
+    unsigned int product;
+    int sign = 1;
+
+    /* Bhaskara's approximation over half a turn, in tenths of a degree and thousandths of the result */
+    tenths %= 3600;
+
+    if (tenths < 0)
+        tenths += 3600;
+
+    if (tenths >= 1800)
+    {
+
+        tenths -= 1800;
+        sign = -1;
+
+    }
+
+    x = (unsigned int)tenths;
+    product = x * (1800 - x);
+
+    return sign * (int)(4000 * product / (4050000 - product));
+
+}
+
+static int readangle(char *text, unsigned int length)
+{
+
+    struct number number = parsenumber(text, length);
+    char *unit = text + number.length;
+    unsigned int rest = length - number.length;
+
+    /* an angle comes back in tenths of a degree */
+    if (rest >= 4 && buffer_match(unit, "turn", 4))
+        return number.milli * 36 / 10;
+
+    if (rest >= 4 && buffer_match(unit, "grad", 4))
+        return number.milli * 9 / 1000;
+
+    if (rest >= 3 && buffer_match(unit, "rad", 3))
+        return number.milli * 573 / 1000;
+
+    return number.milli / 100;
+
+}
+
+static short clampstep(int value)
+{
+
+    return (value > 32000) ? 32000 : (value < -32000) ? -32000 : value;
+
+}
+
+static void addstep(struct css_style *style, int a, int b, int c, int d)
+{
+
+    int m0 = style->matrix[0];
+    int m1 = style->matrix[1];
+    int m2 = style->matrix[2];
+    int m3 = style->matrix[3];
+
+    /* the new step comes after the ones before it, all in thousandths and kept to what a short holds */
+    style->matrix[0] = clampstep((m0 * a + m2 * b) / 1000);
+    style->matrix[1] = clampstep((m1 * a + m3 * b) / 1000);
+    style->matrix[2] = clampstep((m0 * c + m2 * d) / 1000);
+    style->matrix[3] = clampstep((m1 * c + m3 * d) / 1000);
+    style->turned = !(style->matrix[0] == 1000 && style->matrix[1] == 0 && style->matrix[2] == 0 && style->matrix[3] == 1000);
+
+}
+
+static int readscale(char *text, unsigned int length)
+{
+
+    struct number number = parsenumber(text, length);
+
+    if (!number.length)
+        return 1000;
+
+    return (number.length < length && text[number.length] == '%') ? number.milli / 100 : number.milli;
+
+}
+
+static void addmatrix(struct context *context, char *name, unsigned int namelength, char *arguments, unsigned int length)
+{
+
+    struct span spans[6];
+    unsigned int count = 0;
+    unsigned int i = 0;
+
+    while (namelength && isspace(name[0]))
+    {
+
+        name++;
+        namelength--;
+
+    }
+
+    /* the arguments are split at commas and spaces alike */
+    while (i < length && count < 6)
+    {
+
+        while (i < length && (arguments[i] == ',' || isspace(arguments[i])))
+            i++;
+
+        if (i >= length)
+            break;
+
+        spans[count].start = i;
+
+        while (i < length && arguments[i] != ',' && !isspace(arguments[i]))
+            i++;
+
+        spans[count].length = i - spans[count].start;
+        count++;
+
+    }
+
+    if (!count)
+        return;
+
+    if (matchword(name, namelength, "rotate") || matchword(name, namelength, "rotatez"))
+    {
+
+        int angle = readangle(arguments + spans[0].start, spans[0].length);
+        int sine = sinetenths(angle);
+        int cosine = sinetenths(angle + 900);
+
+        addstep(context->style, cosine, sine, -sine, cosine);
+
+    }
+
+    else if (matchword(name, namelength, "scale") || matchword(name, namelength, "scale3d"))
+    {
+
+        int x = readscale(arguments + spans[0].start, spans[0].length);
+        int y = (count > 1) ? readscale(arguments + spans[1].start, spans[1].length) : x;
+
+        addstep(context->style, x, 0, 0, y);
+
+    }
+
+    else if (matchword(name, namelength, "scalex"))
+    {
+
+        addstep(context->style, readscale(arguments + spans[0].start, spans[0].length), 0, 0, 1000);
+
+    }
+
+    else if (matchword(name, namelength, "scaley"))
+    {
+
+        addstep(context->style, 1000, 0, 0, readscale(arguments + spans[0].start, spans[0].length));
+
+    }
+
+    else if (matchword(name, namelength, "skew") || matchword(name, namelength, "skewx") || matchword(name, namelength, "skewy"))
+    {
+
+        int ax = (matchword(name, namelength, "skewy")) ? 0 : readangle(arguments + spans[0].start, spans[0].length);
+        int ay = (matchword(name, namelength, "skewy")) ? readangle(arguments + spans[0].start, spans[0].length) : (count > 1) ? readangle(arguments + spans[1].start, spans[1].length) : 0;
+        int cx = sinetenths(ax + 900);
+        int cy = sinetenths(ay + 900);
+
+        /* a skew moves one axis by the tangent of its angle along the other */
+        addstep(context->style, 1000, (cy) ? sinetenths(ay) * 1000 / cy : 0, (cx) ? sinetenths(ax) * 1000 / cx : 0, 1000);
+
+    }
+
+    else if (matchword(name, namelength, "matrix") && count == 6)
+    {
+
+        addstep(context->style, readscale(arguments + spans[0].start, spans[0].length), readscale(arguments + spans[1].start, spans[1].length), readscale(arguments + spans[2].start, spans[2].length), readscale(arguments + spans[3].start, spans[3].length));
+        addshift(context, 0, arguments + spans[4].start, spans[4].length);
+        addshift(context, 1, arguments + spans[5].start, spans[5].length);
+
+    }
+
+}
+
+static void setorigin(struct context *context, char *value, unsigned int length)
+{
+
+    struct span spans[3];
+    unsigned int count = countspans(value, spans, 3);
+    unsigned int i;
+
+    /* the point a box turns and scales around, the middle unless named */
+    for (i = 0; i < count && i < 2; i++)
+    {
+
+        char *text = value + spans[i].start;
+        unsigned int vertical = 0;
+        unsigned int keyword = bgkeyword(text, spans[i].length, &vertical);
+        unsigned int axis = (keyword && vertical) ? 1 : (keyword && !vertical && !matchword(text, spans[i].length, "center")) ? 0 : i;
+
+        if (keyword)
+        {
+
+            context->style->origin[axis].unit = CSS_UNIT_PERCENT;
+            context->style->origin[axis].value = keyword - 1;
+            context->style->origin[axis].offset = 0;
+
+        }
+
+        else
+        {
+
+            struct lengthvalue parsed = parselength(context, text, spans[i].length, context->style->fontsize);
+
+            if (parsed.valid)
+                copylength(&context->style->origin[axis], &parsed.length);
+
+        }
+
+    }
+
+}
+
+static void setoutline(struct context *context, unsigned int property, char *value, unsigned int length)
+{
+
+    struct span spans[4];
+    unsigned int count = countspans(value, spans, 4);
+    unsigned int i;
+
+    /* an outline is a width, a style and a color in any order, none or a missing style draws nothing */
+    if (property == PROP_OUTLINE)
+    {
+
+        context->style->outlinewidth = 0;
+        context->style->outlinecolor = context->style->color;
+
+    }
+
+    for (i = 0; i < count; i++)
+    {
+
+        char *text = value + spans[i].start;
+        unsigned int size = spans[i].length;
+        struct colorvalue color = parsecolor(text, size);
+
+        if (matchword(text, size, "none") || matchword(text, size, "hidden"))
+        {
+
+            context->style->outlinewidth = 0;
+
+            return;
+
+        }
+
+        if (matchword(text, size, "thin") || matchword(text, size, "medium") || matchword(text, size, "thick"))
+        {
+
+            context->style->outlinewidth = (text[1] == 'h' && text[2] == 'i' && text[3] == 'n') ? 1 : (text[0] == 'm') ? 3 : 5;
+
+            continue;
+
+        }
+
+        if (color.valid && property != PROP_OUTLINEWIDTH && property != PROP_OUTLINEOFFSET)
+        {
+
+            context->style->outlinecolor = (color.value == CSS_CURRENTCOLOR) ? context->style->color : color.value;
+
+            continue;
+
+        }
+
+        if (cstring_isdigit(text[0]) || text[0] == '-' || text[0] == '.')
+        {
+
+            struct lengthvalue parsed = parselength(context, text, size, context->style->fontsize);
+
+            if (!parsed.valid || parsed.length.unit != CSS_UNIT_PX)
+                continue;
+
+            if (property == PROP_OUTLINEOFFSET)
+                context->style->outlineoffset = parsed.length.value;
+            else
+                context->style->outlinewidth = (parsed.length.value > 255) ? 255 : (parsed.length.value < 0) ? 0 : parsed.length.value;
+
+            continue;
+
+        }
+
+        /* a line style turns a styled outline on at its medium width */
+        if (property != PROP_OUTLINECOLOR && (matchword(text, size, "solid") || matchword(text, size, "dashed") || matchword(text, size, "dotted") || matchword(text, size, "double") || matchword(text, size, "auto") || matchword(text, size, "groove") || matchword(text, size, "ridge") || matchword(text, size, "inset") || matchword(text, size, "outset")))
+        {
+
+            if (!context->style->outlinewidth)
+                context->style->outlinewidth = 3;
+
+        }
+
+    }
+
+}
+
+static void settextshadow(struct context *context, char *value, unsigned int length)
+{
+
+    struct span spans[6];
+    unsigned int end = findstop(value, 0, length, ",");
+    unsigned int count = countspans(value, spans, 6);
+    int lengths[3];
+    unsigned int found = 0;
+    unsigned int color = context->style->color;
+    unsigned int i;
+
+    /* the first shadow is drawn, offset by its first two lengths and without blur */
+    context->style->textshadow = 0;
+
+    for (i = 0; i < count && spans[i].start < end; i++)
+    {
+
+        char *text = value + spans[i].start;
+        unsigned int size = (spans[i].start + spans[i].length > end) ? end - spans[i].start : spans[i].length;
+        struct colorvalue parsed = parsecolor(text, size);
+
+        if (parsed.valid)
+            color = (parsed.value == CSS_CURRENTCOLOR) ? context->style->color : parsed.value;
+        else if (found < 3)
+        {
+
+            struct lengthvalue number = parselength(context, text, size, context->style->fontsize);
+
+            if (number.valid && number.length.unit == CSS_UNIT_PX)
+                lengths[found++] = number.length.value;
+
+        }
+
+    }
+
+    if (found >= 2)
+    {
+
+        context->style->textshadow = color;
+        context->style->textshadowx = lengths[0];
+        context->style->textshadowy = lengths[1];
+
+    }
+
+}
+
+static int filteramount(char *text, unsigned int length, int fallback)
+{
+
+    struct number number = parsenumber(text, length);
+
+    if (!number.length)
+        return fallback;
+
+    return (number.length < length && text[number.length] == '%') ? number.milli / 100 : number.milli;
+
+}
+
+static void setfilter(struct context *context, char *value, unsigned int length)
+{
+
+    struct css_style *style = context->style;
+    unsigned int offset = 0;
+
+    /* each kept function is an amount in thousandths, one meaning unchanged where the function scales */
+    style->grayscale = 0;
+    style->sepia = 0;
+    style->invert = 0;
+    style->brightness = 1000;
+    style->contrast = 1000;
+    style->saturate = 1000;
+    style->filteropacity = 1000;
+
+    while (offset < length)
+    {
+
+        unsigned int open = offset + buffer_findbyte(value + offset, length - offset, '(');
+        unsigned int close;
+        unsigned int start = skipspace(value, offset, open);
+        char *name = value + start;
+        unsigned int size = open - start;
+        int amount;
+        int capped;
+
+        if (open >= length)
+            break;
+
+        close = findclose(value, open, length);
+        amount = filteramount(value + open + 1, close - open - 1, 1000);
+        amount = (amount < 0) ? 0 : (amount > 60000) ? 60000 : amount;
+        capped = (amount > 1000) ? 1000 : amount;
+
+        if (matchword(name, size, "grayscale"))
+            style->grayscale = capped;
+        else if (matchword(name, size, "sepia"))
+            style->sepia = capped;
+        else if (matchword(name, size, "invert"))
+            style->invert = capped;
+        else if (matchword(name, size, "brightness"))
+            style->brightness = amount;
+        else if (matchword(name, size, "contrast"))
+            style->contrast = amount;
+        else if (matchword(name, size, "saturate"))
+            style->saturate = amount;
+        else if (matchword(name, size, "opacity"))
+            style->filteropacity = capped;
+
+        offset = close + 1;
+
+    }
+
+    style->filtered = style->grayscale || style->sepia || style->invert || style->brightness != 1000 || style->contrast != 1000 || style->saturate != 1000 || style->filteropacity != 1000;
+
+}
+
 static void settransform(struct context *context, char *value, unsigned int length)
 {
 
@@ -4885,7 +5716,12 @@ static void settransform(struct context *context, char *value, unsigned int leng
 
     }
 
-    /* only moves are kept, turning and scaling would need the whole picture redrawn */
+    /* moves shift the box in layout, turning, scaling and skewing make a matrix that paint draws the box through */
+    context->style->matrix[0] = 1000;
+    context->style->matrix[1] = 0;
+    context->style->matrix[2] = 0;
+    context->style->matrix[3] = 1000;
+    context->style->turned = 0;
     while (offset < length)
     {
 
@@ -4932,6 +5768,13 @@ static void settransform(struct context *context, char *value, unsigned int leng
 
             if (comma < close)
                 addshift(context, 1, value + skipspace(value, comma + 1, close), findstop(value, skipspace(value, comma + 1, close), close, ",") - skipspace(value, comma + 1, close));
+
+        }
+
+        else
+        {
+
+            addmatrix(context, value + offset, open - offset, value + open + 1, close - open - 1);
 
         }
 
@@ -5095,6 +5938,77 @@ static void parseshadow(struct context *context, char *value, unsigned int start
     style->shadowy = lengths[1];
     style->shadowblur = (count > 2 && lengths[2] > 0) ? lengths[2] : 0;
     style->shadowspread = (count > 3) ? lengths[3] : 0;
+
+}
+
+static unsigned int findkeyframes(struct css_sheet *sheet, char *name, unsigned int length)
+{
+
+    unsigned int i;
+
+    for (i = sheet->keyframecount; i > 0; i--)
+    {
+
+        if (matchword(name, length, poolstring(sheet, sheet->keyframes[i - 1].name)))
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+static void setanimation(struct context *context, unsigned int property, char *value, unsigned int length)
+{
+
+    struct css_style *style = context->style;
+    unsigned int end = findstop(value, 0, length, ",");
+    unsigned int offset = 0;
+
+    /* only the first animation counts; the shorthand resets the parts it does not name */
+    if (property == PROP_ANIMATION)
+    {
+
+        style->animation = 0;
+        style->animationfill = 0;
+        style->animationinfinite = 0;
+
+    }
+
+    while (offset < end)
+    {
+
+        unsigned int start = skipspace(value, offset, end);
+        unsigned int stop = start;
+
+        while (stop < end && !isspace(value[stop]))
+            stop++;
+
+        if (stop == start)
+            break;
+
+        if (matchword(value + start, stop - start, "forwards") || matchword(value + start, stop - start, "both"))
+            style->animationfill = 1;
+        else if (matchword(value + start, stop - start, "none") || matchword(value + start, stop - start, "backwards"))
+            style->animationfill = (property == PROP_ANIMATIONFILLMODE) ? 0 : style->animationfill;
+        else if (matchword(value + start, stop - start, "infinite"))
+            style->animationinfinite = 1;
+        else if (property == PROP_ANIMATIONITERATIONCOUNT)
+            style->animationinfinite = 0;
+        else if (property == PROP_ANIMATION || property == PROP_ANIMATIONNAME)
+        {
+
+            unsigned int keyframes = findkeyframes(context->sheet, value + start, stop - start);
+
+            /* times, easings and directions are not names, a name is a word that has keyframes */
+            if (keyframes)
+                style->animation = keyframes;
+
+        }
+
+        offset = stop;
+
+    }
 
 }
 
@@ -5820,6 +6734,76 @@ static void apply(struct context *context, unsigned int property, char *value)
 
     case PROP_LETTERSPACING:
         setletterspacing(context, value, length);
+
+        break;
+
+    case PROP_BACKGROUNDSIZE:
+    case PROP_BACKGROUNDPOSITION:
+        {
+
+            struct span spans[4];
+            unsigned int count = countspans(value, spans, 4);
+
+            if (property == PROP_BACKGROUNDSIZE)
+                setbgsize(context, spans, count, value);
+            else
+                setbgposition(context, spans, count, value);
+
+        }
+
+        break;
+
+    case PROP_BACKGROUNDREPEAT:
+        setbgrepeat(context, value, length);
+
+        break;
+
+    case PROP_TRANSFORMORIGIN:
+        setorigin(context, value, length);
+
+        break;
+
+    case PROP_OUTLINE:
+    case PROP_OUTLINEWIDTH:
+    case PROP_OUTLINESTYLE:
+    case PROP_OUTLINECOLOR:
+    case PROP_OUTLINEOFFSET:
+        setoutline(context, property, value, length);
+
+        break;
+
+    case PROP_TEXTSHADOW:
+        settextshadow(context, value, length);
+
+        break;
+
+    case PROP_FILTER:
+        setfilter(context, value, length);
+
+        break;
+
+    case PROP_TEXTOVERFLOW:
+        style->ellipsis = matchword(value, length, "ellipsis");
+
+        break;
+
+    case PROP_WEBKITLINECLAMP:
+    case PROP_LINECLAMP:
+        {
+
+            struct number number = parsenumber(value, length);
+
+            style->lineclamp = (number.length && number.milli > 0) ? number.milli / 1000 : 0;
+
+        }
+
+        break;
+
+    case PROP_ANIMATION:
+    case PROP_ANIMATIONNAME:
+    case PROP_ANIMATIONFILLMODE:
+    case PROP_ANIMATIONITERATIONCOUNT:
+        setanimation(context, property, value, length);
 
         break;
 
@@ -6723,6 +7707,8 @@ static void applydeclarations(struct context *context, struct css_sheet *sheet, 
         if (declaration->important != important || phaseof(declaration->property) != phase)
             continue;
 
+        context->base = declaration->base;
+
         if (phase == PHASE_CUSTOM)
             setcustom(context, declaration->name, declaration->value);
         else
@@ -6922,6 +7908,9 @@ static void inherit(struct css_style *style, struct css_style *parent)
     style->opacity = parent->opacity;
     style->letterspacing = parent->letterspacing;
     style->breaking = parent->breaking;
+    style->textshadow = parent->textshadow;
+    style->textshadowx = parent->textshadowx;
+    style->textshadowy = parent->textshadowy;
 
     copylength(&style->indent, &parent->indent);
 
@@ -6931,6 +7920,9 @@ static void finish(struct css_style *style)
 {
 
     unsigned int side;
+
+    if (style->faded)
+        style->hidden = 1;
 
     if (style->lineheightfactor)
         style->lineheight = style->fontsize * style->lineheightfactor / 1000;
@@ -7027,6 +8019,17 @@ static void computeelement(struct css_sheet *sheet, struct html_document *docume
 
         applyrules(context, sheet, matches, count, CSS_ORIGIN_AUTHOR, 0, phase);
         applydeclarations(context, sheet, declarationmark, sheet->declarationcount - declarationmark, 0, phase);
+
+        /* an animation that fills forwards and ends is shown as its last frame, above the page's styles and below important ones */
+        if (phase == PHASE_OTHER && context->style->animation && context->style->animationfill && !context->style->animationinfinite)
+        {
+
+            struct css_keyframes *keyframes = &sheet->keyframes[context->style->animation - 1];
+
+            applydeclarations(context, sheet, keyframes->declaration, keyframes->declarations, 0, phase);
+
+        }
+
         applyrules(context, sheet, matches, count, CSS_ORIGIN_AUTHOR, 1, phase);
         applydeclarations(context, sheet, declarationmark, sheet->declarationcount - declarationmark, 1, phase);
 
@@ -7221,6 +8224,58 @@ static unsigned int evaluatemedia(struct parser *parser, char *text, unsigned in
 
 static void parseblock(struct parser *parser, unsigned int start, unsigned int end);
 
+static void parsekeyframes(struct css_sheet *sheet, char *text, unsigned int namestart, unsigned int nameend, unsigned int close)
+{
+
+    struct css_keyframes *keyframes;
+    unsigned int offset = nameend + 1;
+
+    if (sheet->keyframecount >= CSS_KEYFRAMES)
+        return;
+
+    namestart = skipspace(text, namestart, nameend);
+
+    while (nameend > namestart && (isspace(text[nameend - 1]) || text[nameend - 1] == '"' || text[nameend - 1] == '\''))
+        nameend--;
+
+    if (text[namestart] == '"' || text[namestart] == '\'')
+        namestart++;
+
+    keyframes = &sheet->keyframes[sheet->keyframecount];
+    keyframes->name = pooladd(sheet, text + namestart, nameend - namestart, POOL_LOWER);
+    keyframes->declarations = 0;
+
+    /* only the last frame is kept, it is where an animation that fills forwards ends */
+    while (offset < close)
+    {
+
+        unsigned int stop = findstop(text, offset, close, "{");
+        unsigned int end;
+
+        if (stop >= close)
+            break;
+
+        end = findclose(text, stop, close);
+
+        if (contains(text + offset, stop - offset, "to") || contains(text + offset, stop - offset, "100%"))
+        {
+
+            keyframes->declaration = sheet->declarationcount;
+
+            parsedeclarations(sheet, text, stop + 1, end);
+
+            keyframes->declarations = sheet->declarationcount - keyframes->declaration;
+
+        }
+
+        offset = end + 1;
+
+    }
+
+    sheet->keyframecount++;
+
+}
+
 static void parseatrule(struct parser *parser, unsigned int end)
 {
 
@@ -7272,6 +8327,13 @@ static void parseatrule(struct parser *parser, unsigned int end)
     {
 
         parseblock(parser, stop + 1, close);
+
+    }
+
+    else if (matchword(text + namestart, nameend - namestart, "keyframes") || matchword(text + namestart, nameend - namestart, "-webkit-keyframes"))
+    {
+
+        parsekeyframes(parser->sheet, text, nameend, stop, close);
 
     }
 
@@ -7381,6 +8443,36 @@ struct css_color css_parsecolor(char *text, unsigned int length)
 
 }
 
+void css_setbase(struct css_sheet *sheet, char *url)
+{
+
+    /* addresses in what is parsed next are relative to this one, or to the page without one */
+    sheet->currentbase = 0;
+
+    if (url && sheet->basecount < CSS_BASES)
+    {
+
+        sheet->bases[sheet->basecount++] = pooladd(sheet, url, cstring_length(url), POOL_EXACT);
+        sheet->currentbase = sheet->basecount;
+
+    }
+
+}
+
+char *css_backgroundurl(struct css_sheet *sheet, struct css_style *style)
+{
+
+    return (style->bgurl) ? sheet->urltext + style->bgurl - 1 : 0;
+
+}
+
+char *css_backgroundbase(struct css_sheet *sheet, struct css_style *style)
+{
+
+    return (style->bgbase) ? poolstring(sheet, sheet->bases[style->bgbase - 1]) : 0;
+
+}
+
 void css_parse(struct css_sheet *sheet, char *text, unsigned int count, unsigned int origin)
 {
 
@@ -7405,6 +8497,9 @@ void css_reset(struct css_sheet *sheet)
     sheet->selectorcount = 0;
     sheet->declarationcount = 0;
     sheet->rulecount = 0;
+    sheet->keyframecount = 0;
+    sheet->basecount = 0;
+    sheet->currentbase = 0;
     sheet->poolcount = 1;
     sheet->pool[0] = '\0';
     sheet->full = 0;
@@ -7427,6 +8522,7 @@ void css_compute(struct css_sheet *sheet, struct html_document *document, struct
 
     sheet->customtotal = 0;
     sheet->gradientcount = 0;
+    sheet->urltextcount = 0;
     sheet->gridcount = 0;
     context.sheet = sheet;
     context.document = document;

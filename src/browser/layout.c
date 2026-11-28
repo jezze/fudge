@@ -17,6 +17,7 @@
 #define FLOW_FLEXCOLUMN                 2
 #define LABELSIZE                       128
 #define SCROLLBARWIDTH                  15
+#define ELLIPSIS                        "\xe2\x80\xa6"
 #define CHECKBOXSIZE                    13
 
 struct flow
@@ -4705,6 +4706,134 @@ static int placelegend(struct layout *layout, unsigned int legend, int x, int to
 
 }
 
+static void ellipsize(struct layout *layout, unsigned int index, int right)
+{
+
+    struct layout_fragment *fragment = &layout->fragments[index];
+    unsigned int owner = (getnode(layout, fragment->node)->type == HTML_NODE_TEXT) ? getnode(layout, fragment->node)->parent : fragment->node;
+    struct metrics metrics = getmetrics(layout, getstyle(layout, owner));
+    char *text = (fragment->type == LAYOUT_FRAGMENT_TEXT) ? layout->document->text + fragment->text : layout->text + fragment->text;
+    int dots = measuretext(layout, &metrics, ELLIPSIS, 3, 0);
+    unsigned int keep = fitbytes(layout, &metrics, text, fragment->length, max(right - fragment->x - dots, 0));
+    unsigned int offset;
+
+    /* the text is cut where it and the dots still fit, and the two are written as text of its own */
+    while (keep && text[keep - 1] == ' ')
+        keep--;
+
+    offset = addtextbytes(layout, text, keep);
+
+    if (offset == NONE || addtextbytes(layout, ELLIPSIS, 3) == NONE)
+        return;
+
+    /* generated text is painted in the style of its node, so it belongs to the element the text was in */
+    fragment->type = LAYOUT_FRAGMENT_GENERATED;
+    fragment->node = owner;
+    fragment->text = offset;
+    fragment->length = keep + 3;
+    fragment->w = measuretext(layout, &metrics, layout->text + offset, keep + 3, 0);
+
+}
+
+static unsigned int istextfragment(struct layout_fragment *fragment)
+{
+
+    return (fragment->type == LAYOUT_FRAGMENT_TEXT || fragment->type == LAYOUT_FRAGMENT_GENERATED) && fragment->length;
+
+}
+
+static void ellipsizelines(struct layout *layout, unsigned int start, int right)
+{
+
+    unsigned int i;
+    int cut = 0;
+    int baseline = 0;
+
+    for (i = start; i < layout->fragmentcount; i++)
+    {
+
+        struct layout_fragment *fragment = &layout->fragments[i];
+        int line = fragment->y + fragment->ascent;
+
+        if (!istextfragment(fragment))
+            continue;
+
+        /* a new line starts uncut */
+        if (line != baseline)
+        {
+
+            baseline = line;
+            cut = 0;
+
+        }
+
+        if (cut || fragment->x >= right)
+        {
+
+            fragment->length = 0;
+            fragment->w = 0;
+
+            continue;
+
+        }
+
+        if (fragment->x + fragment->w > right)
+        {
+
+            ellipsize(layout, i, right);
+
+            cut = 1;
+
+        }
+
+    }
+
+}
+
+static int clamplines(struct layout *layout, unsigned int start, unsigned int lines, int top, int right, int height)
+{
+
+    unsigned int count = 0;
+    unsigned int last = NONE;
+    int baseline = -1;
+    unsigned int i;
+
+    for (i = start; i < layout->fragmentcount; i++)
+    {
+
+        struct layout_fragment *fragment = &layout->fragments[i];
+
+        if (!istextfragment(fragment))
+            continue;
+
+        if (fragment->y + fragment->ascent > baseline)
+        {
+
+            baseline = fragment->y + fragment->ascent;
+            count++;
+
+            /* the first line past the clamp is where the box ends */
+            if (count > lines)
+            {
+
+                /* the last line kept ends in dots, its text cut back as far as they need */
+                if (last != NONE)
+                    ellipsize(layout, last, right);
+
+                return min(height, fragment->y - top);
+
+            }
+
+        }
+
+        last = i;
+
+    }
+
+    return height;
+
+}
+
 static int layoutblock(struct layout *layout, unsigned int node, int x, int top, int availw)
 {
 
@@ -4943,6 +5072,13 @@ static int layoutblock(struct layout *layout, unsigned int node, int x, int top,
 
     layout->floatbase = floatbase;
 
+    /* a line clamp ends the box after its last line, and that line or any line too long for a box with ellipsis ends in ... */
+    if (!layout->measuring && style->lineclamp && style->overflow)
+        contentheight = clamplines(layout, fragmentstart, style->lineclamp, top + bt + pt, box->x + bl + pl + cw, contentheight);
+
+    if (!layout->measuring && style->ellipsis && style->overflow)
+        ellipsizelines(layout, fragmentstart, box->x + bl + pl + cw);
+
     layout->natural = bt + pt + contentheight + pb + bb;
 
     if (box->definite)
@@ -5026,7 +5162,8 @@ static void setlayers(struct layout *layout)
 
         layout->layerroot[node] = layout->layerroot[element->parent];
 
-        if (element->type == HTML_NODE_ELEMENT && style->position != CSS_POSITION_STATIC && layout->boxes[node].placed && layout->layercount < LAYOUT_LAYERS)
+        /* a box drawn through a transform is drawn as a layer of its own too, as css makes it a stacking context */
+        if (element->type == HTML_NODE_ELEMENT && (style->position != CSS_POSITION_STATIC || style->turned) && layout->boxes[node].placed && layout->layercount < LAYOUT_LAYERS)
         {
 
             int key = stackkey(layout, node);

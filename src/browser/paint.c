@@ -553,6 +553,172 @@ static void paintinset(struct paint_canvas *canvas, struct layout_box *box, stru
 
 }
 
+static void paintpicture(struct paint_canvas *canvas, struct layout_picture *picture, struct paint_area *area, struct layout_box *box, struct corners *corners, unsigned int opacity)
+{
+
+    int x = area->x;
+    int y = area->y;
+    int w = area->w;
+    int h = area->h;
+
+    unsigned int *pixels = canvas->heap + picture->offset / 4;
+    int x0 = (x < canvas->clipleft) ? canvas->clipleft : x;
+    int y0 = (y < canvas->cliptop) ? canvas->cliptop : y;
+    int x1 = (x + w > canvas->clipright) ? canvas->clipright : x + w;
+    int y1 = (y + h > canvas->clipbottom) ? canvas->clipbottom : y + h;
+    int i;
+    int j;
+
+    if (w <= 0 || h <= 0)
+        return;
+
+    for (j = y0; j < y1; j++)
+    {
+
+        unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
+        unsigned int *source = pixels + (unsigned int)(j - y) * picture->rows / (unsigned int)h * picture->columns;
+        struct insets insets = rowinsets(corners, j - box->y, box->h);
+        int left = max(x0, box->x + insets.left);
+        int right = min(x1, box->x + box->w - insets.right);
+
+        /* a rounded box cuts its picture to the same corners */
+        for (i = left; i < right; i++)
+        {
+
+            unsigned int color = fade(source[(unsigned int)(i - x) * picture->columns / (unsigned int)w], opacity);
+            unsigned int alpha = color >> 24;
+
+            if (alpha == 0xFF)
+                row[i] = color;
+            else if (alpha)
+                row[i] = blend(row[i], color);
+
+        }
+
+    }
+
+}
+
+static int paintlength(struct css_length *length, int base)
+{
+
+    /* a percentage is kept in thousandths */
+    if (length->unit == CSS_UNIT_PERCENT)
+        return (int)((long)base * length->value / 100000) + length->offset;
+
+    return (length->unit == CSS_UNIT_PX) ? length->value : 0;
+
+}
+
+static void paintbackground(struct paint_canvas *canvas, struct layout *layout, unsigned int node, struct layout_box *box, struct css_style *style, struct corners *corners)
+{
+
+    struct layout_picture *picture = &layout->pictures[layout->background[node] - 1];
+    int left = box->x + style->borderwidth[CSS_LEFT];
+    int top = box->y + style->borderwidth[CSS_TOP];
+    int width = box->w - style->borderwidth[CSS_LEFT] - style->borderwidth[CSS_RIGHT];
+    int height = box->h - style->borderwidth[CSS_TOP] - style->borderwidth[CSS_BOTTOM];
+    int saved[4];
+    struct paint_area tile;
+    int x;
+    int y;
+
+    if (!picture->columns || !picture->width || !picture->height || width <= 0 || height <= 0)
+        return;
+
+    /* the tile is the picture's own size, or what background-size makes of it, proportions kept where a side is auto */
+    tile.w = picture->width;
+    tile.h = picture->height;
+
+    if (style->bgsizemode == CSS_SIZE_COVER || style->bgsizemode == CSS_SIZE_CONTAIN)
+    {
+
+        unsigned int wide = (long)width * picture->height > (long)height * picture->width;
+
+        if (wide == (style->bgsizemode == CSS_SIZE_COVER))
+        {
+
+            tile.w = width;
+            tile.h = (int)((long)width * picture->height / picture->width);
+
+        }
+
+        else
+        {
+
+            tile.h = height;
+            tile.w = (int)((long)height * picture->width / picture->height);
+
+        }
+
+    }
+
+    else if (style->bgsizemode == CSS_SIZE_LENGTH)
+    {
+
+        int w = (style->bgsize[0].unit == CSS_UNIT_AUTO) ? 0 : paintlength(&style->bgsize[0], width);
+        int h = (style->bgsize[1].unit == CSS_UNIT_AUTO) ? 0 : paintlength(&style->bgsize[1], height);
+
+        tile.w = (w) ? w : (h) ? (int)((long)h * picture->width / picture->height) : (int)picture->width;
+        tile.h = (h) ? h : (int)((long)tile.w * picture->height / picture->width);
+
+    }
+
+    if (tile.w <= 0 || tile.h <= 0)
+        return;
+
+    /* a position puts the same point of the tile on that point of the box, so percentages are of the space left over */
+    tile.x = left + paintlength(&style->bgposition[0], width - tile.w);
+    tile.y = top + paintlength(&style->bgposition[1], height - tile.h);
+
+    saved[0] = canvas->clipleft;
+    saved[1] = canvas->cliptop;
+    saved[2] = canvas->clipright;
+    saved[3] = canvas->clipbottom;
+    canvas->clipleft = max(canvas->clipleft, left);
+    canvas->cliptop = max(canvas->cliptop, top);
+    canvas->clipright = min(canvas->clipright, left + width);
+    canvas->clipbottom = min(canvas->clipbottom, top + height);
+
+    if (style->bgrepeat & CSS_REPEAT_X)
+        tile.x -= ((tile.x - left) / tile.w + 1) * tile.w;
+
+    if (style->bgrepeat & CSS_REPEAT_Y)
+        tile.y -= ((tile.y - top) / tile.h + 1) * tile.h;
+
+    for (y = tile.y; y < top + height && y < canvas->clipbottom; y += tile.h)
+    {
+
+        for (x = tile.x; x < left + width && x < canvas->clipright; x += tile.w)
+        {
+
+            struct paint_area area;
+
+            area.x = x;
+            area.y = y;
+            area.w = tile.w;
+            area.h = tile.h;
+
+            if (x + tile.w > canvas->clipleft && y + tile.h > canvas->cliptop)
+                paintpicture(canvas, picture, &area, box, corners, style->opacity);
+
+            if (!(style->bgrepeat & CSS_REPEAT_X))
+                break;
+
+        }
+
+        if (!(style->bgrepeat & CSS_REPEAT_Y))
+            break;
+
+    }
+
+    canvas->clipleft = saved[0];
+    canvas->cliptop = saved[1];
+    canvas->clipright = saved[2];
+    canvas->clipbottom = saved[3];
+
+}
+
 static int padding(struct css_length *length)
 {
 
@@ -560,7 +726,7 @@ static int padding(struct css_length *length)
 
 }
 
-static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct layout_box *box, struct css_style *style, unsigned int backdrop)
+static void paintbox(struct paint_canvas *canvas, struct layout *layout, unsigned int node, struct layout_box *box, struct css_style *style, unsigned int backdrop)
 {
 
     struct corners corners = getcorners(style, box);
@@ -587,6 +753,9 @@ static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct 
 
         if (style->gradient && !style->textclip && backdrop)
             paintgradient(canvas, &layout->gradients[style->gradient - 1], box, &corners, style->opacity);
+
+        if (layout->background[node] && backdrop)
+            paintbackground(canvas, layout, node, box, style, &corners);
 
         if (style->insetshadow)
             paintinset(canvas, box, style);
@@ -620,6 +789,9 @@ static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct 
 
     if (style->gradient && !style->textclip && backdrop)
         paintgradient(canvas, &layout->gradients[style->gradient - 1], box, &corners, style->opacity);
+
+    if (layout->background[node] && backdrop)
+        paintbackground(canvas, layout, node, box, style, &corners);
 
     if (bt || bb || bl || br)
     {
@@ -667,7 +839,7 @@ static void paintbox(struct paint_canvas *canvas, struct layout *layout, struct 
 
 }
 
-static void paintfieldset(struct paint_canvas *canvas, struct layout *layout, struct layout_box *box, struct css_style *style, struct layout_box *legend)
+static void paintfieldset(struct paint_canvas *canvas, struct layout *layout, unsigned int node, struct layout_box *box, struct css_style *style, struct layout_box *legend)
 {
 
     struct css_style plain;
@@ -687,7 +859,7 @@ static void paintfieldset(struct paint_canvas *canvas, struct layout *layout, st
     below.definite = box->definite;
     below.placed = box->placed;
 
-    paintbox(canvas, layout, &below, &plain, 1);
+    paintbox(canvas, layout, node, &below, &plain, 1);
     fill(canvas, below.x, below.y, legend->x - below.x, bt, color);
     fill(canvas, legend->x + legend->w, below.y, below.x + below.w - legend->x - legend->w, bt, color);
 
@@ -704,52 +876,6 @@ static void paintplaceholder(struct paint_canvas *canvas, struct layout_box *box
     fill(canvas, box->x, box->y + box->h - 1, box->w, 1, PLACEHOLDER);
     fill(canvas, box->x, box->y, 1, box->h, PLACEHOLDER);
     fill(canvas, box->x + box->w - 1, box->y, 1, box->h, PLACEHOLDER);
-
-}
-
-static void paintpicture(struct paint_canvas *canvas, struct layout_picture *picture, struct paint_area *area, struct layout_box *box, struct corners *corners, unsigned int opacity)
-{
-
-    int x = area->x;
-    int y = area->y;
-    int w = area->w;
-    int h = area->h;
-
-    unsigned int *pixels = canvas->heap + picture->offset / 4;
-    int x0 = (x < canvas->clipleft) ? canvas->clipleft : x;
-    int y0 = (y < canvas->cliptop) ? canvas->cliptop : y;
-    int x1 = (x + w > canvas->clipright) ? canvas->clipright : x + w;
-    int y1 = (y + h > canvas->clipbottom) ? canvas->clipbottom : y + h;
-    int i;
-    int j;
-
-    if (w <= 0 || h <= 0)
-        return;
-
-    for (j = y0; j < y1; j++)
-    {
-
-        unsigned int *row = canvas->pixels + (j - canvas->top) * canvas->width;
-        unsigned int *source = pixels + (unsigned int)(j - y) * picture->rows / (unsigned int)h * picture->columns;
-        struct insets insets = rowinsets(corners, j - box->y, box->h);
-        int left = max(x0, box->x + insets.left);
-        int right = min(x1, box->x + box->w - insets.right);
-
-        /* a rounded box cuts its picture to the same corners */
-        for (i = left; i < right; i++)
-        {
-
-            unsigned int color = fade(source[(unsigned int)(i - x) * picture->columns / (unsigned int)w], opacity);
-            unsigned int alpha = color >> 24;
-
-            if (alpha == 0xFF)
-                row[i] = color;
-            else if (alpha)
-                row[i] = blend(row[i], color);
-
-        }
-
-    }
 
 }
 
@@ -1127,9 +1253,9 @@ static void paintboxes(struct paint_canvas *canvas, struct layout *layout, unsig
                 paintshadow(canvas, box, style);
 
             if (style->display != CSS_DISPLAY_INLINE && layout_findlegend(layout, node))
-                paintfieldset(canvas, layout, box, style, &layout->boxes[layout_findlegend(layout, node)]);
+                paintfieldset(canvas, layout, node, box, style, &layout->boxes[layout_findlegend(layout, node)]);
             else if (style->display != CSS_DISPLAY_INLINE)
-                paintbox(canvas, layout, box, style, node != canvasnode(layout));
+                paintbox(canvas, layout, node, box, style, node != canvasnode(layout));
 
             if (document->nodes[node].tag == HTML_TAG_IMG || document->nodes[node].tag == HTML_TAG_SVG || document->nodes[node].tag == HTML_TAG_CANVAS)
             {
@@ -1151,6 +1277,115 @@ static void paintboxes(struct paint_canvas *canvas, struct layout *layout, unsig
         node = html_next(document, node, root);
 
     }
+
+}
+
+static void paintlayer(struct paint_canvas *canvas, struct layout *layout, unsigned int layer)
+{
+
+    unsigned int j;
+
+    paintboxes(canvas, layout, layer);
+
+    for (j = layout->layerstart[layer]; j < layout->layerstart[layer + 1]; j++)
+    {
+
+        setclip(canvas, layout, layout->fragments[layout->layerfragments[j]].node);
+        paintinlines(canvas, layout, layout->layerfragments[j]);
+
+    }
+
+    for (j = layout->layerstart[layer]; j < layout->layerstart[layer + 1]; j++)
+    {
+
+        setclip(canvas, layout, layout->fragments[layout->layerfragments[j]].node);
+        paintfragment(canvas, layout, &layout->fragments[layout->layerfragments[j]]);
+
+    }
+
+}
+
+static void bounds(int *edges, int x, int y)
+{
+
+    edges[0] = min(edges[0], x);
+    edges[1] = min(edges[1], y);
+    edges[2] = max(edges[2], x);
+    edges[3] = max(edges[3], y);
+
+}
+
+static unsigned int painttransformed(struct paint_canvas *canvas, struct layout *layout, unsigned int layer)
+{
+
+    unsigned int root = layout->layers[layer];
+    struct layout_box *box = &layout->boxes[root];
+    struct css_style *style = &layout->styles[root];
+    short *m = style->matrix;
+    int determinant = (m[0] * m[3] - m[1] * m[2]) / 1000;
+    struct paint_canvas flat;
+    int ox;
+    int oy;
+    int edges[4];
+    int x;
+    int y;
+
+    /* the layer is drawn flat into a buffer of its box, then each pixel it covers on the page is looked up there */
+    flat.width = min((int)canvas->width, box->x + box->w);
+    flat.height = box->h;
+    flat.top = box->y;
+    flat.heap = canvas->heap;
+    flat.pixels = canvas->scratch;
+    flat.scratch = 0;
+    flat.scratchsize = 0;
+
+    /* the buffer is scratch space the caller gives, without it the layer is drawn as it is */
+    if (!canvas->scratch || !determinant || box->x < 0 || box->w <= 0 || box->h <= 0 || (unsigned int)(flat.width * flat.height) > canvas->scratchsize)
+        return 0;
+
+    buffer_clear(canvas->scratch, flat.width * flat.height * 4);
+    paintlayer(&flat, layout, layer);
+
+    ox = box->x + paintlength(&style->origin[0], box->w);
+    oy = box->y + paintlength(&style->origin[1], box->h);
+    edges[0] = edges[1] = 0x7FFFFFFF;
+    edges[2] = edges[3] = -0x7FFFFFFF;
+
+    bounds(edges, ox + (m[0] * (box->x - ox) + m[2] * (box->y - oy)) / 1000, oy + (m[1] * (box->x - ox) + m[3] * (box->y - oy)) / 1000);
+    bounds(edges, ox + (m[0] * (box->x + box->w - ox) + m[2] * (box->y - oy)) / 1000, oy + (m[1] * (box->x + box->w - ox) + m[3] * (box->y - oy)) / 1000);
+    bounds(edges, ox + (m[0] * (box->x - ox) + m[2] * (box->y + box->h - oy)) / 1000, oy + (m[1] * (box->x - ox) + m[3] * (box->y + box->h - oy)) / 1000);
+    bounds(edges, ox + (m[0] * (box->x + box->w - ox) + m[2] * (box->y + box->h - oy)) / 1000, oy + (m[1] * (box->x + box->w - ox) + m[3] * (box->y + box->h - oy)) / 1000);
+    setclip(canvas, layout, root);
+
+    for (y = max(edges[1], canvas->cliptop); y <= edges[3] && y < canvas->clipbottom; y++)
+    {
+
+        unsigned int *row = canvas->pixels + (y - canvas->top) * canvas->width;
+
+        for (x = max(edges[0], canvas->clipleft); x <= edges[2] && x < canvas->clipright; x++)
+        {
+
+            int dx = x - ox;
+            int dy = y - oy;
+            int sx = ox + (m[3] * dx - m[2] * dy) / determinant;
+            int sy = oy + (m[0] * dy - m[1] * dx) / determinant;
+            unsigned int color;
+
+            if (sx < box->x || sx >= flat.width || sy < box->y || sy >= box->y + box->h)
+                continue;
+
+            color = canvas->scratch[(sy - box->y) * flat.width + sx];
+
+            if ((color >> 24) == 0xFF)
+                row[x] = color;
+            else if (color >> 24)
+                row[x] = blend(row[x], color);
+
+        }
+
+    }
+
+    return 1;
 
 }
 
@@ -1186,25 +1421,10 @@ void paint_document(struct paint_canvas *canvas, struct layout *layout)
     for (i = 0; i < layout->layercount; i++)
     {
 
-        unsigned int j;
+        if (layout->layers[i] && layout->styles[layout->layers[i]].turned && painttransformed(canvas, layout, i))
+            continue;
 
-        paintboxes(canvas, layout, i);
-
-        for (j = layout->layerstart[i]; j < layout->layerstart[i + 1]; j++)
-        {
-
-            setclip(canvas, layout, layout->fragments[layout->layerfragments[j]].node);
-            paintinlines(canvas, layout, layout->layerfragments[j]);
-
-        }
-
-        for (j = layout->layerstart[i]; j < layout->layerstart[i + 1]; j++)
-        {
-
-            setclip(canvas, layout, layout->fragments[layout->layerfragments[j]].node);
-            paintfragment(canvas, layout, &layout->fragments[layout->layerfragments[j]]);
-
-        }
+        paintlayer(canvas, layout, i);
 
     }
 

@@ -784,6 +784,7 @@ static void loadstyles(void)
 
             struct html_node *text = &document->nodes[element->first];
 
+            css_setbase(sheet, 0);
             css_parse(sheet, html_getstring(document, text->text), text->length, CSS_ORIGIN_AUTHOR);
 
         }
@@ -800,8 +801,15 @@ static void loadstyles(void)
 
                 struct page sheetpage = load(url);
 
+                /* addresses in a stylesheet are relative to the stylesheet */
                 if (sheetpage.count)
+                {
+
+                    css_setbase(sheet, url);
                     css_parse(sheet, source, sheetpage.count, CSS_ORIGIN_AUTHOR);
+                    css_setbase(sheet, 0);
+
+                }
 
             }
 
@@ -1242,6 +1250,23 @@ static unsigned int addinlinesvg(unsigned int node)
 
 }
 
+static unsigned int loadbackground(unsigned int node)
+{
+
+    char *address = css_backgroundurl(sheet, &styles[node]);
+    char *relative = css_backgroundbase(sheet, &styles[node]);
+    char url[URLSIZE];
+
+    if (!address)
+        return 0;
+
+    if (buffer_match(address, "data:", 5))
+        return loadpicture(address);
+
+    return (resolve(url, URLSIZE, (relative) ? relative : base, address) && issafe(url)) ? loadpicture(url) : 0;
+
+}
+
 static void loadpictures(void)
 {
 
@@ -1251,6 +1276,10 @@ static void loadpictures(void)
     heapused = 0;
 
     buffer_clear(layout->picture, sizeof (unsigned short) * HTML_NODES);
+    buffer_clear(layout->background, sizeof (unsigned short) * HTML_NODES);
+
+    /* background images are named in the styles, so they are computed first */
+    css_compute(sheet, document, styles, viewwidth, viewheight, scheme);
 
     for (node = 1; node < document->nodecount; node++)
     {
@@ -1266,6 +1295,8 @@ static void loadpictures(void)
             layout->picture[node] = addinlinesvg(node);
         else if (document->nodes[node].tag == HTML_TAG_CANVAS)
             layout->picture[node] = addcanvas(node);
+
+        layout->background[node] = (document->nodes[node].type == HTML_NODE_ELEMENT) ? loadbackground(node) : 0;
 
     }
 
@@ -1407,7 +1438,17 @@ static void paintpage(void)
     canvas.width = viewwidth;
     canvas.height = height;
     canvas.top = scrolly;
-    canvas.heap = (heapused) ? fs_mmap(1, heap.target, heap.id, 0) : 0;
+    canvas.scratch = 0;
+    canvas.scratchsize = 0;
+
+    /* the heap grows by scratch space for drawing transformed boxes, after the pictures in it */
+    if (heap.id && heapused + PAINT_SCRATCH * 4 <= HEAPSIZE && fs_write(1, heap.target, heap.id, &zero, 1, heapused + PAINT_SCRATCH * 4 - 1) == 1)
+        canvas.scratchsize = PAINT_SCRATCH;
+
+    canvas.heap = (heapused || canvas.scratchsize) ? fs_mmap(1, heap.target, heap.id, 0) : 0;
+
+    if (canvas.heap && canvas.scratchsize)
+        canvas.scratch = canvas.heap + heapused / 4;
 
     if (canvas.pixels)
         paint_document(&canvas, layout);

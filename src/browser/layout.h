@@ -144,6 +144,7 @@ struct layout
     struct font_set *fonts;
     struct layout_picture *pictures;
     unsigned short picture[HTML_NODES];
+    unsigned short background[HTML_NODES];
     struct layout_box boxes[HTML_NODES];
     struct layout_measure measures[HTML_NODES];
     struct layout_fragment fragments[LAYOUT_FRAGMENTS];

@@ -6,6 +6,15 @@
 #define CSS_CUSTOMS                     16384
 #define CSS_GRADIENTS                   64
 #define CSS_GRIDS                       128
+#define CSS_KEYFRAMES                   512
+#define CSS_URLTEXT                     0x10000
+#define CSS_BASES                       64
+#define CSS_SIZE_AUTO                   0
+#define CSS_SIZE_COVER                  1
+#define CSS_SIZE_CONTAIN                2
+#define CSS_SIZE_LENGTH                 3
+#define CSS_REPEAT_X                    1
+#define CSS_REPEAT_Y                    2
 #define CSS_TRACKS                      12
 #define CSS_TRACK_AUTO                  0
 #define CSS_TRACK_PX                    1
@@ -166,6 +175,35 @@ struct css_style
     unsigned char opacity;
     unsigned char textclip;
     unsigned char backgroundclip;
+    unsigned char animationfill;
+    unsigned char faded;
+    unsigned char ellipsis;
+    unsigned char lineclamp;
+    unsigned char turned;
+    unsigned char outlinewidth;
+    short outlineoffset;
+    unsigned int outlinecolor;
+    unsigned int textshadow;
+    short textshadowx;
+    short textshadowy;
+    unsigned char filtered;
+    unsigned short grayscale;
+    unsigned short sepia;
+    unsigned short invert;
+    unsigned short brightness;
+    unsigned short contrast;
+    unsigned short saturate;
+    unsigned short filteropacity;
+    unsigned char bgsizemode;
+    unsigned char bgrepeat;
+    unsigned short bgbase;
+    unsigned int bgurl;
+    struct css_length bgsize[2];
+    struct css_length bgposition[2];
+    short matrix[4];
+    struct css_length origin[2];
+    unsigned char animationinfinite;
+    unsigned short animation;
     unsigned char valign;
     unsigned char breaking;
     unsigned char borderstyle[CSS_SIDES];
@@ -294,7 +332,8 @@ struct css_declaration
 {
 
     unsigned short property;
-    unsigned short important;
+    unsigned char important;
+    unsigned char base;
     unsigned int name;
     unsigned int value;
 
@@ -320,6 +359,15 @@ struct css_rule
 
 };
 
+struct css_keyframes
+{
+
+    unsigned int name;
+    unsigned int declaration;
+    unsigned int declarations;
+
+};
+
 struct css_sheet
 {
 
@@ -330,6 +378,13 @@ struct css_sheet
     struct css_custom customs[CSS_CUSTOMS];
     struct css_gradient gradients[CSS_GRADIENTS];
     unsigned int gradientcount;
+    struct css_keyframes keyframes[CSS_KEYFRAMES];
+    unsigned int keyframecount;
+    char urltext[CSS_URLTEXT];
+    unsigned int urltextcount;
+    unsigned int bases[CSS_BASES];
+    unsigned int basecount;
+    unsigned int currentbase;
     struct css_grid grids[CSS_GRIDS];
     unsigned int gridcount;
     unsigned short customstart[HTML_NODES];
@@ -355,6 +410,9 @@ struct css_color
 
 void css_reset(struct css_sheet *sheet);
 struct css_color css_parsecolor(char *text, unsigned int length);
+void css_setbase(struct css_sheet *sheet, char *url);
+char *css_backgroundurl(struct css_sheet *sheet, struct css_style *style);
+char *css_backgroundbase(struct css_sheet *sheet, struct css_style *style);
 char *css_findcustom(struct css_sheet *sheet, struct html_document *document, unsigned int node, char *name, unsigned int length);
 void css_parse(struct css_sheet *sheet, char *text, unsigned int count, unsigned int origin);
 void css_compute(struct css_sheet *sheet, struct html_document *document, struct css_style *styles, unsigned int width, unsigned int height, unsigned int scheme);

@@ -1,3 +1,5 @@
+#define PAINT_SCRATCH                   0x40000
+
 struct paint_canvas
 {
 
@@ -6,6 +8,8 @@ struct paint_canvas
     unsigned int height;
     int top;
     unsigned int *heap;
+    unsigned int *scratch;
+    unsigned int scratchsize;
     int clipleft;
     int cliptop;
     int clipright;
