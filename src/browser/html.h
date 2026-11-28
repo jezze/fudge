@@ -1,5 +1,6 @@
 #define HTML_NODES                      16384
 #define HTML_ATTRIBUTES                 32768
+#define HTML_CLONEDEPTH                 64
 #define HTML_TEXTSIZE                   0x80000
 #define HTML_DEPTH                      40
 #define HTML_NODE_DOCUMENT              0
@@ -102,6 +103,7 @@ unsigned int html_isgenerated(struct html_document *document, unsigned int node)
 unsigned int html_addgenerated(struct html_document *document, unsigned int parent, unsigned int tag, char *text, unsigned int length);
 void html_linkgenerated(struct html_document *document);
 void html_dropgenerated(struct html_document *document);
+unsigned int html_clone(struct html_document *document, unsigned int node, unsigned int deep);
 unsigned int html_createelement(struct html_document *document, char *name);
 unsigned int html_createtext(struct html_document *document, char *text);
 unsigned int html_insert(struct html_document *document, unsigned int parent, unsigned int child, unsigned int before);

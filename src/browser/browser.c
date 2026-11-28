@@ -1468,13 +1468,28 @@ static unsigned int isscript(unsigned int node)
 
 }
 
+static struct js_rect measurenode(unsigned int node)
+{
+
+    struct js_rect rect;
+
+    rect.x = (node < HTML_NODES && layout->boxes[node].placed) ? layout->boxes[node].x : 0;
+    rect.y = (node < HTML_NODES && layout->boxes[node].placed) ? layout->boxes[node].y : 0;
+    rect.w = (node < HTML_NODES && layout->boxes[node].placed) ? layout->boxes[node].w : 0;
+    rect.h = (node < HTML_NODES && layout->boxes[node].placed) ? layout->boxes[node].h : 0;
+
+    return rect;
+
+}
+
 static void runscripts(void)
 {
 
     unsigned int count = document->nodecount;
     unsigned int node;
 
-    js_reset(js, document, scheme == CSS_SCHEME_DARK);
+    js_reset(js, document, scheme == CSS_SCHEME_DARK, system_unixtime("clock:0"));
+    js_setview(js, viewwidth, viewheight, measurenode);
 
     for (node = 1; node < count; node++)
     {

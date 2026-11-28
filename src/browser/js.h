@@ -1,10 +1,11 @@
-#define JS_NODES                        32768
-#define JS_OBJECTS                      16384
-#define JS_PROPERTIES                   32768
+#define JS_NODES                        131072
+#define JS_OBJECTS                      32768
+#define JS_PROPERTIES                   65536
 #define JS_STRINGSIZE                   0x80000
+#define JS_REALS                        4096
 #define JS_INTERNS                      65536
 #define JS_LISTENERS                    64
-#define JS_NATIVES                      256
+#define JS_NATIVES                      320
 #define JS_TIMERS                       32
 #define JS_SCRATCH                      8192
 #define JS_TEXTSIZE                     4096
@@ -18,6 +19,16 @@
 #define JS_NUMBER                       3
 #define JS_STRING                       4
 #define JS_OBJECT                       5
+
+struct js_rect
+{
+
+    int x;
+    int y;
+    int w;
+    int h;
+
+};
 
 struct js_value
 {
@@ -38,7 +49,6 @@ struct js_node
     unsigned int c;
     unsigned int next;
     int value;
-    double real;
 
 };
 
@@ -146,6 +156,12 @@ struct js_engine
     unsigned int generator;
     unsigned int generatorstop;
     unsigned int seed;
+    unsigned int label;
+    double now;
+    double reals[JS_REALS];
+    unsigned int realcount;
+    double ticks;
+    struct js_rect (*measure)(unsigned int node);
     unsigned int constructing;
     unsigned int throwing;
     struct js_value thrown;
@@ -154,7 +170,8 @@ struct js_engine
 
 };
 
-void js_reset(struct js_engine *js, struct html_document *document, unsigned int dark);
+void js_reset(struct js_engine *js, struct html_document *document, unsigned int dark, unsigned int unixtime);
+void js_setview(struct js_engine *js, unsigned int width, unsigned int height, struct js_rect (*measure)(unsigned int node));
 void js_run(struct js_engine *js, char *source, unsigned int count);
 void js_dispatch(struct js_engine *js, unsigned int node, char *type);
 unsigned int js_click(struct js_engine *js, unsigned int node);

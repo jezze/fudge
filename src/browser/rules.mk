@@ -4,6 +4,7 @@ B:=\
 O:=\
     $(DIR_SRC)/browser/browser.o \
     $(DIR_SRC)/browser/css.o \
+    $(DIR_SRC)/browser/date.o \
     $(DIR_SRC)/browser/font.o \
     $(DIR_SRC)/browser/html.o \
     $(DIR_SRC)/browser/js.o \
@@ -23,6 +24,7 @@ L:=\
 
 $(DIR_SRC)/browser/js.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
 $(DIR_SRC)/browser/number.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
+$(DIR_SRC)/browser/date.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
 
 include $(DIR_MK)/bin.mk
 

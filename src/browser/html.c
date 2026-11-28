@@ -1437,6 +1437,53 @@ void html_parsetext(struct html_document *document, char *source, unsigned int c
 
 }
 
+static unsigned int clonenode(struct html_document *document, unsigned int node, unsigned int deep, unsigned int depth)
+{
+
+    unsigned int copy = newnode(document, document->nodes[node].type);
+    unsigned int child;
+
+    if (!copy)
+        return 0;
+
+    /* names, text and attribute values are never changed in place, so the copy shares them */
+    document->nodes[copy].tag = document->nodes[node].tag;
+    document->nodes[copy].name = document->nodes[node].name;
+    document->nodes[copy].text = document->nodes[node].text;
+    document->nodes[copy].length = document->nodes[node].length;
+
+    if (document->nodes[node].attributes && document->attributecount + document->nodes[node].attributes <= HTML_ATTRIBUTES)
+    {
+
+        buffer_copy(&document->attributes[document->attributecount], &document->attributes[document->nodes[node].attribute], sizeof (struct html_attribute) * document->nodes[node].attributes);
+
+        document->nodes[copy].attribute = document->attributecount;
+        document->nodes[copy].attributes = document->nodes[node].attributes;
+        document->attributecount += document->nodes[node].attributes;
+
+    }
+
+    if (deep && depth < HTML_CLONEDEPTH)
+    {
+
+        for (child = document->nodes[node].first; child; child = document->nodes[child].next)
+            html_insert(document, copy, clonenode(document, child, deep, depth + 1), 0);
+
+    }
+
+    return copy;
+
+}
+
+unsigned int html_clone(struct html_document *document, unsigned int node, unsigned int deep)
+{
+
+    html_dropgenerated(document);
+
+    return (node) ? clonenode(document, node, deep, 0) : 0;
+
+}
+
 unsigned int html_createelement(struct html_document *document, char *name)
 {
 

@@ -2,6 +2,7 @@
 #include <hash.h>
 #include "html.h"
 #include "number.h"
+#include "date.h"
 #include "js.h"
 
 #define ARGUMENTS                       16
@@ -50,6 +51,7 @@
 #define NODE_SPREAD                     40
 #define NODE_REGEX                      41
 #define NODE_YIELD                      42
+#define NODE_LABEL                      43
 #define FUNCTION_DERIVED                1
 #define FUNCTION_ARROW                  2
 #define FUNCTION_ARGUMENTS              4
@@ -98,6 +100,7 @@
 #define OP_IN                           32
 #define OP_USHIFTRIGHT                  33
 #define OP_POWER                        34
+#define OP_DELETE                       35
 #define TOKEN_END                       0
 #define TOKEN_NUMBER                    1
 #define TOKEN_STRING                    2
@@ -234,7 +237,6 @@
 #define NATIVE_PARSEFROMSTRING          109
 #define NATIVE_REPLACECHILDREN          110
 #define NATIVE_CLICK                    111
-#define NATIVE_FULLYEAR                 112
 #define NATIVE_REMOVEEVENTLISTENER      113
 #define NATIVE_NEWMAP                   114
 #define NATIVE_NEWSET                   115
@@ -285,7 +287,102 @@
 #define NATIVE_NUMBERISFINITE           160
 #define NATIVE_TOPRECISION              162
 #define NATIVE_TOLOCALESTRING           163
-#define NATIVE_MATH                     200
+#define NATIVE_FINDLAST                 164
+#define NATIVE_FINDLASTINDEX            165
+#define NATIVE_REDUCERIGHT              166
+#define NATIVE_AT                       167
+#define NATIVE_FLAT                     168
+#define NATIVE_FLATMAP                  169
+#define NATIVE_ARRAYENTRIES             170
+#define NATIVE_TOSORTED                 171
+#define NATIVE_TOREVERSED               172
+#define NATIVE_ARRAYOF                  173
+#define NATIVE_FROMENTRIES              174
+#define NATIVE_MATCHALL                 175
+#define NATIVE_LOCALECOMPARE            176
+#define NATIVE_CODEPOINTAT              177
+#define NATIVE_SELF                     178
+#define NATIVE_ENCODEURI                179
+#define NATIVE_ENCODEURICOMPONENT       180
+#define NATIVE_DECODEURI                181
+#define NATIVE_BTOA                     182
+#define NATIVE_ATOB                     183
+#define NATIVE_STRUCTUREDCLONE          184
+#define CLONEDEPTH                      32
+#define ENCODE_URI                      0
+#define ENCODE_COMPONENT                1
+#define ENCODE_FORM                     2
+#define NATIVE_DATENOW                  185
+#define NATIVE_BEFORE                   188
+#define NATIVE_AFTER                    189
+#define NATIVE_REPLACEWITH              190
+#define NATIVE_CLONENODE                191
+#define NATIVE_TOGGLEATTRIBUTE          192
+#define NATIVE_CREATEFRAGMENT           193
+#define NATIVE_IMPORTNODE               194
+#define NATIVE_CREATEELEMENTNS          195
+#define NATIVE_PREVENTDEFAULT           196
+#define NATIVE_STOPPROPAGATION          197
+#define NATIVE_STOPIMMEDIATE            198
+#define NATIVE_SETSTYLEPROPERTY         199
+#define NATIVE_REMOVESTYLEPROPERTY      200
+#define NATIVE_RECT                     201
+#define NATIVE_CLIENTRECTS              202
+#define RECTFIELDS                      8
+#define NATIVE_SEARCHPARAMS             203
+#define NATIVE_FORMDATA                 204
+#define NATIVE_PARAMSGET                205
+#define NATIVE_PARAMSGETALL             206
+#define NATIVE_PARAMSHAS                207
+#define NATIVE_PARAMSSET                208
+#define NATIVE_PARAMSAPPEND             209
+#define NATIVE_PARAMSDELETE             210
+#define NATIVE_PARAMSTOSTRING           211
+#define NATIVE_PARAMSFOREACH            212
+#define NATIVE_PARAMSENTRIES            213
+#define NATIVE_PARAMSKEYS               214
+#define NATIVE_PARAMSVALUES             215
+#define NATIVE_PERFORMANCENOW           216
+#define NATIVE_RANDOMVALUES             217
+#define NATIVE_RANDOMUUID               218
+#define NATIVE_HISTORYSTATE             219
+#define NATIVE_XHR                      220
+#define NATIVE_ABORTCONTROLLER          221
+#define NATIVE_ABORT                    222
+#define NATIVE_TEXTENCODER              223
+#define NATIVE_ENCODE                   224
+#define NATIVE_DECODE                   225
+#define NATIVE_DEFINEELEMENT            226
+#define NATIVE_GETELEMENT               227
+#define NATIVE_WHENDEFINED              228
+#define PARAMSMETHODS                   12
+#define VIEWFIELDS                      9
+#define VIEW_WIDTH                      0
+#define VIEW_HEIGHT                     1
+#define VIEW_ONE                        2
+#define VIEW_ZERO                       3
+#define NATIVE_DATEPARSE                186
+#define NATIVE_DATEUTC                  187
+/* ordinary natives stay below 240, where the ranges of date methods and math functions begin */
+#define NATIVE_DATEMETHOD               240
+#define DATEMETHODS                     46
+#define DATE_GET                        0
+#define DATE_SET                        1
+#define DATE_SHOW                       2
+#define DATE_TIME                       3
+#define DATE_SETTIME                    4
+#define DATE_ZONE                       5
+#define FIELD_YEAR                      0
+#define FIELD_MONTH                     1
+#define FIELD_DAY                       2
+#define FIELD_WEEKDAY                   3
+#define FIELD_HOURS                     4
+#define FIELD_MINUTES                   5
+#define FIELD_SECONDS                   6
+#define FIELD_MILLISECONDS              7
+#define FIELD_SHORTYEAR                 8
+#define FLATDEPTH                       16
+#define NATIVE_MATH                     290
 #define MATHFUNCTIONS                   24
 #define MATHCONSTANTS                   8
 #define MATH_FLOOR                      0
@@ -319,9 +416,8 @@
 #define STYLESIZE                       512
 #define TEXTSIZE                        1024
 #define VOIDS                           13
-#define STRINGMETHODS                   25
-#define ARRAYMETHODS                    25
-#define DATEFIELDS                      10
+#define STRINGMETHODS                   31
+#define ARRAYMETHODS                    35
 #define LOCATIONFIELDS                  8
 #define NAVIGATORFIELDS                 5
 #define COLLECTIONMETHODS               11
@@ -366,6 +462,7 @@ struct parser
     unsigned int noin;
     unsigned int uses;
     unsigned int star;
+    unsigned int functions;
 
 };
 
@@ -373,6 +470,7 @@ struct completion
 {
 
     unsigned int type;
+    unsigned int label;
     struct js_value value;
 
 };
@@ -411,6 +509,15 @@ struct constant
 
 };
 
+struct datemethod
+{
+
+    char *name;
+    unsigned int kind;
+    unsigned int field;
+
+};
+
 struct frame
 {
 
@@ -429,6 +536,8 @@ struct output
     unsigned int count;
     unsigned int size;
     unsigned int full;
+    char *gap;
+    unsigned int gaplength;
 
 };
 
@@ -463,6 +572,8 @@ static struct method stringmethods[STRINGMETHODS] = {
     {"split", NATIVE_SPLIT}, {"slice", NATIVE_SLICE}, {"substring", NATIVE_SLICE}, {"substr", NATIVE_SUBSTR},
     {"replace", NATIVE_REPLACE}, {"charAt", NATIVE_CHARAT}, {"charCodeAt", NATIVE_CHARCODEAT}, {"repeat", NATIVE_REPEAT},
     {"padStart", NATIVE_PADSTART}, {"padEnd", NATIVE_PADEND}, {"concat", NATIVE_CONCAT}, {"toString", NATIVE_TOSTRING},
+    {"at", NATIVE_AT}, {"matchAll", NATIVE_MATCHALL}, {"localeCompare", NATIVE_LOCALECOMPARE}, {"codePointAt", NATIVE_CODEPOINTAT},
+    {"normalize", NATIVE_SELF}, {"valueOf", NATIVE_SELF},
     {"match", NATIVE_MATCH}, {"search", NATIVE_SEARCH}, {"replaceAll", NATIVE_REPLACEALL}, {"trimStart", NATIVE_TRIM}, {"trimEnd", NATIVE_TRIM}
 };
 static struct method arraymethods[ARRAYMETHODS] = {
@@ -471,7 +582,10 @@ static struct method arraymethods[ARRAYMETHODS] = {
     {"filter", NATIVE_FILTER}, {"find", NATIVE_FIND}, {"findIndex", NATIVE_FINDINDEX}, {"some", NATIVE_SOME},
     {"every", NATIVE_EVERY}, {"reduce", NATIVE_REDUCE}, {"sort", NATIVE_SORT}, {"reverse", NATIVE_REVERSE},
     {"concat", NATIVE_CONCAT}, {"pop", NATIVE_POP}, {"shift", NATIVE_SHIFT}, {"unshift", NATIVE_UNSHIFT},
-    {"splice", NATIVE_SPLICE}, {"fill", NATIVE_FILL}, {"toString", NATIVE_TOSTRING}, {"item", NATIVE_ARRAYITEM}, {"keys", NATIVE_KEYS}
+    {"splice", NATIVE_SPLICE}, {"fill", NATIVE_FILL}, {"toString", NATIVE_TOSTRING}, {"item", NATIVE_ARRAYITEM}, {"keys", NATIVE_KEYS},
+    {"findLast", NATIVE_FINDLAST}, {"findLastIndex", NATIVE_FINDLASTINDEX}, {"reduceRight", NATIVE_REDUCERIGHT}, {"at", NATIVE_AT},
+    {"flat", NATIVE_FLAT}, {"flatMap", NATIVE_FLATMAP}, {"entries", NATIVE_ARRAYENTRIES}, {"values", NATIVE_VALUES},
+    {"toSorted", NATIVE_TOSORTED}, {"toReversed", NATIVE_TOREVERSED}
 };
 static char *locationfields[LOCATIONFIELDS] = {"href", "hash", "search", "pathname", "host", "hostname", "origin", "protocol"};
 static char *mathfunctions[MATHFUNCTIONS] = {
@@ -486,6 +600,32 @@ static struct constant numberconstants[NUMBERCONSTANTS] = {
     {"EPSILON", 2.220446049250313e-16}, {"MAX_SAFE_INTEGER", 9007199254740991.0}, {"MIN_SAFE_INTEGER", -9007199254740991.0}, {"MAX_VALUE", 1.7976931348623157e308},
     {"MIN_VALUE", 5e-324}, {"POSITIVE_INFINITY", 0}, {"NEGATIVE_INFINITY", 0}, {"NaN", 0}
 };
+static struct datemethod datemethods[DATEMETHODS] = {
+    {"getTime", DATE_TIME, 0}, {"valueOf", DATE_TIME, 0}, {"getTimezoneOffset", DATE_ZONE, 0}, {"setTime", DATE_SETTIME, 0},
+    {"getFullYear", DATE_GET, FIELD_YEAR}, {"getMonth", DATE_GET, FIELD_MONTH}, {"getDate", DATE_GET, FIELD_DAY}, {"getDay", DATE_GET, FIELD_WEEKDAY},
+    {"getHours", DATE_GET, FIELD_HOURS}, {"getMinutes", DATE_GET, FIELD_MINUTES}, {"getSeconds", DATE_GET, FIELD_SECONDS}, {"getMilliseconds", DATE_GET, FIELD_MILLISECONDS},
+    {"getUTCFullYear", DATE_GET, FIELD_YEAR}, {"getUTCMonth", DATE_GET, FIELD_MONTH}, {"getUTCDate", DATE_GET, FIELD_DAY}, {"getUTCDay", DATE_GET, FIELD_WEEKDAY},
+    {"getUTCHours", DATE_GET, FIELD_HOURS}, {"getUTCMinutes", DATE_GET, FIELD_MINUTES}, {"getUTCSeconds", DATE_GET, FIELD_SECONDS}, {"getUTCMilliseconds", DATE_GET, FIELD_MILLISECONDS},
+    {"getYear", DATE_GET, FIELD_SHORTYEAR},
+    {"setFullYear", DATE_SET, FIELD_YEAR}, {"setMonth", DATE_SET, FIELD_MONTH}, {"setDate", DATE_SET, FIELD_DAY}, {"setHours", DATE_SET, FIELD_HOURS},
+    {"setMinutes", DATE_SET, FIELD_MINUTES}, {"setSeconds", DATE_SET, FIELD_SECONDS}, {"setMilliseconds", DATE_SET, FIELD_MILLISECONDS},
+    {"setUTCFullYear", DATE_SET, FIELD_YEAR}, {"setUTCMonth", DATE_SET, FIELD_MONTH}, {"setUTCDate", DATE_SET, FIELD_DAY}, {"setUTCHours", DATE_SET, FIELD_HOURS},
+    {"setUTCMinutes", DATE_SET, FIELD_MINUTES}, {"setUTCSeconds", DATE_SET, FIELD_SECONDS}, {"setUTCMilliseconds", DATE_SET, FIELD_MILLISECONDS},
+    {"toISOString", DATE_SHOW, DATE_ISO}, {"toJSON", DATE_SHOW, DATE_ISO}, {"toString", DATE_SHOW, DATE_STRING}, {"toDateString", DATE_SHOW, DATE_DATESTRING},
+    {"toTimeString", DATE_SHOW, DATE_TIMESTRING}, {"toUTCString", DATE_SHOW, DATE_UTCSTRING}, {"toGMTString", DATE_SHOW, DATE_UTCSTRING},
+    {"toLocaleString", DATE_SHOW, DATE_LOCALE}, {"toLocaleDateString", DATE_SHOW, DATE_LOCALEDATE}, {"toLocaleTimeString", DATE_SHOW, DATE_LOCALETIME},
+    {"setYear", DATE_SET, FIELD_YEAR}
+};
+static struct method viewfields[VIEWFIELDS] = {
+    {"innerWidth", VIEW_WIDTH}, {"outerWidth", VIEW_WIDTH}, {"innerHeight", VIEW_HEIGHT}, {"outerHeight", VIEW_HEIGHT}, {"devicePixelRatio", VIEW_ONE},
+    {"scrollX", VIEW_ZERO}, {"scrollY", VIEW_ZERO}, {"pageXOffset", VIEW_ZERO}, {"pageYOffset", VIEW_ZERO}
+};
+static struct method paramsmethods[PARAMSMETHODS] = {
+    {"get", NATIVE_PARAMSGET}, {"getAll", NATIVE_PARAMSGETALL}, {"has", NATIVE_PARAMSHAS}, {"set", NATIVE_PARAMSSET},
+    {"append", NATIVE_PARAMSAPPEND}, {"delete", NATIVE_PARAMSDELETE}, {"toString", NATIVE_PARAMSTOSTRING}, {"forEach", NATIVE_PARAMSFOREACH},
+    {"entries", NATIVE_PARAMSENTRIES}, {"keys", NATIVE_PARAMSKEYS}, {"values", NATIVE_PARAMSVALUES}, {"@@iterator", NATIVE_PARAMSENTRIES}
+};
+static char *rectfields[RECTFIELDS] = {"x", "y", "width", "height", "left", "top", "right", "bottom"};
 static struct method errornames[ERRORS] = {{"Error", NATIVE_ERROR}, {"TypeError", NATIVE_TYPEERROR}, {"RangeError", NATIVE_RANGEERROR}, {"ReferenceError", NATIVE_REFERENCEERROR}, {"SyntaxError", NATIVE_SYNTAXERROR}};
 static char *navigatorfields[NAVIGATORFIELDS][2] = {{"userAgent", "Mozilla/5.0 (fudge)"}, {"appVersion", "5.0 (fudge)"}, {"platform", "fudge"}, {"vendor", ""}, {"language", "en-US"}};
 static struct method collectionmethods[COLLECTIONMETHODS] = {
@@ -494,7 +634,6 @@ static struct method collectionmethods[COLLECTIONMETHODS] = {
     {"values", NATIVE_COLLECTIONVALUES}, {"entries", NATIVE_COLLECTIONENTRIES}, {"toString", NATIVE_TOSTRING}
 };
 static char *symbols[SYMBOLS] = {"iterator", "toStringTag", "asyncIterator", "hasInstance"};
-static char *datefields[DATEFIELDS] = {"getTime", "getFullYear", "getMonth", "getDate", "getDay", "getHours", "getMinutes", "getSeconds", "getMilliseconds", "getTimezoneOffset"};
 static char *voids[VOIDS] = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"};
 static struct binary binaries[BINARIES] = {
     {"??", OP_NULLISH, 1, 1}, {"||", OP_OR, 2, 1}, {"&&", OP_AND, 3, 1}, {"|", OP_BITOR, 4, 0}, {"^", OP_BITXOR, 5, 0}, {"&", OP_BITAND, 6, 0},
@@ -515,7 +654,7 @@ static struct js_value callfunction(struct js_engine *js, struct call *call);
 static struct call *takecall(struct js_engine *js, struct js_value *function, struct js_value *self);
 static struct js_value runcall(struct js_engine *js, struct call *call);
 static void bindpattern(struct js_engine *js, unsigned int scope, unsigned int declarator, struct js_value *source);
-static unsigned int bubble(struct js_engine *js, unsigned int target, unsigned int name);
+static unsigned int bubble(struct js_engine *js, unsigned int target, unsigned int name, struct js_value *given);
 static unsigned int parsepostfix(struct parser *parser);
 static void parsepattern(struct parser *parser, unsigned int declarator);
 static unsigned int parseitem(struct parser *parser);
@@ -684,6 +823,29 @@ static struct js_property *findproperty(struct js_engine *js, unsigned int objec
     }
 
     return 0;
+
+}
+
+static void removeproperty(struct js_engine *js, unsigned int object, unsigned int name)
+{
+
+    unsigned int previous = 0;
+    unsigned int property;
+
+    for (property = js->objects[object].property; property; previous = property, property = js->properties[property].next)
+    {
+
+        if (js->properties[property].name != name)
+            continue;
+
+        if (previous)
+            js->properties[previous].next = js->properties[property].next;
+        else
+            js->objects[object].property = js->properties[property].next;
+
+        return;
+
+    }
 
 }
 
@@ -860,6 +1022,15 @@ static double stringreal(char *text)
 
 }
 
+static double timeof(struct js_engine *js, struct js_value *date)
+{
+
+    struct js_property *time = (date->type == JS_OBJECT) ? findproperty(js, date->number, internstring(js, "@@time")) : 0;
+
+    return (time) ? time->value.real : number_nan();
+
+}
+
 static double toreal(struct js_engine *js, struct js_value *value)
 {
 
@@ -879,6 +1050,10 @@ static double toreal(struct js_engine *js, struct js_value *value)
         return stringreal(getstring(js, value->number));
 
     case JS_OBJECT:
+        /* a date counts as its time */
+        if (findproperty(js, value->number, internstring(js, "@@time")))
+            return timeof(js, value);
+
         return stringreal(getstring(js, tostring(js, value)));
 
     }
@@ -899,6 +1074,7 @@ static unsigned int numberstring(struct js_engine *js, int number)
 }
 
 static struct js_value getproperty(struct js_engine *js, struct js_value *target, unsigned int name);
+static struct js_value newurl(struct js_engine *js, struct js_value *address, struct js_value *base);
 static struct js_value callwith(struct js_engine *js, struct js_value *function, struct js_value *self);
 static unsigned int nativefor(struct js_engine *js, unsigned int native);
 
@@ -1590,6 +1766,9 @@ static unsigned int newnode(struct parser *parser, unsigned int type)
 
     node->type = type;
 
+    if (type == NODE_FUNCTION || type == NODE_CLASS)
+        parser->functions++;
+
     return js->nodecount++;
 
 }
@@ -2099,7 +2278,28 @@ static unsigned int parseprimary(struct parser *parser)
         {
 
             js->nodes[node].value = parser->token.value;
-            js->nodes[node].real = parser->token.real;
+
+            /* a number that is not a whole int keeps its double in a table, the node holding its place */
+            if (parser->token.type == TOKEN_NUMBER && parser->token.real != (double)parser->token.value)
+            {
+
+                if (js->realcount < JS_REALS)
+                {
+
+                    js->reals[js->realcount] = parser->token.real;
+                    js->nodes[node].op = 1;
+                    js->nodes[node].value = js->realcount++;
+
+                }
+
+                else
+                {
+
+                    parser->failed = 1;
+
+                }
+
+            }
 
         }
 
@@ -2720,8 +2920,10 @@ static unsigned int parseunary(struct parser *parser)
         op = OP_BITNOT;
     else if (isword(parser, "typeof"))
         op = OP_TYPEOF;
-    else if (isword(parser, "void") || isword(parser, "delete"))
+    else if (isword(parser, "void"))
         op = OP_VOID;
+    else if (isword(parser, "delete"))
+        op = OP_DELETE;
 
     if (op)
     {
@@ -3179,16 +3381,28 @@ static unsigned int parsestatement(struct parser *parser)
 
     }
 
-    if (parser->token.type == TOKEN_NAME && !isword(parser, "default"))
+    if (parser->token.type == TOKEN_NAME && !isword(parser, "default") && !isword(parser, "case"))
     {
 
         struct token next = peektoken(parser);
 
+        /* a name and a colon label the statement after them */
         if (next.type == TOKEN_PUNCTUATOR && next.length == 1 && parser->source[next.start] == ':')
         {
 
+            node = newnode(parser, NODE_LABEL);
+
+            if (!node)
+                return 0;
+
+            js->nodes[node].value = parser->token.value;
+
             nexttoken(parser);
             nexttoken(parser);
+
+            js->nodes[node].a = (ispunctuator(parser, "{")) ? parseblock(parser) : parsestatement(parser);
+
+            return node;
 
         }
 
@@ -3308,6 +3522,8 @@ static unsigned int parsestatement(struct parser *parser)
     if (isword(parser, "for"))
     {
 
+        unsigned int functions = parser->functions;
+
         nexttoken(parser);
         expect(parser, "(");
 
@@ -3356,6 +3572,9 @@ static unsigned int parsestatement(struct parser *parser)
         expect(parser, ")");
 
         js->nodes[node].value = parsestatement(parser);
+
+        /* closures made in the loop see each turn's own copy of its let variables */
+        js->nodes[node].op = parser->functions != functions;
 
         return node;
 
@@ -3513,9 +3732,19 @@ static unsigned int parsestatement(struct parser *parser)
 
         nexttoken(parser);
 
-        /* labels are not kept, so a labelled break or continue acts on the innermost loop */
+        /* a label on the same line names the statement it is for, kept as its name plus one */
         if (parser->token.type == TOKEN_NAME && buffer_findbyte(parser->source + end, parser->token.start - end, '\n') == parser->token.start - end)
+        {
+
+            if (node)
+                js->nodes[node].op = 1;
+
+            if (node)
+                js->nodes[node].value = parser->token.value;
+
             nexttoken(parser);
+
+        }
 
         endstatement(parser);
 
@@ -3844,15 +4073,30 @@ static unsigned int matchattribute(struct js_engine *js, unsigned int node, char
 {
 
     unsigned int equal = buffer_findbyte(text, length, '=');
+    unsigned int nameend = equal;
+    char op = 0;
     char name[SELECTORSIZE];
     char *attribute;
+    unsigned int size;
 
-    if (equal >= SELECTORSIZE)
+    /* ~= is a word in the list, |= the value or its prefix with a dash, ^= $= and *= start, end and contain */
+    if (equal && equal < length && buffer_findbyte("~|^$*", 5, text[equal - 1]) < 5)
+    {
+
+        op = text[equal - 1];
+        nameend--;
+
+    }
+
+    while (nameend && isspace(text[nameend - 1]))
+        nameend--;
+
+    if (nameend >= SELECTORSIZE)
         return 0;
 
-    buffer_copy(name, text, equal);
+    buffer_copy(name, text, nameend);
 
-    name[equal] = '\0';
+    name[nameend] = '\0';
     attribute = html_getattribute(js->document, node, name);
 
     if (!attribute || equal >= length)
@@ -3861,11 +4105,69 @@ static unsigned int matchattribute(struct js_engine *js, unsigned int node, char
     text += equal + 1;
     length -= equal + 1;
 
+    while (length && isspace(text[0]))
+    {
+
+        text++;
+        length--;
+
+    }
+
+    while (length && isspace(text[length - 1]))
+        length--;
+
+    /* a case flag after the value is let go, matching stays exact */
+    if (length > 2 && (text[length - 1] == 'i' || text[length - 1] == 's') && isspace(text[length - 2]))
+    {
+
+        length -= 2;
+
+        while (length && isspace(text[length - 1]))
+            length--;
+
+    }
+
     if (length >= 2 && (text[0] == '"' || text[0] == '\''))
     {
 
         text++;
         length -= 2;
+
+    }
+
+    size = cstring_length(attribute);
+
+    switch (op)
+    {
+
+    case '~':
+        return hasword(attribute, text, length);
+
+    case '|':
+        return equalspan(attribute, text, length) || (size > length && buffer_match(attribute, text, length) && attribute[length] == '-');
+
+    case '^':
+        return length && size >= length && buffer_match(attribute, text, length);
+
+    case '$':
+        return length && size >= length && buffer_match(attribute + size - length, text, length);
+
+    case '*':
+        {
+
+            unsigned int k;
+
+            for (k = 0; length && k + length <= size; k++)
+            {
+
+                if (buffer_match(attribute + k, text, length))
+                    return 1;
+
+            }
+
+            return 0;
+
+        }
 
     }
 
@@ -4392,6 +4694,103 @@ static struct js_value cachedobject(struct js_engine *js, struct js_value *targe
 
 }
 
+static unsigned int isfragment(struct js_engine *js, unsigned int node)
+{
+
+    return js->document->nodes[node].type == HTML_NODE_ELEMENT && cstring_match(html_getstring(js->document, js->document->nodes[node].name), "#document-fragment");
+
+}
+
+static void insertnode(struct js_engine *js, unsigned int parent, unsigned int child, unsigned int before)
+{
+
+    /* a fragment goes in as its children and is left empty */
+    if (child && isfragment(js, child))
+    {
+
+        while (js->document->nodes[child].first)
+            html_insert(js->document, parent, js->document->nodes[child].first, before);
+
+        return;
+
+    }
+
+    html_insert(js->document, parent, child, before);
+
+}
+
+static struct js_value templatecontent(struct js_engine *js, struct js_value *template)
+{
+
+    struct js_property *cached = findproperty(js, template->number, internstring(js, "@@content"));
+    unsigned int fragment;
+    unsigned int child;
+    struct js_value content;
+
+    /* the content is a fragment holding copies of the template's children, made once and kept */
+    if (cached)
+        return cached->value;
+
+    fragment = html_createelement(js->document, "#document-fragment");
+
+    for (child = js->document->nodes[js->objects[template->number].data].first; fragment && child; child = js->document->nodes[child].next)
+        html_insert(js->document, fragment, html_clone(js->document, child, 1), 0);
+
+    content = elementvalue(js, fragment);
+
+    putproperty(js, template->number, internstring(js, "@@content"), &content);
+
+    return content;
+
+}
+
+static struct js_rect measure(struct js_engine *js, unsigned int node)
+{
+
+    struct js_rect empty;
+
+    /* before the page is laid out, or for a node that was not, everything is at zero */
+    if (js->measure && node)
+        return js->measure(node);
+
+    empty.x = 0;
+    empty.y = 0;
+    empty.w = 0;
+    empty.h = 0;
+
+    return empty;
+
+}
+
+static unsigned int islocationfield(char *text)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < LOCATIONFIELDS; i++)
+    {
+
+        if (cstring_match(text, locationfields[i]))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static struct js_value linkpart(struct js_engine *js, unsigned int node, unsigned int name)
+{
+
+    struct js_property *location = findproperty(js, js->global, internstring(js, "location"));
+    struct js_value base = (location && location->value.type == JS_OBJECT) ? getproperty(js, &location->value, internstring(js, "href")) : undefined();
+    struct js_value address = stringvalue(js, html_getattribute(js->document, node, "href"));
+    struct js_value url = newurl(js, &address, &base);
+
+    return (url.type == JS_OBJECT) ? getproperty(js, &url, name) : value(JS_STRING, internstring(js, ""));
+
+}
+
 static struct js_value getproperty(struct js_engine *js, struct js_value *target, unsigned int name)
 {
 
@@ -4524,6 +4923,54 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         if (cstring_match(text, "prepend"))
             return value(JS_OBJECT, nativefor(js, NATIVE_PREPEND));
+
+        if (cstring_match(text, "before"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_BEFORE));
+
+        if (cstring_match(text, "after"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_AFTER));
+
+        if (cstring_match(text, "replaceWith"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REPLACEWITH));
+
+        if (cstring_match(text, "cloneNode"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CLONENODE));
+
+        if (cstring_match(text, "getBoundingClientRect"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_RECT));
+
+        if (cstring_match(text, "getClientRects"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CLIENTRECTS));
+
+        /* sizes come from the last layout, where scrolling is not counted */
+        if (cstring_match(text, "offsetWidth") || cstring_match(text, "clientWidth") || cstring_match(text, "scrollWidth"))
+            return value(JS_NUMBER, measure(js, object->data).w);
+
+        if (cstring_match(text, "offsetHeight") || cstring_match(text, "clientHeight") || cstring_match(text, "scrollHeight"))
+            return value(JS_NUMBER, measure(js, object->data).h);
+
+        if (cstring_match(text, "offsetLeft"))
+            return value(JS_NUMBER, measure(js, object->data).x);
+
+        if (cstring_match(text, "offsetTop"))
+            return value(JS_NUMBER, measure(js, object->data).y);
+
+        if ((cstring_match(text, "scrollTop") || cstring_match(text, "scrollLeft") || cstring_match(text, "clientTop") || cstring_match(text, "clientLeft")) && !findproperty(js, target->number, name))
+            return value(JS_NUMBER, 0);
+
+        if (cstring_match(text, "toggleAttribute"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_TOGGLEATTRIBUTE));
+
+        /* a link tells the parts of its address, resolved against the page's */
+        if (js->document->nodes[object->data].tag == HTML_TAG_A && !findproperty(js, target->number, name) && html_getattribute(js->document, object->data, "href") && islocationfield(text))
+            return linkpart(js, object->data, name);
+
+        /* a shadow root is the element itself, so what goes in it is shown in its place */
+        if (cstring_match(text, "attachShadow"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_SELF));
+
+        if (cstring_match(text, "content") && js->document->nodes[object->data].type == HTML_NODE_ELEMENT && cstring_match(html_getstring(js->document, js->document->nodes[object->data].name), "template"))
+            return templatecontent(js, target);
 
         if (cstring_match(text, "replaceChildren"))
             return value(JS_OBJECT, nativefor(js, NATIVE_REPLACECHILDREN));
@@ -4674,6 +5121,19 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "createElement"))
             return value(JS_OBJECT, nativefor(js, NATIVE_CREATEELEMENT));
 
+        if (cstring_match(text, "createElementNS"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CREATEELEMENTNS));
+
+        if (cstring_match(text, "createDocumentFragment"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_CREATEFRAGMENT));
+
+        if (cstring_match(text, "importNode"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_IMPORTNODE));
+
+        /* scripts run once the page is parsed, so it is never still loading */
+        if (cstring_match(text, "readyState"))
+            return value(JS_STRING, internstring(js, "complete"));
+
         if (cstring_match(text, "location"))
             return findproperty(js, js->global, name)->value;
 
@@ -4786,6 +5246,12 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
         if (cstring_match(text, "getPropertyValue"))
             return value(JS_OBJECT, nativefor(js, NATIVE_PROPERTYVALUE));
 
+        if (cstring_match(text, "setProperty"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_SETSTYLEPROPERTY));
+
+        if (cstring_match(text, "removeProperty"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_REMOVESTYLEPROPERTY));
+
         return getstyle(js, object->data, text);
 
     case KIND_STORAGE:
@@ -4859,6 +5325,24 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
             putproperty(js, target->number, name, &prototype);
 
             return prototype;
+
+        }
+
+        /* a function's name and how many parameters come before the first default or rest */
+        if ((cstring_match(text, "name") || cstring_match(text, "length")) && !findproperty(js, target->number, name))
+        {
+
+            struct js_node *function = &js->nodes[js->objects[target->number].data];
+            unsigned int parameter;
+            unsigned int count = 0;
+
+            if (text[0] == 'n')
+                return value(JS_STRING, (function->value) ? (unsigned int)function->value : internstring(js, ""));
+
+            for (parameter = function->a; parameter && !js->nodes[parameter].a && !js->nodes[parameter].op; parameter = js->nodes[parameter].next)
+                count++;
+
+            return value(JS_NUMBER, count);
 
         }
 
@@ -5481,32 +5965,104 @@ static struct js_value callback(struct js_engine *js, struct js_value *function,
 
 }
 
+static int indexof(char *name)
+{
+
+    int index = 0;
+
+    /* a key that is a whole number written plainly counts as an index */
+    if (!name[0] || (name[0] == '0' && name[1]) || cstring_length(name) > 9)
+        return -1;
+
+    for (; name[0]; name++)
+    {
+
+        if (name[0] < '0' || name[0] > '9')
+            return -1;
+
+        index = index * 10 + (name[0] - '0');
+
+    }
+
+    return index;
+
+}
+
+static void pushkey(struct js_engine *js, struct js_value *result, unsigned int property, unsigned int values)
+{
+
+    struct js_value item;
+
+    if (values)
+        copyvalue(&item, &js->properties[property].value);
+    else
+        item = value(JS_STRING, js->properties[property].name);
+
+    pusharray(js, result, &item);
+
+}
+
 static struct js_value keysof(struct js_engine *js, unsigned int object, unsigned int values)
 {
 
     struct js_value result = newarray(js);
     unsigned int count = 0;
+    int last = -1;
     unsigned int property;
     unsigned int i;
 
     for (property = js->objects[object].property; property; property = js->properties[property].next)
         count++;
 
-    /* properties are kept newest first, so they are walked from the end to keep their order */
+    /* index keys come first and in order, smallest first */
+    while (1)
+    {
+
+        int least = -1;
+        unsigned int found = 0;
+
+        for (property = js->objects[object].property; property; property = js->properties[property].next)
+        {
+
+            int index = indexof(getstring(js, js->properties[property].name));
+
+            if (index > last && (least < 0 || index < least))
+            {
+
+                least = index;
+                found = property;
+
+            }
+
+        }
+
+        if (!found)
+            break;
+
+        pushkey(js, &result, found, values);
+
+        last = least;
+
+    }
+
+    /* the other keys as they were made, which is the reverse of the newest first list, leaving the engine's own @@ names out */
     for (i = count; i > 0; i--)
     {
 
         unsigned int position;
-        struct js_value item;
+        char *name;
 
         property = js->objects[object].property;
 
         for (position = 1; position < i; position++)
             property = js->properties[property].next;
 
-        item = (values) ? js->properties[property].value : value(JS_STRING, js->properties[property].name);
+        name = getstring(js, js->properties[property].name);
 
-        pusharray(js, &result, &item);
+        if (indexof(name) >= 0 || (name[0] == '@' && name[1] == '@'))
+            continue;
+
+        pushkey(js, &result, property, values);
 
     }
 
@@ -5520,23 +6076,22 @@ static int compare(struct js_engine *js, struct js_value *function, struct js_va
     if (isfunction(js, function))
     {
 
-        struct call order;
+        struct call *order = takecall(js, function, 0);
         struct js_value result;
-        unsigned int argument;
+        double difference;
 
-        copyvalue(&order.function, function);
+        if (!order)
+            return 0;
 
-        order.self = undefined();
-        order.count = 2;
-        copyvalue(&order.arguments[0], a);
-        copyvalue(&order.arguments[1], b);
+        copyvalue(&order->arguments[0], a);
+        copyvalue(&order->arguments[1], b);
 
-        for (argument = 2; argument < ARGUMENTS; argument++)
-            order.arguments[argument] = undefined();
+        order->count = 2;
+        result = runcall(js, order);
+        difference = toreal(js, &result);
 
-        result = callfunction(js, &order);
-
-        return tonumber(js, &result);
+        /* only the sign counts, so a fraction still orders */
+        return (difference > 0) ? 1 : (difference < 0) ? -1 : 0;
 
     }
 
@@ -5559,12 +6114,44 @@ static int compare(struct js_engine *js, struct js_value *function, struct js_va
 
 }
 
+static void putindent(struct output *output, unsigned int depth)
+{
+
+    unsigned int i;
+
+    if (!output->gaplength)
+        return;
+
+    put(output, "\n", 1);
+
+    for (i = 0; i < depth; i++)
+        put(output, output->gap, output->gaplength);
+
+}
+
 static void stringify(struct output *output, struct js_value *item, unsigned int depth)
 {
 
     struct js_engine *js = output->js;
+    struct js_value json;
 
-    if (depth > JSONDEPTH || isfunction(js, item) || item->type == JS_UNDEFINED)
+    if (item->type == JS_OBJECT && js->objects[item->number].kind == KIND_PLAIN)
+    {
+
+        struct js_value method = getproperty(js, item, internstring(js, "toJSON"));
+
+        /* an object with toJSON, like a date, is written as what that gives */
+        if (isfunction(js, &method))
+        {
+
+            json = callwith(js, &method, item);
+            item = &json;
+
+        }
+
+    }
+
+    if (depth > JSONDEPTH || isfunction(js, item) || item->type == JS_UNDEFINED || (item->type == JS_NUMBER && !number_isfinite(item->real)))
     {
 
         put(output, "null", 4);
@@ -5584,11 +6171,28 @@ static void stringify(struct output *output, struct js_value *item, unsigned int
         for (i = 0; text[i]; i++)
         {
 
-            if (text[i] == '"' || text[i] == '\\')
+            unsigned char c = text[i];
+
+            if (c == '"' || c == '\\')
                 put(output, "\\", 1);
 
-            if (text[i] == '\n')
+            if (c == '\n')
                 put(output, "\\n", 2);
+            else if (c == '\r')
+                put(output, "\\r", 2);
+            else if (c == '\t')
+                put(output, "\\t", 2);
+            else if (c < 0x20)
+            {
+
+                char escape[7] = {'\\', 'u', '0', '0', 0, 0, 0};
+
+                escape[4] = "0123456789abcdef"[c >> 4];
+                escape[5] = "0123456789abcdef"[c & 15];
+
+                put(output, escape, 6);
+
+            }
             else
                 put(output, text + i, 1);
 
@@ -5626,9 +6230,13 @@ static void stringify(struct output *output, struct js_value *item, unsigned int
             if (i)
                 put(output, ",", 1);
 
+            putindent(output, depth + 1);
             stringify(output, &element, depth + 1);
 
         }
+
+        if (js->objects[item->number].data)
+            putindent(output, depth);
 
         put(output, "]", 1);
 
@@ -5638,45 +6246,33 @@ static void stringify(struct output *output, struct js_value *item, unsigned int
 
     {
 
-        unsigned int property = js->objects[item->number].property;
-        unsigned int count = 0;
+        struct js_value keys = keysof(js, item->number, 0);
         unsigned int written = 0;
         unsigned int i;
 
-        while (property)
-        {
-
-            count++;
-            property = js->properties[property].next;
-
-        }
-
         put(output, "{", 1);
 
-        for (i = count; i > 0; i--)
+        for (i = 0; i < lengthof(js, &keys); i++)
         {
 
-            unsigned int position;
-            struct js_value name;
+            struct js_value name = itemat(js, &keys, i);
+            struct js_value element = getproperty(js, item, name.number);
 
-            property = js->objects[item->number].property;
-
-            for (position = 1; position < i; position++)
-                property = js->properties[property].next;
-
-            if (isfunction(js, &js->properties[property].value) || js->properties[property].value.type == JS_UNDEFINED)
+            if (isfunction(js, &element) || element.type == JS_UNDEFINED)
                 continue;
 
             if (written++)
                 put(output, ",", 1);
 
-            name = value(JS_STRING, js->properties[property].name);
-
+            putindent(output, depth + 1);
             stringify(output, &name, depth + 1);
-            put(output, ":", 1);
-            stringify(output, &js->properties[property].value, depth + 1);
+            put(output, (output->gaplength) ? ": " : ":", (output->gaplength) ? 2 : 1);
+            stringify(output, &element, depth + 1);
 
         }
+
+        if (written)
+            putindent(output, depth);
 
         put(output, "}", 1);
 
@@ -7046,6 +7642,18 @@ static struct js_value newthenable(struct js_engine *js, unsigned int then, stru
 
 }
 
+static unsigned int randomnumber(struct js_engine *js)
+{
+
+    /* xorshift, good enough for pages that only want some variety */
+    js->seed ^= js->seed << 13;
+    js->seed ^= js->seed >> 17;
+    js->seed ^= js->seed << 5;
+
+    return js->seed;
+
+}
+
 static struct js_value callmath(struct js_engine *js, unsigned int function, struct call *call)
 {
 
@@ -7137,12 +7745,7 @@ static struct js_value callmath(struct js_engine *js, unsigned int function, str
         return numbervalue(number_sqrt(result));
 
     case MATH_RANDOM:
-        /* xorshift, its top 31 bits spread over [0, 1) */
-        js->seed ^= js->seed << 13;
-        js->seed ^= js->seed >> 17;
-        js->seed ^= js->seed << 5;
-
-        return numbervalue((js->seed >> 1) / 2147483648.0);
+        return numbervalue((randomnumber(js) >> 1) / 2147483648.0);
 
     case MATH_MAX:
     case MATH_MIN:
@@ -7322,6 +7925,757 @@ static unsigned int localestring(struct js_engine *js, double number)
 
 }
 
+static int comparestrings(char *a, char *b)
+{
+
+    while (a[0] && a[0] == b[0])
+    {
+
+        a++;
+        b++;
+
+    }
+
+    return (unsigned char)a[0] - (unsigned char)b[0];
+
+}
+
+static struct js_value newevent(struct js_engine *js, unsigned int name)
+{
+
+    struct js_value event = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+    struct js_value type = value(JS_STRING, name);
+    struct js_value yes = value(JS_BOOLEAN, 1);
+    struct js_value no = value(JS_BOOLEAN, 0);
+
+    if (!event.number)
+        return event;
+
+    putproperty(js, event.number, internstring(js, "type"), &type);
+    putproperty(js, event.number, internstring(js, "bubbles"), &yes);
+    putproperty(js, event.number, internstring(js, "cancelable"), &yes);
+    putproperty(js, event.number, internstring(js, "defaultPrevented"), &no);
+    putproperty(js, event.number, internstring(js, "cancelBubble"), &no);
+    addnative(js, event.number, "preventDefault", NATIVE_PREVENTDEFAULT);
+    addnative(js, event.number, "stopPropagation", NATIVE_STOPPROPAGATION);
+    addnative(js, event.number, "stopImmediatePropagation", NATIVE_STOPIMMEDIATE);
+
+    return event;
+
+}
+
+static void flatten(struct js_engine *js, struct js_value *result, struct js_value *array, int depth)
+{
+
+    unsigned int length = lengthof(js, array);
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        struct js_value item = itemat(js, array, i);
+
+        if (depth > 0 && item.type == JS_OBJECT && js->objects[item.number].kind == KIND_ARRAY)
+            flatten(js, result, &item, depth - 1);
+        else
+            pusharray(js, result, &item);
+
+    }
+
+}
+
+static struct js_value copyarray(struct js_engine *js, struct js_value *array)
+{
+
+    struct js_value result = newarray(js);
+    unsigned int length = lengthof(js, array);
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        struct js_value item = itemat(js, array, i);
+
+        pusharray(js, &result, &item);
+
+    }
+
+    return result;
+
+}
+
+static unsigned int codepointat(char *text, unsigned int index, unsigned int *codepoint)
+{
+
+    unsigned int length = cstring_length(text);
+    unsigned int offset = 0;
+
+    /* strings are kept as utf-8, so an index counts characters rather than bytes */
+    while (offset < length)
+    {
+
+        unsigned int size = utf8_read(text + offset, length - offset, codepoint);
+
+        if (!size)
+            return 0;
+
+        if (!index--)
+            return 1;
+
+        offset += size;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int encodeuri(struct js_engine *js, char *text, unsigned int mode)
+{
+
+    unsigned int start = js->stringcount;
+    unsigned int length = cstring_length(text);
+    unsigned int i;
+
+    /* letters, digits and -_.!~*'() stay, a whole uri keeps the characters that build it, and a form writes space as + */
+    if (start + length * 3 + 1 > JS_STRINGSIZE)
+        return internstring(js, "");
+
+    for (i = 0; i < length; i++)
+    {
+
+        unsigned char c = text[i];
+
+        if (cstring_isalpha(c) || cstring_isdigit(c) || (c && buffer_findbyte("-_.!~*'()", 9, c) < 9) || (mode == ENCODE_URI && c && buffer_findbyte(";,/?:@&=+$#", 11, c) < 11))
+        {
+
+            js->strings[js->stringcount++] = c;
+
+        }
+
+        else if (mode == ENCODE_FORM && c == ' ')
+        {
+
+            js->strings[js->stringcount++] = '+';
+
+        }
+
+        else
+        {
+
+            js->strings[js->stringcount++] = '%';
+            js->strings[js->stringcount++] = "0123456789ABCDEF"[c >> 4];
+            js->strings[js->stringcount++] = "0123456789ABCDEF"[c & 15];
+
+        }
+
+    }
+
+    js->strings[js->stringcount++] = '\0';
+
+    return start;
+
+}
+
+static int hexdigit(char c)
+{
+
+    return (c >= '0' && c <= '9') ? c - '0' : (c >= 'a' && c <= 'f') ? c - 'a' + 10 : (c >= 'A' && c <= 'F') ? c - 'A' + 10 : -1;
+
+}
+
+static unsigned int decodeuri(struct js_engine *js, char *text)
+{
+
+    unsigned int start = js->stringcount;
+    unsigned int length = cstring_length(text);
+    unsigned int i;
+
+    if (start + length + 1 > JS_STRINGSIZE)
+        return internstring(js, "");
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (text[i] == '%' && i + 2 < length && hexdigit(text[i + 1]) >= 0 && hexdigit(text[i + 2]) >= 0)
+        {
+
+            js->strings[js->stringcount++] = (char)(hexdigit(text[i + 1]) * 16 + hexdigit(text[i + 2]));
+            i += 2;
+
+        }
+
+        else
+        {
+
+            js->strings[js->stringcount++] = text[i];
+
+        }
+
+    }
+
+    js->strings[js->stringcount++] = '\0';
+
+    return start;
+
+}
+
+static unsigned int base64(struct js_engine *js, char *text, unsigned int encode)
+{
+
+    char *alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    unsigned int start = js->stringcount;
+    unsigned int length = cstring_length(text);
+    unsigned int bits = 0;
+    unsigned int count = 0;
+    unsigned int i;
+
+    if (start + length * 2 + 4 > JS_STRINGSIZE)
+        return internstring(js, "");
+
+    /* six bits per character one way, eight bits per byte the other */
+    for (i = 0; i < length; i++)
+    {
+
+        unsigned int digit = (encode) ? (unsigned char)text[i] : buffer_findbyte(alphabet, 64, text[i]);
+
+        if (!encode && digit >= 64)
+            continue;
+
+        bits = (bits << ((encode) ? 8 : 6)) | digit;
+        count += (encode) ? 8 : 6;
+
+        while (count >= ((encode) ? 6 : 8))
+        {
+
+            count -= (encode) ? 6 : 8;
+            js->strings[js->stringcount++] = (encode) ? alphabet[(bits >> count) & 63] : (char)((bits >> count) & 255);
+
+        }
+
+    }
+
+    if (encode && count)
+        js->strings[js->stringcount++] = alphabet[(bits << (6 - count)) & 63];
+
+    while (encode && (js->stringcount - start) % 4)
+        js->strings[js->stringcount++] = '=';
+
+    js->strings[js->stringcount++] = '\0';
+
+    return start;
+
+}
+
+static struct js_value deepclone(struct js_engine *js, struct js_value *item, unsigned int depth)
+{
+
+    struct js_value result;
+    struct js_value keys;
+    unsigned int i;
+
+    copyvalue(&result, item);
+
+    /* plain objects and arrays are copied all the way down, anything else is shared */
+    if (item->type != JS_OBJECT || depth > CLONEDEPTH || (js->objects[item->number].kind != KIND_PLAIN && js->objects[item->number].kind != KIND_ARRAY))
+        return result;
+
+    if (js->objects[item->number].kind == KIND_ARRAY)
+    {
+
+        result = newarray(js);
+
+        for (i = 0; i < lengthof(js, item); i++)
+        {
+
+            struct js_value element = itemat(js, item, i);
+            struct js_value copy = deepclone(js, &element, depth + 1);
+
+            pusharray(js, &result, &copy);
+
+        }
+
+        return result;
+
+    }
+
+    result = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+    keys = keysof(js, item->number, 0);
+
+    for (i = 0; result.number && i < lengthof(js, &keys); i++)
+    {
+
+        struct js_value name = itemat(js, &keys, i);
+        struct js_value element = getproperty(js, item, name.number);
+        struct js_value copy = deepclone(js, &element, depth + 1);
+
+        putproperty(js, result.number, name.number, &copy);
+
+    }
+
+    return result;
+
+}
+
+static double dateargument(struct js_engine *js, struct call *call, unsigned int start)
+{
+
+    double parts[7] = {1970, 0, 1, 0, 0, 0, 0};
+    unsigned int i;
+
+    /* year, month and on, where a missing day is the first and missing times are zero */
+    for (i = 0; i < 7 && start + i < call->count; i++)
+        parts[i] = toreal(js, &call->arguments[start + i]);
+
+    if (parts[0] >= 0 && parts[0] <= 99 && parts[0] == number_floor(parts[0]))
+        parts[0] += 1900;
+
+    return date_make(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]);
+
+}
+
+static struct js_value makedate(struct js_engine *js, struct call *call)
+{
+
+    struct js_value *self = &call->self;
+    struct js_value time;
+    char text[DATE_TEXTSIZE];
+
+    /* called without new, Date gives the present as a string */
+    if (self->type != JS_OBJECT || js->objects[self->number].parent != js->date || findproperty(js, self->number, internstring(js, "@@time")))
+    {
+
+        date_format(js->now, DATE_STRING, text);
+
+        return value(JS_STRING, internstring(js, text));
+
+    }
+
+    if (!call->count)
+        time = numbervalue(js->now);
+    else if (call->count > 1)
+        time = numbervalue(dateargument(js, call, 0));
+    else if (call->arguments[0].type == JS_STRING)
+        time = numbervalue(date_parse(getstring(js, call->arguments[0].number)));
+    else if (call->arguments[0].type == JS_OBJECT && findproperty(js, call->arguments[0].number, internstring(js, "@@time")))
+        time = numbervalue(timeof(js, &call->arguments[0]));
+    else
+        time = numbervalue(number_trunc(toreal(js, &call->arguments[0])));
+
+    putproperty(js, self->number, internstring(js, "@@time"), &time);
+
+    return call->self;
+
+}
+
+static struct js_value calldate(struct js_engine *js, unsigned int method, struct call *call)
+{
+
+    struct datemethod *entry = &datemethods[method];
+    double time = timeof(js, &call->self);
+    struct date_parts parts;
+    struct js_value result;
+    char text[DATE_TEXTSIZE];
+
+    switch (entry->kind)
+    {
+
+    case DATE_TIME:
+        return numbervalue(time);
+
+    case DATE_ZONE:
+        return value(JS_NUMBER, 0);
+
+    case DATE_SHOW:
+        if (entry->field == DATE_ISO && number_isnan(time))
+        {
+
+            throwerror(js, NATIVE_RANGEERROR, "Invalid time value");
+
+            return undefined();
+
+        }
+
+        date_format(time, entry->field, text);
+
+        return value(JS_STRING, internstring(js, text));
+
+    case DATE_SETTIME:
+        result = numbervalue(number_trunc(toreal(js, &call->arguments[0])));
+
+        break;
+
+    case DATE_GET:
+        if (number_isnan(time))
+            return numbervalue(time);
+
+        parts = date_split(time);
+
+        switch (entry->field)
+        {
+
+        case FIELD_YEAR:
+            return value(JS_NUMBER, parts.year);
+
+        case FIELD_SHORTYEAR:
+            return value(JS_NUMBER, parts.year - 1900);
+
+        case FIELD_MONTH:
+            return value(JS_NUMBER, parts.month);
+
+        case FIELD_DAY:
+            return value(JS_NUMBER, parts.day);
+
+        case FIELD_WEEKDAY:
+            return value(JS_NUMBER, parts.weekday);
+
+        case FIELD_HOURS:
+            return value(JS_NUMBER, parts.hours);
+
+        case FIELD_MINUTES:
+            return value(JS_NUMBER, parts.minutes);
+
+        case FIELD_SECONDS:
+            return value(JS_NUMBER, parts.seconds);
+
+        }
+
+        return value(JS_NUMBER, parts.milliseconds);
+
+    default:
+        {
+
+            double fields[7];
+            unsigned int i;
+
+            parts = date_split((number_isnan(time)) ? 0 : time);
+            fields[0] = parts.year;
+            fields[1] = parts.month;
+            fields[2] = parts.day;
+            fields[3] = parts.hours;
+            fields[4] = parts.minutes;
+            fields[5] = parts.seconds;
+            fields[6] = parts.milliseconds;
+
+            /* a setter takes its field and, when given, the ones after it, like setHours(h, m, s, ms) */
+            for (i = 0; i < call->count; i++)
+            {
+
+                unsigned int field = ((entry->field >= FIELD_HOURS) ? entry->field - 1 : entry->field) + i;
+
+                if (field < 7)
+                    fields[field] = toreal(js, &call->arguments[i]);
+
+            }
+
+            result = numbervalue(date_make(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6]));
+
+        }
+
+        break;
+
+    }
+
+    if (call->self.type == JS_OBJECT)
+        putproperty(js, call->self.number, internstring(js, "@@time"), &result);
+
+    return result;
+
+}
+
+static struct js_value paramsof(struct js_engine *js, struct js_value *params)
+{
+
+    struct js_value entries = getproperty(js, params, internstring(js, "@@entries"));
+
+    if (entries.type != JS_OBJECT)
+    {
+
+        entries = newarray(js);
+
+        if (params->type == JS_OBJECT)
+            putproperty(js, params->number, internstring(js, "@@entries"), &entries);
+
+    }
+
+    return entries;
+
+}
+
+static void addparam(struct js_engine *js, struct js_value *entries, unsigned int key, unsigned int text)
+{
+
+    struct js_value pair = newarray(js);
+    struct js_value name = value(JS_STRING, internstring(js, getstring(js, key)));
+    struct js_value item = value(JS_STRING, text);
+
+    pusharray(js, &pair, &name);
+    pusharray(js, &pair, &item);
+    pusharray(js, entries, &pair);
+
+}
+
+static unsigned int decodeparam(struct js_engine *js, char *text, unsigned int length)
+{
+
+    char *copy = getstring(js, addstring(js, text, length));
+    unsigned int i;
+
+    /* in a query a plus is a space */
+    for (i = 0; copy[i]; i++)
+    {
+
+        if (copy[i] == '+')
+            copy[i] = ' ';
+
+    }
+
+    return decodeuri(js, copy);
+
+}
+
+static void parseparams(struct js_engine *js, struct js_value *entries, char *text)
+{
+
+    unsigned int start = (text[0] == '?') ? 1 : 0;
+    unsigned int length = cstring_length(text);
+
+    while (start < length)
+    {
+
+        unsigned int end = start + buffer_findbyte(text + start, length - start, '&');
+        unsigned int equals = start + buffer_findbyte(text + start, end - start, '=');
+
+        if (end > start)
+            addparam(js, entries, decodeparam(js, text + start, equals - start), (equals < end) ? decodeparam(js, text + equals + 1, end - equals - 1) : internstring(js, ""));
+
+        start = end + 1;
+
+    }
+
+}
+
+static void collectform(struct js_engine *js, struct js_value *entries, unsigned int form)
+{
+
+    unsigned int node;
+
+    /* every named field of the form, with checkboxes and radios only when checked */
+    for (node = html_next(js->document, form, form); node; node = html_next(js->document, node, form))
+    {
+
+        char *name = html_getattribute(js->document, node, "name");
+        char *type = html_getattribute(js->document, node, "type");
+        char *text = html_getattribute(js->document, node, "value");
+        unsigned int tag = js->document->nodes[node].tag;
+
+        if (!name || (tag != HTML_TAG_INPUT && tag != HTML_TAG_SELECT && tag != HTML_TAG_TEXTAREA))
+            continue;
+
+        if (type && (cstring_match(type, "checkbox") || cstring_match(type, "radio")) && !html_getattribute(js->document, node, "checked"))
+            continue;
+
+        if (type && (cstring_match(type, "submit") || cstring_match(type, "button") || cstring_match(type, "file")))
+            continue;
+
+        addparam(js, entries, internstring(js, name), internstring(js, (text) ? text : ""));
+
+    }
+
+}
+
+static struct js_value newparams(struct js_engine *js, struct call *call, unsigned int form)
+{
+
+    struct js_value params = (call->self.type == JS_OBJECT) ? call->self : value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+    struct js_value *source = &call->arguments[0];
+    struct js_value entries;
+    unsigned int i;
+
+    if (params.type != JS_OBJECT || !params.number)
+        return undefined();
+
+    entries = paramsof(js, &params);
+
+    for (i = 0; i < PARAMSMETHODS; i++)
+        addnative(js, params.number, paramsmethods[i].name, paramsmethods[i].native);
+
+    /* made from a query string, an object, a list of pairs or, for FormData, a form */
+    if (form && nodeof(js, source))
+        collectform(js, &entries, nodeof(js, source));
+    else if (source->type == JS_STRING)
+        parseparams(js, &entries, getstring(js, source->number));
+    else if (source->type == JS_OBJECT && js->objects[source->number].kind == KIND_ARRAY)
+    {
+
+        for (i = 0; i < lengthof(js, source); i++)
+        {
+
+            struct js_value pair = itemat(js, source, i);
+            struct js_value key = itemat(js, &pair, 0);
+            struct js_value item = itemat(js, &pair, 1);
+
+            addparam(js, &entries, tostring(js, &key), tostring(js, &item));
+
+        }
+
+    }
+
+    else if (source->type == JS_OBJECT)
+    {
+
+        struct js_value keys = keysof(js, source->number, 0);
+
+        for (i = 0; i < lengthof(js, &keys); i++)
+        {
+
+            struct js_value key = itemat(js, &keys, i);
+            struct js_value item = getproperty(js, source, key.number);
+
+            addparam(js, &entries, key.number, tostring(js, &item));
+
+        }
+
+    }
+
+    return params;
+
+}
+
+static struct js_value callparams(struct js_engine *js, unsigned int native, struct call *call)
+{
+
+    struct js_value entries = paramsof(js, &call->self);
+    struct js_value result = (native == NATIVE_PARAMSGET) ? value(JS_NULL, 0) : (native == NATIVE_PARAMSHAS) ? value(JS_BOOLEAN, 0) : newarray(js);
+    unsigned int key = internstring(js, getstring(js, tostring(js, &call->arguments[0])));
+    unsigned int length = lengthof(js, &entries);
+    unsigned int found = 0;
+    unsigned int i;
+
+    if (native == NATIVE_PARAMSAPPEND)
+    {
+
+        addparam(js, &entries, key, tostring(js, &call->arguments[1]));
+
+        return undefined();
+
+    }
+
+    if (native == NATIVE_PARAMSSET || native == NATIVE_PARAMSDELETE)
+    {
+
+        /* the pairs are built again without the name, and set puts it back once at its first place */
+        struct js_value kept = newarray(js);
+
+        for (i = 0; i < length; i++)
+        {
+
+            struct js_value pair = itemat(js, &entries, i);
+            struct js_value name = itemat(js, &pair, 0);
+
+            if (name.number != (int)key)
+                pusharray(js, &kept, &pair);
+            else if (native == NATIVE_PARAMSSET && !found++)
+                addparam(js, &kept, key, tostring(js, &call->arguments[1]));
+
+        }
+
+        if (native == NATIVE_PARAMSSET && !found)
+            addparam(js, &kept, key, tostring(js, &call->arguments[1]));
+
+        if (call->self.type == JS_OBJECT)
+            putproperty(js, call->self.number, internstring(js, "@@entries"), &kept);
+
+        return undefined();
+
+    }
+
+    if (native == NATIVE_PARAMSTOSTRING)
+        result = value(JS_STRING, internstring(js, ""));
+
+    for (i = 0; i < length && !js->throwing; i++)
+    {
+
+        struct js_value pair = itemat(js, &entries, i);
+        struct js_value name = itemat(js, &pair, 0);
+        struct js_value item = itemat(js, &pair, 1);
+
+        switch (native)
+        {
+
+        case NATIVE_PARAMSGET:
+            if (name.number == (int)key)
+                return item;
+
+            break;
+
+        case NATIVE_PARAMSHAS:
+            if (name.number == (int)key)
+                return value(JS_BOOLEAN, 1);
+
+            break;
+
+        case NATIVE_PARAMSGETALL:
+            if (name.number == (int)key)
+                pusharray(js, &result, &item);
+
+            break;
+
+        case NATIVE_PARAMSENTRIES:
+            pusharray(js, &result, &pair);
+
+            break;
+
+        case NATIVE_PARAMSKEYS:
+            pusharray(js, &result, &name);
+
+            break;
+
+        case NATIVE_PARAMSVALUES:
+            pusharray(js, &result, &item);
+
+            break;
+
+        case NATIVE_PARAMSFOREACH:
+            {
+
+                struct call *each = takecall(js, &call->arguments[0], 0);
+
+                if (!each)
+                    break;
+
+                copyvalue(&each->arguments[0], &item);
+                copyvalue(&each->arguments[1], &name);
+                copyvalue(&each->arguments[2], &call->self);
+
+                each->count = 3;
+
+                runcall(js, each);
+
+            }
+
+            break;
+
+        case NATIVE_PARAMSTOSTRING:
+            {
+
+                unsigned int encodedname = encodeuri(js, getstring(js, name.number), ENCODE_FORM);
+                unsigned int encodeditem = encodeuri(js, getstring(js, item.number), ENCODE_FORM);
+
+                result.number = concat(js, concat(js, concat(js, (i) ? concat(js, result.number, internstring(js, "&")) : result.number, encodedname), internstring(js, "=")), encodeditem);
+
+            }
+
+            break;
+
+        }
+
+    }
+
+    return result;
+
+}
+
 static struct js_value callnative(struct js_engine *js, struct call *call)
 {
 
@@ -7336,6 +8690,9 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
     if (native->data >= NATIVE_MATH && native->data < NATIVE_MATH + MATHFUNCTIONS)
         return callmath(js, native->data - NATIVE_MATH, call);
+
+    if (native->data >= NATIVE_DATEMETHOD && native->data < NATIVE_DATEMETHOD + DATEMETHODS)
+        return calldate(js, native->data - NATIVE_DATEMETHOD, call);
 
     switch (native->data)
     {
@@ -7361,19 +8718,24 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
     case NATIVE_BYTAG:
         {
 
-            char selector[SELECTORSIZE];
-            char *name = getstring(js, tostring(js, first));
-            unsigned int count = 0;
+            /* class names become a selector of classes, built in a copy so no buffer sits on the stack */
+            unsigned int selector = (native->data == NATIVE_BYCLASS) ? concat(js, internstring(js, "."), tostring(js, first)) : tostring(js, first);
+            char *text = getstring(js, selector);
 
             if (native->data == NATIVE_BYCLASS)
-                selector[count++] = '.';
+            {
 
-            for (i = 0; name[i] && count + 1 < SELECTORSIZE; i++)
-                selector[count++] = (native->data == NATIVE_BYCLASS && name[i] == ' ') ? '.' : name[i];
+                for (i = 0; text[i]; i++)
+                {
 
-            selector[count] = '\0';
+                    if (text[i] == ' ')
+                        text[i] = '.';
 
-            return query(js, element, selector, 1);
+                }
+
+            }
+
+            return query(js, element, text, 1);
 
         }
 
@@ -7438,22 +8800,19 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             for (i = 0; i < js->objects[self->number].data && !js->throwing; i++)
             {
 
-                struct call each;
                 struct js_value item = getproperty(js, self, numberstring(js, i));
-                unsigned int argument;
+                struct call *each = takecall(js, first, &item);
 
-                copyvalue(&each.function, first);
-                copyvalue(&each.self, &item);
-                copyvalue(&each.arguments[0], &item);
-                copyvalue(&each.arguments[2], self);
+                if (!each)
+                    break;
 
-                each.arguments[1] = value(JS_NUMBER, i);
-                each.count = 3;
+                copyvalue(&each->arguments[0], &item);
+                copyvalue(&each->arguments[2], self);
 
-                for (argument = 3; argument < ARGUMENTS; argument++)
-                    each.arguments[argument] = undefined();
+                each->arguments[1] = value(JS_NUMBER, i);
+                each->count = 3;
 
-                callfunction(js, &each);
+                runcall(js, each);
 
             }
 
@@ -7606,19 +8965,18 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
     case NATIVE_EVENT:
         {
 
-            struct js_value event = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
-            struct js_value type = value(JS_STRING, tostring(js, first));
+            struct js_value event = newevent(js, internstring(js, getstring(js, tostring(js, first))));
 
-            if (!event.number)
-                return undefined();
-
-            putproperty(js, event.number, internstring(js, "type"), &type);
-
-            if (second->type == JS_OBJECT)
+            /* new events only bubble when asked to, and a custom one carries its detail */
+            if (event.number)
             {
 
-                struct js_value detail = getproperty(js, second, internstring(js, "detail"));
+                struct js_value bubbles = (second->type == JS_OBJECT) ? getproperty(js, second, internstring(js, "bubbles")) : value(JS_BOOLEAN, 0);
+                struct js_value detail = (second->type == JS_OBJECT) ? getproperty(js, second, internstring(js, "detail")) : value(JS_NULL, 0);
 
+                bubbles = value(JS_BOOLEAN, truthy(js, &bubbles));
+
+                putproperty(js, event.number, internstring(js, "bubbles"), &bubbles);
                 putproperty(js, event.number, internstring(js, "detail"), &detail);
 
             }
@@ -7627,13 +8985,35 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
         }
 
+    case NATIVE_PREVENTDEFAULT:
+    case NATIVE_STOPPROPAGATION:
+    case NATIVE_STOPIMMEDIATE:
+        if (self->type == JS_OBJECT)
+        {
+
+            struct js_value yes = value(JS_BOOLEAN, 1);
+
+            putproperty(js, self->number, internstring(js, (native->data == NATIVE_PREVENTDEFAULT) ? "defaultPrevented" : "cancelBubble"), &yes);
+
+            if (native->data == NATIVE_STOPIMMEDIATE)
+                putproperty(js, self->number, internstring(js, "@@immediate"), &yes);
+
+        }
+
+        return undefined();
+
     case NATIVE_DISPATCHEVENT:
         if (element && first->type == JS_OBJECT)
         {
 
             struct js_value type = getproperty(js, first, internstring(js, "type"));
+            struct js_value prevented;
 
-            bubble(js, element, internstring(js, getstring(js, tostring(js, &type))));
+            bubble(js, element, internstring(js, getstring(js, tostring(js, &type))), first);
+
+            prevented = getproperty(js, first, internstring(js, "defaultPrevented"));
+
+            return value(JS_BOOLEAN, !truthy(js, &prevented));
 
         }
 
@@ -7643,16 +9023,29 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         /* scripts cannot see the cascade, so the computed style is the inline one */
         return (nodeof(js, first)) ? getproperty(js, first, internstring(js, "style")) : undefined();
 
+    case NATIVE_SETSTYLEPROPERTY:
+    case NATIVE_REMOVESTYLEPROPERTY:
+        if (kind == KIND_STYLE)
+        {
+
+            setstyle(js, js->objects[self->number].data, getstring(js, tostring(js, first)), (native->data == NATIVE_SETSTYLEPROPERTY) ? getstring(js, tostring(js, second)) : "");
+
+            js->changed = 1;
+
+        }
+
+        return undefined();
+
     case NATIVE_PROPERTYVALUE:
         if (kind == KIND_STYLE)
         {
 
-            char name[SELECTORSIZE];
             char *text = getstring(js, tostring(js, first));
+            char *name = getstring(js, addstring(js, text, cstring_length(text)));
             unsigned int count = 0;
 
-            /* the property comes as css-name and is looked up as cssName */
-            for (i = 0; text[i] && count + 1 < SELECTORSIZE; i++)
+            /* the property comes as css-name and is looked up as cssName, written over a copy as it only gets shorter */
+            for (i = 0; text[i]; i++)
             {
 
                 if (text[i] == '-' && text[i + 1] && count)
@@ -7787,19 +9180,19 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         if (isfunction(js, first))
         {
 
-            struct call executor;
-            unsigned int argument;
+            struct call *executor = takecall(js, first, 0);
 
             /* resolving does nothing: a constructed promise stays pending */
-            copyvalue(&executor.function, first);
+            if (executor)
+            {
 
-            executor.self = undefined();
-            executor.count = 2;
+                executor->arguments[0] = value(JS_OBJECT, js->natives[NATIVE_ZERO]);
+                executor->arguments[1] = value(JS_OBJECT, js->natives[NATIVE_ZERO]);
+                executor->count = 2;
 
-            for (argument = 0; argument < ARGUMENTS; argument++)
-                executor.arguments[argument] = (argument < 2) ? value(JS_OBJECT, js->natives[NATIVE_ZERO]) : undefined();
+                runcall(js, executor);
 
-            callfunction(js, &executor);
+            }
 
         }
 
@@ -7825,18 +9218,14 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         {
 
             struct js_value result = getproperty(js, self, internstring(js, "@@result"));
-            struct call then;
-            unsigned int argument;
+            struct call *then = takecall(js, first, 0);
 
-            copyvalue(&then.function, first);
+            if (!then)
+                return undefined();
 
-            then.self = undefined();
-            then.count = 1;
-
-            for (argument = 0; argument < ARGUMENTS; argument++)
-                then.arguments[argument] = (argument) ? undefined() : result;
-
-            result = callfunction(js, &then);
+            then->arguments[0] = result;
+            then->count = 1;
+            result = runcall(js, then);
 
             /* a throw would reject the next promise, which then never settles */
             if (js->throwing)
@@ -7932,14 +9321,31 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
             struct output output;
 
+            struct js_value gap = call->arguments[2];
+
             output.js = js;
             output.data = js->text;
             output.count = 0;
             output.size = JS_TEXTSIZE;
             output.full = 0;
+            output.gap = "          ";
+            output.gaplength = 0;
 
             if (first->type == JS_UNDEFINED)
                 return undefined();
+
+            /* the third argument indents, by that many spaces or by that string, ten at most */
+            if (gap.type == JS_NUMBER)
+                output.gaplength = (gap.number < 0) ? 0 : (gap.number > 10) ? 10 : gap.number;
+
+            if (gap.type == JS_STRING)
+            {
+
+                output.gap = getstring(js, gap.number);
+                output.gaplength = cstring_length(output.gap);
+                output.gaplength = (output.gaplength > 10) ? 10 : output.gaplength;
+
+            }
 
             stringify(&output, first, 0);
 
@@ -8091,16 +9497,21 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
     case NATIVE_CLICK:
         if (element)
-            bubble(js, element, internstring(js, "click"));
+            bubble(js, element, internstring(js, "click"), 0);
 
         return undefined();
 
-    case NATIVE_FULLYEAR:
-        return value(JS_NUMBER, 1970);
-
     case NATIVE_DATE:
-        /* there is no clock: every date is the epoch */
-        return value(JS_OBJECT, js->date);
+        return makedate(js, call);
+
+    case NATIVE_DATENOW:
+        return numbervalue(js->now);
+
+    case NATIVE_DATEPARSE:
+        return numbervalue(date_parse(getstring(js, tostring(js, first))));
+
+    case NATIVE_DATEUTC:
+        return numbervalue(dateargument(js, call, 0));
 
     case NATIVE_ZERO:
         return value(JS_NUMBER, 0);
@@ -8167,9 +9578,9 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         if (self->type == JS_STRING)
         {
 
-            unsigned int index = tonumber(js, first);
+            unsigned int codepoint;
 
-            return (index < cstring_length(getstring(js, self->number))) ? value(JS_NUMBER, (unsigned char)getstring(js, self->number)[index]) : value(JS_NUMBER, 0);
+            return (codepointat(getstring(js, self->number), tonumber(js, first), &codepoint)) ? value(JS_NUMBER, codepoint) : numbervalue(number_nan());
 
         }
 
@@ -8319,6 +9730,264 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             return total;
 
         }
+
+    case NATIVE_REDUCERIGHT:
+        {
+
+            unsigned int length = lengthof(js, self);
+            struct js_value total = (call->count >= 2) ? call->arguments[1] : itemat(js, self, length - 1);
+
+            if (!isfunction(js, first))
+            {
+
+                throwerror(js, NATIVE_TYPEERROR, "Value is not a function");
+
+                return undefined();
+
+            }
+
+            for (i = (call->count >= 2) ? length : length - 1; i > 0 && !js->throwing; i--)
+                total = callback(js, first, self, i - 1, &total);
+
+            return total;
+
+        }
+
+    case NATIVE_FINDLAST:
+    case NATIVE_FINDLASTINDEX:
+        if (!isfunction(js, first))
+        {
+
+            throwerror(js, NATIVE_TYPEERROR, "Value is not a function");
+
+            return undefined();
+
+        }
+
+        for (i = lengthof(js, self); i > 0 && !js->throwing; i--)
+        {
+
+            struct js_value item = itemat(js, self, i - 1);
+            struct js_value answer = callback(js, first, self, i - 1, 0);
+
+            if (truthy(js, &answer))
+                return (native->data == NATIVE_FINDLAST) ? item : value(JS_NUMBER, i - 1);
+
+        }
+
+        return (native->data == NATIVE_FINDLAST) ? undefined() : value(JS_NUMBER, -1);
+
+    case NATIVE_AT:
+        {
+
+            int length = (self->type == JS_STRING) ? (int)cstring_length(getstring(js, self->number)) : (int)lengthof(js, self);
+            int index = number_toint32(toreal(js, first));
+
+            /* a negative index counts from the end */
+            if (index < 0)
+                index += length;
+
+            if (index < 0 || index >= length)
+                return undefined();
+
+            if (self->type == JS_STRING)
+                return value(JS_STRING, addstring(js, getstring(js, self->number) + index, 1));
+
+            return itemat(js, self, index);
+
+        }
+
+    case NATIVE_FLAT:
+    case NATIVE_FLATMAP:
+        {
+
+            struct js_value result = newarray(js);
+            struct js_value source;
+            int depth = (native->data == NATIVE_FLATMAP || first->type == JS_UNDEFINED) ? 1 : (int)toreal(js, first);
+
+            if (native->data == NATIVE_FLATMAP)
+            {
+
+                source = newarray(js);
+
+                for (i = 0; i < lengthof(js, self) && !js->throwing; i++)
+                {
+
+                    struct js_value answer = callback(js, first, self, i, 0);
+
+                    pusharray(js, &source, &answer);
+
+                }
+
+            }
+
+            else
+            {
+
+                copyvalue(&source, self);
+
+            }
+
+            flatten(js, &result, &source, (depth > FLATDEPTH) ? FLATDEPTH : depth);
+
+            return result;
+
+        }
+
+    case NATIVE_ARRAYENTRIES:
+        {
+
+            struct js_value result = newarray(js);
+
+            for (i = 0; i < lengthof(js, self); i++)
+            {
+
+                struct js_value pair = newarray(js);
+                struct js_value index = value(JS_NUMBER, i);
+                struct js_value item = itemat(js, self, i);
+
+                pusharray(js, &pair, &index);
+                pusharray(js, &pair, &item);
+                pusharray(js, &result, &pair);
+
+            }
+
+            return result;
+
+        }
+
+    case NATIVE_TOSORTED:
+    case NATIVE_TOREVERSED:
+        {
+
+            struct js_value copy = copyarray(js, self);
+            struct js_value method = value(JS_OBJECT, js->natives[(native->data == NATIVE_TOSORTED) ? NATIVE_SORT : NATIVE_REVERSE]);
+            struct call *inner = takecall(js, &method, &copy);
+
+            if (!inner)
+                return undefined();
+
+            copyvalue(&inner->arguments[0], first);
+
+            inner->count = call->count;
+
+            runcall(js, inner);
+
+            return copy;
+
+        }
+
+    case NATIVE_ARRAYOF:
+        {
+
+            struct js_value result = newarray(js);
+
+            for (i = 0; i < call->count; i++)
+                pusharray(js, &result, &call->arguments[i]);
+
+            return result;
+
+        }
+
+    case NATIVE_FROMENTRIES:
+        {
+
+            struct js_value result = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value list = listof(js, first);
+
+            for (i = 0; result.number && i < lengthof(js, &list); i++)
+            {
+
+                struct js_value pair = itemat(js, &list, i);
+                struct js_value key = itemat(js, &pair, 0);
+                struct js_value item = itemat(js, &pair, 1);
+
+                putproperty(js, result.number, internstring(js, getstring(js, tostring(js, &key))), &item);
+
+            }
+
+            return result;
+
+        }
+
+    case NATIVE_MATCHALL:
+        {
+
+            struct js_value result = newarray(js);
+            struct js_value zero = value(JS_NUMBER, 0);
+
+            if (!isregex(js, first))
+                return result;
+
+            setproperty(js, first, internstring(js, "lastIndex"), &zero);
+
+            /* exec again and again, stepping past empty matches so it cannot stand still */
+            for (i = 0; i < GENERATORLIMIT && !js->throwing; i++)
+            {
+
+                struct js_value position = getproperty(js, first, internstring(js, "lastIndex"));
+                struct js_value match = regexmatch(js, self, first, NATIVE_EXEC);
+                struct js_value after;
+
+                if (match.type != JS_OBJECT)
+                    break;
+
+                pusharray(js, &result, &match);
+
+                after = getproperty(js, first, internstring(js, "lastIndex"));
+
+                if (tonumber(js, &after) <= tonumber(js, &position))
+                {
+
+                    after = value(JS_NUMBER, tonumber(js, &position) + 1);
+
+                    setproperty(js, first, internstring(js, "lastIndex"), &after);
+
+                }
+
+            }
+
+            return result;
+
+        }
+
+    case NATIVE_LOCALECOMPARE:
+        {
+
+            int order = comparestrings(getstring(js, tostring(js, self)), getstring(js, tostring(js, first)));
+
+            return value(JS_NUMBER, (order > 0) ? 1 : (order < 0) ? -1 : 0);
+
+        }
+
+    case NATIVE_CODEPOINTAT:
+        {
+
+            unsigned int codepoint;
+
+            if (self->type == JS_STRING && codepointat(getstring(js, self->number), tonumber(js, first), &codepoint))
+                return value(JS_NUMBER, codepoint);
+
+            return undefined();
+
+        }
+
+    case NATIVE_SELF:
+        return call->self;
+
+    case NATIVE_ENCODEURI:
+    case NATIVE_ENCODEURICOMPONENT:
+        return value(JS_STRING, encodeuri(js, getstring(js, tostring(js, first)), (native->data == NATIVE_ENCODEURICOMPONENT) ? ENCODE_COMPONENT : ENCODE_URI));
+
+    case NATIVE_DECODEURI:
+        return value(JS_STRING, decodeuri(js, getstring(js, tostring(js, first))));
+
+    case NATIVE_BTOA:
+    case NATIVE_ATOB:
+        return value(JS_STRING, base64(js, getstring(js, tostring(js, first)), native->data == NATIVE_BTOA));
+
+    case NATIVE_STRUCTUREDCLONE:
+        return deepclone(js, first, 0);
 
     case NATIVE_SORT:
     case NATIVE_REVERSE:
@@ -8673,21 +10342,19 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
                 for (i = 0; i < lengthof(js, &entries) && isfunction(js, first) && !js->throwing; i += 2)
                 {
 
-                    struct call each;
-                    unsigned int argument;
+                    struct js_value item = itemat(js, &entries, i + 1);
+                    struct js_value key = itemat(js, &entries, i);
+                    struct call *each = takecall(js, first, 0);
 
-                    copyvalue(&each.function, first);
+                    if (!each)
+                        break;
 
-                    each.self = undefined();
-                    each.count = 3;
-                    each.arguments[0] = itemat(js, &entries, i + 1);
-                    each.arguments[1] = itemat(js, &entries, i);
-                    each.arguments[2] = call->self;
+                    each->arguments[0] = item;
+                    each->arguments[1] = key;
+                    each->arguments[2] = call->self;
+                    each->count = 3;
 
-                    for (argument = 3; argument < ARGUMENTS; argument++)
-                        each.arguments[argument] = undefined();
-
-                    callfunction(js, &each);
+                    runcall(js, each);
 
                 }
 
@@ -8736,17 +10403,16 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
     case NATIVE_APPLY:
         {
 
-            struct call inner;
+            struct call *inner = takecall(js, &call->self, &call->arguments[0]);
 
-            inner.function = call->self;
-            inner.self = call->arguments[0];
-            inner.count = 0;
+            if (!inner)
+                return undefined();
 
             if (native->data == NATIVE_CALL)
             {
 
                 for (i = 1; i < call->count; i++)
-                    inner.arguments[inner.count++] = call->arguments[i];
+                    inner->arguments[inner->count++] = call->arguments[i];
 
             }
 
@@ -8755,15 +10421,12 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
                 unsigned int count = (js->objects[second->number].kind == KIND_ARRAY) ? js->objects[second->number].data : 0;
 
-                for (i = 0; i < count && inner.count < ARGUMENTS; i++)
-                    inner.arguments[inner.count++] = getproperty(js, second, numberstring(js, i));
+                for (i = 0; i < count && inner->count < ARGUMENTS; i++)
+                    inner->arguments[inner->count++] = getproperty(js, second, numberstring(js, i));
 
             }
 
-            for (i = inner.count; i < ARGUMENTS; i++)
-                inner.arguments[i] = undefined();
-
-            return callfunction(js, &inner);
+            return runcall(js, inner);
 
         }
 
@@ -8809,7 +10472,7 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
             unsigned int before = (native->data == NATIVE_PREPEND) ? js->document->nodes[element].first : 0;
 
             for (i = 0; i < call->count; i++)
-                html_insert(js->document, element, argumentnode(js, &call->arguments[i]), before);
+                insertnode(js, element, argumentnode(js, &call->arguments[i]), before);
 
             js->changed = 1;
 
@@ -8821,7 +10484,7 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         if (element)
         {
 
-            html_insert(js->document, element, argumentnode(js, first), nodeof(js, second));
+            insertnode(js, element, argumentnode(js, first), nodeof(js, second));
 
             js->changed = 1;
 
@@ -8840,6 +10503,281 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
         }
 
         return call->arguments[0];
+
+    case NATIVE_BEFORE:
+    case NATIVE_AFTER:
+    case NATIVE_REPLACEWITH:
+        node = (element) ? js->document->nodes[element].parent : 0;
+
+        if (node)
+        {
+
+            unsigned int before = (native->data == NATIVE_AFTER) ? js->document->nodes[element].next : element;
+
+            for (i = 0; i < call->count; i++)
+                insertnode(js, node, argumentnode(js, &call->arguments[i]), before);
+
+            if (native->data == NATIVE_REPLACEWITH)
+                html_remove(js->document, element);
+
+            js->changed = 1;
+
+        }
+
+        return undefined();
+
+    case NATIVE_CLONENODE:
+    case NATIVE_IMPORTNODE:
+        return elementvalue(js, html_clone(js->document, (native->data == NATIVE_IMPORTNODE) ? nodeof(js, first) : element, truthy(js, (native->data == NATIVE_IMPORTNODE) ? second : first)));
+
+    case NATIVE_TOGGLEATTRIBUTE:
+        if (element)
+        {
+
+            char *attribute = getstring(js, tostring(js, first));
+            unsigned int present = html_getattribute(js->document, element, attribute) != 0;
+            unsigned int want = (call->count > 1) ? truthy(js, second) : !present;
+
+            if (want && !present)
+                html_setattribute(js->document, element, attribute, "");
+            else if (!want && present)
+                html_removeattribute(js->document, element, attribute);
+
+            js->changed = 1;
+
+            return value(JS_BOOLEAN, want);
+
+        }
+
+        return value(JS_BOOLEAN, 0);
+
+    case NATIVE_CREATEFRAGMENT:
+        return elementvalue(js, html_createelement(js->document, "#document-fragment"));
+
+    case NATIVE_CREATEELEMENTNS:
+        return elementvalue(js, html_createelement(js->document, getstring(js, tostring(js, second))));
+
+    case NATIVE_RECT:
+    case NATIVE_CLIENTRECTS:
+        {
+
+            struct js_rect box = measure(js, element);
+            struct js_value rect = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value list;
+            unsigned int f;
+
+            if (!rect.number)
+                return undefined();
+
+            for (f = 0; f < RECTFIELDS; f++)
+            {
+
+                int number = (f == 0 || f == 4) ? box.x : (f == 1 || f == 5) ? box.y : (f == 2) ? box.w : (f == 3) ? box.h : (f == 6) ? box.x + box.w : box.y + box.h;
+                struct js_value field = value(JS_NUMBER, number);
+
+                putproperty(js, rect.number, internstring(js, rectfields[f]), &field);
+
+            }
+
+            if (native->data == NATIVE_RECT)
+                return rect;
+
+            list = newarray(js);
+
+            pusharray(js, &list, &rect);
+
+            return list;
+
+        }
+
+    case NATIVE_SEARCHPARAMS:
+    case NATIVE_FORMDATA:
+        return newparams(js, call, native->data == NATIVE_FORMDATA);
+
+    case NATIVE_PARAMSGET:
+    case NATIVE_PARAMSGETALL:
+    case NATIVE_PARAMSHAS:
+    case NATIVE_PARAMSSET:
+    case NATIVE_PARAMSAPPEND:
+    case NATIVE_PARAMSDELETE:
+    case NATIVE_PARAMSTOSTRING:
+    case NATIVE_PARAMSFOREACH:
+    case NATIVE_PARAMSENTRIES:
+    case NATIVE_PARAMSKEYS:
+    case NATIVE_PARAMSVALUES:
+        return callparams(js, native->data, call);
+
+    case NATIVE_PERFORMANCENOW:
+        /* there is no fine clock, so time moves on a little with every look at it */
+        js->ticks += 0.1;
+
+        return numbervalue(js->ticks);
+
+    case NATIVE_RANDOMVALUES:
+        for (i = 0; first->type == JS_OBJECT && i < lengthof(js, first); i++)
+        {
+
+            struct js_value byte = value(JS_NUMBER, randomnumber(js) & 255);
+
+            setproperty(js, first, numberstring(js, i), &byte);
+
+        }
+
+        return call->arguments[0];
+
+    case NATIVE_RANDOMUUID:
+        {
+
+            char text[37];
+
+            for (i = 0; i < 36; i++)
+                text[i] = (i == 8 || i == 13 || i == 18 || i == 23) ? '-' : (i == 14) ? '4' : "0123456789abcdef"[(i == 19) ? 8 + (randomnumber(js) & 3) : randomnumber(js) & 15];
+
+            text[36] = '\0';
+
+            return value(JS_STRING, internstring(js, text));
+
+        }
+
+    case NATIVE_HISTORYSTATE:
+        /* nothing is navigated, the state is just kept */
+        if (self->type == JS_OBJECT)
+            putproperty(js, self->number, internstring(js, "state"), first);
+
+        return undefined();
+
+    case NATIVE_XHR:
+        if (self->type == JS_OBJECT)
+        {
+
+            struct js_value zero = value(JS_NUMBER, 0);
+            struct js_value empty = value(JS_STRING, internstring(js, ""));
+
+            /* like fetch nothing is sent, so a request never finishes */
+            putproperty(js, self->number, internstring(js, "readyState"), &zero);
+            putproperty(js, self->number, internstring(js, "status"), &zero);
+            putproperty(js, self->number, internstring(js, "responseText"), &empty);
+            addnative(js, self->number, "open", NATIVE_NOOP);
+            addnative(js, self->number, "send", NATIVE_NOOP);
+            addnative(js, self->number, "abort", NATIVE_NOOP);
+            addnative(js, self->number, "setRequestHeader", NATIVE_NOOP);
+            addnative(js, self->number, "getResponseHeader", NATIVE_NOOP);
+            addnative(js, self->number, "getAllResponseHeaders", NATIVE_NOOP);
+            addnative(js, self->number, "addEventListener", NATIVE_NOOP);
+
+        }
+
+        return call->self;
+
+    case NATIVE_ABORTCONTROLLER:
+        if (self->type == JS_OBJECT)
+        {
+
+            struct js_value signal = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value no = value(JS_BOOLEAN, 0);
+
+            if (!signal.number)
+                return undefined();
+
+            putproperty(js, signal.number, internstring(js, "aborted"), &no);
+            addnative(js, signal.number, "addEventListener", NATIVE_NOOP);
+            addnative(js, signal.number, "removeEventListener", NATIVE_NOOP);
+            putproperty(js, self->number, internstring(js, "signal"), &signal);
+            addnative(js, self->number, "abort", NATIVE_ABORT);
+
+        }
+
+        return call->self;
+
+    case NATIVE_ABORT:
+        {
+
+            struct js_value signal = getproperty(js, self, internstring(js, "signal"));
+            struct js_value yes = value(JS_BOOLEAN, 1);
+
+            if (signal.type == JS_OBJECT)
+                putproperty(js, signal.number, internstring(js, "aborted"), &yes);
+
+            return undefined();
+
+        }
+
+    case NATIVE_TEXTENCODER:
+        if (self->type == JS_OBJECT)
+        {
+
+            struct js_value encoding = value(JS_STRING, internstring(js, "utf-8"));
+
+            putproperty(js, self->number, internstring(js, "encoding"), &encoding);
+            addnative(js, self->number, "encode", NATIVE_ENCODE);
+            addnative(js, self->number, "decode", NATIVE_DECODE);
+
+        }
+
+        return call->self;
+
+    case NATIVE_ENCODE:
+        {
+
+            /* without typed arrays the bytes come as a plain array */
+            struct js_value result = newarray(js);
+            char *text = getstring(js, tostring(js, first));
+
+            for (i = 0; text[i]; i++)
+            {
+
+                struct js_value byte = value(JS_NUMBER, (unsigned char)text[i]);
+
+                pusharray(js, &result, &byte);
+
+            }
+
+            return result;
+
+        }
+
+    case NATIVE_DECODE:
+        {
+
+            unsigned int start = js->stringcount;
+            unsigned int length = lengthof(js, first);
+
+            if (start + length + 1 > JS_STRINGSIZE)
+                return value(JS_STRING, internstring(js, ""));
+
+            for (i = 0; i < length; i++)
+            {
+
+                struct js_value byte = itemat(js, first, i);
+
+                js->strings[js->stringcount++] = (char)tonumber(js, &byte);
+
+            }
+
+            js->strings[js->stringcount++] = '\0';
+
+            return value(JS_STRING, start);
+
+        }
+
+    case NATIVE_DEFINEELEMENT:
+        /* elements are not upgraded, the class is only remembered */
+        if (self->type == JS_OBJECT)
+            putproperty(js, self->number, internstring(js, getstring(js, tostring(js, first))), second);
+
+        return undefined();
+
+    case NATIVE_GETELEMENT:
+        return getproperty(js, self, internstring(js, getstring(js, tostring(js, first))));
+
+    case NATIVE_WHENDEFINED:
+        {
+
+            struct js_value none = undefined();
+
+            return newthenable(js, NATIVE_SETTLED, &none);
+
+        }
 
     case NATIVE_REMOVE:
         if (element)
@@ -8931,7 +10869,8 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
                 struct js_value item = getproperty(js, self, numberstring(js, i));
 
-                if (strictequal(js, &item, first))
+                /* includes finds NaN, which is never equal to itself */
+                if (strictequal(js, &item, first) || (item.type == JS_NUMBER && first->type == JS_NUMBER && number_isnan(item.real) && number_isnan(first->real)))
                     return value(JS_BOOLEAN, 1);
 
             }
@@ -9590,21 +11529,6 @@ static unsigned int instanceof(struct js_engine *js, struct js_value *object, st
 
 }
 
-static int comparestrings(char *a, char *b)
-{
-
-    while (a[0] && a[0] == b[0])
-    {
-
-        a++;
-        b++;
-
-    }
-
-    return (unsigned char)a[0] - (unsigned char)b[0];
-
-}
-
 static struct js_value combine(struct js_engine *js, unsigned int op, struct js_value *a, struct js_value *b)
 {
 
@@ -10050,7 +11974,7 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
     {
 
     case NODE_NUMBER:
-        return numbervalue(node->real);
+        return (node->op) ? numbervalue(js->reals[node->value]) : value(JS_NUMBER, node->value);
 
     case NODE_STRING:
         return value(JS_STRING, node->value);
@@ -10268,6 +12192,27 @@ static struct js_value evaluate(struct js_engine *js, unsigned int index, unsign
         return (a.type > JS_NULL) ? a : evaluate(js, node->b, scope);
 
     case NODE_UNARY:
+        if (node->op == OP_DELETE)
+        {
+
+            /* only properties can be deleted, and asking for anything else just says yes */
+            if (js->nodes[node->a].type == NODE_MEMBER || js->nodes[node->a].type == NODE_INDEX)
+            {
+
+                unsigned int name;
+
+                a = evaluate(js, js->nodes[node->a].a, scope);
+                name = propertyname(js, node->a, scope);
+
+                if (a.type == JS_OBJECT && !js->throwing)
+                    removeproperty(js, a.number, name);
+
+            }
+
+            return value(JS_BOOLEAN, 1);
+
+        }
+
         if (node->op == OP_TYPEOF && js->nodes[node->a].type == NODE_NAME && !findscope(js, scope, js->nodes[node->a].value))
         {
 
@@ -10440,26 +12385,52 @@ static void bindpattern(struct js_engine *js, unsigned int scope, unsigned int d
 
 }
 
-static unsigned int loopstep(struct js_engine *js, unsigned int body, unsigned int scope, struct completion *completion)
+static unsigned int keeplooping(struct completion *completion, unsigned int label)
 {
 
-    completion->type = COMPLETION_NORMAL;
+    unsigned int mine = !completion->label || completion->label == label;
 
-    execute(js, body, scope, completion);
-
+    /* a labelled break or continue for an outer loop leaves this one and goes on outwards */
     if (completion->type == COMPLETION_BREAK)
     {
 
-        completion->type = COMPLETION_NORMAL;
+        if (mine)
+        {
+
+            completion->type = COMPLETION_NORMAL;
+            completion->label = 0;
+
+        }
 
         return 0;
 
     }
 
     if (completion->type == COMPLETION_CONTINUE)
-        completion->type = COMPLETION_NORMAL;
+    {
 
-    return completion->type == COMPLETION_NORMAL && !js->throwing;
+        if (!mine)
+            return 0;
+
+        completion->type = COMPLETION_NORMAL;
+        completion->label = 0;
+
+        return 1;
+
+    }
+
+    return completion->type == COMPLETION_NORMAL;
+
+}
+
+static unsigned int loopstep(struct js_engine *js, unsigned int body, unsigned int scope, struct completion *completion, unsigned int label)
+{
+
+    completion->type = COMPLETION_NORMAL;
+
+    execute(js, body, scope, completion);
+
+    return keeplooping(completion, label) && !js->throwing;
 
 }
 
@@ -10486,6 +12457,22 @@ static unsigned int functionscope(struct js_engine *js, unsigned int scope)
 
 }
 
+static unsigned int copyscope(struct js_engine *js, unsigned int scope)
+{
+
+    unsigned int next = blockscope(js, js->objects[scope].parent);
+    unsigned int property;
+
+    if (next == js->objects[scope].parent)
+        return scope;
+
+    for (property = js->objects[scope].property; property; property = js->properties[property].next)
+        putproperty(js, next, js->properties[property].name, &js->properties[property].value);
+
+    return next;
+
+}
+
 static unsigned int islexical(struct js_engine *js, unsigned int node)
 {
 
@@ -10506,10 +12493,15 @@ static void bindloop(struct js_engine *js, struct js_node *node, unsigned int sc
 static void executeforeach(struct js_engine *js, struct js_node *node, unsigned int scope, struct completion *completion)
 {
 
-    struct js_value source = evaluate(js, node->b, scope);
+    unsigned int label = js->label;
+    struct js_value source;
+    struct js_value keys;
     struct js_value item;
     unsigned int inner;
     unsigned int i;
+
+    js->label = 0;
+    source = evaluate(js, node->b, scope);
 
     if (js->throwing)
         return;
@@ -10526,7 +12518,7 @@ static void executeforeach(struct js_engine *js, struct js_node *node, unsigned 
 
             bindloop(js, node, inner, &item);
 
-            if (!loopstep(js, (unsigned int)node->value, inner, completion))
+            if (!loopstep(js, (unsigned int)node->value, inner, completion, label))
                 break;
 
         }
@@ -10553,7 +12545,7 @@ static void executeforeach(struct js_engine *js, struct js_node *node, unsigned 
 
             bindloop(js, node, inner, &item);
 
-            if (!loopstep(js, (unsigned int)node->value, inner, completion))
+            if (!loopstep(js, (unsigned int)node->value, inner, completion, label))
                 break;
 
         }
@@ -10562,37 +12554,22 @@ static void executeforeach(struct js_engine *js, struct js_node *node, unsigned 
 
     }
 
-    /* properties are kept newest first, so they are walked from the end to keep their order */
-    for (i = 0;; i++)
+    keys = keysof(js, source.number, 0);
+
+    /* the keys are taken first, and one deleted along the way is skipped */
+    for (i = 0; i < lengthof(js, &keys); i++)
     {
 
-        unsigned int property = js->objects[source.number].property;
-        unsigned int count = 0;
-        unsigned int position;
+        item = itemat(js, &keys, i);
 
-        while (property)
-        {
-
-            count++;
-            property = js->properties[property].next;
-
-        }
-
-        if (i >= count)
-            break;
-
-        property = js->objects[source.number].property;
-
-        for (position = 0; position + i + 1 < count; position++)
-            property = js->properties[property].next;
-
-        item = value(JS_STRING, js->properties[property].name);
+        if (!findproperty(js, source.number, item.number))
+            continue;
 
         inner = (islexical(js, node->a)) ? blockscope(js, scope) : scope;
 
         bindloop(js, node, inner, &item);
 
-        if (!loopstep(js, (unsigned int)node->value, inner, completion))
+        if (!loopstep(js, (unsigned int)node->value, inner, completion, label))
             break;
 
     }
@@ -10641,8 +12618,59 @@ static void executeswitch(struct js_engine *js, struct js_node *node, unsigned i
 
     }
 
-    if (completion->type == COMPLETION_BREAK)
+    /* a labelled break is for whatever carries that label */
+    if (completion->type == COMPLETION_BREAK && !completion->label)
         completion->type = COMPLETION_NORMAL;
+
+}
+
+static void executeloop(struct js_engine *js, struct js_node *node, unsigned int scope, struct completion *completion)
+{
+
+    unsigned int label = js->label;
+    unsigned int first = 1;
+    struct js_value result;
+
+    js->label = 0;
+
+    /* let in the head belongs to the loop, and with closures in it each turn gets a copy */
+    if (node->type == NODE_FOR && islexical(js, node->a))
+        scope = blockscope(js, scope);
+
+    if (node->type == NODE_FOR)
+        execute(js, (js->nodes[node->a].type == NODE_VAR) ? node->a : 0, scope, completion);
+
+    if (node->type == NODE_FOR && js->nodes[node->a].type != NODE_VAR)
+        evaluate(js, node->a, scope);
+
+    while (!js->throwing)
+    {
+
+        if (node->type != NODE_DO || !first)
+        {
+
+            result = (node->type == NODE_FOR) ? ((node->b) ? evaluate(js, node->b, scope) : value(JS_BOOLEAN, 1)) : evaluate(js, node->a, scope);
+
+            if (!truthy(js, &result) || js->throwing)
+                break;
+
+        }
+
+        first = 0;
+        completion->type = COMPLETION_NORMAL;
+
+        execute(js, (node->type == NODE_FOR) ? (unsigned int)node->value : node->b, scope, completion);
+
+        if (!keeplooping(completion, label))
+            break;
+
+        if (node->type == NODE_FOR && node->op && islexical(js, node->a))
+            scope = copyscope(js, scope);
+
+        if (node->type == NODE_FOR)
+            evaluate(js, node->c, scope);
+
+    }
 
 }
 
@@ -10702,50 +12730,7 @@ static void execute(struct js_engine *js, unsigned int index, unsigned int scope
     case NODE_WHILE:
     case NODE_DO:
     case NODE_FOR:
-        if (node->type == NODE_FOR)
-            execute(js, (js->nodes[node->a].type == NODE_VAR) ? node->a : 0, scope, completion);
-
-        if (node->type == NODE_FOR && js->nodes[node->a].type != NODE_VAR)
-            evaluate(js, node->a, scope);
-
-        while (!js->throwing)
-        {
-
-            if (node->type != NODE_DO || completion->type == COMPLETION_CONTINUE)
-            {
-
-                result = (node->type == NODE_FOR) ? ((node->b) ? evaluate(js, node->b, scope) : value(JS_BOOLEAN, 1)) : evaluate(js, node->a, scope);
-
-                if (!truthy(js, &result) || js->throwing)
-                    break;
-
-            }
-
-            completion->type = COMPLETION_NORMAL;
-
-            execute(js, (node->type == NODE_FOR) ? (unsigned int)node->value : node->b, scope, completion);
-
-            if (completion->type == COMPLETION_BREAK)
-            {
-
-                completion->type = COMPLETION_NORMAL;
-
-                break;
-
-            }
-
-            if (completion->type == COMPLETION_RETURN)
-                break;
-
-            if (node->type == NODE_FOR)
-                evaluate(js, node->c, scope);
-
-            completion->type = COMPLETION_CONTINUE;
-
-        }
-
-        if (completion->type == COMPLETION_CONTINUE)
-            completion->type = COMPLETION_NORMAL;
+        executeloop(js, node, scope, completion);
 
         break;
 
@@ -10808,12 +12793,27 @@ static void execute(struct js_engine *js, unsigned int index, unsigned int scope
         break;
 
     case NODE_BREAK:
-        completion->type = COMPLETION_BREAK;
+    case NODE_CONTINUE:
+        completion->type = (node->type == NODE_BREAK) ? COMPLETION_BREAK : COMPLETION_CONTINUE;
+        completion->label = (node->op) ? (unsigned int)node->value + 1 : 0;
 
         break;
 
-    case NODE_CONTINUE:
-        completion->type = COMPLETION_CONTINUE;
+    case NODE_LABEL:
+        /* a loop takes its label as it starts, anything else just ends when broken out of */
+        js->label = (unsigned int)node->value + 1;
+
+        execute(js, node->a, scope, completion);
+
+        js->label = 0;
+
+        if (completion->type == COMPLETION_BREAK && completion->label == (unsigned int)node->value + 1)
+        {
+
+            completion->type = COMPLETION_NORMAL;
+            completion->label = 0;
+
+        }
 
         break;
 
@@ -10911,7 +12911,7 @@ static void adderrors(struct js_engine *js)
 
 }
 
-void js_reset(struct js_engine *js, struct html_document *document, unsigned int dark)
+void js_reset(struct js_engine *js, struct html_document *document, unsigned int dark, unsigned int unixtime)
 {
 
     unsigned int i;
@@ -10923,6 +12923,9 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     js->stringcount = 0;
     js->interncount = 0;
     js->listenercount = 0;
+    js->now = unixtime * 1000.0;
+    js->realcount = 0;
+    js->measure = 0;
     callcount = 0;
 
     buffer_clear(js->interns, sizeof (js->interns));
@@ -11023,6 +13026,38 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addglobal(js, "Map", js->natives[NATIVE_NEWMAP]);
     addglobal(js, "URL", js->natives[NATIVE_NEWURL]);
     addglobal(js, "fetch", js->natives[NATIVE_FETCH]);
+    addglobal(js, "encodeURI", js->natives[NATIVE_ENCODEURI]);
+    addglobal(js, "encodeURIComponent", js->natives[NATIVE_ENCODEURICOMPONENT]);
+    addglobal(js, "decodeURI", js->natives[NATIVE_DECODEURI]);
+    addglobal(js, "decodeURIComponent", js->natives[NATIVE_DECODEURI]);
+    addglobal(js, "btoa", js->natives[NATIVE_BTOA]);
+    addglobal(js, "atob", js->natives[NATIVE_ATOB]);
+    addglobal(js, "structuredClone", js->natives[NATIVE_STRUCTUREDCLONE]);
+    addglobal(js, "URLSearchParams", js->natives[NATIVE_SEARCHPARAMS]);
+    addglobal(js, "FormData", js->natives[NATIVE_FORMDATA]);
+    addglobal(js, "XMLHttpRequest", js->natives[NATIVE_XHR]);
+    addglobal(js, "AbortController", js->natives[NATIVE_ABORTCONTROLLER]);
+    addglobal(js, "TextEncoder", js->natives[NATIVE_TEXTENCODER]);
+    addglobal(js, "TextDecoder", js->natives[NATIVE_TEXTENCODER]);
+    addglobal(js, "queueMicrotask", js->natives[NATIVE_SETTIMEOUT]);
+    addglobal(js, "performance", newobject(js, KIND_PLAIN, 0, 0));
+    addmethod(js, "performance", "now", NATIVE_PERFORMANCENOW);
+    addmethod(js, "performance", "mark", NATIVE_NOOP);
+    addmethod(js, "performance", "measure", NATIVE_NOOP);
+    addglobal(js, "crypto", newobject(js, KIND_PLAIN, 0, 0));
+    addmethod(js, "crypto", "getRandomValues", NATIVE_RANDOMVALUES);
+    addmethod(js, "crypto", "randomUUID", NATIVE_RANDOMUUID);
+    addglobal(js, "history", newobject(js, KIND_PLAIN, 0, 0));
+    addmethod(js, "history", "pushState", NATIVE_HISTORYSTATE);
+    addmethod(js, "history", "replaceState", NATIVE_HISTORYSTATE);
+    addmethod(js, "history", "back", NATIVE_NOOP);
+    addmethod(js, "history", "forward", NATIVE_NOOP);
+    addmethod(js, "history", "go", NATIVE_NOOP);
+    addconstant(js, "history", "length", 1);
+    addglobal(js, "customElements", newobject(js, KIND_PLAIN, 0, 0));
+    addmethod(js, "customElements", "define", NATIVE_DEFINEELEMENT);
+    addmethod(js, "customElements", "get", NATIVE_GETELEMENT);
+    addmethod(js, "customElements", "whenDefined", NATIVE_WHENDEFINED);
     addglobal(js, "Promise", js->natives[NATIVE_PROMISE]);
     addglobal(js, "MutationObserver", js->natives[NATIVE_OBSERVER]);
     addglobal(js, "ResizeObserver", js->natives[NATIVE_OBSERVER]);
@@ -11084,9 +13119,14 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "Object", "defineProperty", NATIVE_DEFINEPROPERTY);
     addmethod(js, "Object", "getOwnPropertyDescriptor", NATIVE_GETOWNDESCRIPTOR);
     addmethod(js, "Object", "hasOwn", NATIVE_HASOWN);
+    addmethod(js, "Object", "fromEntries", NATIVE_FROMENTRIES);
+    addmethod(js, "Array", "of", NATIVE_ARRAYOF);
+    addmethod(js, "String", "fromCodePoint", NATIVE_FROMCHARCODE);
     addmethod(js, "Object", "defineProperties", NATIVE_DEFINEPROPERTIES);
     addmethod(js, "Symbol", "for", NATIVE_SYMBOL);
-    addmethod(js, "Date", "now", NATIVE_ZERO);
+    addmethod(js, "Date", "now", NATIVE_DATENOW);
+    addmethod(js, "Date", "parse", NATIVE_DATEPARSE);
+    addmethod(js, "Date", "UTC", NATIVE_DATEUTC);
     addmethod(js, "JSON", "stringify", NATIVE_STRINGIFY);
     addmethod(js, "JSON", "parse", NATIVE_PARSE);
 
@@ -11153,10 +13193,52 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
 
         js->date = newobject(js, KIND_PLAIN, 0, 0);
 
-        for (i = 0; i < DATEFIELDS; i++)
-            addnative(js, js->date, datefields[i], NATIVE_ZERO);
+        for (i = 0; i < DATEMETHODS; i++)
+            addnative(js, js->date, datemethods[i].name, NATIVE_DATEMETHOD + i);
 
-        addnative(js, js->date, "getFullYear", NATIVE_FULLYEAR);
+        {
+
+            struct js_value prototype = value(JS_OBJECT, js->date);
+
+            putproperty(js, js->natives[NATIVE_DATE], internstring(js, "prototype"), &prototype);
+
+        }
+
+    }
+
+}
+
+void js_setview(struct js_engine *js, unsigned int width, unsigned int height, struct js_rect (*measure)(unsigned int node))
+{
+
+    unsigned int i;
+
+    js->measure = measure;
+
+    /* the window and screen are the size of the view, which never scrolls as far as scripts know */
+    for (i = 0; i < VIEWFIELDS; i++)
+    {
+
+        struct js_value size = value(JS_NUMBER, (viewfields[i].native == VIEW_WIDTH) ? width : (viewfields[i].native == VIEW_HEIGHT) ? height : (viewfields[i].native == VIEW_ONE) ? 1 : 0);
+
+        putproperty(js, js->global, internstring(js, viewfields[i].name), &size);
+
+    }
+
+    {
+
+        struct js_value screen = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+        struct js_value w = value(JS_NUMBER, width);
+        struct js_value h = value(JS_NUMBER, height);
+
+        if (!screen.number)
+            return;
+
+        putproperty(js, screen.number, internstring(js, "width"), &w);
+        putproperty(js, screen.number, internstring(js, "height"), &h);
+        putproperty(js, screen.number, internstring(js, "availWidth"), &w);
+        putproperty(js, screen.number, internstring(js, "availHeight"), &h);
+        putproperty(js, js->global, internstring(js, "screen"), &screen);
 
     }
 
@@ -11167,6 +13249,8 @@ void js_run(struct js_engine *js, char *source, unsigned int count)
 
     struct parser parser;
     struct completion completion;
+    unsigned int nodes = js->nodecount;
+    unsigned int reals = js->realcount;
     unsigned int program;
 
     parser.js = js;
@@ -11179,14 +13263,18 @@ void js_run(struct js_engine *js, char *source, unsigned int count)
     parser.noin = 0;
     parser.uses = 0;
     parser.star = 0;
+    parser.functions = 0;
 
     nexttoken(&parser);
 
     program = parselist(&parser, 0);
 
+    /* nothing has run from a script that did not parse, so its nodes go back for the next one */
     if (parser.failed)
     {
 
+        js->nodecount = nodes;
+        js->realcount = reals;
         js->errors++;
 
         return;
@@ -11206,51 +13294,38 @@ void js_run(struct js_engine *js, char *source, unsigned int count)
 
 }
 
-static unsigned int dispatch(struct js_engine *js, unsigned int node, unsigned int target, unsigned int name)
+static unsigned int dispatch(struct js_engine *js, unsigned int node, struct js_value *event, unsigned int name)
 {
 
     unsigned int count = js->listenercount;
     unsigned int handled = 0;
+    struct js_value current = (node && node != JS_MEDIA) ? nodevalue(js, node) : value(JS_OBJECT, js->documentobject);
     unsigned int i;
+
+    putproperty(js, event->number, internstring(js, "currentTarget"), &current);
 
     for (i = 0; i < count; i++)
     {
 
         struct js_listener *listener = &js->listeners[i];
-        struct call call;
-        struct js_value eventtype = value(JS_STRING, name);
-        struct js_value eventtarget = (target && target != JS_MEDIA) ? nodevalue(js, target) : value(JS_OBJECT, js->documentobject);
-        unsigned int event;
-        unsigned int argument;
+        struct js_value function = value(JS_OBJECT, listener->function);
+        struct js_value stopped;
+        struct call *call;
 
         if (listener->node != node || listener->type != name)
             continue;
 
-        event = newobject(js, KIND_PLAIN, 0, 0);
-        call.function = value(JS_OBJECT, listener->function);
-        call.self = (node && node != JS_MEDIA) ? nodevalue(js, node) : value(JS_OBJECT, js->documentobject);
+        call = takecall(js, &function, &current);
 
-        if (event)
-        {
+        if (!call)
+            break;
 
-            putproperty(js, event, internstring(js, "type"), &eventtype);
-            putproperty(js, event, internstring(js, "target"), &eventtarget);
-            putproperty(js, event, internstring(js, "currentTarget"), &call.self);
-            addnative(js, event, "preventDefault", NATIVE_NOOP);
-            addnative(js, event, "stopPropagation", NATIVE_NOOP);
-            addnative(js, event, "stopImmediatePropagation", NATIVE_NOOP);
+        copyvalue(&call->arguments[0], event);
 
-        }
-
-        call.count = 1;
-        call.arguments[0] = (event) ? value(JS_OBJECT, event) : undefined();
-
-        for (argument = 1; argument < ARGUMENTS; argument++)
-            call.arguments[argument] = undefined();
-
+        call->count = 1;
         js->throwing = 0;
 
-        callfunction(js, &call);
+        runcall(js, call);
 
         /* a listener that throws is counted, as a browser would report it, and the rest still run */
         if (js->throwing)
@@ -11258,6 +13333,10 @@ static unsigned int dispatch(struct js_engine *js, unsigned int node, unsigned i
 
         js->throwing = 0;
         handled++;
+        stopped = getproperty(js, event, internstring(js, "@@immediate"));
+
+        if (truthy(js, &stopped))
+            break;
 
     }
 
@@ -11265,26 +13344,57 @@ static unsigned int dispatch(struct js_engine *js, unsigned int node, unsigned i
 
 }
 
-static unsigned int bubble(struct js_engine *js, unsigned int target, unsigned int name)
+static unsigned int bubble(struct js_engine *js, unsigned int target, unsigned int name, struct js_value *given)
 {
 
+    struct js_value event;
+    struct js_value targetvalue = (target && target != JS_MEDIA) ? nodevalue(js, target) : value(JS_OBJECT, js->documentobject);
+    struct js_value bubbles;
+    struct js_value stopped;
     unsigned int handled = 0;
     unsigned int node;
 
-    for (node = target; node; node = js->document->nodes[node].parent)
-        handled += dispatch(js, node, target, name);
+    /* one event goes from the target up through its parents to the document, unless a listener stops it */
+    if (given)
+        copyvalue(&event, given);
+    else
+        event = newevent(js, name);
 
-    /* the document listens last */
-    return handled + dispatch(js, 0, target, name);
+    if (event.type != JS_OBJECT || !event.number)
+        return 0;
+
+    putproperty(js, event.number, internstring(js, "target"), &targetvalue);
+
+    bubbles = getproperty(js, &event, internstring(js, "bubbles"));
+
+    for (node = target; node; node = js->document->nodes[node].parent)
+    {
+
+        handled += dispatch(js, node, &event, name);
+        stopped = getproperty(js, &event, internstring(js, "cancelBubble"));
+
+        if (!truthy(js, &bubbles) || truthy(js, &stopped) || node == JS_MEDIA)
+            return handled;
+
+    }
+
+    return handled + dispatch(js, 0, &event, name);
 
 }
 
 void js_dispatch(struct js_engine *js, unsigned int node, char *type)
 {
 
+    struct js_value event = newevent(js, internstring(js, type));
+    struct js_value no = value(JS_BOOLEAN, 0);
+
     js->steps = 0;
 
-    dispatch(js, node, node, internstring(js, type));
+    /* events the page itself raises, like load, stay on their target */
+    if (event.number)
+        putproperty(js, event.number, internstring(js, "bubbles"), &no);
+
+    bubble(js, node, internstring(js, type), (event.number) ? &event : 0);
 
 }
 
@@ -11293,7 +13403,7 @@ unsigned int js_click(struct js_engine *js, unsigned int node)
 
     js->steps = 0;
 
-    return bubble(js, node, internstring(js, "click"));
+    return bubble(js, node, internstring(js, "click"), 0);
 
 }
 
@@ -11306,23 +13416,18 @@ void js_runtimers(struct js_engine *js)
     for (i = 0; i < js->timercount; i++)
     {
 
-        struct call call;
-        unsigned int argument;
+        struct js_value function = value(JS_OBJECT, js->timers[i]);
+        struct call *call;
 
         if (!js->timers[i])
             continue;
 
-        call.function = value(JS_OBJECT, js->timers[i]);
-        call.self = undefined();
-        call.count = 0;
-
-        for (argument = 0; argument < ARGUMENTS; argument++)
-            call.arguments[argument] = undefined();
-
         js->steps = 0;
         js->throwing = 0;
+        call = takecall(js, &function, 0);
 
-        callfunction(js, &call);
+        if (call)
+            runcall(js, call);
 
         if (js->throwing)
             js->errors++;
