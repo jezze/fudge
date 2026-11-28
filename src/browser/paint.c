@@ -1131,7 +1131,7 @@ static void paintboxes(struct paint_canvas *canvas, struct layout *layout, unsig
             else if (style->display != CSS_DISPLAY_INLINE)
                 paintbox(canvas, layout, box, style, node != canvasnode(layout));
 
-            if (document->nodes[node].tag == HTML_TAG_IMG || document->nodes[node].tag == HTML_TAG_SVG)
+            if (document->nodes[node].tag == HTML_TAG_IMG || document->nodes[node].tag == HTML_TAG_SVG || document->nodes[node].tag == HTML_TAG_CANVAS)
             {
 
                 struct layout_picture *picture = (layout->picture[node]) ? &layout->pictures[layout->picture[node] - 1] : 0;

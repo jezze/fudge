@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <hash.h>
 #include "html.h"
+#include "css.h"
 #include "number.h"
 #include "date.h"
 #include "js.h"
@@ -374,7 +375,7 @@
 #define VIEW_ZERO                       3
 #define NATIVE_DATEPARSE                186
 #define NATIVE_DATEUTC                  187
-/* ordinary natives stay below 240, where the ranges of date methods and math functions begin */
+/* ordinary natives stay below 240, canvas methods begin at 320, where the ranges of date methods and math functions begin */
 #define NATIVE_DATEMETHOD               240
 #define DATEMETHODS                     46
 #define DATE_GET                        0
@@ -394,6 +395,48 @@
 #define FIELD_SHORTYEAR                 8
 #define FLATDEPTH                       16
 #define NATIVE_MATH                     290
+#define NATIVE_CANVAS                   320
+#define CANVASMETHODS                   36
+#define NATIVE_GETCONTEXT               34
+#define NATIVE_ADDCOLORSTOP             35
+#define CANVASSTACK                     16
+#define ARCSEGMENTS                     32
+#define CANVAS_FILLRECT                  0
+#define CANVAS_STROKERECT                1
+#define CANVAS_CLEARRECT                 2
+#define CANVAS_BEGINPATH                 3
+#define CANVAS_CLOSEPATH                 4
+#define CANVAS_MOVETO                    5
+#define CANVAS_LINETO                    6
+#define CANVAS_ARC                       7
+#define CANVAS_RECT                      8
+#define CANVAS_FILL                      9
+#define CANVAS_STROKE                    10
+#define CANVAS_SAVE                      11
+#define CANVAS_RESTORE                   12
+#define CANVAS_TRANSLATE                 13
+#define CANVAS_SCALE                     14
+#define CANVAS_ROTATE                    15
+#define CANVAS_SETTRANSFORM              16
+#define CANVAS_RESETTRANSFORM            17
+#define CANVAS_TRANSFORM                 18
+#define CANVAS_QUADRATICCURVETO          19
+#define CANVAS_BEZIERCURVETO             20
+#define CANVAS_ELLIPSE                   21
+#define CANVAS_ARCTO                     22
+#define CANVAS_ROUNDRECT                 23
+#define CANVAS_CREATELINEARGRADIENT      24
+#define CANVAS_CREATERADIALGRADIENT      25
+#define CANVAS_CREATEPATTERN             26
+#define CANVAS_MEASURETEXT               27
+#define CANVAS_FILLTEXT                  28
+#define CANVAS_STROKETEXT                29
+#define CANVAS_DRAWIMAGE                 30
+#define CANVAS_SETLINEDASH               31
+#define CANVAS_CLIP                      32
+#define CANVAS_GETIMAGEDATA              33
+#define CANVAS_PUTIMAGEDATA              34
+#define CANVAS_ISPOINTINPATH             35
 #define MATHFUNCTIONS                   24
 #define MATHCONSTANTS                   8
 #define MATH_FLOOR                      0
@@ -641,6 +684,9 @@ static struct method paramsmethods[PARAMSMETHODS] = {
     {"entries", NATIVE_PARAMSENTRIES}, {"keys", NATIVE_PARAMSKEYS}, {"values", NATIVE_PARAMSVALUES}, {"@@iterator", NATIVE_PARAMSENTRIES}
 };
 static char *rectfields[RECTFIELDS] = {"x", "y", "width", "height", "left", "top", "right", "bottom"};
+static char *canvasmethods[CANVASMETHODS] = {
+    "fillRect", "strokeRect", "clearRect", "beginPath", "closePath", "moveTo", "lineTo", "arc", "rect", "fill", "stroke", "save", "restore", "translate", "scale", "rotate", "setTransform", "resetTransform", "transform", "quadraticCurveTo", "bezierCurveTo", "ellipse", "arcTo", "roundRect", "createLinearGradient", "createRadialGradient", "createPattern", "measureText", "fillText", "strokeText", "drawImage", "setLineDash", "clip", "getImageData", "putImageData", "isPointInPath"
+};
 static struct method errornames[ERRORS] = {{"Error", NATIVE_ERROR}, {"TypeError", NATIVE_TYPEERROR}, {"RangeError", NATIVE_RANGEERROR}, {"ReferenceError", NATIVE_REFERENCEERROR}, {"SyntaxError", NATIVE_SYNTAXERROR}};
 static char *navigatorfields[NAVIGATORFIELDS][2] = {{"userAgent", "Mozilla/5.0 (fudge)"}, {"appVersion", "5.0 (fudge)"}, {"platform", "fudge"}, {"vendor", ""}, {"language", "en-US"}};
 static struct method collectionmethods[COLLECTIONMETHODS] = {
@@ -4709,6 +4755,34 @@ static struct js_value cachedobject(struct js_engine *js, struct js_value *targe
 
 }
 
+static unsigned int attributenumber(struct js_engine *js, unsigned int node, char *name, unsigned int fallback)
+{
+
+    char *text = html_getattribute(js->document, node, name);
+
+    return (text && cstring_isdigit(text[0])) ? cstring_read_value(text, cstring_length(text), 10) : fallback;
+
+}
+
+static void dropcanvas(struct js_engine *js, unsigned int node)
+{
+
+    unsigned int kept = 0;
+    unsigned int i;
+
+    /* a cleared canvas forgets what was drawn on it, which keeps an animation from filling the list */
+    for (i = 0; i < js->canvasopcount; i++)
+    {
+
+        if (js->canvasops[i].node != node)
+            js->canvasops[kept++] = js->canvasops[i];
+
+    }
+
+    js->canvasopcount = kept;
+
+}
+
 static unsigned int isfragment(struct js_engine *js, unsigned int node)
 {
 
@@ -4975,6 +5049,12 @@ static struct js_value getproperty(struct js_engine *js, struct js_value *target
 
         if (cstring_match(text, "toggleAttribute"))
             return value(JS_OBJECT, nativefor(js, NATIVE_TOGGLEATTRIBUTE));
+
+        if (cstring_match(text, "getContext"))
+            return value(JS_OBJECT, nativefor(js, NATIVE_GETCONTEXT));
+
+        if (js->document->nodes[object->data].tag == HTML_TAG_CANVAS && (cstring_match(text, "width") || cstring_match(text, "height")))
+            return value(JS_NUMBER, attributenumber(js, object->data, text, (text[0] == 'w') ? 300 : 150));
 
         /* a link tells the parts of its address, resolved against the page's */
         if (js->document->nodes[object->data].tag == HTML_TAG_A && !findproperty(js, target->number, name) && html_getattribute(js->document, object->data, "href") && islocationfield(text))
@@ -5525,6 +5605,40 @@ static unsigned int callsetter(struct js_engine *js, struct js_value *target, un
 
 }
 
+static void selectoption(struct js_engine *js, unsigned int select, char *wanted)
+{
+
+    unsigned int node;
+
+    /* the option with that value, or that text when it has none, becomes the selected one */
+    for (node = html_next(js->document, select, select); node; node = html_next(js->document, node, select))
+    {
+
+        char *option;
+
+        if (js->document->nodes[node].tag != HTML_TAG_OPTION)
+            continue;
+
+        option = html_getattribute(js->document, node, "value");
+
+        if (!option)
+        {
+
+            collecttext(js, node, js->text, TEXTSIZE);
+
+            option = js->text;
+
+        }
+
+        if (cstring_match(option, wanted))
+            html_setattribute(js->document, node, "selected", "");
+        else
+            html_removeattribute(js->document, node, "selected");
+
+    }
+
+}
+
 static void setproperty(struct js_engine *js, struct js_value *target, unsigned int name, struct js_value *newvalue)
 {
 
@@ -5604,6 +5718,30 @@ static void setproperty(struct js_engine *js, struct js_value *target, unsigned 
     {
 
         html_settext(js->document, object->data, getstring(js, tostring(js, newvalue)));
+
+        js->changed = 1;
+
+        return;
+
+    }
+
+    if (object->kind == KIND_ELEMENT && js->document->nodes[object->data].tag == HTML_TAG_CANVAS && (cstring_match(getstring(js, name), "width") || cstring_match(getstring(js, name), "height")))
+    {
+
+        /* giving a canvas a size clears it */
+        html_setattribute(js->document, object->data, getstring(js, name), getstring(js, tostring(js, newvalue)));
+        dropcanvas(js, object->data);
+
+        js->changed = 1;
+
+        return;
+
+    }
+
+    if (object->kind == KIND_ELEMENT && js->document->nodes[object->data].tag == HTML_TAG_SELECT && cstring_match(getstring(js, name), "value"))
+    {
+
+        selectoption(js, object->data, getstring(js, tostring(js, newvalue)));
 
         js->changed = 1;
 
@@ -9062,6 +9200,608 @@ static unsigned int intlnumber(struct js_engine *js, struct js_value *format, do
 
 }
 
+static unsigned int canvasnode(struct js_engine *js, struct js_value *context)
+{
+
+    struct js_value canvas = getproperty(js, context, internstring(js, "canvas"));
+
+    return nodeof(js, &canvas);
+
+}
+
+static double canvasnumber(struct js_engine *js, struct js_value *context, char *name)
+{
+
+    struct js_value item = getproperty(js, context, internstring(js, name));
+
+    return toreal(js, &item);
+
+}
+
+static void getmatrix(struct js_engine *js, struct js_value *context, double *matrix)
+{
+
+    struct js_value stored = getproperty(js, context, internstring(js, "@@matrix"));
+    unsigned int i;
+
+    /* without a transform yet the matrix is the identity */
+    for (i = 0; i < 6; i++)
+    {
+
+        struct js_value item = (stored.type == JS_OBJECT) ? itemat(js, &stored, i) : numbervalue((i == 0 || i == 3) ? 1 : 0);
+
+        matrix[i] = toreal(js, &item);
+
+    }
+
+}
+
+static void setmatrix(struct js_engine *js, struct js_value *context, double *matrix)
+{
+
+    struct js_value stored = newarray(js);
+    unsigned int i;
+
+    for (i = 0; i < 6; i++)
+    {
+
+        struct js_value item = numbervalue(matrix[i]);
+
+        pusharray(js, &stored, &item);
+
+    }
+
+    putproperty(js, context->number, internstring(js, "@@matrix"), &stored);
+
+}
+
+static unsigned int canvascolor(struct js_engine *js, struct js_value *context, char *name)
+{
+
+    struct js_value style = getproperty(js, context, internstring(js, name));
+    double alpha = canvasnumber(js, context, "globalAlpha");
+    struct css_color color;
+    unsigned int value;
+
+    /* a gradient or pattern paints in the first color it was given */
+    if (style.type == JS_OBJECT)
+        style = getproperty(js, &style, internstring(js, "@@color"));
+
+    color = css_parsecolor(getstring(js, tostring(js, &style)), cstring_length(getstring(js, tostring(js, &style))));
+    value = (color.valid) ? color.value : 0xFF000000;
+
+    if (alpha >= 0 && alpha < 1)
+        value = (value & 0x00FFFFFF) | ((unsigned int)((value >> 24) * alpha) << 24);
+
+    return value;
+
+}
+
+static void recordcanvas(struct js_engine *js, unsigned int node, unsigned int op, unsigned int color, double *values)
+{
+
+    struct js_canvasop *entry;
+    unsigned int i;
+
+    if (!node || js->canvasopcount >= JS_CANVASOPS)
+        return;
+
+    entry = &js->canvasops[js->canvasopcount++];
+    entry->node = node;
+    entry->op = op;
+    entry->color = color;
+
+    for (i = 0; i < 6; i++)
+        entry->a[i] = (values) ? values[i] : 0;
+
+    js->changed = 1;
+
+}
+
+static void recordpoint(struct js_engine *js, struct js_value *context, unsigned int op, double x, double y)
+{
+
+    double m[6];
+    double point[6];
+
+    getmatrix(js, context, m);
+
+    point[0] = m[0] * x + m[2] * y + m[4];
+    point[1] = m[1] * x + m[3] * y + m[5];
+    point[2] = point[3] = point[4] = point[5] = 0;
+
+    recordcanvas(js, canvasnode(js, context), op, 0, point);
+
+}
+
+static unsigned int isboldfont(char *text)
+{
+
+    unsigned int i;
+
+    /* bold as a word, or a weight of 600 and up */
+    for (i = 0; text[i]; i++)
+    {
+
+        if (buffer_match(text + i, "bold", 4) && (!i || text[i - 1] == ' '))
+            return 1;
+
+        if (cstring_isdigit(text[i]) && cstring_isdigit(text[i + 1]) && cstring_isdigit(text[i + 2]) && text[i + 3] == ' ' && (!i || text[i - 1] == ' '))
+            return parseint(text + i, 10) >= 600;
+
+    }
+
+    return 0;
+
+}
+
+static struct js_value callcanvas(struct js_engine *js, unsigned int method, struct call *call)
+{
+
+    struct js_value *context = &call->self;
+    unsigned int node = canvasnode(js, context);
+    double v[6];
+    double m[6];
+    double scale;
+    unsigned int i;
+
+    if (context->type != JS_OBJECT)
+        return undefined();
+
+    for (i = 0; i < 6; i++)
+        v[i] = toreal(js, &call->arguments[i]);
+
+    getmatrix(js, context, m);
+
+    /* lengths are scaled by how much the transform grows an area, rotation of rectangles is not kept */
+    scale = number_sqrt((m[0] * m[3] - m[1] * m[2] < 0) ? m[1] * m[2] - m[0] * m[3] : m[0] * m[3] - m[1] * m[2]);
+
+    switch (method)
+    {
+
+    case CANVAS_FILLRECT:
+    case CANVAS_STROKERECT:
+        /* under rotation or skew a rectangle is drawn as the four corners it turns into */
+        if (m[1] != 0 || m[2] != 0)
+        {
+
+            double width[6] = {0, 0, 0, 0, 0, 0};
+
+            width[0] = canvasnumber(js, context, "lineWidth") * scale;
+
+            recordcanvas(js, node, JS_CANVAS_BEGINPATH, 0, 0);
+            recordpoint(js, context, JS_CANVAS_MOVETO, v[0], v[1]);
+            recordpoint(js, context, JS_CANVAS_LINETO, v[0] + v[2], v[1]);
+            recordpoint(js, context, JS_CANVAS_LINETO, v[0] + v[2], v[1] + v[3]);
+            recordpoint(js, context, JS_CANVAS_LINETO, v[0], v[1] + v[3]);
+            recordcanvas(js, node, JS_CANVAS_CLOSEPATH, 0, 0);
+            recordcanvas(js, node, (method == CANVAS_FILLRECT) ? JS_CANVAS_FILL : JS_CANVAS_STROKE, canvascolor(js, context, (method == CANVAS_FILLRECT) ? "fillStyle" : "strokeStyle"), width);
+            recordcanvas(js, node, JS_CANVAS_BEGINPATH, 0, 0);
+
+            break;
+
+        }
+
+    /* fall through */
+    case CANVAS_CLEARRECT:
+        {
+
+            double rect[6];
+
+            rect[0] = m[0] * v[0] + m[2] * v[1] + m[4];
+            rect[1] = m[1] * v[0] + m[3] * v[1] + m[5];
+            rect[2] = v[2] * m[0];
+            rect[3] = v[3] * m[3];
+            rect[4] = canvasnumber(js, context, "lineWidth") * scale;
+            rect[5] = 0;
+
+            if (method == CANVAS_CLEARRECT && rect[0] <= 0 && rect[1] <= 0 && rect[0] + rect[2] >= attributenumber(js, node, "width", 300) && rect[1] + rect[3] >= attributenumber(js, node, "height", 150))
+                dropcanvas(js, node);
+            else
+                recordcanvas(js, node, (method == CANVAS_FILLRECT) ? JS_CANVAS_FILLRECT : (method == CANVAS_STROKERECT) ? JS_CANVAS_STROKERECT : JS_CANVAS_CLEARRECT, canvascolor(js, context, (method == CANVAS_STROKERECT) ? "strokeStyle" : "fillStyle"), rect);
+
+        }
+
+        break;
+
+    case CANVAS_BEGINPATH:
+        recordcanvas(js, node, JS_CANVAS_BEGINPATH, 0, 0);
+
+        break;
+
+    case CANVAS_CLOSEPATH:
+        recordcanvas(js, node, JS_CANVAS_CLOSEPATH, 0, 0);
+
+        break;
+
+    case CANVAS_MOVETO:
+        recordpoint(js, context, JS_CANVAS_MOVETO, v[0], v[1]);
+
+        break;
+
+    case CANVAS_LINETO:
+    case CANVAS_ARCTO:
+        recordpoint(js, context, JS_CANVAS_LINETO, v[0], v[1]);
+
+        break;
+
+    case CANVAS_QUADRATICCURVETO:
+        recordpoint(js, context, JS_CANVAS_LINETO, v[2], v[3]);
+
+        break;
+
+    case CANVAS_BEZIERCURVETO:
+        recordpoint(js, context, JS_CANVAS_LINETO, v[4], v[5]);
+
+        break;
+
+    case CANVAS_ARC:
+    case CANVAS_ELLIPSE:
+        if (m[0] != m[3] || m[1] != -m[2] || method == CANVAS_ELLIPSE)
+        {
+
+            /* an arc that the transform stretches, or an ellipse, is drawn as a line through points on it */
+            unsigned int ellipse = method == CANVAS_ELLIPSE;
+            double rx = v[2];
+            double ry = (ellipse) ? v[3] : v[2];
+            double start = toreal(js, &call->arguments[(ellipse) ? 5 : 3]);
+            double end = toreal(js, &call->arguments[(ellipse) ? 6 : 4]);
+            unsigned int backwards = truthy(js, &call->arguments[(ellipse) ? 7 : 5]);
+            double sweep = end - start;
+            double turn = 2 * NUMBER_PI;
+
+            if (backwards && sweep > 0)
+                sweep -= turn * (1 + (int)(sweep / turn));
+
+            if (!backwards && sweep < 0)
+                sweep += turn * (1 + (int)(-sweep / turn));
+
+            sweep = (sweep > turn) ? turn : (sweep < -turn) ? -turn : sweep;
+
+            for (i = 0; i <= ARCSEGMENTS; i++)
+            {
+
+                double angle = start + sweep * i / ARCSEGMENTS;
+
+                recordpoint(js, context, JS_CANVAS_LINETO, v[0] + rx * number_cos(angle), v[1] + ry * number_sin(angle));
+
+            }
+
+            break;
+
+        }
+
+        {
+
+            double arc[6];
+            unsigned int ellipse = 0;
+
+            /* an ellipse is drawn as an arc of its first radius */
+            arc[0] = m[0] * v[0] + m[2] * v[1] + m[4];
+            arc[1] = m[1] * v[0] + m[3] * v[1] + m[5];
+            arc[2] = v[2] * scale;
+            arc[3] = v[(ellipse) ? 5 : 3];
+            arc[4] = toreal(js, &call->arguments[(ellipse) ? 6 : 4]);
+            arc[5] = truthy(js, &call->arguments[(ellipse) ? 7 : 5]);
+
+            recordcanvas(js, node, JS_CANVAS_ARC, 0, arc);
+
+        }
+
+        break;
+
+    case CANVAS_RECT:
+    case CANVAS_ROUNDRECT:
+        recordpoint(js, context, JS_CANVAS_MOVETO, v[0], v[1]);
+        recordpoint(js, context, JS_CANVAS_LINETO, v[0] + v[2], v[1]);
+        recordpoint(js, context, JS_CANVAS_LINETO, v[0] + v[2], v[1] + v[3]);
+        recordpoint(js, context, JS_CANVAS_LINETO, v[0], v[1] + v[3]);
+        recordcanvas(js, node, JS_CANVAS_CLOSEPATH, 0, 0);
+
+        break;
+
+    case CANVAS_FILL:
+        recordcanvas(js, node, JS_CANVAS_FILL, canvascolor(js, context, "fillStyle"), 0);
+
+        break;
+
+    case CANVAS_STROKE:
+        {
+
+            double width[6] = {0, 0, 0, 0, 0, 0};
+
+            width[0] = canvasnumber(js, context, "lineWidth") * scale;
+
+            recordcanvas(js, node, JS_CANVAS_STROKE, canvascolor(js, context, "strokeStyle"), width);
+
+        }
+
+        break;
+
+    case CANVAS_SAVE:
+    case CANVAS_RESTORE:
+        {
+
+            struct js_value stack = getproperty(js, context, internstring(js, "@@stack"));
+
+            if (stack.type != JS_OBJECT)
+            {
+
+                stack = newarray(js);
+
+                putproperty(js, context->number, internstring(js, "@@stack"), &stack);
+
+            }
+
+            /* the state kept is the transform and the styles */
+            if (method == CANVAS_SAVE && lengthof(js, &stack) < CANVASSTACK * 5)
+            {
+
+                struct js_value matrix = getproperty(js, context, internstring(js, "@@matrix"));
+                struct js_value fill = getproperty(js, context, internstring(js, "fillStyle"));
+                struct js_value stroke = getproperty(js, context, internstring(js, "strokeStyle"));
+                struct js_value line = getproperty(js, context, internstring(js, "lineWidth"));
+                struct js_value alpha = getproperty(js, context, internstring(js, "globalAlpha"));
+
+                pusharray(js, &stack, &matrix);
+                pusharray(js, &stack, &fill);
+                pusharray(js, &stack, &stroke);
+                pusharray(js, &stack, &line);
+                pusharray(js, &stack, &alpha);
+
+            }
+
+            else if (method == CANVAS_RESTORE && lengthof(js, &stack) >= 5)
+            {
+
+                unsigned int top = lengthof(js, &stack) - 5;
+                struct js_value item;
+
+                item = itemat(js, &stack, top);
+                putproperty(js, context->number, internstring(js, "@@matrix"), &item);
+                item = itemat(js, &stack, top + 1);
+                putproperty(js, context->number, internstring(js, "fillStyle"), &item);
+                item = itemat(js, &stack, top + 2);
+                putproperty(js, context->number, internstring(js, "strokeStyle"), &item);
+                item = itemat(js, &stack, top + 3);
+                putproperty(js, context->number, internstring(js, "lineWidth"), &item);
+                item = itemat(js, &stack, top + 4);
+                putproperty(js, context->number, internstring(js, "globalAlpha"), &item);
+
+                js->objects[stack.number].data = top;
+
+            }
+
+        }
+
+        break;
+
+    case CANVAS_TRANSLATE:
+        m[4] += m[0] * v[0] + m[2] * v[1];
+        m[5] += m[1] * v[0] + m[3] * v[1];
+
+        setmatrix(js, context, m);
+
+        break;
+
+    case CANVAS_SCALE:
+        m[0] *= v[0];
+        m[1] *= v[0];
+        m[2] *= v[1];
+        m[3] *= v[1];
+
+        setmatrix(js, context, m);
+
+        break;
+
+    case CANVAS_ROTATE:
+        {
+
+            double c = number_cos(v[0]);
+            double n = number_sin(v[0]);
+            double a = m[0];
+            double b = m[1];
+
+            m[0] = a * c + m[2] * n;
+            m[1] = b * c + m[3] * n;
+            m[2] = m[2] * c - a * n;
+            m[3] = m[3] * c - b * n;
+
+            setmatrix(js, context, m);
+
+        }
+
+        break;
+
+    case CANVAS_SETTRANSFORM:
+    case CANVAS_RESETTRANSFORM:
+        if (method == CANVAS_RESETTRANSFORM || call->count < 6)
+        {
+
+            v[0] = v[3] = 1;
+            v[1] = v[2] = v[4] = v[5] = 0;
+
+        }
+
+        setmatrix(js, context, v);
+
+        break;
+
+    case CANVAS_TRANSFORM:
+        {
+
+            double r[6];
+
+            r[0] = m[0] * v[0] + m[2] * v[1];
+            r[1] = m[1] * v[0] + m[3] * v[1];
+            r[2] = m[0] * v[2] + m[2] * v[3];
+            r[3] = m[1] * v[2] + m[3] * v[3];
+            r[4] = m[0] * v[4] + m[2] * v[5] + m[4];
+            r[5] = m[1] * v[4] + m[3] * v[5] + m[5];
+
+            setmatrix(js, context, r);
+
+        }
+
+        break;
+
+    case CANVAS_CREATELINEARGRADIENT:
+    case CANVAS_CREATERADIALGRADIENT:
+    case CANVAS_CREATEPATTERN:
+        {
+
+            struct js_value gradient = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+            if (gradient.number)
+                addnative(js, gradient.number, "addColorStop", NATIVE_ADDCOLORSTOP);
+
+            return gradient;
+
+        }
+
+    case CANVAS_MEASURETEXT:
+        {
+
+            /* text is not drawn on a canvas, but it is measured at about half the font size a character */
+            struct js_value metrics = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value font = getproperty(js, context, internstring(js, "font"));
+            struct js_value width;
+            char *text = getstring(js, tostring(js, &font));
+            double size = 10;
+
+            for (i = 0; text[i]; i++)
+            {
+
+                if (cstring_isdigit(text[i]))
+                {
+
+                    size = stringreal(text + i);
+
+                    if (number_isnan(size))
+                        size = parseint(text + i, 10);
+
+                    break;
+
+                }
+
+            }
+
+            width = numbervalue(cstring_length(getstring(js, tostring(js, &call->arguments[0]))) * size * 0.55);
+
+            if (metrics.number)
+                putproperty(js, metrics.number, internstring(js, "width"), &width);
+
+            return metrics;
+
+        }
+
+    case CANVAS_FILLTEXT:
+    case CANVAS_STROKETEXT:
+        {
+
+            /* the size and weight come from the font, the place from textAlign and textBaseline */
+            struct js_value font = getproperty(js, context, internstring(js, "font"));
+            struct js_value align = getproperty(js, context, internstring(js, "textAlign"));
+            struct js_value baseline = getproperty(js, context, internstring(js, "textBaseline"));
+            char *text = getstring(js, tostring(js, &font));
+            char *alignment = getstring(js, tostring(js, &align));
+            char *line = getstring(js, tostring(js, &baseline));
+            double place[6];
+            double size = 10;
+
+            for (i = 0; text[i]; i++)
+            {
+
+                if (cstring_isdigit(text[i]) && (!i || text[i - 1] == ' '))
+                {
+
+                    size = parseint(text + i, 10);
+
+                    if (text[i + buffer_findbyte(text + i, cstring_length(text + i), 'p')] == 'p')
+                        break;
+
+                }
+
+            }
+
+            place[0] = m[0] * v[1] + m[2] * v[2] + m[4];
+            place[1] = m[1] * v[1] + m[3] * v[2] + m[5];
+            place[2] = size * scale;
+            place[3] = (cstring_match(alignment, "center")) ? 1 : (cstring_match(alignment, "right") || cstring_match(alignment, "end")) ? 2 : 0;
+            place[4] = (cstring_match(line, "top") || cstring_match(line, "hanging")) ? 1 : (cstring_match(line, "middle")) ? 2 : (cstring_match(line, "bottom") || cstring_match(line, "ideographic")) ? 3 : 0;
+            place[5] = isboldfont(text);
+
+            recordcanvas(js, node, JS_CANVAS_TEXT, canvascolor(js, context, (method == CANVAS_FILLTEXT) ? "fillStyle" : "strokeStyle"), place);
+
+            if (js->canvasopcount && js->canvasops[js->canvasopcount - 1].op == JS_CANVAS_TEXT)
+                js->canvasops[js->canvasopcount - 1].text = tostring(js, &call->arguments[0]);
+
+        }
+
+        break;
+
+    case CANVAS_GETIMAGEDATA:
+        {
+
+            struct js_value data = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+            struct js_value pixels = newarray(js);
+
+            if (data.number)
+                putproperty(js, data.number, internstring(js, "data"), &pixels);
+
+            return data;
+
+        }
+
+    case CANVAS_ISPOINTINPATH:
+        return value(JS_BOOLEAN, 0);
+
+    }
+
+    return undefined();
+
+}
+
+static struct js_value getcontext(struct js_engine *js, struct js_value *canvas)
+{
+
+    struct js_property *cached = findproperty(js, canvas->number, internstring(js, "@@context"));
+    struct js_value context;
+    unsigned int i;
+
+    if (cached)
+        return cached->value;
+
+    context = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+    if (!context.number)
+        return value(JS_NULL, 0);
+
+    for (i = 0; i < CANVASMETHODS; i++)
+        addnative(js, context.number, canvasmethods[i], NATIVE_CANVAS + i);
+
+    putproperty(js, context.number, internstring(js, "canvas"), canvas);
+
+    {
+
+        struct js_value black = value(JS_STRING, internstring(js, "#000000"));
+        struct js_value one = value(JS_NUMBER, 1);
+        struct js_value font = value(JS_STRING, internstring(js, "10px sans-serif"));
+
+        putproperty(js, context.number, internstring(js, "fillStyle"), &black);
+        putproperty(js, context.number, internstring(js, "strokeStyle"), &black);
+        putproperty(js, context.number, internstring(js, "lineWidth"), &one);
+        putproperty(js, context.number, internstring(js, "globalAlpha"), &one);
+        putproperty(js, context.number, internstring(js, "font"), &font);
+
+    }
+
+    putproperty(js, canvas->number, internstring(js, "@@context"), &context);
+
+    return context;
+
+}
+
 static struct js_value callnative(struct js_engine *js, struct call *call)
 {
 
@@ -9079,6 +9819,9 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
     if (native->data >= NATIVE_DATEMETHOD && native->data < NATIVE_DATEMETHOD + DATEMETHODS)
         return calldate(js, native->data - NATIVE_DATEMETHOD, call);
+
+    if (native->data >= NATIVE_CANVAS && native->data < NATIVE_CANVAS + CANVASMETHODS)
+        return callcanvas(js, native->data - NATIVE_CANVAS, call);
 
     switch (native->data)
     {
@@ -10360,6 +11103,19 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
     case NATIVE_SELF:
         return call->self;
+
+    case NATIVE_GETCONTEXT:
+        /* only the 2d context is drawn */
+        if (element && js->document->nodes[element].tag == HTML_TAG_CANVAS && cstring_match(getstring(js, tostring(js, first)), "2d"))
+            return getcontext(js, self);
+
+        return value(JS_NULL, 0);
+
+    case NATIVE_ADDCOLORSTOP:
+        if (self->type == JS_OBJECT && !findproperty(js, self->number, internstring(js, "@@color")))
+            putproperty(js, self->number, internstring(js, "@@color"), second);
+
+        return undefined();
 
     case NATIVE_FREEZE:
         if (first->type == JS_OBJECT)
@@ -13388,6 +14144,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     js->interncount = 0;
     js->listenercount = 0;
     js->now = unixtime * 1000.0;
+    js->canvasopcount = 0;
     js->realcount = 0;
     js->measure = 0;
     callcount = 0;

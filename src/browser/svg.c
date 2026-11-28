@@ -1,8 +1,12 @@
 #include <fudge.h>
 #include <compression.h>
 #include <image.h>
+#include <font.h>
 #include "html.h"
 #include "css.h"
+#include "font.h"
+#include "number.h"
+#include "js.h"
 #include "svg.h"
 
 #define DEPTH                           16
@@ -1125,6 +1129,258 @@ void svg_render(struct svg_canvas *canvas, struct html_document *document, struc
 
     if (state.display)
         walkchildren(&raster, root, &state, 0);
+
+}
+
+static int canvasfixed(double value)
+{
+
+    /* coordinates become 16.16 fixed point, kept inside what that can hold */
+    if (value > 32000.0)
+        return 32000 << 16;
+
+    if (value < -32000.0)
+        return -(32000 << 16);
+
+    return (int)(value * 65536.0);
+
+}
+
+static void canvaspath(struct svg_matrix *matrix, double x, double y, double w, double h)
+{
+
+    svg_reset(&raster.svg);
+    svg_moveto(&raster.svg, matrix, canvasfixed(x), canvasfixed(y));
+    svg_lineto(&raster.svg, matrix, canvasfixed(x + w), canvasfixed(y));
+    svg_lineto(&raster.svg, matrix, canvasfixed(x + w), canvasfixed(y + h));
+    svg_lineto(&raster.svg, matrix, canvasfixed(x), canvasfixed(y + h));
+    svg_closepath(&raster.svg);
+
+}
+
+static void canvasclear(struct svg_canvas *canvas, double sx, double sy, struct js_canvasop *op)
+{
+
+    int x0 = (int)(op->a[0] * sx);
+    int y0 = (int)(op->a[1] * sy);
+    int x1 = (int)((op->a[0] + op->a[2]) * sx);
+    int y1 = (int)((op->a[1] + op->a[3]) * sy);
+    int x;
+    int y;
+
+    for (y = (y0 < 0) ? 0 : y0; y < y1 && y < (int)canvas->height; y++)
+    {
+
+        for (x = (x0 < 0) ? 0 : x0; x < x1 && x < (int)canvas->width; x++)
+            canvas->pixels[y * canvas->width + x] = 0;
+
+    }
+
+}
+
+static unsigned int canvasblend(unsigned int under, unsigned int color, unsigned int alpha)
+{
+
+    unsigned int rest = (under >> 24) * (255 - alpha) / 255;
+    unsigned int total = alpha + rest;
+
+    if (!total)
+        return 0;
+
+    return (total << 24) | ((((color >> 16) & 0xFF) * alpha + ((under >> 16) & 0xFF) * rest) / total << 16) | ((((color >> 8) & 0xFF) * alpha + ((under >> 8) & 0xFF) * rest) / total << 8) | (((color & 0xFF) * alpha + (under & 0xFF) * rest) / total);
+
+}
+
+static void canvastext(struct svg_canvas *canvas, double sx, double sy, struct js_canvasop *op, char *text, struct font_set *fonts)
+{
+
+    unsigned int size = (unsigned int)(op->a[2] * sy + 0.5);
+    struct font_choice choice = font_choose((size < 1) ? 1 : (size > FONT_LARGEST) ? FONT_LARGEST : size, op->a[5] != 0, 0);
+    unsigned int length = cstring_length(text);
+    int width = 0;
+    int pen;
+    int baseline;
+    unsigned int offset;
+
+    /* the text is measured first so its alignment can move it, then drawn glyph by glyph */
+    for (offset = 0; offset < length;)
+    {
+
+        unsigned int codepoint;
+
+        offset += utf8_read(text + offset, length - offset, &codepoint);
+        width += font_getglyph(fonts, choice, codepoint)->advance;
+
+    }
+
+    pen = (int)(op->a[0] * sx * 64) - ((op->a[3] == 1) ? width / 2 : (op->a[3] == 2) ? width : 0);
+    baseline = (int)(op->a[1] * sy);
+
+    if (op->a[4] == 1)
+        baseline += font_getascent(fonts, choice);
+    else if (op->a[4] == 2)
+        baseline += (font_getascent(fonts, choice) - font_getdescent(fonts, choice)) / 2;
+    else if (op->a[4] == 3)
+        baseline -= font_getdescent(fonts, choice);
+
+    for (offset = 0; offset < length;)
+    {
+
+        unsigned int codepoint;
+        struct font_glyph *glyph;
+        unsigned char *coverage;
+        int left;
+        int top;
+        int x;
+        int y;
+
+        offset += utf8_read(text + offset, length - offset, &codepoint);
+        glyph = font_render(fonts, choice, codepoint);
+        coverage = font_getcoverage(fonts, glyph);
+        left = (pen + 32) / 64 + glyph->left;
+        top = baseline + glyph->top;
+
+        for (y = 0; y < (int)glyph->height; y++)
+        {
+
+            for (x = 0; x < (int)glyph->width; x++)
+            {
+
+                int px = left + x;
+                int py = top + y;
+                unsigned int alpha = (op->color >> 24) * coverage[y * glyph->width + x] / 255;
+
+                if (alpha && px >= 0 && py >= 0 && px < (int)canvas->width && py < (int)canvas->height)
+                    canvas->pixels[py * canvas->width + px] = canvasblend(canvas->pixels[py * canvas->width + px], op->color, alpha);
+
+            }
+
+        }
+
+        pen += glyph->advance;
+
+    }
+
+}
+
+void svg_rendercanvas(struct svg_canvas *canvas, struct js_canvasop *ops, unsigned int count, unsigned int node, unsigned int width, unsigned int height, char *strings, struct font_set *fonts)
+{
+
+    struct svg_matrix matrix;
+    double sx;
+    double sy;
+    unsigned int i;
+
+    if (!canvas->width || canvas->width > SVG_WIDTH || !canvas->height || !width || !height)
+        return;
+
+    /* the canvas is drawn at its own size and stretched to its box */
+    sx = (double)canvas->width / width;
+    sy = (double)canvas->height / height;
+    raster.svg.pixels = canvas->pixels;
+    raster.svg.width = canvas->width;
+    raster.svg.height = canvas->height;
+
+    svg_setmatrix(&matrix, canvasfixed(sx), 0, 0, canvasfixed(sy), 0, 0);
+    svg_reset(&raster.svg);
+
+    for (i = 0; i < count; i++)
+    {
+
+        struct js_canvasop *op = &ops[i];
+
+        if (op->node != node)
+            continue;
+
+        switch (op->op)
+        {
+
+        case JS_CANVAS_BEGINPATH:
+            svg_reset(&raster.svg);
+
+            break;
+
+        case JS_CANVAS_MOVETO:
+            svg_moveto(&raster.svg, &matrix, canvasfixed(op->a[0]), canvasfixed(op->a[1]));
+
+            break;
+
+        case JS_CANVAS_LINETO:
+            svg_lineto(&raster.svg, &matrix, canvasfixed(op->a[0]), canvasfixed(op->a[1]));
+
+            break;
+
+        case JS_CANVAS_CLOSEPATH:
+            svg_closepath(&raster.svg);
+
+            break;
+
+        case JS_CANVAS_ARC:
+            {
+
+                double turn = 2.0 * NUMBER_PI;
+                double sweep = op->a[4] - op->a[3];
+                int from;
+
+                /* clockwise sweeps forward, anticlockwise back, and never more than one turn */
+                if (op->a[5] && sweep > 0)
+                    sweep -= turn * (1 + (int)(sweep / turn));
+
+                if (!op->a[5] && sweep < 0)
+                    sweep += turn * (1 + (int)(-sweep / turn));
+
+                if (sweep > turn)
+                    sweep = turn;
+
+                if (sweep < -turn)
+                    sweep = -turn;
+
+                from = (int)(op->a[3] / turn * SVG_TURN);
+
+                svg_lineto(&raster.svg, &matrix, canvasfixed(op->a[0] + op->a[2] * number_cos(op->a[3])), canvasfixed(op->a[1] + op->a[2] * number_sin(op->a[3])));
+                svg_ellipse(&raster.svg, &matrix, canvasfixed(op->a[0]), canvasfixed(op->a[1]), canvasfixed(op->a[2]), canvasfixed(op->a[2]), from, (int)(sweep / turn * SVG_TURN), SVG_ONE, 0);
+
+            }
+
+            break;
+
+        case JS_CANVAS_FILL:
+            svg_fill(&raster.svg, op->color, op->color >> 24, 0);
+
+            break;
+
+        case JS_CANVAS_STROKE:
+            svg_stroke(&raster.svg, &matrix, canvasfixed(op->a[0]), SVG_CAP_BUTT, op->color, op->color >> 24);
+
+            break;
+
+        case JS_CANVAS_FILLRECT:
+        case JS_CANVAS_STROKERECT:
+            canvaspath(&matrix, op->a[0], op->a[1], op->a[2], op->a[3]);
+
+            if (op->op == JS_CANVAS_FILLRECT)
+                svg_fill(&raster.svg, op->color, op->color >> 24, 0);
+            else
+                svg_stroke(&raster.svg, &matrix, canvasfixed(op->a[4]), SVG_CAP_BUTT, op->color, op->color >> 24);
+
+            svg_reset(&raster.svg);
+
+            break;
+
+        case JS_CANVAS_CLEARRECT:
+            canvasclear(canvas, sx, sy, op);
+
+            break;
+
+        case JS_CANVAS_TEXT:
+            if (fonts && strings)
+                canvastext(canvas, sx, sy, op, strings + op->text, fonts);
+
+            break;
+
+        }
+
+    }
 
 }
 

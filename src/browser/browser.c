@@ -31,6 +31,7 @@
 #define PICTURE_PNG                     0
 #define PICTURE_SVGFILE                 1
 #define PICTURE_SVGINLINE               2
+#define PICTURE_CANVAS                  3
 
 struct image
 {
@@ -1106,7 +1107,7 @@ static unsigned int loadpicture(char *url)
     for (i = 0; i < picturecount; i++)
     {
 
-        if (sources[i].kind != PICTURE_SVGINLINE && sources[i].hash == hash)
+        if (sources[i].kind != PICTURE_SVGINLINE && sources[i].kind != PICTURE_CANVAS && sources[i].hash == hash)
             return i + 1;
 
     }
@@ -1186,6 +1187,40 @@ static unsigned int insvg(unsigned int node)
 
 }
 
+static unsigned int canvassize(unsigned int node, char *name, unsigned int fallback)
+{
+
+    char *text = html_getattribute(document, node, name);
+
+    return (text && cstring_isdigit(text[0])) ? cstring_read_value(text, cstring_length(text), 10) : fallback;
+
+}
+
+static unsigned int addcanvas(unsigned int node)
+{
+
+    struct svg_size size;
+
+    /* a canvas is a picture of its own size that scripts draw on, painted from what they drew */
+    if (picturecount >= PICTURES)
+        return 0;
+
+    size.width = canvassize(node, "width", 300);
+    size.height = canvassize(node, "height", 150);
+    size.ratiowidth = size.width;
+    size.ratioheight = size.height;
+
+    setsvgpicture(&pictures[picturecount], &size);
+
+    sources[picturecount].hash = 0;
+    sources[picturecount].kind = PICTURE_CANVAS;
+    sources[picturecount].node = node;
+    picturecount++;
+
+    return picturecount;
+
+}
+
 static unsigned int addinlinesvg(unsigned int node)
 {
 
@@ -1229,6 +1264,8 @@ static void loadpictures(void)
             layout->picture[node] = loadpicture(url);
         else if (document->nodes[node].tag == HTML_TAG_SVG)
             layout->picture[node] = addinlinesvg(node);
+        else if (document->nodes[node].tag == HTML_TAG_CANVAS)
+            layout->picture[node] = addcanvas(node);
 
     }
 
@@ -1322,6 +1359,13 @@ static void rasterize(void)
 
             html_parse(svgdocument, (char *)pixels + sources[i].source, sources[i].length);
             svg_render(&canvas, svgdocument, 0, svg_findroot(svgdocument), 0xFF000000, 0);
+
+        }
+
+        else if (sources[i].kind == PICTURE_CANVAS)
+        {
+
+            svg_rendercanvas(&canvas, js->canvasops, js->canvasopcount, sources[i].node, canvassize(sources[i].node, "width", 300), canvassize(sources[i].node, "height", 150), js->strings, fonts);
 
         }
 

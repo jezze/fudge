@@ -3,9 +3,21 @@
 #define JS_PROPERTIES                   65536
 #define JS_STRINGSIZE                   0x80000
 #define JS_REALS                        4096
+#define JS_CANVASOPS                    4096
+#define JS_CANVAS_BEGINPATH             1
+#define JS_CANVAS_MOVETO                2
+#define JS_CANVAS_LINETO                3
+#define JS_CANVAS_ARC                   4
+#define JS_CANVAS_CLOSEPATH             5
+#define JS_CANVAS_FILL                  6
+#define JS_CANVAS_STROKE                7
+#define JS_CANVAS_FILLRECT              8
+#define JS_CANVAS_STROKERECT            9
+#define JS_CANVAS_CLEARRECT             10
+#define JS_CANVAS_TEXT                  11
 #define JS_INTERNS                      65536
 #define JS_LISTENERS                    64
-#define JS_NATIVES                      320
+#define JS_NATIVES                      384
 #define JS_TIMERS                       32
 #define JS_SCRATCH                      8192
 #define JS_TEXTSIZE                     4096
@@ -27,6 +39,17 @@ struct js_rect
     int y;
     int w;
     int h;
+
+};
+
+struct js_canvasop
+{
+
+    unsigned int node;
+    unsigned int op;
+    unsigned int color;
+    unsigned int text;
+    double a[6];
 
 };
 
@@ -173,6 +196,8 @@ struct js_engine
     unsigned int label;
     double now;
     double reals[JS_REALS];
+    struct js_canvasop canvasops[JS_CANVASOPS];
+    unsigned int canvasopcount;
     unsigned int realcount;
     double ticks;
     struct js_rect (*measure)(unsigned int node);

@@ -25,6 +25,7 @@ L:=\
 $(DIR_SRC)/browser/js.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
 $(DIR_SRC)/browser/number.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
 $(DIR_SRC)/browser/date.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
+$(DIR_SRC)/browser/svg.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
 
 include $(DIR_MK)/bin.mk
 
