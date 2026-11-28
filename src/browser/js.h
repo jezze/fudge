@@ -103,6 +103,15 @@ struct js_capture
 
 };
 
+struct js_regexname
+{
+
+    unsigned int start;
+    unsigned int length;
+    unsigned int group;
+
+};
+
 struct js_regex
 {
 
@@ -115,6 +124,11 @@ struct js_regex
     unsigned int groups;
     unsigned int steps;
     unsigned int depth;
+    unsigned int multiline;
+    unsigned int dotall;
+    int target;
+    struct js_regexname names[JS_CAPTURES];
+    unsigned int namecount;
     struct js_renode nodes[JS_REGEXNODES];
     unsigned int nodecount;
     struct js_capture captures[JS_CAPTURES];

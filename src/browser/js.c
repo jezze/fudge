@@ -355,6 +355,17 @@
 #define NATIVE_DEFINEELEMENT            226
 #define NATIVE_GETELEMENT               227
 #define NATIVE_WHENDEFINED              228
+#define NATIVE_FREEZE                   229
+#define NATIVE_ISFROZEN                 230
+#define NATIVE_NUMBERFORMAT             231
+#define NATIVE_FORMATNUMBER             232
+#define NATIVE_DATETIMEFORMAT           233
+#define NATIVE_FORMATDATE               234
+#define NATIVE_PLURALRULES              235
+#define NATIVE_PLURALSELECT             236
+#define NATIVE_RELATIVETIME             237
+#define NATIVE_FORMATRELATIVE           238
+#define NATIVE_COLLATOR                 239
 #define PARAMSMETHODS                   12
 #define VIEWFIELDS                      9
 #define VIEW_WIDTH                      0
@@ -436,6 +447,10 @@
 #define RE_DIGIT                        10
 #define RE_WORD                         11
 #define RE_SPACE                        12
+#define RE_LOOK                         13
+#define RE_AT                           14
+#define RE_BACKREF                      15
+#define LOOK_BEHIND                     1
 #define JSONDEPTH                       16
 
 struct token
@@ -5530,6 +5545,10 @@ static void setproperty(struct js_engine *js, struct js_value *target, unsigned 
     if (callsetter(js, target, name, newvalue))
         return;
 
+    /* a frozen object keeps what it had */
+    if (object->kind == KIND_PLAIN && findproperty(js, target->number, internstring(js, "@@frozen")))
+        return;
+
     if (object->kind == KIND_DATASET)
     {
 
@@ -6496,6 +6515,7 @@ static unsigned int renew(struct js_regex *re, unsigned int type)
 }
 
 static unsigned int recompilegroup(struct js_regex *re, unsigned int capture);
+static unsigned int recompilelook(struct js_regex *re);
 
 static void requantifier(struct js_regex *re, unsigned int index)
 {
@@ -6607,6 +6627,203 @@ static unsigned int reescape(struct js_regex *re, unsigned int index, char c)
 
 }
 
+static int hexdigit(char c)
+{
+
+    return (c >= '0' && c <= '9') ? c - '0' : (c >= 'a' && c <= 'f') ? c - 'a' + 10 : (c >= 'A' && c <= 'F') ? c - 'A' + 10 : -1;
+
+}
+
+static unsigned int refindname(struct js_regex *re, char *name, unsigned int length)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < re->namecount; i++)
+    {
+
+        if (re->names[i].length == length && buffer_match(re->pattern + re->names[i].start, name, length))
+            return re->names[i].group;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int rehex(struct js_regex *re, unsigned int digits)
+{
+
+    unsigned int codepoint = 0;
+    unsigned int i;
+
+    for (i = 0; i < digits; i++)
+    {
+
+        int digit = hexdigit(re->pattern[re->offset]);
+
+        if (digit < 0)
+            break;
+
+        codepoint = codepoint * 16 + digit;
+        re->offset++;
+
+    }
+
+    return codepoint;
+
+}
+
+static unsigned int recompileescape(struct js_regex *re, unsigned int index)
+{
+
+    char c = re->pattern[re->offset++];
+    unsigned int codepoint;
+    char bytes[4];
+    unsigned int count;
+    unsigned int last;
+    unsigned int i;
+
+    /* \1 to \9 and \k<name> match what a group matched */
+    if (c >= '1' && c <= '9')
+    {
+
+        re->nodes[index].type = RE_BACKREF;
+        re->nodes[index].value = c - '0';
+
+        return index;
+
+    }
+
+    if (c == 'k' && re->pattern[re->offset] == '<')
+    {
+
+        unsigned int start = re->offset + 1;
+        unsigned int end = start;
+
+        while (re->pattern[end] && re->pattern[end] != '>')
+            end++;
+
+        re->nodes[index].type = RE_BACKREF;
+        re->nodes[index].value = refindname(re, re->pattern + start, end - start);
+        re->offset = (re->pattern[end]) ? end + 1 : end;
+
+        return index;
+
+    }
+
+    if (c != 'x' && c != 'u')
+    {
+
+        re->nodes[index].type = RE_CHAR;
+
+        if (c == 'f' || c == 'v' || c == '0')
+        {
+
+            re->nodes[index].value = (c == 'f') ? '\f' : (c == 'v') ? '\v' : '\0';
+
+            return index;
+
+        }
+
+        return reescape(re, index, c);
+
+    }
+
+    /* \xHH, \uHHHH and \u{H...} are a code point, which strings keep as utf-8, one node per byte */
+    if (c == 'u' && re->pattern[re->offset] == '{')
+    {
+
+        re->offset++;
+        codepoint = rehex(re, 6);
+
+        if (re->pattern[re->offset] == '}')
+            re->offset++;
+
+    }
+
+    else
+    {
+
+        codepoint = rehex(re, (c == 'x') ? 2 : 4);
+
+    }
+
+    count = utf8_write(bytes, 4, codepoint);
+    re->nodes[index].type = RE_CHAR;
+    re->nodes[index].value = (count) ? (unsigned char)bytes[0] : 0;
+
+    for (i = 1, last = index; i < count; i++)
+    {
+
+        unsigned int byte = renew(re, RE_CHAR);
+
+        if (!byte)
+            break;
+
+        re->nodes[byte].value = (unsigned char)bytes[i];
+        re->nodes[last].next = byte;
+        last = byte;
+
+    }
+
+    return index;
+
+}
+
+static unsigned int recompilelook(struct js_regex *re)
+{
+
+    unsigned int look = renew(re, RE_LOOK);
+    unsigned int alternative;
+
+    if (!look)
+        return 0;
+
+    /* (?= and (?! look ahead, (?<= and (?<! look behind */
+    re->offset++;
+
+    if (re->pattern[re->offset] == '<')
+    {
+
+        re->nodes[look].value = LOOK_BEHIND;
+        re->offset++;
+
+    }
+
+    re->nodes[look].negated = re->pattern[re->offset++] == '!';
+    re->nodes[look].child = recompilegroup(re, 0);
+
+    /* behind, every alternative has to end where the look started */
+    for (alternative = (re->nodes[look].value == LOOK_BEHIND && re->nodes[look].child) ? re->nodes[re->nodes[look].child].child : 0; alternative; alternative = re->nodes[alternative].alternative)
+    {
+
+        unsigned int at = renew(re, RE_AT);
+        unsigned int last = re->nodes[alternative].child;
+
+        if (!at)
+            break;
+
+        if (!last)
+        {
+
+            re->nodes[alternative].child = at;
+
+            continue;
+
+        }
+
+        while (re->nodes[last].next)
+            last = re->nodes[last].next;
+
+        re->nodes[last].next = at;
+
+    }
+
+    return look;
+
+}
+
 static unsigned int recompilesequence(struct js_regex *re)
 {
 
@@ -6624,11 +6841,52 @@ static unsigned int recompilesequence(struct js_regex *re)
 
             unsigned int capture = 0;
 
-            if (re->pattern[re->offset] == '?')
+            if (re->pattern[re->offset] == '?' && (re->pattern[re->offset + 1] == '=' || re->pattern[re->offset + 1] == '!' || (re->pattern[re->offset + 1] == '<' && (re->pattern[re->offset + 2] == '=' || re->pattern[re->offset + 2] == '!'))))
             {
 
-                /* only non-capturing groups; lookarounds are not supported */
-                if (re->pattern[re->offset + 1] != ':')
+                index = recompilelook(re);
+
+            }
+
+            else
+            {
+
+                if (re->pattern[re->offset] == '?' && re->pattern[re->offset + 1] == ':')
+                {
+
+                    re->offset += 2;
+
+                }
+
+                else if (re->pattern[re->offset] == '?' && re->pattern[re->offset + 1] == '<')
+                {
+
+                    /* a named group is an ordinary capture whose name is remembered */
+                    unsigned int start = re->offset + 2;
+                    unsigned int end = start;
+
+                    while (re->pattern[end] && re->pattern[end] != '>')
+                        end++;
+
+                    if (re->pattern[end] != '>' || re->groups >= JS_CAPTURES || re->namecount >= JS_CAPTURES)
+                    {
+
+                        re->failed = 1;
+
+                        break;
+
+                    }
+
+                    re->names[re->namecount].start = start;
+                    re->names[re->namecount].length = end - start;
+                    re->names[re->namecount].group = re->groups;
+                    re->namecount++;
+                    re->offset = end + 1;
+                    capture = re->groups++;
+
+                }
+
+                else if (re->pattern[re->offset] == '?')
                 {
 
                     re->failed = 1;
@@ -6637,18 +6895,16 @@ static unsigned int recompilesequence(struct js_regex *re)
 
                 }
 
-                re->offset += 2;
+                else if (re->groups < JS_CAPTURES)
+                {
+
+                    capture = re->groups++;
+
+                }
+
+                index = recompilegroup(re, capture);
 
             }
-
-            else if (re->groups < JS_CAPTURES)
-            {
-
-                capture = re->groups++;
-
-            }
-
-            index = recompilegroup(re, capture);
 
             if (re->pattern[re->offset] == ')')
                 re->offset++;
@@ -6682,7 +6938,7 @@ static unsigned int recompilesequence(struct js_regex *re)
             else if (c == '\\' && re->pattern[re->offset])
             {
 
-                reescape(re, index, re->pattern[re->offset++]);
+                index = recompileescape(re, index);
 
             }
 
@@ -6734,7 +6990,8 @@ static unsigned int recompilesequence(struct js_regex *re)
         else
             first = index;
 
-        last = index;
+        /* an escape can be several nodes in a row, the next one follows the last of them */
+        for (last = index; re->nodes[last].type == RE_CHAR && re->nodes[last].next; last = re->nodes[last].next);
 
     }
 
@@ -6862,7 +7119,7 @@ static unsigned int rechar(struct js_regex *re, struct js_renode *node, char c)
         return (re->ignorecase) ? relower(c) == relower((char)node->value) : c == (char)node->value;
 
     case RE_ANY:
-        return c != '\n';
+        return c != '\n' || re->dotall;
 
     case RE_CLASS:
         return reclass(re, node, (re->ignorecase) ? relower(c) : c) != node->negated;
@@ -7025,10 +7282,70 @@ static int rematch(struct js_regex *re, unsigned int index, int position, struct
     {
 
     case RE_START:
-        return (position == 0 || re->text[position - 1] == '\n') ? rematch(re, node->next, position, frame) : -1;
+        return (position == 0 || (re->multiline && re->text[position - 1] == '\n')) ? rematch(re, node->next, position, frame) : -1;
 
     case RE_END:
-        return (position == re->length || re->text[position] == '\n') ? rematch(re, node->next, position, frame) : -1;
+        return (position == re->length || (re->multiline && re->text[position] == '\n')) ? rematch(re, node->next, position, frame) : -1;
+
+    case RE_AT:
+        return (position == re->target) ? rematch(re, node->next, position, frame) : -1;
+
+    case RE_BACKREF:
+        {
+
+            struct js_capture *capture = &re->captures[(node->value < JS_CAPTURES) ? node->value : 0];
+            int length = (capture->start >= 0 && node->value) ? capture->end - capture->start : 0;
+            int i;
+
+            /* a group that took part matches its text again, one that did not matches nothing */
+            if (position + length > re->length)
+                return -1;
+
+            for (i = 0; i < length; i++)
+            {
+
+                char a = re->text[capture->start + i];
+                char b = re->text[position + i];
+
+                if ((re->ignorecase) ? relower(a) != relower(b) : a != b)
+                    return -1;
+
+            }
+
+            return rematch(re, node->next, position + length, frame);
+
+        }
+
+    case RE_LOOK:
+        {
+
+            int saved = re->target;
+            int found = -1;
+            int start;
+
+            /* the look matches on its own from here, ahead from this position or behind ending at it */
+            if (node->value == LOOK_BEHIND)
+            {
+
+                re->target = position;
+
+                for (start = position; start >= 0 && found < 0 && re->steps <= STEPLIMIT; start--)
+                    found = rematch(re, node->child, start, 0);
+
+            }
+
+            else
+            {
+
+                found = rematch(re, node->child, position, 0);
+
+            }
+
+            re->target = saved;
+
+            return ((found >= 0) != node->negated) ? rematch(re, node->next, position, frame) : -1;
+
+        }
 
     case RE_BOUNDARY:
     case RE_NOTBOUNDARY:
@@ -7058,12 +7375,22 @@ static unsigned int recompile(struct js_regex *re, char *pattern, char *flags)
     re->groups = 1;
     re->nodecount = 1;
     re->ignorecase = 0;
+    re->multiline = 0;
+    re->dotall = 0;
+    re->namecount = 0;
+    re->target = -1;
 
     for (i = 0; flags[i]; i++)
     {
 
         if (flags[i] == 'i')
             re->ignorecase = 1;
+
+        if (flags[i] == 'm')
+            re->multiline = 1;
+
+        if (flags[i] == 's')
+            re->dotall = 1;
 
     }
 
@@ -7130,6 +7457,25 @@ static struct js_value matchresult(struct js_engine *js, struct js_regex *re)
     if (result.type == JS_OBJECT)
         putproperty(js, result.number, internstring(js, "index"), &index);
 
+    /* named groups are also found by name in groups */
+    if (result.type == JS_OBJECT && re->namecount)
+    {
+
+        struct js_value groups = value(JS_OBJECT, newobject(js, KIND_PLAIN, 0, 0));
+
+        for (i = 0; groups.number && i < re->namecount; i++)
+        {
+
+            struct js_value item = itemat(js, &result, re->names[i].group);
+
+            putproperty(js, groups.number, intern(js, re->pattern + re->names[i].start, re->names[i].length), &item);
+
+        }
+
+        putproperty(js, result.number, internstring(js, "groups"), &groups);
+
+    }
+
     return result;
 
 }
@@ -7144,22 +7490,19 @@ static unsigned int expandreplacement(struct js_engine *js, struct js_regex *re,
     if (isfunction(js, replacement))
     {
 
-        struct call call;
+        struct call *call = takecall(js, replacement, 0);
         struct js_value returned;
 
-        copyvalue(&call.function, replacement);
-        call.self = undefined();
-        call.count = 0;
+        if (!call)
+            return result;
 
-        for (i = 0; i < re->groups && call.count < ARGUMENTS - 1; i++)
-            call.arguments[call.count++] = (re->captures[i].start >= 0) ? value(JS_STRING, addstring(js, re->text + re->captures[i].start, re->captures[i].end - re->captures[i].start)) : undefined();
+        /* a function gets the match, each group, where it was found and the whole text */
+        for (i = 0; i < re->groups && call->count < ARGUMENTS - 2; i++)
+            call->arguments[call->count++] = (re->captures[i].start >= 0) ? value(JS_STRING, addstring(js, re->text + re->captures[i].start, re->captures[i].end - re->captures[i].start)) : undefined();
 
-        call.arguments[call.count++] = value(JS_NUMBER, re->captures[0].start);
-
-        for (i = call.count; i < ARGUMENTS; i++)
-            call.arguments[i] = undefined();
-
-        returned = callfunction(js, &call);
+        call->arguments[call->count++] = value(JS_NUMBER, re->captures[0].start);
+        call->arguments[call->count++] = value(JS_STRING, addstring(js, re->text, re->length));
+        returned = runcall(js, call);
 
         return concat(js, result, tostring(js, &returned));
 
@@ -7167,23 +7510,47 @@ static unsigned int expandreplacement(struct js_engine *js, struct js_regex *re,
 
     text = getstring(js, tostring(js, replacement));
 
+    /* $1 to $9 and $& put in what matched, $<name> a named group, and $$ is a dollar sign */
     for (i = 0; text[i]; i++)
     {
 
-        unsigned int group;
+        unsigned int group = JS_CAPTURES;
+        unsigned int skip = 2;
 
-        if (text[i] != '$' || !(cstring_isdigit(text[i + 1]) || text[i + 1] == '&'))
+        if (text[i] != '$')
             continue;
 
-        group = (text[i + 1] == '&') ? 0 : (unsigned int)(text[i + 1] - '0');
+        if (cstring_isdigit(text[i + 1]) || text[i + 1] == '&')
+            group = (text[i + 1] == '&') ? 0 : (unsigned int)(text[i + 1] - '0');
+        else if (text[i + 1] == '<' && re->namecount)
+        {
+
+            unsigned int end = i + 2;
+
+            while (text[end] && text[end] != '>')
+                end++;
+
+            if (!text[end])
+                continue;
+
+            group = refindname(re, text + i + 2, end - i - 2);
+            skip = end - i + 1;
+
+        }
+
+        else if (text[i + 1] != '$')
+            continue;
+
         result = concat(js, result, addstring(js, getstring(js, tostring(js, replacement)) + start, i - start));
 
-        if (group < re->groups && re->captures[group].start >= 0)
+        if (text[i + 1] == '$')
+            result = concat(js, result, internstring(js, "$"));
+        else if (group < re->groups && re->captures[group].start >= 0)
             result = concat(js, result, addstring(js, re->text + re->captures[group].start, re->captures[group].end - re->captures[group].start));
 
         text = getstring(js, tostring(js, replacement));
-        start = i + 2;
-        i++;
+        start = i + skip;
+        i += skip - 1;
 
     }
 
@@ -7881,7 +8248,7 @@ static unsigned int formatnumber(struct js_engine *js, unsigned int kind, double
 
 }
 
-static unsigned int localestring(struct js_engine *js, double number)
+static unsigned int localegrouped(struct js_engine *js, double number, unsigned int decimals, unsigned int trim)
 {
 
     char plain[NUMBER_TEXTSIZE * 4];
@@ -7895,13 +8262,13 @@ static unsigned int localestring(struct js_engine *js, double number)
     if (!number_isfinite(number))
         return realstring(js, number);
 
-    /* the way en-US writes it: at most three decimals, and commas between groups of three digits */
-    length = number_fixed(number, 3, plain);
+    /* the way en-US writes it: commas between groups of three digits, and decimals either all kept or trailing zeros dropped */
+    length = number_fixed(number, decimals, plain);
 
-    while (length && plain[length - 1] == '0')
+    while (trim && decimals && length && plain[length - 1] == '0')
         length--;
 
-    if (length && plain[length - 1] == '.')
+    if (decimals && length && plain[length - 1] == '.')
         length--;
 
     plain[length] = '\0';
@@ -7922,6 +8289,13 @@ static unsigned int localestring(struct js_engine *js, double number)
     text[offset] = '\0';
 
     return internstring(js, text);
+
+}
+
+static unsigned int localestring(struct js_engine *js, double number)
+{
+
+    return localegrouped(js, number, 3, 1);
 
 }
 
@@ -8074,13 +8448,6 @@ static unsigned int encodeuri(struct js_engine *js, char *text, unsigned int mod
     js->strings[js->stringcount++] = '\0';
 
     return start;
-
-}
-
-static int hexdigit(char c)
-{
-
-    return (c >= '0' && c <= '9') ? c - '0' : (c >= 'a' && c <= 'f') ? c - 'a' + 10 : (c >= 'A' && c <= 'F') ? c - 'A' + 10 : -1;
 
 }
 
@@ -8673,6 +9040,25 @@ static struct js_value callparams(struct js_engine *js, unsigned int native, str
     }
 
     return result;
+
+}
+
+static unsigned int intlnumber(struct js_engine *js, struct js_value *format, double number)
+{
+
+    struct js_value options = getproperty(js, format, internstring(js, "@@options"));
+    struct js_value style = (options.type == JS_OBJECT) ? getproperty(js, &options, internstring(js, "style")) : undefined();
+    struct js_value fraction = (options.type == JS_OBJECT) ? getproperty(js, &options, internstring(js, "maximumFractionDigits")) : undefined();
+    char *kind = (style.type == JS_STRING) ? getstring(js, style.number) : "decimal";
+
+    /* currency is written in dollars with cents, percent as a whole number of percent, and the rest grouped */
+    if (cstring_match(kind, "currency"))
+        return concat(js, internstring(js, (number < 0) ? "-$" : "$"), localegrouped(js, (number < 0) ? -number : number, 2, 0));
+
+    if (cstring_match(kind, "percent"))
+        return concat(js, localegrouped(js, number * 100, (fraction.type == JS_UNDEFINED) ? 0 : tonumber(js, &fraction), 1), internstring(js, "%"));
+
+    return localegrouped(js, number, (fraction.type == JS_UNDEFINED) ? 3 : tonumber(js, &fraction), 1);
 
 }
 
@@ -9974,6 +10360,83 @@ static struct js_value callnative(struct js_engine *js, struct call *call)
 
     case NATIVE_SELF:
         return call->self;
+
+    case NATIVE_FREEZE:
+        if (first->type == JS_OBJECT)
+        {
+
+            struct js_value yes = value(JS_BOOLEAN, 1);
+
+            putproperty(js, first->number, internstring(js, "@@frozen"), &yes);
+
+        }
+
+        return call->arguments[0];
+
+    case NATIVE_ISFROZEN:
+        return value(JS_BOOLEAN, first->type != JS_OBJECT || findproperty(js, first->number, internstring(js, "@@frozen")) != 0);
+
+    case NATIVE_NUMBERFORMAT:
+    case NATIVE_DATETIMEFORMAT:
+    case NATIVE_PLURALRULES:
+    case NATIVE_RELATIVETIME:
+    case NATIVE_COLLATOR:
+        if (self->type == JS_OBJECT)
+        {
+
+            /* every format is en-US, the options that matter most are kept to read when formatting */
+            if (second->type == JS_OBJECT)
+                putproperty(js, self->number, internstring(js, "@@options"), second);
+
+            addnative(js, self->number, "format", (native->data == NATIVE_NUMBERFORMAT) ? NATIVE_FORMATNUMBER : (native->data == NATIVE_DATETIMEFORMAT) ? NATIVE_FORMATDATE : NATIVE_FORMATRELATIVE);
+            addnative(js, self->number, "select", NATIVE_PLURALSELECT);
+            addnative(js, self->number, "compare", NATIVE_LOCALECOMPARE);
+
+        }
+
+        return call->self;
+
+    case NATIVE_FORMATNUMBER:
+        return value(JS_STRING, intlnumber(js, self, toreal(js, first)));
+
+    case NATIVE_FORMATDATE:
+        {
+
+            struct js_value options = getproperty(js, self, internstring(js, "@@options"));
+            struct js_value timestyle = (options.type == JS_OBJECT) ? getproperty(js, &options, internstring(js, "timeStyle")) : undefined();
+            struct js_value hour = (options.type == JS_OBJECT) ? getproperty(js, &options, internstring(js, "hour")) : undefined();
+            char text[DATE_TEXTSIZE];
+
+            date_format((first->type == JS_UNDEFINED) ? js->now : toreal(js, first), (timestyle.type != JS_UNDEFINED || hour.type != JS_UNDEFINED) ? DATE_LOCALE : DATE_LOCALEDATE, text);
+
+            return value(JS_STRING, internstring(js, text));
+
+        }
+
+    case NATIVE_PLURALSELECT:
+        return value(JS_STRING, internstring(js, (toreal(js, first) == 1) ? "one" : "other"));
+
+    case NATIVE_FORMATRELATIVE:
+        {
+
+            /* "in 3 days" and "3 days ago", the unit without its plural s when there is one */
+            double amount = toreal(js, first);
+            double size = (amount < 0) ? -amount : amount;
+            char *unit = getstring(js, tostring(js, second));
+            unsigned int length = cstring_length(unit);
+            unsigned int text = realstring(js, size);
+
+            if (length && unit[length - 1] == 's')
+                length--;
+
+            text = concat(js, concat(js, text, internstring(js, " ")), addstring(js, unit, length));
+
+            if (size != 1)
+                text = concat(js, text, internstring(js, "s"));
+
+            return value(JS_STRING, (amount < 0) ? concat(js, text, internstring(js, " ago")) : concat(js, internstring(js, "in "), text));
+
+        }
 
     case NATIVE_ENCODEURI:
     case NATIVE_ENCODEURICOMPONENT:
@@ -11688,7 +12151,8 @@ static struct js_value typeofvalue(struct js_engine *js, struct js_value *operan
         break;
 
     case JS_STRING:
-        name = "string";
+        /* symbols are kept as strings with a prefix no ordinary string has */
+        name = (cstring_length(getstring(js, operand->number)) > 9 && buffer_match(getstring(js, operand->number), "@@symbol(", 9)) ? "symbol" : "string";
 
         break;
 
@@ -13054,6 +13518,12 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "history", "forward", NATIVE_NOOP);
     addmethod(js, "history", "go", NATIVE_NOOP);
     addconstant(js, "history", "length", 1);
+    addglobal(js, "Intl", newobject(js, KIND_PLAIN, 0, 0));
+    addmethod(js, "Intl", "NumberFormat", NATIVE_NUMBERFORMAT);
+    addmethod(js, "Intl", "DateTimeFormat", NATIVE_DATETIMEFORMAT);
+    addmethod(js, "Intl", "PluralRules", NATIVE_PLURALRULES);
+    addmethod(js, "Intl", "RelativeTimeFormat", NATIVE_RELATIVETIME);
+    addmethod(js, "Intl", "Collator", NATIVE_COLLATOR);
     addglobal(js, "customElements", newobject(js, KIND_PLAIN, 0, 0));
     addmethod(js, "customElements", "define", NATIVE_DEFINEELEMENT);
     addmethod(js, "customElements", "get", NATIVE_GETELEMENT);
@@ -13104,7 +13574,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "Object", "values", NATIVE_VALUES);
     addmethod(js, "Object", "entries", NATIVE_ENTRIES);
     addmethod(js, "Object", "getOwnPropertyNames", NATIVE_KEYS);
-    addmethod(js, "Object", "isFrozen", NATIVE_FALSE);
+    addmethod(js, "Object", "isFrozen", NATIVE_ISFROZEN);
     addmethod(js, "Object", "isSealed", NATIVE_FALSE);
     addmethod(js, "Object", "seal", NATIVE_IDENTITY);
     addmethod(js, "Object", "preventExtensions", NATIVE_IDENTITY);
@@ -13115,7 +13585,7 @@ void js_reset(struct js_engine *js, struct html_document *document, unsigned int
     addmethod(js, "Number", "isNaN", NATIVE_ISNAN);
     addmethod(js, "Object", "assign", NATIVE_ASSIGN);
     addmethod(js, "Object", "create", NATIVE_CREATE);
-    addmethod(js, "Object", "freeze", NATIVE_IDENTITY);
+    addmethod(js, "Object", "freeze", NATIVE_FREEZE);
     addmethod(js, "Object", "defineProperty", NATIVE_DEFINEPROPERTY);
     addmethod(js, "Object", "getOwnPropertyDescriptor", NATIVE_GETOWNDESCRIPTOR);
     addmethod(js, "Object", "hasOwn", NATIVE_HASOWN);
